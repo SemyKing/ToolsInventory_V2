@@ -2,9 +2,9 @@ package com.gmail.grigorij;
 
 import com.gmail.grigorij.ui.authentication.AuthService;
 import com.gmail.grigorij.ui.authentication.LoginView;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -13,7 +13,9 @@ import com.vaadin.flow.server.*;
  * It is registered in a file named
  * com.vaadin.flow.server.VaadinServiceInitListener in META-INF/services.
  */
-public class ViewInitListener implements VaadinServiceInitListener {
+public class ApplicationServiceInitListener implements VaadinServiceInitListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationServiceInitListener.class);
 
     private static int i = 0;
 
@@ -21,18 +23,12 @@ public class ViewInitListener implements VaadinServiceInitListener {
     public void serviceInit(ServiceInitEvent serviceInitEvent) {
         serviceInitEvent.getSource().addUIInitListener(uiInitEvent -> uiInitEvent.getUI().addBeforeEnterListener(enterEvent -> {
 
+//            if ( logger.isDebugEnabled()) logger.debug( "Entering view class: " + enterEvent.getNavigationTarget().getName());
+//            if ( logger.isDebugEnabled()) logger.debug( "isAuthenticated():  " + AuthService.isAuthenticated());
+
             System.out.println();
-            System.out.println("event:             " + i);
-            System.out.println("entering:          " + enterEvent.getNavigationTarget().getName());
-            System.out.println("isAuthenticated():  " + AuthService.isAuthenticated());
-            System.out.println("LoginView.class:   " + LoginView.class.equals(enterEvent.getNavigationTarget()));
-            i++;
-
-            if (LoginView.class.equals(enterEvent.getNavigationTarget())) {
-                UI.getCurrent().navigate("login");
-            }
-
-
+            System.out.println( "Entering view class: " + enterEvent.getNavigationTarget().getName() );
+            System.out.println( "isAuthenticated():  " + AuthService.isAuthenticated() );
 
             if (!AuthService.isAuthenticated() && !LoginView.class.equals(enterEvent.getNavigationTarget())) {
 
@@ -41,4 +37,6 @@ public class ViewInitListener implements VaadinServiceInitListener {
             }
         }));
     }
+
+
 }

@@ -122,8 +122,18 @@ public class AppBar extends Composite<FlexLayout> {
     }
 
     private void initUsername() {
-        username = new Span(CurrentSession.getUser().getUsername()+" ("+CurrentSession.getCompany().getCompanyName()+")");
-//        username = new Span("USERNAME (COMPANY)");
+
+        System.out.println("----AppBar username set");
+        System.out.println("username:   " + CurrentSession.getInstance().getUser());
+        System.out.println("company:    " + CurrentSession.getInstance().getCompany());
+
+
+        String userText = (CurrentSession.getInstance().getUser() == null) ? "USER NULL" : CurrentSession.getInstance().getUser().getUsername();
+        userText += " (";
+        userText += (CurrentSession.getInstance().getCompany() == null) ? "COMPANY NULL" : CurrentSession.getInstance().getCompany().getCompanyName();
+        userText += ") ";
+
+        username = new Span(userText);
         username.addClassName(CLASS_NAME + "__username");
         username.setVisible(true);
     }

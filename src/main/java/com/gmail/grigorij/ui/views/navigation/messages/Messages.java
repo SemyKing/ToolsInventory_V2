@@ -8,10 +8,11 @@ import com.gmail.grigorij.ui.views.frames.ViewFrame;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 
-@Route(layout = MainLayout.class)
 @PageTitle("Messages")
+@Route(value = "messages", layout = MainLayout.class)
 public class Messages extends ViewFrame {
 
 	public Messages() {

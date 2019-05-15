@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.authentication;
 
+import com.gmail.grigorij.ui.components.ClosableNotification;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
@@ -8,6 +9,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
+
+import java.util.concurrent.TimeUnit;
 
 
 class PasswordRecoveryDialog extends Dialog {
@@ -56,20 +59,19 @@ class PasswordRecoveryDialog extends Dialog {
 		//SEND EMAIL
 
 
+		ClosableNotification.showNotification("Password recovery link has been sent to the E-mail that you provided.",
+				TimeUnit.MINUTES.toMillis(1), Notification.Position.TOP_CENTER);
 
-
-
-
-		Notification notification = new Notification();
-
-		Button closeBtn = new Button("Close");
-		closeBtn.addClickListener(event -> notification.close());
-
-		notification.add(new Label("Password recovery link has been sent to the E-mail that you provided."));
-		notification.add(closeBtn);
-		//5 min duration
-		notification.setDuration(300000);
-		notification.setPosition(Notification.Position.TOP_CENTER);
-		notification.open();
+//		Notification notification = new Notification();
+//
+//		Button closeBtn = new Button("Close");
+//		closeBtn.addClickListener(event -> notification.close());
+//
+//		notification.add(new Label("Password recovery link has been sent to the E-mail that you provided."));
+//		notification.add(closeBtn);
+//		//5 min duration
+//		notification.setDuration(300000);
+//		notification.setPosition(Notification.Position.TOP_CENTER);
+//		notification.open();
 	}
 }

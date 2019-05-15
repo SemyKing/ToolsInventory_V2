@@ -1,15 +1,16 @@
 package com.gmail.grigorij.ui;
 
-import com.gmail.grigorij.ui.authentication.AccessGroups;
+import com.gmail.grigorij.backend.entities.user.AccessGroups;
+import com.gmail.grigorij.ui.authentication.AuthService;
 import com.gmail.grigorij.ui.authentication.CurrentSession;
+import com.gmail.grigorij.ui.authentication.LoginView;
 import com.gmail.grigorij.ui.views.navigation.admin.Admin;
 import com.gmail.grigorij.ui.views.navigation.dashboard.Dashboard;
 import com.gmail.grigorij.ui.views.navigation.inventory.Inventory;
 import com.gmail.grigorij.ui.views.navigation.messages.Messages;
 import com.gmail.grigorij.ui.views.navigation.reporting.Reporting;
 import com.gmail.grigorij.ui.views.navigation.transactions.Transactions;
-import com.gmail.grigorij.utils.Constants;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +22,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.AfterNavigationObserver;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PWA;
@@ -68,18 +66,22 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 
 	private AppBar appBar;
 
+
 	public MainLayout() {
-		setId("main-layout");
+		setId("mainLayout");
 
 		VaadinSession.getCurrent().setErrorHandler((ErrorHandler) errorEvent -> {
 			log.error("Uncaught UI exception", errorEvent.getThrowable());
 			Notification.show("We are sorry, but an internal error occurred");
 		});
 
-		if (CurrentSession.getUser() == null) {
-			UI.getCurrent().navigate(Constants.LOGIN_ROUTE);
+		if (!AuthService.isAuthenticated()) {
+			System.out.println("MainLayout constructor, user not authenticated -> reroute to login");
+			getUI().ifPresent(ui -> ui.navigate(LoginView.class));
 			return;
 		}
+
+
 
 		addClassName(CLASS_NAME);
 		setBackgroundColor(LumoStyles.Color.Contrast._5);
@@ -94,6 +96,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 
 		// Configure the headers and footers (optional)
 		initHeadersAndFooters();
+		System.out.println("-----------------MAIN CONSTRUCTED");
 	}
 
 	/**
@@ -144,12 +147,8 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 		menu.addNaviItem(VaadinIcon.EXCHANGE, "Transactions", Transactions.class);
 		menu.addNaviItem(VaadinIcon.CLIPBOARD_TEXT, "Reporting", Reporting.class);
 
-		if (CurrentSession.getUser().getAccess_group() == AccessGroups.ADMIN.value())
+		if (CurrentSession.getInstance().getUser().getAccess_group() == AccessGroups.ADMIN.value())
 			menu.addNaviItem(VaadinIcon.DOCTOR, "Admin", Admin.class);
-
-
-
-
 	}
 
 	/**
@@ -273,5 +272,4 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 			getAppBar().setTitle(active.getText());
 		}
 	}
-
 }

@@ -43,11 +43,11 @@ public class NaviMenu extends Div {
         return item;
     }
 
-    public NaviItem addNaviItem(String path, String text, Class<? extends Component> navigationTarget) {
-        NaviItem item = new NaviItem(path, text, navigationTarget);
-        addNaviItem(item);
-        return item;
-    }
+//    public NaviItem addNaviItem(String path, String text, Class<? extends Component> navigationTarget) {
+//        NaviItem item = new NaviItem(path, text, navigationTarget);
+//        addNaviItem(item);
+//        return item;
+//    }
 
     public NaviItem addNaviItem(NaviItem parent, String text, Class<? extends Component> navigationTarget) {
         NaviItem item = new NaviItem(text, navigationTarget);

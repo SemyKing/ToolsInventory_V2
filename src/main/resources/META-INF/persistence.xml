@@ -3,14 +3,14 @@
              version="2.0" xmlns="http://java.sun.com/xml/ns/persistence">
     <persistence-unit name="tools_inventory" transaction-type="RESOURCE_LOCAL">
 
-        <class>com.gmail.grigorij.backend.entities.Company</class>
-        <class>com.gmail.grigorij.backend.entities.User</class>
+        <class>com.gmail.grigorij.backend.entities.company.Company</class>
+        <class>com.gmail.grigorij.backend.entities.user.User</class>
+
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/test_db" />
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
             <property name="javax.persistence.jdbc.user" value="postgres" />
             <property name="javax.persistence.jdbc.password" value="Kass5v1v" />
-
             <property name="eclipselink.logging.level" value="WARNING" />
         </properties>
     </persistence-unit>

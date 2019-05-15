@@ -10,8 +10,9 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@Route(layout = MainLayout.class)
+
 @PageTitle("Admin")
+@Route(value = "admin", layout = MainLayout.class)
 public class Admin extends ViewFrame {
 
 	public Admin() {

@@ -1,6 +1,7 @@
 package com.gmail.grigorij.ui.authentication;
 
-import com.gmail.grigorij.utils.Constants;
+import com.gmail.grigorij.ui.MainLayout;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -17,16 +18,13 @@ import com.vaadin.flow.router.Route;
  * UI content when the user is not logged in yet.
  */
 @HtmlImport("frontend://styles/views/login.html")
-@Route(Constants.LOGIN_ROUTE)
 @PageTitle("Login")
+@Route("login")
 public class LoginView extends Div {
 
     private static final String CLASS_NAME = "login-screen";
-//    private AccessControl accessControl;
-
 
     public LoginView() {
-//        accessControl = AccessControlFactory.getInstance().getAccessControl();
         buildUI();
     }
 
@@ -70,7 +68,10 @@ public class LoginView extends Div {
             passwordField.setRequiredIndicatorVisible(true);
 
             Checkbox rememberMe = new Checkbox("Remember me");
+
             Button loginButton = new Button("Sign in");
+            loginButton.addClickShortcut(Key.ENTER);
+
             Button forgotPasswordButton = new Button("Forgot password");
             forgotPasswordButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
             forgotPasswordButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
@@ -120,7 +121,7 @@ public class LoginView extends Div {
         }
 
         if (AuthService.signIn(username, password, rememberMe)) {
-            getUI().ifPresent(ui -> ui.navigate(""));
+            getUI().ifPresent(ui -> ui.navigate(MainLayout.class));
 
             Notification
                     .show("Welcome " + username  +"!")

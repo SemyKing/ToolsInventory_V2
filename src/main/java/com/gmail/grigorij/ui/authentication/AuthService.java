@@ -1,17 +1,21 @@
 package com.gmail.grigorij.ui.authentication;
 
-import com.gmail.grigorij.backend.database.Database;
-import com.gmail.grigorij.backend.entities.Company;
-import com.gmail.grigorij.backend.entities.User;
+import com.gmail.grigorij.backend.database.Facades.CompanyFacade;
+import com.gmail.grigorij.backend.database.Facades.UserFacade;
+import com.gmail.grigorij.backend.entities.company.Company;
+import com.gmail.grigorij.backend.entities.user.AccessGroups;
+import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.ui.components.ClosableNotification;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 
 import javax.servlet.http.Cookie;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static com.vaadin.flow.server.VaadinSession.getCurrent;
 
@@ -21,36 +25,31 @@ import static com.vaadin.flow.server.VaadinSession.getCurrent;
 public class AuthService {
 
     private static final String COOKIE_NAME = "remember_me_cookie";
-    private static final String SESSION_USERNAME = "session_username";
+    private static final String SESSION_DATA = "SESSION_DATA";
+
+//			getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
+//			getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, currentSessionObj);
+//          CurrentSession currentSession = (CurrentSession) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA);
 
 
     public static boolean isAuthenticated() {
-        return VaadinSession.getCurrent().getAttribute(SESSION_USERNAME) != null || loginRememberedUser();
+        return getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA) != null || loginRememberedUser();
     }
 
 
-    public static boolean signIn(String username, String password, boolean rememberMe) {
+    static boolean signIn(String username, String password, boolean rememberMe) {
         if (username == null || username.isEmpty())
             return false;
 
         if (password == null || password.isEmpty())
             return false;
 
-        User currentUser = Database.getInstance().getUser(username, password);
-        if (currentUser != null) {
-            Company currentCompany = Database.getInstance().getCompanyById(currentUser.getCompany_id());
 
-            if (currentCompany == null) {
-                Notification.show("Company not found!");
-                System.err.println("User not assigned to any company");
-                return false;
-            }
+        User user = UserFacade.getInstance().findUserInDatabase(username, password);
 
-            VaadinSession.getCurrent().setAttribute(SESSION_USERNAME, username);
+        if (user != null) {
 
-            CurrentSession.setUser(currentUser);
-            CurrentSession.setCompany(currentCompany);
-
+            constructSessionData(user.getUsername());
 
             if (rememberMe) {
                 rememberUser(username);
@@ -63,6 +62,48 @@ public class AuthService {
     }
 
 
+    private static void constructSessionData(String username) {
+
+        User user = UserFacade.getInstance().findUserInDatabaseByUsername(username);
+
+        if (user != null) {
+            if (user.isDeleted()) {
+                System.out.println("------DELETED USER LOGIN------");
+                System.out.println("Username: " + user.getUsername());
+
+                ClosableNotification.showNotification("Your credentials have expired",
+                        TimeUnit.MINUTES.toMillis(1), Notification.Position.TOP_CENTER);
+
+                signOut();
+            }
+        } else {
+            System.out.println("------USER IS NULL------");
+            signOut();
+        }
+
+        Company company = null;
+
+        if (user.getAccess_group() != AccessGroups.ADMIN.value()) {
+            company = CompanyFacade.getInstance().findCompanyInDatabaseById(user.getCompany_id());
+
+            if (company == null) {
+                System.out.println("------COMPANY IS NULL------");
+                System.out.println("------NON ADMIN USER SHOULD BE ASSIGNED TO COMPANY------");
+                signOut();
+            }
+        }
+
+
+        CurrentSession.getInstance().setUser(user);
+        CurrentSession.getInstance().setCompany(company);
+
+        System.out.println("------USER SET: " + CurrentSession.getInstance().getUser());
+        System.out.println("------COMP SET: " + CurrentSession.getInstance().getCompany());
+
+        getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, CurrentSession.getInstance());
+    }
+
+
     public static void signOut() {
         Optional<Cookie> cookie = getRememberMeCookie();
         if (cookie.isPresent()) {
@@ -71,6 +112,7 @@ public class AuthService {
             deleteRememberMeCookie();
         }
 
+        getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
         getCurrent().getSession().invalidate();
         UI.getCurrent().getPage().reload();
     }
@@ -85,7 +127,7 @@ public class AuthService {
             String username = UserService.getRememberedUser(id);
 
             if (username != null) {
-                VaadinSession.getCurrent().setAttribute(SESSION_USERNAME, username);
+                constructSessionData(username);
                 return true;
             }
         }
@@ -95,7 +137,7 @@ public class AuthService {
 
 
     private static Optional<Cookie> getRememberMeCookie() {
-        Cookie[] cookies = VaadinService.getCurrentRequest().getCookies();
+        Cookie[] cookies = getCurrentRequest().getCookies();
         if (cookies != null) {
             return Arrays.stream(cookies).filter(c -> c.getName().equals(COOKIE_NAME)).findFirst();
         }
@@ -120,4 +162,13 @@ public class AuthService {
         cookie.setMaxAge(0);
         VaadinService.getCurrentResponse().addCookie(cookie);
     }
+
+
+    private static VaadinRequest getCurrentRequest() {
+		VaadinRequest request = VaadinService.getCurrentRequest();
+		if (request == null) {
+			throw new IllegalStateException("No request bound to current thread.");
+		}
+		return request;
+	}
 }

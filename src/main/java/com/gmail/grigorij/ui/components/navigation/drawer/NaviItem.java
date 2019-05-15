@@ -51,15 +51,15 @@ public class NaviItem extends Div {
         link.getElement().insertChild(0, image.getElement());
     }
 
-    public NaviItem(String svg, String text, Class<? extends Component> navigationTarget) {
-        this(text, navigationTarget);
-        try {
-            String content = readFile(svg);
-            link.getElement().insertChild(0, createSVGContainer(content));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    public NaviItem(String svg, String text, Class<? extends Component> navigationTarget) {
+//        this(text, navigationTarget);
+//        try {
+//            String content = readFile(svg);
+//            link.getElement().insertChild(0, createSVGContainer(content));
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     public NaviItem(String text, Class<? extends Component> navigationTarget) {
         setClassName(CLASS_NAME);
@@ -161,12 +161,12 @@ public class NaviItem extends Div {
         return subItems.size() > 0;
     }
 
-    protected static String readFile(String path) throws IOException {
-        try (InputStream resourceAsStream = VaadinService.getCurrent()
-                .getResourceAsStream("frontend://" + path, FakeBrowser.getEs6(), null)) {
-            return IOUtils.toString(resourceAsStream, Charsets.UTF_8);
-        }
-    }
+//    protected static String readFile(String path) throws IOException {
+//        try (InputStream resourceAsStream = VaadinService.getCurrent()
+//                .getResourceAsStream("frontend://" + path, FakeBrowser.getEs6(), null)) {
+//            return IOUtils.toString(resourceAsStream, Charsets.UTF_8);
+//        }
+//    }
 
     protected Element createSVGContainer(String content) {
         Div svg = new Div();

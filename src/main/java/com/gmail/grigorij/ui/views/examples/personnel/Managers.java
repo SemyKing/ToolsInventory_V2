@@ -149,8 +149,8 @@ public class Managers extends SplitViewFrame {
         email.setWidth("100%");
 
         ComboBox company = new ComboBox();
-        company.setItems(DummyData.getCompanies());
-        company.setValue(DummyData.getCompany());
+//        company.setItems(DummyData.getCompanies());
+//        company.setValue(DummyData.getCompany());
         company.setWidth("100%");
 
         // Form layout

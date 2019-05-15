@@ -1,20 +1,20 @@
-package com.gmail.grigorij.backend.entities;
+package com.gmail.grigorij.backend.entities.user;
 
+
+import com.gmail.grigorij.backend.entities.EntityPojo;
 
 import javax.persistence.*;
-import java.io.Serializable;
 
 
 @Entity
 @Table(name = "users")
 @NamedQueries({
-		@NamedQuery(name="User.findUserInDatabase", query="SELECT u FROM User u WHERE u.username = :username AND u.password = :password")})
-public class User implements Serializable {
-
-	@Id
-	@GeneratedValue
-	@Column(name = "id")
-	private int id;
+		@NamedQuery(name="User.findUserInDatabase",
+				query="SELECT user FROM User user WHERE user.username = :username AND user.password = :password"),
+		@NamedQuery(name="User.findUserInDatabaseByUsername",
+				query="SELECT user FROM User user WHERE user.username = :username ORDER BY user.username ASC")
+})
+public class User extends EntityPojo {
 
 	@Column(name = "username")
 	private String username;
@@ -28,15 +28,14 @@ public class User implements Serializable {
 	@Column(name = "access_group")
 	private int access_group;
 
+	@Column(name = "deleted")
+	private boolean deleted;
+
 	public User() {}
 
 	public User(String username, String password) {
 		this.username = username;
 		this.password = password;
-	}
-
-	public int getId() {
-		return id;
 	}
 
 	public String getUsername() {
