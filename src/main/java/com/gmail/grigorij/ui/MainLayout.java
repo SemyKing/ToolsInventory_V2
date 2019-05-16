@@ -4,7 +4,7 @@ import com.gmail.grigorij.backend.entities.user.AccessGroups;
 import com.gmail.grigorij.ui.authentication.AuthService;
 import com.gmail.grigorij.ui.authentication.CurrentSession;
 import com.gmail.grigorij.ui.authentication.LoginView;
-import com.gmail.grigorij.ui.views.navigation.admin.Admin;
+import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
 import com.gmail.grigorij.ui.views.navigation.dashboard.Dashboard;
 import com.gmail.grigorij.ui.views.navigation.inventory.Inventory;
 import com.gmail.grigorij.ui.views.navigation.messages.Messages;
@@ -68,7 +68,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 
 
 	public MainLayout() {
-		setId("mainLayout");
+		setId("main-layout");
 
 		VaadinSession.getCurrent().setErrorHandler((ErrorHandler) errorEvent -> {
 			log.error("Uncaught UI exception", errorEvent.getThrowable());
@@ -148,7 +148,7 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 		menu.addNaviItem(VaadinIcon.CLIPBOARD_TEXT, "Reporting", Reporting.class);
 
 		if (CurrentSession.getInstance().getUser().getAccess_group() == AccessGroups.ADMIN.value())
-			menu.addNaviItem(VaadinIcon.DOCTOR, "Admin", Admin.class);
+			menu.addNaviItem(VaadinIcon.DOCTOR, "Admin", AdminMain.class);
 	}
 
 	/**

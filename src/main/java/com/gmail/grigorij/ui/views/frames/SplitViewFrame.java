@@ -91,5 +91,6 @@ public class SplitViewFrame extends Composite<Div> implements HasStyle {
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         MainLayout.get().getAppBar().reset();
+//        MainLayout.getAppBar().reset();
     }
 }

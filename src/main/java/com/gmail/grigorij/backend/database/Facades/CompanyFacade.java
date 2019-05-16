@@ -3,6 +3,7 @@ package com.gmail.grigorij.backend.database.Facades;
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.company.Company;
 
+import javax.persistence.NoResultException;
 import java.util.List;
 
 public class CompanyFacade {
@@ -18,16 +19,25 @@ public class CompanyFacade {
 
 
 	public Company findCompanyInDatabaseById(long id) {
-		Company company = (Company) DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.findCompanyInDatabaseById")
-				.setParameter("company_id", id)
-				.getSingleResult();
+		Company company;
+		try {
+			company = (Company) DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.findCompanyInDatabaseById")
+					.setParameter("company_id", id)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			company = null;
+		}
 		return company;
 	}
 
 	public List<Company> listAllCompanies() {
-		List<Company> companies = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.listAllCompanies", Company.class)
-				.getResultList();
-
+		List<Company> companies;
+		try {
+			companies = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.listAllCompanies", Company.class)
+					.getResultList();
+		} catch (NoResultException nre) {
+			companies = null;
+		}
 		return companies;
 	}
 

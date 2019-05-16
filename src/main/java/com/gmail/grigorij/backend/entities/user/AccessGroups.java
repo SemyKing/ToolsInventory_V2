@@ -19,19 +19,4 @@ public enum AccessGroups {
 	public int value() {
 		return this.value;
 	}
-
-
-	public static AccessGroups fromValue( int i ) {
-		for ( AccessGroups type : AccessGroups.values()) {
-			if ( type.value == i ) {
-				return type;
-			}
-		}
-		throw new IllegalArgumentException( Integer.toString( i ));
-	}
-
-
-	public static AccessGroups fromValue( String str ) {
-		return valueOf( str );
-	}
 }

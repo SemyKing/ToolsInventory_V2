@@ -69,8 +69,7 @@ public class Payments extends SplitViewFrame {
 
     private Grid createGrid() {
         grid = new Grid<>();
-        grid.addSelectionListener(event -> event.getFirstSelectedItem()
-                .ifPresent(this::showDetails));
+        grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
         dataProvider = DataProvider.ofCollection(DummyData.getPayments());
         grid.setDataProvider(dataProvider);
         grid.setHeight("100%");
@@ -146,13 +145,12 @@ public class Payments extends SplitViewFrame {
     }
 
     private Component createDetails(Payment payment) {
-        ListItem status = new ListItem(payment.getStatus().getIcon(),
-                payment.getStatus().getName(), "Status");
+        ListItem status = new ListItem(payment.getStatus().getIcon(), payment.getStatus().getName(), "Status");
 
         status.getContent().setAlignItems(FlexComponent.Alignment.BASELINE);
         status.getContent().setSpacing(Bottom.XS);
-        UIUtils.setTheme(payment.getStatus().getTheme().getThemeName(),
-                status.getPrimary());
+
+        UIUtils.setTheme(payment.getStatus().getTheme().getThemeName(), status.getPrimary());
         UIUtils.setTooltip(payment.getStatus().getDesc(), status);
 
         ListItem from = new ListItem(

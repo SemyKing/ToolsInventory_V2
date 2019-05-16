@@ -12,7 +12,9 @@ import javax.persistence.*;
 		@NamedQuery(name="User.findUserInDatabase",
 				query="SELECT user FROM User user WHERE user.username = :username AND user.password = :password"),
 		@NamedQuery(name="User.findUserInDatabaseByUsername",
-				query="SELECT user FROM User user WHERE user.username = :username ORDER BY user.username ASC")
+				query="SELECT user FROM User user WHERE user.username = :username ORDER BY user.username ASC"),
+		@NamedQuery(name="User.listAllUsers",
+				query="SELECT user FROM User user ORDER BY user.username ASC")
 })
 public class User extends EntityPojo {
 

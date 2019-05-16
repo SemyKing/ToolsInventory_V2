@@ -49,7 +49,7 @@ public class AuthService {
 
         if (user != null) {
 
-            constructSessionData(user.getUsername());
+            constructSessionData(username);
 
             if (rememberMe) {
                 rememberUser(username);
@@ -116,7 +116,6 @@ public class AuthService {
         getCurrent().getSession().invalidate();
         UI.getCurrent().getPage().reload();
     }
-
 
 
     private static boolean loginRememberedUser() {

@@ -3,9 +3,11 @@ package com.gmail.grigorij.ui.components.navigation.bar;
 //import com.gmail.grigorij.ui.authentication.AccessControlFactory;
 import com.gmail.grigorij.ui.authentication.AuthService;
 import com.gmail.grigorij.ui.authentication.CurrentSession;
+import com.gmail.grigorij.ui.views.navigation.admin.AdminCompanies;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
@@ -24,6 +26,8 @@ import com.gmail.grigorij.ui.components.navigation.tab.NaviTab;
 import com.gmail.grigorij.ui.components.navigation.tab.NaviTabs;
 import com.gmail.grigorij.ui.util.LumoStyles;
 import com.gmail.grigorij.ui.util.UIUtils;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.shared.Registration;
 
 public class AppBar extends Composite<FlexLayout> {
 
@@ -43,8 +47,8 @@ public class AppBar extends Composite<FlexLayout> {
     private NaviTabs tabs;
     private Button addTab;
 
-//    private TextField search;
-//    private Registration searchRegistration;
+    private TextField search;
+    private Registration searchRegistration;
 
     public enum NaviMode {
         MENU, CONTEXTUAL
@@ -57,7 +61,7 @@ public class AppBar extends Composite<FlexLayout> {
         initMenuIcon();
         initContextIcon();
         initTitle(title);
-//        initSearch();
+        initSearch();
         initUsername();
         initAvatar();
         initActionItems();
@@ -96,12 +100,12 @@ public class AppBar extends Composite<FlexLayout> {
         this.title.setClassName(CLASS_NAME + "__title");
     }
 
-//    private void initSearch() {
-//        search = new TextField();
-//        search.setPlaceholder("Search");
-//        search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
-//        search.setVisible(false);
-//    }
+    private void initSearch() {
+        search = new TextField();
+        search.setPlaceholder("Search");
+        search.setPrefixComponent(new Icon(VaadinIcon.SEARCH));
+        search.setVisible(false);
+    }
 
     private void initAvatar() {
         avatar = VaadinIcon.USER.create();
@@ -228,8 +232,16 @@ public class AppBar extends Composite<FlexLayout> {
         return tab;
     }
 
+
     public Tab addTab(String text, Class<? extends Component> navigationTarget) {
         Tab tab = tabs.addTab(text, navigationTarget);
+        configureTab(tab);
+        return tab;
+    }
+
+
+    public Tab addTab(Object classObj, String text) {
+        Tab tab = tabs.addTab(text);
         configureTab(tab);
         return tab;
     }
@@ -277,43 +289,43 @@ public class AppBar extends Composite<FlexLayout> {
 
     /* === SEARCH === */
 
-//    public void searchModeOn() {
-//        menuIcon.setVisible(false);
-//        title.setVisible(false);
-//        actionItems.setVisible(false);
-//        tabContainer.setVisible(false);
-//
-//        contextIcon.setIcon(new Icon(VaadinIcon.ARROW_BACKWARD));
-//        contextIcon.setVisible(true);
-//        searchRegistration = contextIcon
-//                .addClickListener(e -> searchModeOff());
-//
-//        search.setVisible(true);
-//        search.focus();
-//    }
+    public void searchModeOn() {
+        menuIcon.setVisible(false);
+        title.setVisible(false);
+        actionItems.setVisible(false);
+        tabContainer.setVisible(false);
 
-//    public void addSearchListener(HasValue.ValueChangeListener listener) {
-//        search.addValueChangeListener(listener);
-//    }
+        contextIcon.setIcon(new Icon(VaadinIcon.ARROW_BACKWARD));
+        contextIcon.setVisible(true);
+        searchRegistration = contextIcon
+                .addClickListener(e -> searchModeOff());
 
-//    public void setSearchPlaceholder(String placeholder) {
-//        search.setPlaceholder(placeholder);
-//    }
+        search.setVisible(true);
+        search.focus();
+    }
 
-//    private void searchModeOff() {
-//        menuIcon.setVisible(true);
-//        title.setVisible(true);
-//        tabContainer.setVisible(true);
-//
-//        updateActionItemsVisibility();
-//        updateTabsVisibility();
-//
-//        contextIcon.setVisible(false);
-//        searchRegistration.remove();
-//
-//        search.clear();
-//        search.setVisible(false);
-//    }
+    public void addSearchListener(HasValue.ValueChangeListener listener) {
+        search.addValueChangeListener(listener);
+    }
+
+    public void setSearchPlaceholder(String placeholder) {
+        search.setPlaceholder(placeholder);
+    }
+
+    private void searchModeOff() {
+        menuIcon.setVisible(true);
+        title.setVisible(true);
+        tabContainer.setVisible(true);
+
+        updateActionItemsVisibility();
+        updateTabsVisibility();
+
+        contextIcon.setVisible(false);
+        searchRegistration.remove();
+
+        search.clear();
+        search.setVisible(false);
+    }
 
     /* === RESET === */
 
