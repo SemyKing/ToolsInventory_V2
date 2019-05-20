@@ -424,8 +424,29 @@ public class UIUtils {
     /* === NOTIFICATIONS === */
 
     public static void showNotification(String text) {
-        Notification.show(text, 3000, Notification.Position.BOTTOM_CENTER);
+        Notification.show(text, 5000, Notification.Position.TOP_CENTER);
     }
+
+    /**
+     *  Show notification with close button
+     *
+     * @param text  any text
+     * @param delay delay in minutes
+     */
+    public static void showClosableNotification(String text, long delay) {
+        Notification notification = new Notification();
+
+        Button closeBtn = new Button("Close");
+        closeBtn.addClickListener(event -> notification.close());
+
+        notification.add(new Label("text"));
+        notification.add(closeBtn);
+        notification.setDuration((int) delay);
+        notification.setPosition(Notification.Position.TOP_CENTER);
+        notification.open();
+    }
+
+
 
     /* === CSS UTILITIES === */
 

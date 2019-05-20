@@ -1,6 +1,7 @@
 package com.gmail.grigorij.ui.authentication;
 
 import com.gmail.grigorij.ui.MainLayout;
+import com.gmail.grigorij.ui.util.UIUtils;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -69,7 +70,7 @@ public class LoginView extends Div {
 
             Checkbox rememberMe = new Checkbox("Remember me");
 
-            Button loginButton = new Button("Sign in");
+            Button loginButton = UIUtils.createPrimaryButton("SIGN IN");
             loginButton.addClickShortcut(Key.ENTER);
 
             Button forgotPasswordButton = new Button("Forgot password");

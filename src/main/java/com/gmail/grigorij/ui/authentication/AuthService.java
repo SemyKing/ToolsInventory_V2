@@ -5,7 +5,7 @@ import com.gmail.grigorij.backend.database.Facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.user.AccessGroups;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.components.ClosableNotification;
+import com.gmail.grigorij.ui.util.UIUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.server.VaadinRequest;
@@ -71,9 +71,7 @@ public class AuthService {
                 System.out.println("------DELETED USER LOGIN------");
                 System.out.println("Username: " + user.getUsername());
 
-                ClosableNotification.showNotification("Your credentials have expired",
-                        TimeUnit.MINUTES.toMillis(1), Notification.Position.TOP_CENTER);
-
+                UIUtils.showClosableNotification("Your credentials have expired", TimeUnit.MINUTES.toMillis(1));
                 signOut();
             }
         } else {

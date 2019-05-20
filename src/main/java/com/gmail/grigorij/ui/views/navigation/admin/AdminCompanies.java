@@ -2,37 +2,75 @@ package com.gmail.grigorij.ui.views.navigation.admin;
 
 import com.gmail.grigorij.backend.database.Facades.CompanyFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
+import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
+import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
+import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.util.LumoStyles;
+import com.gmail.grigorij.ui.util.UIUtils;
+import com.gmail.grigorij.ui.util.css.FlexDirection;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
 
-public class AdminCompanies extends Div {
+class AdminCompanies extends Div {
+
+	private static final String CLASS_NAME = "admin-companies";
 
 	final static String TAB_NAME = "Companies";
+	private Company selectedCompany;
+	private AdminMain adminMain;
+	private DetailsDrawer detailsDrawer;
 
-	public AdminCompanies() {
+
+	AdminCompanies(AdminMain adminMain) {
+		this.adminMain = adminMain;
 		setId("admin-companies");
-		initHeader();
-		initGrid();
-
-		AdminMain.detailsDrawerTitle.setTitle("Company Details");
-		AdminMain.detailsDrawerFooter.addSaveListener(e -> saveCompany());
+		createHeader();
+		createGrid();
+		createDetailsDrawer();
 	}
 
 
-	private void initHeader() {
-		add(new TextField(" Companies Search"));
+	private TextField searchField;
+	private Button newUserButton;
+
+	private void createHeader() {
+		HorizontalLayout headerHL = new HorizontalLayout();
+		headerHL.setClassName(CLASS_NAME + "__header");
+
+		searchField = new TextField("Companies Search");
+		searchField.setClassName(CLASS_NAME + "__search");
+		searchField.setClearButtonVisible(true);
+
+		HorizontalLayout emptySpace = new HorizontalLayout();
+		emptySpace.setClassName(CLASS_NAME + "__empty-space");
+
+		newUserButton = UIUtils.createButton("New Company", VaadinIcon.PLUS, ButtonVariant.LUMO_PRIMARY);
+		newUserButton.setClassName(CLASS_NAME + "__new-company-button");
+		newUserButton.addClickListener(e -> constructNewCompanyDialog());
+
+		headerHL.add(searchField, emptySpace, newUserButton);
+		add(headerHL);
 	}
 
-	private void initGrid() {
+
+	private void createGrid() {
 		Grid<Company> grid = new Grid<>();
 		grid.setId("companies-grid");
-		grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(this::showDetails));
+		grid.addSelectionListener(event -> event.getFirstSelectedItem().ifPresent(item -> {
+			showDetails(item);
+			selectedCompany = item;
+		}));
 		ListDataProvider<Company> dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().listAllCompanies());
 		grid.setDataProvider(dataProvider);
 
@@ -43,9 +81,28 @@ public class AdminCompanies extends Div {
 	}
 
 
+	private void createDetailsDrawer() {
+		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
+
+		// Header
+		DetailsDrawerHeader detailsDrawerTitle = new DetailsDrawerHeader("Company Details");
+
+		detailsDrawer.setHeader(detailsDrawerTitle);
+		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
+
+		// Footer
+		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
+		detailsDrawerFooter.addSaveListener(e -> saveCompanyDetails());
+		detailsDrawerFooter.addCancelListener(e -> detailsDrawer.hide());
+		detailsDrawer.setFooter(detailsDrawerFooter);
+
+		adminMain.setDetailsDrawer(detailsDrawer);
+	}
+
+
 	private void showDetails(Company company) {
-		AdminMain.detailsDrawer.setContent(createDetails(company));
-		AdminMain.detailsDrawer.show();
+		detailsDrawer.setContent(createDetails(company));
+		detailsDrawer.show();
 	}
 
 
@@ -60,8 +117,21 @@ public class AdminCompanies extends Div {
 		return details;
 	}
 
-	private void saveCompany() {
-		System.out.println("saveCompany()");
+
+	private void saveCompanyDetails() {
+		System.out.println("saveCompanyDetails()");
+
+
+	}
+
+
+
+
+	private void constructNewCompanyDialog() {
+		Dialog newCompanyDialog = new Dialog();
+
+
+
 	}
 }
 

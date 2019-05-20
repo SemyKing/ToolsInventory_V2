@@ -29,11 +29,17 @@ public class DetailsDrawerFooter extends Composite<FlexBoxLayout> {
     }
 
     public Registration addSaveListener(ComponentEventListener<ClickEvent<Button>> listener) {
+        save.addClickListener(listener).remove();
         return save.addClickListener(listener);
     }
 
     public Registration addCancelListener(ComponentEventListener<ClickEvent<Button>> listener) {
+        save.addClickListener(listener).remove();
         return cancel.addClickListener(listener);
+    }
+
+    public Registration removeSaveListener() {
+        return save.addClickListener(null);
     }
 
 }

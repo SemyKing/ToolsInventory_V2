@@ -31,6 +31,7 @@ public class UserFacade {
 		return user;
 	}
 
+
 	public User findUserInDatabaseByUsername(String username) {
 		User user;
 		try {
@@ -43,6 +44,7 @@ public class UserFacade {
 		return user;
 	}
 
+
 	public List<User> listAllUsers() {
 		List<User> users;
 		try {
@@ -52,6 +54,48 @@ public class UserFacade {
 			users = null;
 		}
 		return users;
+	}
+
+
+	public boolean insert(User user) {
+		System.out.println("UserFacade -> insert");
+
+		if (user == null)
+			return false;
+
+		try {
+			DatabaseManager.getInstance().insert(user);
+		} catch (Exception e) {
+			System.out.println("user insert exception");
+			e.printStackTrace();
+			return false;
+		}
+
+		return true;
+	}
+
+
+	public boolean update(User user) {
+		System.out.println("UserFacade -> update");
+
+		if (user == null)
+			return false;
+
+		User userInDatabase = DatabaseManager.getInstance().find(User.class, user.getId());
+		System.out.println("userInDatabase: " + userInDatabase);
+
+		try {
+			if (userInDatabase == null) {
+				return insert(user);
+			} else
+				DatabaseManager.getInstance().update(user);
+		} catch (Exception e) {
+			System.out.println("user insert exception");
+			e.printStackTrace();
+			return false;
+		}
+
+		return true;
 	}
 
 

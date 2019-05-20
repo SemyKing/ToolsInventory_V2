@@ -1,9 +1,7 @@
 package com.gmail.grigorij.ui.components.navigation.bar;
 
-//import com.gmail.grigorij.ui.authentication.AccessControlFactory;
 import com.gmail.grigorij.ui.authentication.AuthService;
 import com.gmail.grigorij.ui.authentication.CurrentSession;
-import com.gmail.grigorij.ui.views.navigation.admin.AdminCompanies;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Composite;

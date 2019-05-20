@@ -1,8 +1,6 @@
 package com.gmail.grigorij.backend.entities.user;
 
 
-import com.gmail.grigorij.backend.entities.EntityPojo;
-
 import javax.persistence.*;
 
 
@@ -16,7 +14,7 @@ import javax.persistence.*;
 		@NamedQuery(name="User.listAllUsers",
 				query="SELECT user FROM User user ORDER BY user.username ASC")
 })
-public class User extends EntityPojo {
+public class User extends Person {
 
 	@Column(name = "username")
 	private String username;
@@ -30,10 +28,8 @@ public class User extends EntityPojo {
 	@Column(name = "access_group")
 	private int access_group;
 
-	@Column(name = "deleted")
-	private boolean deleted;
-
 	public User() {}
+
 
 	public User(String username, String password) {
 		this.username = username;
@@ -43,7 +39,6 @@ public class User extends EntityPojo {
 	public String getUsername() {
 		return username;
 	}
-
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -51,7 +46,6 @@ public class User extends EntityPojo {
 	public String getPassword() {
 		return password;
 	}
-
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -59,7 +53,6 @@ public class User extends EntityPojo {
 	public int getCompany_id() {
 		return company_id;
 	}
-
 	public void setCompany_id(int company_id) {
 		this.company_id = company_id;
 	}
@@ -67,7 +60,6 @@ public class User extends EntityPojo {
 	public int getAccess_group() {
 		return access_group;
 	}
-
 	public void setAccess_group(int access_group) {
 		this.access_group = access_group;
 	}

@@ -43,10 +43,10 @@ import com.gmail.grigorij.ui.views.examples.personnel.Accountants;
 import com.gmail.grigorij.ui.views.examples.personnel.Managers;
 
 
+@Route("")
 @HtmlImport("frontend://styles/shared-styles.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
 @PWA(name = "Tools Inventory v2.0", shortName = "Tools Inventory v2.0", iconPath = "images/logo-18.png", backgroundColor = "#233348", themeColor = "#233348")
-@Route("")
 public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfigurator, AfterNavigationObserver {
 
 	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
@@ -61,7 +61,6 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 	private Div appHeaderInner;
 	private FlexBoxLayout viewContainer;
 	private Div appFooterInner;
-
 	private Div appFooterOuter;
 
 	private AppBar appBar;
@@ -69,6 +68,11 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 
 	public MainLayout() {
 		setId("main-layout");
+
+		DatabaseDummyInsert dbDummy = new DatabaseDummyInsert();
+		dbDummy.generateUsersAndCompanies();
+		dbDummy.insertUsersAndCompanies();
+
 
 		VaadinSession.getCurrent().setErrorHandler((ErrorHandler) errorEvent -> {
 			log.error("Uncaught UI exception", errorEvent.getThrowable());
@@ -80,7 +84,6 @@ public class MainLayout extends FlexBoxLayout implements RouterLayout, PageConfi
 			getUI().ifPresent(ui -> ui.navigate(LoginView.class));
 			return;
 		}
-
 
 
 		addClassName(CLASS_NAME);

@@ -1,10 +1,9 @@
 package com.gmail.grigorij.ui.authentication;
 
-import com.gmail.grigorij.ui.components.ClosableNotification;
+import com.gmail.grigorij.ui.util.UIUtils;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -58,9 +57,7 @@ class PasswordRecoveryDialog extends Dialog {
 
 		//SEND EMAIL
 
-
-		ClosableNotification.showNotification("Password recovery link has been sent to the E-mail that you provided.",
-				TimeUnit.MINUTES.toMillis(1), Notification.Position.TOP_CENTER);
+		UIUtils.showClosableNotification("Password recovery link has been sent to the E-mail that you provided.", TimeUnit.MINUTES.toMillis(1));
 
 //		Notification notification = new Notification();
 //
