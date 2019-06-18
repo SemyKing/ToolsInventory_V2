@@ -1,7 +1,8 @@
-package com.gmail.grigorij.backend.database.Facades;
+package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.ui.utils.UIUtils;
 
 import javax.persistence.NoResultException;
 import java.util.List;
@@ -57,7 +58,21 @@ public class UserFacade {
 	}
 
 
+	public List<User> listUsersByCompanyId(long companyId) {
+		List<User> users;
+		try {
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.listUsersByCompanyId", User.class)
+					.setParameter("companyId", companyId)
+					.getResultList();
+		} catch (NoResultException nre) {
+			users = null;
+		}
+		return users;
+	}
+
+
 	public boolean insert(User user) {
+		System.out.println();
 		System.out.println("UserFacade -> insert");
 
 		if (user == null)
@@ -66,22 +81,29 @@ public class UserFacade {
 		try {
 			DatabaseManager.getInstance().insert(user);
 		} catch (Exception e) {
-			System.out.println("user insert exception");
+			UIUtils.showNotification("User INSERT fail", UIUtils.NotificationType.ERROR);
 			e.printStackTrace();
 			return false;
 		}
 
+		UIUtils.showNotification("User INSERT successful", UIUtils.NotificationType.SUCCESS);
 		return true;
 	}
 
 
 	public boolean update(User user) {
+		System.out.println();
 		System.out.println("UserFacade -> update");
 
 		if (user == null)
 			return false;
 
-		User userInDatabase = DatabaseManager.getInstance().find(User.class, user.getId());
+		User userInDatabase = null;
+
+		if (user.getId() != null) {
+			userInDatabase = DatabaseManager.getInstance().find(User.class, user.getId());
+		}
+
 		System.out.println("userInDatabase: " + userInDatabase);
 
 		try {
@@ -90,11 +112,37 @@ public class UserFacade {
 			} else
 				DatabaseManager.getInstance().update(user);
 		} catch (Exception e) {
-			System.out.println("user insert exception");
+			UIUtils.showNotification("User UPDATE fail", UIUtils.NotificationType.ERROR);
 			e.printStackTrace();
 			return false;
 		}
 
+		UIUtils.showNotification("User UPDATE successful", UIUtils.NotificationType.SUCCESS);
+		return true;
+	}
+
+
+	public boolean remove(User user) {
+		System.out.println();
+		System.out.println("UserFacade -> remove");
+
+		if (user == null)
+			return false;
+
+		User userInDatabase = DatabaseManager.getInstance().find(User.class, user.getId());
+		System.out.println("userInDatabase: " + userInDatabase);
+
+		try {
+			if (userInDatabase != null) {
+				DatabaseManager.getInstance().remove(user);
+			}
+		} catch (Exception e) {
+			UIUtils.showNotification("User REMOVE fail", UIUtils.NotificationType.ERROR);
+			e.printStackTrace();
+			return false;
+		}
+
+		UIUtils.showNotification("User REMOVE successful", UIUtils.NotificationType.SUCCESS);
 		return true;
 	}
 

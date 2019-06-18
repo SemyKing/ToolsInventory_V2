@@ -56,11 +56,12 @@
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-testbench</artifactId>
-            <scope>test</scope>
-        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>com.vaadin</groupId>-->
+<!--            <artifactId>vaadin-testbench</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
 
         <!-- Added to provide logging output as Flow uses -->
         <!-- the unbound SLF4J no-operation (NOP) logger implementation -->
@@ -92,6 +93,7 @@
 
     </dependencies>
 
+
     <build>
         <plugins>
             <plugin>
@@ -99,13 +101,13 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
                 <configuration>
-                    <scanIntervalSeconds>0</scanIntervalSeconds>
+<!--                    <scanIntervalSeconds>5</scanIntervalSeconds>-->
+                    <reload>manual</reload>
                 </configuration>
             </plugin>
-
-
         </plugins>
     </build>
+
 
     <profiles>
         <profile>

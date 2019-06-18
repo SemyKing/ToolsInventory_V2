@@ -22,6 +22,7 @@
 /* Content */
 .navi-drawer__content {
   background-color: var(--lumo-base-color);
+
   box-shadow: var(--lumo-box-shadow-m);
   box-sizing: border-box;
   display: flex;
@@ -59,14 +60,14 @@
 .navi-drawer[rail]:not([open]) .navi-drawer__content {
   left: 0;
   overflow: hidden;
-  position: absolute;
+  /*position: absolute;*/
   top: 0;
   transition: width var(--transition-duration-s);
   width: var(--navi-drawer-rail-width);
 }
 
 .navi-drawer[rail]:not([open]):hover .navi-drawer__content {
-  width: var(--navi-drawer-width);
+  /*width: var(--navi-drawer-width);*/
 }
 
 /* Push the content in rail mode. */
@@ -106,18 +107,18 @@
 }
 
 @media (min-width: 1024px) {
-  .navi-drawer[rail]:not([open]):not(:hover) .navi-item__link iron-icon,
-  .navi-drawer[rail]:not([open]):not(:hover) .account-switcher__avatar {
-    margin-left: auto;
-    margin-right: auto;
-  }
+    .navi-drawer[rail]:not([open]) .navi-item__link iron-icon,
+    .navi-drawer[rail]:not([open]) .account-switcher__avatar {
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-  .navi-drawer[rail]:not([open]):not(:hover) .navi-item__link label,
-  .navi-drawer[rail]:not([open]):not(:hover) .navi-item vaadin-button,
-  .navi-drawer[rail]:not([open]):not(:hover) .navi-item[level],
-  .navi-drawer[rail]:not([open]):not(:hover) .navi-drawer__footer span,
-  .navi-drawer[rail]:not([open]):not(:hover) .account-switcher__title,
-  .navi-drawer[rail]:not([open]):not(:hover) .account-switcher__email {
-    display: none;
-  }
+    .navi-drawer[rail]:not([open]) .navi-item__link label,
+    .navi-drawer[rail]:not([open]) .navi-item vaadin-button,
+    .navi-drawer[rail]:not([open]) .navi-item[level],
+    .navi-drawer[rail]:not([open]) .navi-drawer__footer span,
+    .navi-drawer[rail]:not([open]) .account-switcher__title,
+    .navi-drawer[rail]:not([open]) .account-switcher__email {
+        display: none;
+    }
 }

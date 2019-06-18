@@ -16,11 +16,12 @@
 }
 
 .view-frame__content {
-  flex: 1;
-  overflow-x: hidden;
-  overflow-y: auto;
-  position: relative;
-  -webkit-overflow-scrolling: touch;
+    background-color: var(--lumo-tint-10pct);
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
 }
 
 .view-frame__footer {

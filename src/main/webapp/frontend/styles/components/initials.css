@@ -1,4 +1,7 @@
-.initials {
-  border-radius: 100%;
-  font-weight: 600;
+.initials{
+    background-color: var(--lumo-shade-30pct);
+    color: var(--lumo-body-text-color);
+    border-radius: 100%;
+    font-weight: 600;
 }
+

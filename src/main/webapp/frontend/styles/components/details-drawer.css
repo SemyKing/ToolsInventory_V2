@@ -18,9 +18,9 @@
 }
 
 .details-drawer__content {
-  flex: 1;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
+    flex: 1;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .details-drawer__footer {

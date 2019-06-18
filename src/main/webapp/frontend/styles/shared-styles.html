@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="components/app-bar.css">
 <link rel="stylesheet" href="components/brand-expression.css">
 <link rel="import"     href="components/charts.html">
+<link rel="import"     href="components/context-menu.html">
 <link rel="stylesheet" href="components/details-drawer.css">
 <link rel="import"     href="components/floating-action-button.html">
 <link rel="stylesheet" href="components/initials.css">
@@ -27,6 +28,7 @@
 
 <link rel="stylesheet" href="misc/box-shadow-borders.css">
 
+<link rel="stylesheet" href="views/login.css">
 <link rel="stylesheet" href="views/dashboard.css">
 <link rel="stylesheet" href="views/admin.css">
 <link rel="stylesheet" href="views/grid-view.css">
@@ -34,13 +36,14 @@
 <link rel="stylesheet" href="views/view-frame.css">
 
 <custom-style>
-  <style include="lumo-badge">
+	<style include="lumo-badge">
+
     :root {
       --app-bar-height-desktop: var(--lumo-size-xl);
       --app-bar-height-mobile: var(--lumo-size-l);
 
       --navi-drawer-rail-width: calc(var(--lumo-size-m) * 1.75);
-      --navi-drawer-width: calc(var(--lumo-size-m) * 7);
+      --navi-drawer-width: calc(var(--lumo-size-m) * 6);
       --navi-item-indentation: calc(var(--lumo-icon-size-s) + var(--lumo-space-l));
 
       --details-drawer-width: calc(var(--lumo-size-m) * 11);
@@ -101,5 +104,125 @@
     .app-footer-outer {
       z-index: 3;
     }
+
+	vaadin-notification-card {
+		min-width: 100vw;
+		margin: 0px;
+		margin-bottom: 2px;
+	}
+
+	flow-component-renderer {
+		min-width: 100%;
+		display: flex;
+	}
+
+	flow-component-renderer > div {
+		min-width: 100%;
+	}
+
+
+	.notification-text-container {
+		flex-grow: 1;
+        text-align: center;
+        color: var(--lumo-header-text-color);
+        font-weight: bold;
+	}
+
+	.notification-button {
+		color: var(--lumo-error-contrast-color);
+		margin-top: 0px;
+		margin-bottom: 0px;
+	}
+
+
+
+	@media (max-width: 1024px) {
+		.custom-dialog {
+			width: 50vw  !important;
+		}
+	}
+
+	@media(max-width: 719px) {
+		.custom-dialog {
+			width: 95vw !important;
+		}
+	}
+
+	.custom-dialog {
+		display: flex;
+		flex-direction: column;
+
+		height: 100%;
+		max-height: 100%;
+		max-width: 100%;
+		width: 40vw;
+
+
+		overflow: hidden;
+		z-index: 0;
+	}
+
+	.custom-dialog__header {
+		display: flex;
+    	flex-direction: column;
+  		flex-shrink: 0;
+
+		padding-top: var(--lumo-space-l);
+		padding-left: var(--lumo-space-m);
+  		padding-right: var(--lumo-space-m);
+  		padding-bottom: 5px;
+    	box-shadow: inset 0 -1px var(--lumo-contrast-20pct);
+	}
+
+	.custom-dialog__content {
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+
+		padding-left: var(--lumo-space-m);
+		padding-right: var(--lumo-space-m);
+		padding-bottom: var(--lumo-space-m);
+    	-webkit-overflow-scrolling: touch;
+	}
+
+	.custom-dialog__footer {
+		display: flex;
+		flex-shrink: 0;
+
+		justify-content: space-between;
+		background-color: var(--lumo-contrast-5pct);
+		padding-left: 10px;
+		padding-right: 10px;
+	}
+
+
   </style>
 </custom-style>
+
+<dom-module id="notification-theme" theme-for="vaadin-notification-card">
+	<template>
+		<style>
+			[part="overlay"] {
+				min-width: 100vw;
+			}
+			[part="content"] {
+				padding: 0px;
+			}
+    	</style>
+	</template>
+</dom-module>
+
+<dom-module id="my-vaadin-dialog-theme" theme-for="vaadin-dialog-overlay">
+	<template>
+		<style>
+			[part="content"] {
+				padding: 0px;
+				display: flex;
+			}
+			[part="overlay"] {
+				display: flex;
+				overflow: hidden;
+			}
+		</style>
+	</template>
+</dom-module>

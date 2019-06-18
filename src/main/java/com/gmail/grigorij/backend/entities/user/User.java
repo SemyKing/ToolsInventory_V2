@@ -1,8 +1,9 @@
 package com.gmail.grigorij.backend.entities.user;
 
 
-import javax.persistence.*;
+import com.vaadin.flow.theme.lumo.Lumo;
 
+import javax.persistence.*;
 
 @Entity
 @Table(name = "users")
@@ -12,7 +13,9 @@ import javax.persistence.*;
 		@NamedQuery(name="User.findUserInDatabaseByUsername",
 				query="SELECT user FROM User user WHERE user.username = :username ORDER BY user.username ASC"),
 		@NamedQuery(name="User.listAllUsers",
-				query="SELECT user FROM User user ORDER BY user.username ASC")
+				query="SELECT user FROM User user ORDER BY user.username ASC"),
+		@NamedQuery(name="User.listUsersByCompanyId",
+				query="SELECT user FROM User user WHERE user.company_id = :companyId")
 })
 public class User extends Person {
 
@@ -22,19 +25,20 @@ public class User extends Person {
 	@Column(name = "password")
 	private String password;
 
+	@Column(name = "theme_variant")
+	private String themeVariant;
+
 	@Column(name = "company_id")
-	private int company_id;
+	private long company_id;
 
 	@Column(name = "access_group")
 	private int access_group;
 
-	public User() {}
-
-
-	public User(String username, String password) {
-		this.username = username;
-		this.password = password;
+	public User() {
+		//Default theme for new users
+		this.themeVariant = Lumo.LIGHT;
 	}
+
 
 	public String getUsername() {
 		return username;
@@ -50,10 +54,10 @@ public class User extends Person {
 		this.password = password;
 	}
 
-	public int getCompany_id() {
+	public long getCompany_id() {
 		return company_id;
 	}
-	public void setCompany_id(int company_id) {
+	public void setCompany_id(long company_id) {
 		this.company_id = company_id;
 	}
 
@@ -62,5 +66,29 @@ public class User extends Person {
 	}
 	public void setAccess_group(int access_group) {
 		this.access_group = access_group;
+	}
+
+	public String getThemeVariant() {
+		return themeVariant;
+	}
+	public void setThemeVariant(String themeVariant) {
+		this.themeVariant = themeVariant;
+	}
+
+
+	public static User getEmptyUser() {
+		User user = new User();
+		user.setUsername("");
+		user.setPassword("");
+		user.setCompany_id(-1);
+		user.setDeleted(false);
+		user.setFirstName("");
+		user.setLastName("");
+		user.setEmail("");
+
+		user.setThemeVariant(Lumo.LIGHT);
+		user.setAddress(Address.getEmptyAddress());
+
+		return user;
 	}
 }

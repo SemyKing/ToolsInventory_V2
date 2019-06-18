@@ -1,15 +1,16 @@
-package com.gmail.grigorij.backend.database.Facades;
+package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.company.Company;
+import com.gmail.grigorij.ui.utils.UIUtils;
 
 import javax.persistence.NoResultException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CompanyFacade {
 
 	private static CompanyFacade mInstance;
-	private CompanyFacade() {}
 	public static CompanyFacade getInstance() {
 		if (mInstance == null) {
 			mInstance = new CompanyFacade();
@@ -17,11 +18,35 @@ public class CompanyFacade {
 		return mInstance;
 	}
 
+	private CompanyFacade() {
+	}
 
-	public Company findCompanyInDatabaseById(long id) {
+	private List<Company> companiesList = new ArrayList<>();
+
+	private void populateCompaniesList() {
+		if (companiesList.size() <= 0) {
+			try {
+				companiesList = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.getAllCompanies", Company.class)
+						.getResultList();
+			} catch (NoResultException nre) {
+				nre.printStackTrace();
+			}
+		}
+	}
+
+
+	public Company findCompanyById(long id) {
+		populateCompaniesList();
+
+		for (Company company : companiesList) {
+			if (company.getId() == id) {
+				return company;
+			}
+		}
+
 		Company company;
 		try {
-			company = (Company) DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.findCompanyInDatabaseById")
+			company = (Company) DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.findCompanyById")
 					.setParameter("company_id", id)
 					.getSingleResult();
 		} catch (NoResultException nre) {
@@ -30,15 +55,111 @@ public class CompanyFacade {
 		return company;
 	}
 
-	public List<Company> listAllCompanies() {
-		List<Company> companies;
-		try {
-			companies = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.listAllCompanies", Company.class)
-					.getResultList();
-		} catch (NoResultException nre) {
-			companies = null;
-		}
-		return companies;
+
+	public List<Company> getAllCompanies() {
+		populateCompaniesList();
+		return new ArrayList<>(companiesList);
 	}
 
+
+	public boolean insert(Company company) {
+		System.out.println();
+		System.out.println("CompanyFacade -> insert");
+
+		if (company == null)
+			return false;
+
+		try {
+			DatabaseManager.getInstance().insert(company);
+			companiesList.add(company);
+		} catch (Exception e) {
+			UIUtils.showNotification("Company INSERT fail", UIUtils.NotificationType.ERROR);
+			e.printStackTrace();
+			return false;
+		}
+
+		UIUtils.showNotification("Company INSERT successful", UIUtils.NotificationType.SUCCESS);
+		return true;
+	}
+
+
+	public boolean update(Company company) {
+		System.out.println();
+		System.out.println("CompanyFacade -> update");
+
+		if (company == null)
+			return false;
+
+		Company companyInDatabase = null;
+		int companyIndex = -1;
+
+		if (company.getId() != null) {
+//			companyInDatabase = DatabaseManager.getInstance().find(Company.class, company.getId());
+
+			for (int i = 0; i < companiesList.size(); i++) {
+				if (companiesList.get(i).getId().equals(company.getId())) {
+					companyInDatabase = companiesList.get(i);
+					companyIndex = i;
+					break;
+				}
+			}
+		}
+
+		System.out.println("companyInDatabase: " + companyInDatabase);
+
+		try {
+			if (companyInDatabase == null) {
+				return insert(company);
+			} else {
+				DatabaseManager.getInstance().update(company);
+				companiesList.set(companyIndex, company);
+			}
+		} catch (Exception e) {
+			UIUtils.showNotification("Company UPDATE fail", UIUtils.NotificationType.ERROR);
+			e.printStackTrace();
+			return false;
+		}
+
+		UIUtils.showNotification("Company UPDATE successful", UIUtils.NotificationType.SUCCESS);
+		return true;
+	}
+
+	public boolean remove(Company company) {
+		System.out.println();
+		System.out.println("CompanyFacade -> remove");
+
+		if (company == null)
+			return false;
+
+		int companyIndex = -1;
+		Company companyInDatabase = null;
+
+		for (int i = 0; i < companiesList.size(); i++) {
+			if (companiesList.get(i).getId().equals(company.getId())) {
+				companyInDatabase = companiesList.get(i);
+				companyIndex = i;
+				break;
+			}
+		}
+
+//		Company companyInDatabase = DatabaseManager.getInstance().find(Company.class, company.getId());
+		System.out.println("companyInDatabase: " + companyInDatabase);
+
+		try {
+			if (companyInDatabase != null) {
+				DatabaseManager.getInstance().remove(company);
+				companiesList.remove(companyIndex);
+			} else {
+				System.out.println("Company not found: " + company);
+				return false;
+			}
+		} catch (Exception e) {
+			UIUtils.showNotification("Company REMOVE fail", UIUtils.NotificationType.ERROR);
+			e.printStackTrace();
+			return false;
+		}
+
+		UIUtils.showNotification("Company REMOVE successful", UIUtils.NotificationType.SUCCESS);
+		return true;
+	}
 }

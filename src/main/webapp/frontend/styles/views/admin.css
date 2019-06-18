@@ -1,51 +1,80 @@
 /* Admin */
 
-@media (min-width: 1000px) {
+/*Content*/
+.admin-content-view {
+    height: 100%;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+@media (max-width: 600px) {
     .admin-personnel__search {
-        width: 400px;
-        max-width: 400px;
+        width: 200px;
     }
 
     .admin-companies__search {
-        width: 400px;
-        max-width: 400px;
+        width: 200px;
+    }
+
+    .admin-personnel__buttons vaadin-button span {
+        display: none !important;
+    }
+
+    .admin-companies__buttons vaadin-button span {
+        display: none !important;
     }
 }
 
 
 /* Personnel */
+.admin-personnel {
+    display: flex;
+    flex-direction: column;
+}
+
 .admin-personnel__header {
-    padding: 0px;
+    margin-top: 10px;
+    justify-content: space-between;
+}
+
+.admin-personnel__buttons vaadin-button {
+    min-width: fit-content;
+    margin-left: 5px;
+    align-self: flex-end;
+}
+
+.admin-personnel__buttons vaadin-button span {
+    display: initial;
 }
 
 .admin-personnel__search {
-    max-width: 200px;
+    width: 500px;
 }
 
-.admin-personnel__empty-space {
-    width: 100%;
-}
-
-.admin-personnel__new-user-button {
-    min-width: fit-content;
-    align-self: flex-end;
-}
 
 
 /* Companies */
+.admin-companies {
+    display: flex;
+    flex-direction: column;
+}
+
 .admin-companies__header {
-    padding: 0px;
+    margin-top: 10px;
+    justify-content: space-between;
 }
 
 .admin-companies__search {
-    max-width: 200px;
+    width: 500px;
 }
 
-.admin-companies__empty-space {
-    width: 100%;
-}
-
-.admin-companies__new-company-button {
+.admin-companies__buttons vaadin-button {
     min-width: fit-content;
+    margin-left: 2px;
+    margin-right: 2px;
     align-self: flex-end;
+}
+
+.admin-companies__buttons vaadin-button span {
+    display: initial;
 }

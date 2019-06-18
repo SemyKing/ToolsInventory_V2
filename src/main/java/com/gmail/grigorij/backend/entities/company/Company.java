@@ -1,19 +1,17 @@
 package com.gmail.grigorij.backend.entities.company;
 
-import com.gmail.grigorij.backend.entities.Address;
-import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.entities.user.Address;
 import com.gmail.grigorij.backend.entities.user.Person;
 
 import javax.persistence.*;
-import java.io.Serializable;
 
 
 @Entity
 @Table(name = "companies")
 @NamedQueries({
-		@NamedQuery(name="Company.findCompanyInDatabaseById",
+		@NamedQuery(name="Company.findCompanyById",
 				query="SELECT company FROM Company company WHERE company.id = :company_id"),
-		@NamedQuery(name="Company.listAllCompanies",
+		@NamedQuery(name="Company.getAllCompanies",
 				query="SELECT company FROM Company company ORDER BY company.companyName ASC")
 })
 public class Company extends Person {
@@ -21,7 +19,6 @@ public class Company extends Person {
 	@Column(name = "name")
 	private String companyName;
 
-	//Y-Tunnus
 	@Column(name = "vat")
 	private String companyVAT;
 
@@ -38,5 +35,19 @@ public class Company extends Person {
 	}
 	public void setCompanyVAT(String companyVAT) {
 		this.companyVAT = companyVAT;
+	}
+
+	public static Company getEmptyCompany() {
+		Company company = new Company();
+		company.setCompanyName("");
+		company.setCompanyVAT("");
+		company.setDeleted(false);
+		company.setFirstName("");
+		company.setLastName("");
+		company.setEmail("");
+
+		company.setAddress(Address.getEmptyAddress());
+
+		return company;
 	}
 }

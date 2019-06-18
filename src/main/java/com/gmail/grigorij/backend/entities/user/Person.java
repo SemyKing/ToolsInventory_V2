@@ -1,6 +1,5 @@
 package com.gmail.grigorij.backend.entities.user;
 
-import com.gmail.grigorij.backend.entities.Address;
 import com.gmail.grigorij.backend.entities.EntityPojo;
 
 import javax.persistence.Embedded;
@@ -57,7 +56,14 @@ public class Person extends EntityPojo {
 
 
 	public String getInitials() {
-		String initials = getFirstName().substring(0, 1) + getLastName().substring(0, 1);
+		String initials = "";
+		if (getFirstName().length() >= 1) {
+			initials += getFirstName().substring(0, 1);
+		}
+
+		if (getLastName().length() >= 1) {
+			initials += getLastName().substring(0, 1);
+		}
 		return initials;
 	}
 }

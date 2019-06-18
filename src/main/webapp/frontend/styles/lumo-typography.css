@@ -114,6 +114,10 @@
   font-weight: 500;
 }
 
+.font-weight-bold {
+  font-weight: bold;
+}
+
 /* Font families */
 .monospace {
   font-family: 'SF Mono', 'Roboto Mono', 'Source Code Pro', monospace;

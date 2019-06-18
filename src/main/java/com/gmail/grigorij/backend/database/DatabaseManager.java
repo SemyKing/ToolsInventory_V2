@@ -22,7 +22,6 @@ public class DatabaseManager {
 		return mInstance;
 	}
 
-
 	public EntityManager createEntityManager() {
 		EntityManagerFactory emf = ApplicationServletContextListener.getEntityManagerFactory();
 		return emf.createEntityManager();
@@ -31,7 +30,8 @@ public class DatabaseManager {
 
 	public <T extends EntityPojo> T insert(T pojo) {
 //		logger.debug( "Inserting new pojo:" + pojo.getClass().getName());
-		System.out.println("Inserting new pojo: " + pojo.getClass().getName());
+		System.out.println();
+		System.out.println("Inserting new pojo: " + pojo.getClass().getSimpleName());
 
 		EntityManager em = createEntityManager();
 		try {
@@ -49,7 +49,8 @@ public class DatabaseManager {
 
 
 	public <T> T update(T pojo) {
-		System.out.println("Updating pojo: " + pojo.getClass().getName());
+		System.out.println();
+		System.out.println("Updating pojo: " + pojo.getClass().getSimpleName());
 
 		EntityManager em = createEntityManager();
 		try {
@@ -69,6 +70,7 @@ public class DatabaseManager {
 
 
 	public void remove(EntityPojo pojo) {
+		System.out.println();
 		System.out.println("deleting pojo: " + pojo);
 		if (pojo == null || pojo.getId() <= 0 ) {
 			return;
@@ -89,7 +91,8 @@ public class DatabaseManager {
 
 
 	public <T> T find(Class<T> c, Object obj) {
-		System.out.println("looking for pojo: " + c.getName() + ", obj: " + obj);
+		System.out.println();
+		System.out.println("looking for pojo: " + c.getSimpleName() + ", obj_id: " + obj);
 
 		EntityManager em = createEntityManager();
 		try {

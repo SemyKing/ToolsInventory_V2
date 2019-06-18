@@ -13,22 +13,29 @@ public class EntityPojo {
 	@Column(name = "deleted", nullable = false)
 	private boolean deleted = false;
 
+	@Column(name = "additional_info")
+	private String additionalInfo;
+
 	public EntityPojo() {}
 
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-
 	public void setId( long id ) {
 		this.id = id;
 	}
 
-
 	public boolean isDeleted() {
 		return deleted;
 	}
-
 	public void setDeleted( boolean deleted ) {
 		this.deleted = deleted;
+	}
+
+	public String getAdditionalInfo() {
+		return additionalInfo;
+	}
+	public void setAdditionalInfo(String additionalInfo) {
+		this.additionalInfo = additionalInfo;
 	}
 }

@@ -24,16 +24,16 @@ public class ApplicationServletContextListener implements ServletContextListener
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		System.out.println("----------------------------THE SERVER IS STARTED----------------------------");
+		System.out.println("THE SERVER IS STARTED");
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		System.out.println("----------------------------THE SERVER IS ENDED----------------------------");
-		System.out.println("-------------------------------CLOSE DATABASE------------------------------");
+		System.out.println("THE SERVER IS STOPPED");
 		if ( entityManagerFactory != null && entityManagerFactory.isOpen()) {
 			entityManagerFactory.close();
 			entityManagerFactory = null;
 		}
+		System.out.println("DATABASE IS CLOSED");
 	}
 }
