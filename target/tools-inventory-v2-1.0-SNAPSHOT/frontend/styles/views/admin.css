@@ -1,0 +1,80 @@
+/* Admin */
+
+/*Content*/
+.admin-content-view {
+    height: 100%;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+@media (max-width: 600px) {
+    .admin-personnel__search {
+        width: 200px;
+    }
+
+    .admin-companies__search {
+        width: 200px;
+    }
+
+    .admin-personnel__buttons vaadin-button span {
+        display: none !important;
+    }
+
+    .admin-companies__buttons vaadin-button span {
+        display: none !important;
+    }
+}
+
+
+/* Personnel */
+.admin-personnel {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-personnel__header {
+    margin-top: 10px;
+    justify-content: space-between;
+}
+
+.admin-personnel__buttons vaadin-button {
+    min-width: fit-content;
+    margin-left: 5px;
+    align-self: flex-end;
+}
+
+.admin-personnel__buttons vaadin-button span {
+    display: initial;
+}
+
+.admin-personnel__search {
+    width: 500px;
+}
+
+
+
+/* Companies */
+.admin-companies {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-companies__header {
+    margin-top: 10px;
+    justify-content: space-between;
+}
+
+.admin-companies__search {
+    width: 500px;
+}
+
+.admin-companies__buttons vaadin-button {
+    min-width: fit-content;
+    margin-left: 2px;
+    margin-right: 2px;
+    align-self: flex-end;
+}
+
+.admin-companies__buttons vaadin-button span {
+    display: initial;
+}

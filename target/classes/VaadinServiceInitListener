@@ -1,0 +1,5 @@
+//filename
+com.vaadin.flow.server.VaadinServiceInitListener
+
+//Class name
+com.gmail.grigorij.ApplicationServiceInitListener
