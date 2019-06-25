@@ -3,7 +3,7 @@ package com.gmail.grigorij.ui.views.navigation.admin;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.access.Status;
+import com.gmail.grigorij.backend.access.EntityStatus;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.ListItem;
@@ -12,11 +12,10 @@ import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.forms.CompanyForm;
+import com.gmail.grigorij.ui.utils.forms.AdminCompanyForm;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
@@ -37,7 +36,7 @@ class AdminCompanies extends Div {
 	final static String TAB_NAME = "Companies";
 
 	private AdminMain adminMain;
-	private CompanyForm companyForm = new CompanyForm();
+	private AdminCompanyForm companyForm = new AdminCompanyForm();
 
 	private Grid<Company> grid;
 	private ListDataProvider<Company>  dataProvider;
@@ -55,7 +54,6 @@ class AdminCompanies extends Div {
 		createGrid();
 		createDetailsDrawer();
 	}
-
 
 	private void createHeader() {
 		FlexLayout header = new FlexLayout();
@@ -91,7 +89,6 @@ class AdminCompanies extends Div {
 
 		add(header);
 	}
-
 
 	private void createGrid() {
 		grid = new Grid<>();
@@ -150,6 +147,7 @@ class AdminCompanies extends Div {
 		adminMain.setDetailsDrawer(detailsDrawer);
 	}
 
+
 	private boolean previousStatus;
 
 	private void showDetails(Company company) {
@@ -173,14 +171,18 @@ class AdminCompanies extends Div {
 				if (companyForm.isNewCompany()) {
 					dataProvider.getItems().add(editedCompany);
 					dataProvider.refreshAll();
+					UIUtils.showNotification("Company created successfully", UIUtils.NotificationType.SUCCESS);
 				} else {
 					if ((!previousStatus && editedCompany.isDeleted()) || (previousStatus && !editedCompany.isDeleted())) {
 						confirmAllEmployeesInCompanyStatusChange(editedCompany);
 					}
 					dataProvider.refreshItem(grid.asSingleSelect().getValue());
+					UIUtils.showNotification("Company updated successfully", UIUtils.NotificationType.SUCCESS);
 				}
 
 				grid.select(editedCompany);
+			} else {
+				UIUtils.showNotification("Company create/edit failed", UIUtils.NotificationType.ERROR);
 			}
 		}
 	}
@@ -191,7 +193,7 @@ class AdminCompanies extends Div {
 	private void confirmAllEmployeesInCompanyStatusChange(Company company) {
 		String status = "";
 
-		for (Status s : EnumSet.allOf(Status.class)) {
+		for (EntityStatus s : EnumSet.allOf(EntityStatus.class)) {
 			if (s.getBooleanValue() == !previousStatus) {
 				status = s.getStringValue();
 			}
@@ -209,11 +211,19 @@ class AdminCompanies extends Div {
 
 			List<User> employeesInSelectedCompany = UserFacade.getInstance().listUsersByCompanyId(company.getId());
 
+			boolean operationsSuccessful = true;
+
 			for (User user : employeesInSelectedCompany) {
 				user.setDeleted(!previousStatus);
-				UserFacade.getInstance().update(user);
+				if (!UserFacade.getInstance().update(user)) {
+					UIUtils.showNotification("User status change failed for: " + user.getUsername(), UIUtils.NotificationType.ERROR);
+					operationsSuccessful = false;
+				}
 			}
 			dialog.close();
+			if (operationsSuccessful) {
+				UIUtils.showNotification("Users status change successful", UIUtils.NotificationType.SUCCESS);
+			}
 		});
 		dialog.open();
 	}
@@ -260,6 +270,9 @@ class AdminCompanies extends Div {
 						dataProvider.getItems().remove(selectedCompany);
 						dataProvider.refreshAll();
 						detailsDrawer.hide();
+						UIUtils.showNotification("Company deleted successfully", UIUtils.NotificationType.SUCCESS);
+					} else {
+						UIUtils.showNotification("Company delete failed", UIUtils.NotificationType.ERROR);
 					}
 					dialog.close();
 				});
@@ -271,15 +284,9 @@ class AdminCompanies extends Div {
 
 	private void exportCompanies() {
 		System.out.println("Export companies...");
-
-
 	}
-
 
 	private void importCompanies() {
 		System.out.println("Import companies...");
-
-
 	}
 }
-

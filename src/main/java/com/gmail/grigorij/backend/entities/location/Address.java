@@ -1,9 +1,9 @@
-package com.gmail.grigorij.backend.entities.user;
+package com.gmail.grigorij.backend.entities.location;
 
 import javax.persistence.*;
 
 
-@Embeddable
+@MappedSuperclass
 public class Address {
 
 	private String addressLine1;
@@ -47,16 +47,5 @@ public class Address {
 	}
 	public void setCountry(String country) {
 		this.country = country;
-	}
-
-	public static Address getEmptyAddress() {
-		Address address = new Address();
-		address.setAddressLine1("");
-		address.setAddressLine2("");
-		address.setPostcode("");
-		address.setCity("");
-		address.setCountry("");
-
-		return address;
 	}
 }

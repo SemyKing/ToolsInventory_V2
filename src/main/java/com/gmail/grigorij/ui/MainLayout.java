@@ -1,6 +1,7 @@
-package com.gmail.grigorij;
+package com.gmail.grigorij.ui;
 
-import com.gmail.grigorij.ui.MenuLayout;
+import com.gmail.grigorij.backend.DatabaseDummyInsert;
+import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.ui.views.authentication.LoginView;
@@ -10,7 +11,6 @@ import com.gmail.grigorij.utils.OperationStatus;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ErrorHandler;
@@ -43,8 +43,8 @@ public class MainLayout extends Div {
 
 		//TODO:REMOVE AT PRODUCTION
 		DatabaseDummyInsert dbDummy = new DatabaseDummyInsert();
-		dbDummy.generateUsersAndCompanies();
-		dbDummy.insertUsersAndCompanies();
+		dbDummy.generate();
+		dbDummy.insert();
 
 		if (UI.getCurrent() != null) {
 			UI.getCurrent().getElement().setAttribute(LumoStyles.THEME, Lumo.DARK);

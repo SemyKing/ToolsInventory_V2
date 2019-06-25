@@ -1,0 +1,15 @@
+/* Inventory */
+
+/*Content*/
+.inventory__content {
+    height: 100%;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+
+
+
+@media (max-width: 600px) {
+
+}

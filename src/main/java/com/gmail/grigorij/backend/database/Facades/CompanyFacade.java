@@ -11,6 +11,7 @@ import java.util.List;
 public class CompanyFacade {
 
 	private static CompanyFacade mInstance;
+	private CompanyFacade() {}
 	public static CompanyFacade getInstance() {
 		if (mInstance == null) {
 			mInstance = new CompanyFacade();
@@ -18,8 +19,7 @@ public class CompanyFacade {
 		return mInstance;
 	}
 
-	private CompanyFacade() {
-	}
+
 
 	private List<Company> companiesList = new ArrayList<>();
 
@@ -73,12 +73,12 @@ public class CompanyFacade {
 			DatabaseManager.getInstance().insert(company);
 			companiesList.add(company);
 		} catch (Exception e) {
-			UIUtils.showNotification("Company INSERT fail", UIUtils.NotificationType.ERROR);
+			System.out.println("Company INSERT fail");
 			e.printStackTrace();
 			return false;
 		}
 
-		UIUtils.showNotification("Company INSERT successful", UIUtils.NotificationType.SUCCESS);
+		System.out.println("Company INSERT successful");
 		return true;
 	}
 
@@ -115,12 +115,12 @@ public class CompanyFacade {
 				companiesList.set(companyIndex, company);
 			}
 		} catch (Exception e) {
-			UIUtils.showNotification("Company UPDATE fail", UIUtils.NotificationType.ERROR);
+			System.out.println("Company UPDATE fail");
 			e.printStackTrace();
 			return false;
 		}
 
-		UIUtils.showNotification("Company UPDATE successful", UIUtils.NotificationType.SUCCESS);
+		System.out.println("Company UPDATE successful");
 		return true;
 	}
 
@@ -154,12 +154,12 @@ public class CompanyFacade {
 				return false;
 			}
 		} catch (Exception e) {
-			UIUtils.showNotification("Company REMOVE fail", UIUtils.NotificationType.ERROR);
+			System.out.println("Company REMOVE fail");
 			e.printStackTrace();
 			return false;
 		}
 
-		UIUtils.showNotification("Company REMOVE successful", UIUtils.NotificationType.SUCCESS);
+		System.out.println("Company REMOVE successful");
 		return true;
 	}
 }

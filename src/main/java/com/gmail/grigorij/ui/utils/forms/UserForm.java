@@ -1,16 +1,14 @@
 package com.gmail.grigorij.ui.utils.forms;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.user.Address;
+import com.gmail.grigorij.backend.entities.location.Address;
+import com.gmail.grigorij.backend.entities.location.Location;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.MenuLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.button.Button;
@@ -29,25 +27,20 @@ import java.util.List;
 public class UserForm extends FormLayout {
 
 	private Binder<User> userBinder = new Binder<>(User.class);
-	private Binder<Address> addressBinder = new Binder<>(Address.class);
-
-	private boolean newUser;
+	private Binder<Location> locationBinder = new Binder<>(Location.class);
 
 	private PasswordField passwordField;
-	private Button changePasswordButton;
 
 	public UserForm() {
 		TextField username = new TextField();
 		username.setWidth("100%");
-//		username.setEnabled(false);
 		username.setReadOnly(true);
 
 		passwordField = new PasswordField();
 		passwordField.setWidth("100%");
-//		passwordField.setEnabled(false);
 		passwordField.setReadOnly(true);
 
-		changePasswordButton = UIUtils.createButton("Change");
+		Button changePasswordButton = UIUtils.createButton("Change");
 		changePasswordButton.addClickListener(e -> openPasswordChangeDialog());
 		changePasswordButton.getStyle().set("display", "table");
 		changePasswordButton.getStyle().set("margin-left", "10px");
@@ -63,7 +56,6 @@ public class UserForm extends FormLayout {
 		companyComboBox.setItems(companies);
 		companyComboBox.setItemLabelGenerator(Company::getCompanyName);
 		companyComboBox.setWidth("100%");
-//		companyComboBox.setEnabled(false);
 		companyComboBox.setReadOnly(true);
 
 
@@ -129,7 +121,7 @@ public class UserForm extends FormLayout {
 		userBinder.forField(companyComboBox)
 				.asRequired("Company is required")
 				.withConverter(new CustomConverter.CompanyConverter())
-				.bind(User::getCompany_id, User::setCompany_id);
+				.bind(User::getCompanyId, User::setCompanyId);
 		userBinder.forField(firstName)
 				.bind(User::getFirstName, User::setFirstName);
 		userBinder.forField(lastName)
@@ -142,15 +134,15 @@ public class UserForm extends FormLayout {
 				.bind(User::getAdditionalInfo, User::setAdditionalInfo);
 
 
-		addressBinder.forField(addressLine1)
+		locationBinder.forField(addressLine1)
 				.bind(Address::getAddressLine1, Address::setAddressLine1);
-		addressBinder.forField(addressLine2)
+		locationBinder.forField(addressLine2)
 				.bind(Address::getAddressLine2, Address::setAddressLine2);
-		addressBinder.forField(postcode)
+		locationBinder.forField(postcode)
 				.bind(Address::getPostcode, Address::setPostcode);
-		addressBinder.forField(city)
+		locationBinder.forField(city)
 				.bind(Address::getCity, Address::setCity);
-		addressBinder.forField(country)
+		locationBinder.forField(country)
 				.bind(Address::getCountry, Address::setCountry);
 	}
 
@@ -163,12 +155,12 @@ public class UserForm extends FormLayout {
 		}
 
 		userBinder.removeBean();
-		addressBinder.removeBean();
+		locationBinder.removeBean();
 
 		user = u;
 
 		userBinder.readBean(user);
-		addressBinder.readBean(user.getAddress());
+		locationBinder.readBean(user.getPersonLocation());
 
 		return true;
 	}
@@ -181,10 +173,10 @@ public class UserForm extends FormLayout {
 			if (userBinder.isValid()) {
 				userBinder.writeBean(user);
 
-				Address address = new Address();
-				addressBinder.writeBean(address);
+				Location location = new Location();
+				locationBinder.writeBean(location);
 
-				user.setAddress(address);
+				user.setPersonLocation(location);
 
 				return user;
 			}

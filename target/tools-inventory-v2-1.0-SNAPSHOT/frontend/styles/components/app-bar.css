@@ -12,8 +12,7 @@
 }
 
 /* Navi icon */
-.app-bar__navi-icon,
-.app-bar__context-icon {
+.app-bar__navi-icon, .app-bar__context-icon {
   margin-right: var(--lumo-space-l);
 }
 
@@ -39,28 +38,20 @@
 
 /* User info */
 .app-bar__user_info {
-  border-radius: 100%;
-  flex-shrink: 0;
-  height: var(--lumo-size-s);
-  margin-left: var(--lumo-space-m);
-  cursor: pointer;
+    border-radius: 5px;
+    flex-shrink: 0;
+    height: var(--lumo-size-s);
+    padding: 5px;
+    cursor: pointer;
+    align-items: center;
+}
+
+.app-bar__user_info:hover {
+    background-color: var(--lumo-contrast-20pct);
 }
 
 .app-bar__user_info iron-icon {
   margin-left: 10px;
-}
-
-
-.vaadin-menu-item:before {
-    content: none;
-}
-
-.vaadin-menu-list-box {
-    padding: 5px;
-}
-
-.vaadin-menu-list-box .vaadin-menu-item {
-    padding: 5px;
 }
 
 

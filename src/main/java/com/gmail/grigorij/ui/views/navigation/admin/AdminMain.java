@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.views.navigation.admin;
 
-import com.gmail.grigorij.ui.MenuLayout;
+import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
 import com.gmail.grigorij.ui.utils.frames.SplitViewFrame;

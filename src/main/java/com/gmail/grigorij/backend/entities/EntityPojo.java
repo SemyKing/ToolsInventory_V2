@@ -7,10 +7,10 @@ public class EntityPojo {
 
 	@Id
 	@GeneratedValue( strategy= GenerationType.AUTO )
-	@Column(name = "id", nullable = false)
+	@Column(name = "id", nullable = false, updatable = false)
 	protected long id;
 
-	@Column(name = "deleted", nullable = false)
+	@Column(name = "deleted", nullable = false, updatable = true)
 	private boolean deleted = false;
 
 	@Column(name = "additional_info")

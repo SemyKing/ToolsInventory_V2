@@ -1,7 +1,7 @@
 package com.gmail.grigorij.ui.utils.components.navigation.bar;
 
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.MenuLayout;
+import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;

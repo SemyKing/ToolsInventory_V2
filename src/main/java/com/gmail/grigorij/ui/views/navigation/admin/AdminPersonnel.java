@@ -14,7 +14,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
@@ -213,12 +212,16 @@ class AdminPersonnel extends Div {
 			if (UserFacade.getInstance().update(editedUser)) {
 				if (userForm.isNewUser()) {
 					dataProvider.getItems().add(editedUser);
+					UIUtils.showNotification("User created successfully", UIUtils.NotificationType.SUCCESS);
 				} else {
+					UIUtils.showNotification("User updated successfully", UIUtils.NotificationType.SUCCESS);
 					dataProvider.refreshItem(grid.asSingleSelect().getValue());
 				}
 
 				dataProvider.refreshAll();
 				grid.select(editedUser);
+			} else {
+				UIUtils.showNotification("User create/edit failed", UIUtils.NotificationType.ERROR);
 			}
 		}
 	}
@@ -265,6 +268,9 @@ class AdminPersonnel extends Div {
 						dataProvider.getItems().remove(selectedUser);
 						dataProvider.refreshAll();
 						detailsDrawer.hide();
+						UIUtils.showNotification("User deleted successfully", UIUtils.NotificationType.SUCCESS);
+					} else {
+						UIUtils.showNotification("User delete failed", UIUtils.NotificationType.ERROR);
 					}
 					dialog.close();
 				});
@@ -286,9 +292,6 @@ class AdminPersonnel extends Div {
 		importDialog.open();
 
 		upload.addSucceededListener(event -> {
-//			Component component = createComponent(event.getMIMEType(), event.getFileName(), buffer.getInputStream());
-//			showOutput(event.getFileName(), component, output);
-			System.out.println("SUCCESS");
 			importUsers(buffer);
 			importDialog.close();
 		});
@@ -322,8 +325,8 @@ class AdminPersonnel extends Div {
 				User user = new User();
 				user.setUsername(rowSplit[0]);
 				user.setPassword(rowSplit[1]);
-				user.setCompany_id(Integer.parseInt(rowSplit[2]));
-				user.setAccess_group(Integer.parseInt(rowSplit[3]));
+				user.setCompanyId(Integer.parseInt(rowSplit[2]));
+				user.setAccessGroup(Integer.parseInt(rowSplit[3]));
 				user.setDeleted(Boolean.parseBoolean(rowSplit[4]));
 				user.setFirstName(rowSplit[5]);
 				user.setLastName(rowSplit[6]);
@@ -337,9 +340,9 @@ class AdminPersonnel extends Div {
 				UserFacade.getInstance().insert(u);
 			}
 
-			UIUtils.showNotification("Users imported successfully", UIUtils.NotificationType.SUCCESS, 5000);
+			UIUtils.showNotification("Users imported successfully", UIUtils.NotificationType.SUCCESS);
 		} catch (Exception e) {
-			UIUtils.showNotification("USER IMPORT ERROR", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Users import failed", UIUtils.NotificationType.ERROR);
 			e.printStackTrace();
 		}
 	}

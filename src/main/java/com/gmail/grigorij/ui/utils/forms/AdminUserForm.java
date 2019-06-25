@@ -3,8 +3,9 @@ package com.gmail.grigorij.ui.utils.forms;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.access.AccessGroups;
-import com.gmail.grigorij.backend.access.Status;
-import com.gmail.grigorij.backend.entities.user.Address;
+import com.gmail.grigorij.backend.access.EntityStatus;
+import com.gmail.grigorij.backend.entities.location.Address;
+import com.gmail.grigorij.backend.entities.location.Location;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.ui.utils.components.Divider;
@@ -20,7 +21,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.TextRenderer;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -40,8 +41,7 @@ import java.util.List;
 public class AdminUserForm extends FormLayout {
 
 	private Binder<User> userBinder = new Binder<>(User.class);
-	private Binder<Address> addressBinder = new Binder<>(Address.class);
-//	private User user;
+	private Binder<Location> locationBinder = new Binder<>(Location.class);
 
 	private boolean newUser;
 
@@ -56,11 +56,9 @@ public class AdminUserForm extends FormLayout {
 		password.setRequired(true);
 		password.setWidth("100%");
 
-		RadioButtonGroup<Status> status = new RadioButtonGroup<>();
-		status.setItems(EnumSet.allOf(Status.class));
-		status.setRenderer(new ComponentRenderer<>(eStatus -> new Label(
-				eStatus.getStringValue()
-		)));
+		RadioButtonGroup<EntityStatus> status = new RadioButtonGroup<>();
+		status.setItems(EnumSet.allOf(EntityStatus.class));
+		status.setRenderer(new TextRenderer<>(EntityStatus::getStringValue));
 
 		Label contactLabel = UIUtils.createH5Label("Contact Person");
 
@@ -95,7 +93,7 @@ public class AdminUserForm extends FormLayout {
 		accessGroupComboBox.setRequired(true);
 
 		//Only Admin can change AccessGroup
-		if (AuthenticationService.getSessionData().getUser().getAccess_group() != AccessGroups.ADMIN.getIntValue()) {
+		if (AuthenticationService.getSessionData().getUser().getAccessGroup() != AccessGroups.ADMIN.getIntValue()) {
 			accessGroupComboBox.setEnabled(false);
 		}
 
@@ -151,11 +149,11 @@ public class AdminUserForm extends FormLayout {
 		userBinder.forField(companyComboBox)
 				.asRequired("Company is required")
 				.withConverter(new CustomConverter.CompanyConverter())
-				.bind(User::getCompany_id, User::setCompany_id);
+				.bind(User::getCompanyId, User::setCompanyId);
 		userBinder.forField(accessGroupComboBox)
 				.asRequired("Access Group is required")
 				.withConverter(new CustomConverter.AccessGroupsConverter())
-				.bind(User::getAccess_group, User::setAccess_group);
+				.bind(User::getAccessGroup, User::setAccessGroup);
 		userBinder.forField(status)
 				.asRequired("Select one")
 				.withConverter(new CustomConverter.StatusConverter())
@@ -165,25 +163,23 @@ public class AdminUserForm extends FormLayout {
 		userBinder.forField(lastName)
 				.bind(User::getLastName, User::setLastName);
 		userBinder.forField(phone)
-//				.withValidator(new CustomValidator.PhoneNumberValidator("Phone number invalid"))
 				.bind(User::getPhoneNumber, User::setPhoneNumber);
 		userBinder.forField(email)
-//				.withValidator(new EmailValidator("Email address invalid"))
 				.bind(User::getEmail, User::setEmail);
 		userBinder.forField(additionalInfo)
 				.bind(User::getAdditionalInfo, User::setAdditionalInfo);
 
 
 
-		addressBinder.forField(addressLine1)
+		locationBinder.forField(addressLine1)
 				.bind(Address::getAddressLine1, Address::setAddressLine1);
-		addressBinder.forField(addressLine2)
+		locationBinder.forField(addressLine2)
 				.bind(Address::getAddressLine2, Address::setAddressLine2);
-		addressBinder.forField(postcode)
+		locationBinder.forField(postcode)
 				.bind(Address::getPostcode, Address::setPostcode);
-		addressBinder.forField(city)
+		locationBinder.forField(city)
 				.bind(Address::getCity, Address::setCity);
-		addressBinder.forField(country)
+		locationBinder.forField(country)
 				.bind(Address::getCountry, Address::setCountry);
 	}
 
@@ -191,7 +187,7 @@ public class AdminUserForm extends FormLayout {
 
 	public void setUser(User u) {
 		userBinder.removeBean();
-		addressBinder.removeBean();
+		locationBinder.removeBean();
 		newUser = false;
 
 		user = u;
@@ -202,7 +198,7 @@ public class AdminUserForm extends FormLayout {
 		}
 
 		userBinder.readBean(user);
-		addressBinder.readBean(user.getAddress());
+		locationBinder.readBean(user.getPersonLocation());
 	}
 
 
@@ -213,10 +209,10 @@ public class AdminUserForm extends FormLayout {
 			if (userBinder.isValid()) {
 				userBinder.writeBean(user);
 
-				Address address = new Address();
-				addressBinder.writeBean(address);
+				Location location = new Location();
+				locationBinder.writeBean(location);
 
-				user.setAddress(address);
+				user.setPersonLocation(location);
 
 				return user;
 			}

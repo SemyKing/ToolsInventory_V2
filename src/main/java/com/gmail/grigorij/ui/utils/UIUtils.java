@@ -489,7 +489,7 @@ public class UIUtils {
 	/* === NOTIFICATIONS === */
 
 	public enum NotificationType {
-		INFO (      "#bbb41bf7",                    0),
+		INFO (      "#bbb41bf7",                    5000),
 		SUCCESS (   "var(--lumo-success-color)",    2000),
 		WARNING(    "#ff6700",                      5000),
 		ERROR (     "var(--lumo-error-color)",      0);
@@ -530,18 +530,14 @@ public class UIUtils {
 		layout.add(msgLabel);
 		layout.setBackgroundColor(type.getBackgroundColor());
 
+		layout.add(close);
+		close.addClickListener(ev -> notification.close());
+
 		if (duration.length > 0) {
 			notification.setDuration(duration[0]);
-		}
-
-		if (type.getDuration() <= 0) {
-			layout.add(close);
-
-			close.addClickListener(ev -> notification.close());
 		} else {
 			notification.setDuration(type.getDuration());
 		}
-
 
 		notification.add(layout);
 		notification.open();

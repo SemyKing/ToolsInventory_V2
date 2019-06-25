@@ -9,14 +9,13 @@
   flex: 1;
 }
 
-.list-item__prefix,
-.list-item__suffix {
+.list-item__prefix, .list-item__suffix {
   display: flex;
   flex-shrink: 0;
 }
 
 .list-item__prefix {
-  margin-right: var(--lumo-space-l);
+  margin-right: var(--lumo-space-m);
 }
 
 .list-item__prefix img {

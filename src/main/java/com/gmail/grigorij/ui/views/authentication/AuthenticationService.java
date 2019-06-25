@@ -91,7 +91,7 @@ public class AuthenticationService {
                 return false;
             }
 
-            company = CompanyFacade.getInstance().findCompanyById(user.getCompany_id());
+            company = CompanyFacade.getInstance().findCompanyById(user.getCompanyId());
 
             if (company == null) {
                 UIUtils.showNotification("Company is NULL", UIUtils.NotificationType.ERROR, 10000);

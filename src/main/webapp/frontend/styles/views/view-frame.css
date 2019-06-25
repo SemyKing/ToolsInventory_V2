@@ -16,6 +16,7 @@
 }
 
 .view-frame__content {
+    margin-bottom: 2px;
     background-color: var(--lumo-tint-10pct);
     flex: 1;
     overflow-x: hidden;
