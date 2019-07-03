@@ -1,52 +1,88 @@
 package com.gmail.grigorij.backend.entities.company;
 
-import com.gmail.grigorij.backend.entities.user.Address;
+import com.gmail.grigorij.backend.entities.location.Location;
 import com.gmail.grigorij.backend.entities.user.Person;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 @Entity
 @Table(name = "companies")
 @NamedQueries({
-		@NamedQuery(name="Company.findCompanyById",
+		@NamedQuery(
+				name="Company.findCompanyById",
 				query="SELECT company FROM Company company WHERE company.id = :company_id"),
-		@NamedQuery(name="Company.getAllCompanies",
-				query="SELECT company FROM Company company ORDER BY company.companyName ASC")
+		@NamedQuery(
+				name="Company.getAllCompanies",
+				query="SELECT company FROM Company company ORDER BY company.name ASC")
 })
 public class Company extends Person {
 
 	@Column(name = "name")
-	private String companyName;
+	private String name;
 
 	@Column(name = "vat")
-	private String companyVAT;
+	private String vat;
 
 
-	public String getCompanyName() {
-		return companyName;
+	@Embedded
+	private Location address;
+
+	/*
+	List of locations related to company: warehouses, construction sites, etc...
+	 */
+	@ElementCollection
+	private Set<Location> locations = new HashSet<>();
+
+
+	public String getName() {
+		return name;
 	}
-	public void setCompanyName(String companyName) {
-		this.companyName = companyName;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public String getCompanyVAT() {
-		return companyVAT;
+	public String getVat() {
+		return vat;
 	}
-	public void setCompanyVAT(String companyVAT) {
-		this.companyVAT = companyVAT;
+	public void setVat(String vat) {
+		this.vat = vat;
+	}
+
+	public Location getAddress() {
+		return (this.address == null) ? new Location() : address;
+	}
+	public void setAddress(Location address) {
+		this.address = address;
+	}
+
+	public List<Location> getLocations() {
+		return new ArrayList<>(locations);
+	}
+	public void setLocations(Set<Location> locations) {
+		this.locations = locations;
+	}
+	public void addLocation(Location location) {
+		this.locations.add(location);
+	}
+	public void removeLocation(Location location) {
+		this.locations.remove(location);
 	}
 
 	public static Company getEmptyCompany() {
 		Company company = new Company();
-		company.setCompanyName("");
-		company.setCompanyVAT("");
+		company.setName("");
+		company.setVat("");
 		company.setDeleted(false);
 		company.setFirstName("");
 		company.setLastName("");
 		company.setEmail("");
 
-		company.setAddress(Address.getEmptyAddress());
+		company.setAddress(new Location());
 
 		return company;
 	}

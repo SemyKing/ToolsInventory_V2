@@ -1,6 +1,6 @@
-package com.gmail.grigorij.ui;
+package com.gmail.grigorij.ui.views;
 
-import com.gmail.grigorij.MainLayout;
+import com.gmail.grigorij.ui.MainLayout;
 import com.gmail.grigorij.backend.access.AccessGroups;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
@@ -116,7 +116,7 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 
 		inventory.addClickListener(e-> {
 			naviItemOnClick(inventory);
-			viewContainer.add(new Inventory());
+			viewContainer.add(new Inventory(this));
 		});
 		menu.addNaviItem(inventory);
 
@@ -138,7 +138,7 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 		});
 		menu.addNaviItem(reporting);
 
-		if (AuthenticationService.getSessionData().getUser().getAccess_group() == AccessGroups.ADMIN.getIntValue()) {
+		if (AuthenticationService.getSessionData().getUser().getAccessGroup() == AccessGroups.ADMIN.getIntValue()) {
 			admin.addClickListener(e-> {
 				naviItemOnClick(admin);
 				viewContainer.add(new AdminMain(this));

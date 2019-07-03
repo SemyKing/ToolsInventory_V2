@@ -1,25 +1,26 @@
 package com.gmail.grigorij.ui.views.navigation.admin;
 
+import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.utils.components.CustomDialog;
-import com.gmail.grigorij.ui.utils.components.ListItem;
+import com.gmail.grigorij.ui.utils.components.*;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.forms.AdminUserForm;
+import com.gmail.grigorij.ui.utils.css.size.*;
+import com.gmail.grigorij.ui.utils.forms.admin.AdminUserForm;
+import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
@@ -38,7 +39,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
-class AdminPersonnel extends Div {
+class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
 	final static String TAB_NAME = "Personnel";
@@ -55,9 +56,10 @@ class AdminPersonnel extends Div {
 
 	AdminPersonnel(AdminMain adminMain) {
 		this.adminMain = adminMain;
-		setId("admin-personnel");
 		setClassName(CLASS_NAME);
 		setSizeFull();
+		setDisplay(Display.FLEX);
+		setFlexDirection(FlexDirection.COLUMN);
 
 		createHeader();
 		createGrid();
@@ -65,11 +67,12 @@ class AdminPersonnel extends Div {
 	}
 
 	private void createHeader() {
-		FlexLayout header = new FlexLayout();
+		FlexBoxLayout header = new FlexBoxLayout();
 		header.setClassName(CLASS_NAME + "__header");
+		header.setMargin(Top.S);
 
 		TextField searchField = new TextField();
-		searchField.setClassName(CLASS_NAME + "__search");
+		searchField.setWidth("100%");
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Personnel");
@@ -78,28 +81,24 @@ class AdminPersonnel extends Div {
 
 		header.add(searchField);
 
-		FlexLayout buttons = new FlexLayout();
-		buttons.setClassName(CLASS_NAME + "__buttons");
+		FlexBoxLayout optionsContextMenuButton = adminMain.constructOptionsButton();
+		header.add(optionsContextMenuButton);
 
-		Button newUserButton = UIUtils.createButton("New User", VaadinIcon.PLUS);
-		newUserButton.addClickListener(e -> {
+		ContextMenu contextMenu = new ContextMenu(optionsContextMenuButton);
+		contextMenu.setOpenOnClick(true);
+
+		contextMenu.add(new Divider(Bottom.XS));
+		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.USER_CARD, UIUtils.createText("Add User")), e -> {
 			grid.select(null);
 			showDetails(null);
 		});
-		buttons.add(newUserButton);
-
-		Button importUsersButton = UIUtils.createButton("Import", VaadinIcon.DOWNLOAD);
-		importUsersButton.addClickListener(e -> importOnClick());
-		buttons.add(importUsersButton);
-
-		Button exportUsersButton = UIUtils.createButton("Export", VaadinIcon.UPLOAD);
-		exportUsersButton.addClickListener(e -> exportOnClick());
-		buttons.add(exportUsersButton);
-
-		header.add(buttons);
+		contextMenu.add(new Divider(Vertical.XS));
+		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.INSERT, UIUtils.createText("Import")), e -> importOnClick());
+		contextMenu.add(new Divider(Vertical.XS));
+		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.EXTERNAL_LINK, UIUtils.createText("Export")), e -> exportOnClick());
+		contextMenu.add(new Divider(Top.XS));
 
 		add(header);
-//		adminMain.setContentHeader(header);
 	}
 
 	private void filterGrid(String s) {
@@ -137,7 +136,6 @@ class AdminPersonnel extends Div {
 
 	}
 
-
 	private void createGrid() {
 		grid = new Grid<>();
 		grid.setId("personnel-grid");
@@ -151,15 +149,16 @@ class AdminPersonnel extends Div {
 			}
 		});
 
-		dataProvider = DataProvider.ofCollection(UserFacade.getInstance().listAllUsers());
+		dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getAllUsers());
 		grid.setDataProvider(dataProvider);
 
 		grid.addColumn(User::getId).setHeader("ID")
 				.setWidth(UIUtils.COLUMN_WIDTH_XS)
 				.setFlexGrow(0);
-		grid.addColumn(User::getUsername).setHeader("Username");
+		grid.addColumn(User::getUsername).setHeader("Username")
+				.setWidth(UIUtils.COLUMN_WIDTH_L);
 		grid.addColumn(new ComponentRenderer<>(this::createGridUserInfo)).setHeader("Person")
-				.setWidth(UIUtils.COLUMN_WIDTH_XL);
+				.setWidth(UIUtils.COLUMN_WIDTH_XXL);
 		grid.addColumn(new ComponentRenderer<>(selectedUser -> UIUtils.createActiveGridIcon(selectedUser.isDeleted()))).setHeader("Active")
 				.setWidth(UIUtils.COLUMN_WIDTH_XS)
 				.setFlexGrow(0);
@@ -167,41 +166,46 @@ class AdminPersonnel extends Div {
 		add(grid);
 	}
 
-
 	private Component createGridUserInfo(User user) {
 		ListItem item = new ListItem(UIUtils.createInitials(user.getInitials()), user.getFirstName() + " " + user.getLastName(), user.getEmail());
 		item.setHorizontalPadding(false);
 		return item;
 	}
 
-
 	private void createDetailsDrawer() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
+		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
 		detailsDrawer.setContent(userForm);
 
 		// Header
-		DetailsDrawerHeader detailsDrawerTitle = new DetailsDrawerHeader("User Details");
+		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("User Details");
+		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
-		detailsDrawer.setHeader(detailsDrawerTitle);
+		detailsDrawer.setHeader(detailsDrawerHeader);
 		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
 
 		// Footer
 		detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.getSave().addClickListener(e -> updateUser());
-		detailsDrawerFooter.getCancel().addClickListener(e -> detailsDrawer.hide());
+		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
 		detailsDrawerFooter.getDelete().addClickListener(e -> confirmUserDelete());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 
 		adminMain.setDetailsDrawer(detailsDrawer);
 	}
 
-
 	private void showDetails(User user) {
 		detailsDrawerFooter.getDelete().setEnabled( user != null );
 		userForm.setUser(user);
 		detailsDrawer.show();
+
+		UIUtils.updateFormSize(userForm);
 	}
 
+	private void closeDetails() {
+		detailsDrawer.hide();
+		grid.select(null);
+	}
 
 	private void updateUser() {
 		System.out.println();
@@ -211,60 +215,40 @@ class AdminPersonnel extends Div {
 
 		if (editedUser != null) {
 			if (UserFacade.getInstance().update(editedUser)) {
-				if (userForm.isNewUser()) {
+				if (userForm.isNew()) {
 					dataProvider.getItems().add(editedUser);
+					UIUtils.showNotification("User created successfully", UIUtils.NotificationType.SUCCESS);
 				} else {
+					UIUtils.showNotification("User updated successfully", UIUtils.NotificationType.SUCCESS);
 					dataProvider.refreshItem(grid.asSingleSelect().getValue());
 				}
 
 				dataProvider.refreshAll();
 				grid.select(editedUser);
+			} else {
+				UIUtils.showNotification("User create/edit failed", UIUtils.NotificationType.ERROR);
 			}
 		}
 	}
-
 
 	private void confirmUserDelete() {
 		System.out.println("Delete selected user...");
 
 		if (detailsDrawer.isOpen()) {
 
-			System.out.println("selectedUser: " + grid.asSingleSelect().getValue());
 			final User selectedUser =  grid.asSingleSelect().getValue();
 			if (selectedUser != null) {
 
-				CustomDialog dialog = new CustomDialog();
-				dialog.setHeader(UIUtils.createH4Label("Confirm delete"));
-
-				dialog.setConfirmButton(UIUtils.createButton("Delete", VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY));
-				dialog.getConfirmButton().setEnabled(false);
-
-				TextField confirmInputField = new TextField("Input username to confirm action");
-				confirmInputField.setRequired(true);
-				confirmInputField.addValueChangeListener(e -> {
-					dialog.getConfirmButton().setEnabled(false);
-
-					if (e.getValue() != null) {
-						if (e.getValue().length() > 0) {
-							if (e.getValue().equals(selectedUser.getUsername())) {
-								dialog.getConfirmButton().setEnabled(true);
-							}
-						}
-					}
-				});
-
-				dialog.setContent(
-						new Span("Are you sure you want to delete this user?"),
-						new Span("This will completely remove selected user from Database."),
-						new HorizontalLayout(new Span("Deleting user: "), UIUtils.createBoldText(selectedUser.getUsername())),
-						confirmInputField
-				);
-
+				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "user", selectedUser.getUsername());
+				dialog.closeOnCancel();
 				dialog.getConfirmButton().addClickListener(e -> {
 					if (UserFacade.getInstance().remove(selectedUser)) {
 						dataProvider.getItems().remove(selectedUser);
 						dataProvider.refreshAll();
-						detailsDrawer.hide();
+						closeDetails();
+						UIUtils.showNotification("User deleted successfully", UIUtils.NotificationType.SUCCESS);
+					} else {
+						UIUtils.showNotification("User delete failed", UIUtils.NotificationType.ERROR);
 					}
 					dialog.close();
 				});
@@ -286,9 +270,6 @@ class AdminPersonnel extends Div {
 		importDialog.open();
 
 		upload.addSucceededListener(event -> {
-//			Component component = createComponent(event.getMIMEType(), event.getFileName(), buffer.getInputStream());
-//			showOutput(event.getFileName(), component, output);
-			System.out.println("SUCCESS");
 			importUsers(buffer);
 			importDialog.close();
 		});
@@ -322,8 +303,8 @@ class AdminPersonnel extends Div {
 				User user = new User();
 				user.setUsername(rowSplit[0]);
 				user.setPassword(rowSplit[1]);
-				user.setCompany_id(Integer.parseInt(rowSplit[2]));
-				user.setAccess_group(Integer.parseInt(rowSplit[3]));
+				user.setCompanyId(Integer.parseInt(rowSplit[2]));
+				user.setAccessGroup(Integer.parseInt(rowSplit[3]));
 				user.setDeleted(Boolean.parseBoolean(rowSplit[4]));
 				user.setFirstName(rowSplit[5]);
 				user.setLastName(rowSplit[6]);
@@ -337,13 +318,12 @@ class AdminPersonnel extends Div {
 				UserFacade.getInstance().insert(u);
 			}
 
-			UIUtils.showNotification("Users imported successfully", UIUtils.NotificationType.SUCCESS, 5000);
+			UIUtils.showNotification("Users imported successfully", UIUtils.NotificationType.SUCCESS);
 		} catch (Exception e) {
-			UIUtils.showNotification("USER IMPORT ERROR", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Users import failed", UIUtils.NotificationType.ERROR);
 			e.printStackTrace();
 		}
 	}
-
 
 	private void exportOnClick() {
 		System.out.println("Export Users...");

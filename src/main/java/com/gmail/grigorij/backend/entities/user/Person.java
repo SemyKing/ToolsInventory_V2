@@ -1,9 +1,10 @@
 package com.gmail.grigorij.backend.entities.user;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.entities.location.Location;
 
-import javax.persistence.Embedded;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
+
 
 @MappedSuperclass
 public class Person extends EntityPojo {
@@ -14,7 +15,7 @@ public class Person extends EntityPojo {
 	private String email;
 
 	@Embedded
-	private Address address;
+	private Location address;
 
 	public Person() {
 	}
@@ -47,12 +48,6 @@ public class Person extends EntityPojo {
 		this.email = email;
 	}
 
-	public Address getAddress() {
-		return address;
-	}
-	public void setAddress(Address address) {
-		this.address = address;
-	}
 
 
 	public String getInitials() {
@@ -65,5 +60,21 @@ public class Person extends EntityPojo {
 			initials += getLastName().substring(0, 1);
 		}
 		return initials;
+	}
+
+	public Location getAddress() {
+		return (this.address == null) ? new Location() : address;
+	}
+	public void setAddress(Location address) {
+		this.address = address;
+	}
+
+	public static Person getEmptyPerson() {
+		Person person = new Person();
+		person.setFirstName("");
+		person.setLastName("");
+		person.setPhoneNumber("");
+		person.setEmail("");
+		return person;
 	}
 }

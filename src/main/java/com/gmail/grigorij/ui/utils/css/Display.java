@@ -2,7 +2,12 @@ package com.gmail.grigorij.ui.utils.css;
 
 public enum Display {
 
-    BLOCK("block"), INLINE("inline"), FLEX("flex"), INLINE_FLEX("inline-flex");
+    NONE("none"),
+    INITIAL("initial"),
+    BLOCK("block"),
+    INLINE("inline"),
+    FLEX("flex"),
+    INLINE_FLEX("inline-flex");
 
     private String value;
 

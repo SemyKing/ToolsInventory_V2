@@ -7,74 +7,47 @@
     margin-right: 5px;
 }
 
-@media (max-width: 600px) {
-    .admin-personnel__search {
-        width: 200px;
-    }
-
-    .admin-companies__search {
-        width: 200px;
-    }
-
-    .admin-personnel__buttons vaadin-button span {
-        display: none !important;
-    }
-
-    .admin-companies__buttons vaadin-button span {
-        display: none !important;
+@media (max-width: 1024px) {
+	.admin-main__options-button-li {
+		display: flex !important;
+	}
+	.admin-main__options-button-tl, .admin-main__options-button-ri {
+    	display: none !important;
     }
 }
 
+.admin-main__options-button {
+	min-width: auto;
 
-/* Personnel */
-.admin-personnel {
-    display: flex;
-    flex-direction: column;
+	cursor: pointer;
+    border-radius: var(--lumo-border-radius);
+    background-color: var(--lumo-shade-10pct);
+
+    margin-top: 0.25em;
+    margin-left: 0.25em;
+    margin-bottom: 0.25em;
 }
-
-.admin-personnel__header {
-    margin-top: 10px;
-    justify-content: space-between;
+.admin-main__options-button-li {
+    height: var(--lumo-icon-size-s);
+    padding: 0.25em;
+    display: none;
 }
-
-.admin-personnel__buttons vaadin-button {
-    min-width: fit-content;
-    margin-left: 5px;
-    align-self: flex-end;
+.admin-main__options-button-tl {
+	cursor: inherit;
+	padding-left: 0.5em;
 }
-
-.admin-personnel__buttons vaadin-button span {
-    display: initial;
+.admin-main__options-button-ri {
+	width: var(--lumo-icon-size-s);
+    height: var(--lumo-icon-size-s);
+    padding: 0.25em;
 }
-
-.admin-personnel__search {
-    width: 500px;
+.admin-main__options-button:hover {
+    background-color: var(--lumo-contrast-20pct);
 }
-
 
 
 /* Companies */
-.admin-companies {
-    display: flex;
-    flex-direction: column;
-}
 
-.admin-companies__header {
-    margin-top: 10px;
-    justify-content: space-between;
-}
+/* Personnel */
 
-.admin-companies__search {
-    width: 500px;
-}
-
-.admin-companies__buttons vaadin-button {
-    min-width: fit-content;
-    margin-left: 2px;
-    margin-right: 2px;
-    align-self: flex-end;
-}
-
-.admin-companies__buttons vaadin-button span {
-    display: initial;
-}
+/* Inventory */

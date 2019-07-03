@@ -2,7 +2,6 @@ package com.gmail.grigorij.utils;
 
 public final class ProjectConstants {
 
-
 	public static final String PROJECT_NAME_FULL = "Tools Inventory";
 
 	//Images & Logos
@@ -20,5 +19,16 @@ public final class ProjectConstants {
 	public static final String TRANSACTIONS = "Transactions";
 	public static final String REPORTING = "Reporting";
 	public static final String ADMIN = "Admin";
+
+	//EntityStatus
+	public static final String ACTIVE = "Active";
+	public static final String INACTIVE = "Inactive";
+
+	public static final String FORM_LAYOUT_LARGE_ATTR = "large";
+	public static final String FORM_HALF_WIDTH = "calc(48% - 0rem)";
+	public static final String COL_2_MIN_WIDTH = "450px";
+
+	public static final String ROOT_CATEGORY = "**Root Category**";
+
 
 }

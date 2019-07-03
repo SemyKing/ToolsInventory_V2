@@ -45,11 +45,23 @@ public class UserFacade {
 		return user;
 	}
 
+	public User getUserById(Long id) {
+		User user;
+		try {
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUserById")
+					.setParameter("id", id)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			user = null;
+		}
+		return user;
+	}
 
-	public List<User> listAllUsers() {
+
+	public List<User> getAllUsers() {
 		List<User> users;
 		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.listAllUsers", User.class)
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getAllUsers", User.class)
 					.getResultList();
 		} catch (NoResultException nre) {
 			users = null;
@@ -58,10 +70,10 @@ public class UserFacade {
 	}
 
 
-	public List<User> listUsersByCompanyId(long companyId) {
+	public List<User> getUsersByCompanyId(long companyId) {
 		List<User> users;
 		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.listUsersByCompanyId", User.class)
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUsersByCompanyId", User.class)
 					.setParameter("companyId", companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
@@ -72,29 +84,24 @@ public class UserFacade {
 
 
 	public boolean insert(User user) {
-		System.out.println();
-		System.out.println("UserFacade -> insert");
-
+		System.out.println("User INSERT");
 		if (user == null)
 			return false;
 
 		try {
 			DatabaseManager.getInstance().insert(user);
 		} catch (Exception e) {
-			UIUtils.showNotification("User INSERT fail", UIUtils.NotificationType.ERROR);
+			System.out.println("User INSERT fail");
 			e.printStackTrace();
 			return false;
 		}
-
-		UIUtils.showNotification("User INSERT successful", UIUtils.NotificationType.SUCCESS);
+		System.out.println("User INSERT successful");
 		return true;
 	}
 
 
 	public boolean update(User user) {
-		System.out.println();
-		System.out.println("UserFacade -> update");
-
+		System.out.println("User UPDATE");
 		if (user == null)
 			return false;
 
@@ -112,20 +119,17 @@ public class UserFacade {
 			} else
 				DatabaseManager.getInstance().update(user);
 		} catch (Exception e) {
-			UIUtils.showNotification("User UPDATE fail", UIUtils.NotificationType.ERROR);
+			System.out.println("User UPDATE fail");
 			e.printStackTrace();
 			return false;
 		}
-
-		UIUtils.showNotification("User UPDATE successful", UIUtils.NotificationType.SUCCESS);
+		System.out.println("User UPDATE successful");
 		return true;
 	}
 
 
 	public boolean remove(User user) {
-		System.out.println();
-		System.out.println("UserFacade -> remove");
-
+		System.out.println("User REMOVE");
 		if (user == null)
 			return false;
 
@@ -137,14 +141,11 @@ public class UserFacade {
 				DatabaseManager.getInstance().remove(user);
 			}
 		} catch (Exception e) {
-			UIUtils.showNotification("User REMOVE fail", UIUtils.NotificationType.ERROR);
+			System.out.println("User REMOVE fail");
 			e.printStackTrace();
 			return false;
 		}
-
-		UIUtils.showNotification("User REMOVE successful", UIUtils.NotificationType.SUCCESS);
+		System.out.println("User REMOVE successful");
 		return true;
 	}
-
-
 }

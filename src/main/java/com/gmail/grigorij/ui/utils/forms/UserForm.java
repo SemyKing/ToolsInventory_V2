@@ -1,16 +1,17 @@
 package com.gmail.grigorij.ui.utils.forms;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.user.Address;
+import com.gmail.grigorij.backend.entities.location.Location;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.MenuLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
+import com.gmail.grigorij.ui.utils.css.FlexDirection;
+import com.gmail.grigorij.ui.utils.css.size.Horizontal;
+import com.gmail.grigorij.ui.utils.css.size.Left;
+import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.button.Button;
@@ -18,6 +19,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -28,72 +30,43 @@ import java.util.List;
 
 public class UserForm extends FormLayout {
 
-	private Binder<User> userBinder = new Binder<>(User.class);
-	private Binder<Address> addressBinder = new Binder<>(Address.class);
+	private LocationForm locationForm = new LocationForm();
+	private PersonForm<User> personForm = new PersonForm<>();
 
-	private boolean newUser;
+	private Binder<User> userBinder = new Binder<>(User.class);
 
 	private PasswordField passwordField;
-	private Button changePasswordButton;
 
 	public UserForm() {
-		TextField username = new TextField();
-		username.setWidth("100%");
-//		username.setEnabled(false);
+		TextField username = new TextField("Username");
 		username.setReadOnly(true);
 
-		passwordField = new PasswordField();
-		passwordField.setWidth("100%");
-//		passwordField.setEnabled(false);
+		passwordField = new PasswordField("Password");
 		passwordField.setReadOnly(true);
 
-		changePasswordButton = UIUtils.createButton("Change");
+		Button changePasswordButton = UIUtils.createButton("Change");
 		changePasswordButton.addClickListener(e -> openPasswordChangeDialog());
-		changePasswordButton.getStyle().set("display", "table");
-		changePasswordButton.getStyle().set("margin-left", "10px");
 
 		FlexBoxLayout passwordLayout = new FlexBoxLayout();
-		passwordLayout.setWidth("100%");
-		passwordLayout.add(passwordField);
-		passwordLayout.add(changePasswordButton);
+		passwordLayout.setFlexDirection(FlexDirection.ROW);
+		passwordLayout.add(passwordField, changePasswordButton);
+		passwordLayout.setFlexGrow("1", passwordField);
+		passwordLayout.setComponentMargin(changePasswordButton, Left.S);
+		passwordLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
 
 		List<Company> companies = CompanyFacade.getInstance().getAllCompanies();
 
 		ComboBox<Company> companyComboBox = new ComboBox<>();
 		companyComboBox.setItems(companies);
-		companyComboBox.setItemLabelGenerator(Company::getCompanyName);
-		companyComboBox.setWidth("100%");
-//		companyComboBox.setEnabled(false);
+		companyComboBox.setItemLabelGenerator(Company::getName);
+		companyComboBox.setLabel("Company");
 		companyComboBox.setReadOnly(true);
+		companyComboBox.setRequired(true);
 
-
-		Label contactLabel = UIUtils.createH5Label("Contact Information");
-
-		TextField firstName = new TextField();
-		firstName.setWidth("100%");
-		TextField lastName = new TextField();
-		lastName.setWidth("100%");
-		TextField phone = new TextField();
-		phone.getElement().setAttribute("type", "tel");
-		phone.setWidth("100%");
-		TextField email = new TextField();
-		email.setWidth("100%");
-
-
+		Label contactLabel = UIUtils.createH5Label("Personal Information");
 		Label addressLabel = UIUtils.createH5Label("Address");
 
-		TextField addressLine1 = new TextField();
-		addressLine1.setWidth("100%");
-		TextField addressLine2 = new TextField();
-		addressLine2.setWidth("100%");
-		TextField postcode = new TextField();
-		postcode.setWidth("100%");
-		TextField city = new TextField();
-		city.setWidth("100%");
-		TextField country = new TextField();
-		country.setWidth("100%");
-
-		TextArea additionalInfo = new TextArea();
+		TextArea additionalInfo = new TextArea("Additional Info");
 		additionalInfo.setWidth("100%");
 		additionalInfo.setMaxHeight("200px");
 
@@ -101,24 +74,17 @@ public class UserForm extends FormLayout {
 		// Form layout
 //		addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		addFormItem(username, "Username");
-		addFormItem(passwordLayout, "Password");
-		addFormItem(companyComboBox, "Company");
-		addFormItem(new Divider("1px"), "");
-		addFormItem(contactLabel, "");
-		addFormItem(firstName, "First Name");
-		addFormItem(lastName, "Last Name");
-		addFormItem(phone, "Phone Number");
-		addFormItem(email, "Email");
-		addFormItem(new Divider("1px"), "");
-		addFormItem(addressLabel, "");
-		addFormItem(addressLine1, "Address Line 1");
-		addFormItem(addressLine2, "Address Line 2");
-		addFormItem(postcode, "Postcode");
-		addFormItem(city, "City");
-		addFormItem(country, "Country");
-		addFormItem(new Divider("1px"), "");
-		addFormItem(additionalInfo, "Additional Info");
+		add(username);
+		add(passwordLayout);
+		add(companyComboBox);
+		add(new Divider(Horizontal.NONE, Vertical.S));
+		add(contactLabel);
+		add(personForm);
+		add(new Divider(Horizontal.NONE, Vertical.S));
+		add(addressLabel);
+		add(locationForm);
+		add(new Divider(Horizontal.NONE, Vertical.S));
+		add(additionalInfo);
 
 		userBinder.forField(username)
 				.asRequired("Username is required")
@@ -129,29 +95,9 @@ public class UserForm extends FormLayout {
 		userBinder.forField(companyComboBox)
 				.asRequired("Company is required")
 				.withConverter(new CustomConverter.CompanyConverter())
-				.bind(User::getCompany_id, User::setCompany_id);
-		userBinder.forField(firstName)
-				.bind(User::getFirstName, User::setFirstName);
-		userBinder.forField(lastName)
-				.bind(User::getLastName, User::setLastName);
-		userBinder.forField(phone)
-				.bind(User::getPhoneNumber, User::setPhoneNumber);
-		userBinder.forField(email)
-				.bind(User::getEmail, User::setEmail);
+				.bind(User::getCompanyId, User::setCompanyId);
 		userBinder.forField(additionalInfo)
 				.bind(User::getAdditionalInfo, User::setAdditionalInfo);
-
-
-		addressBinder.forField(addressLine1)
-				.bind(Address::getAddressLine1, Address::setAddressLine1);
-		addressBinder.forField(addressLine2)
-				.bind(Address::getAddressLine2, Address::setAddressLine2);
-		addressBinder.forField(postcode)
-				.bind(Address::getPostcode, Address::setPostcode);
-		addressBinder.forField(city)
-				.bind(Address::getCity, Address::setCity);
-		addressBinder.forField(country)
-				.bind(Address::getCountry, Address::setCountry);
 	}
 
 	private User user;
@@ -161,14 +107,12 @@ public class UserForm extends FormLayout {
 			System.out.println("User cannot be NULL");
 			return false;
 		}
-
 		userBinder.removeBean();
-		addressBinder.removeBean();
-
 		user = u;
 
 		userBinder.readBean(user);
-		addressBinder.readBean(user.getAddress());
+		personForm.setPerson(user);
+		locationForm.setLocation(user.getAddress());
 
 		return true;
 	}
@@ -181,10 +125,21 @@ public class UserForm extends FormLayout {
 			if (userBinder.isValid()) {
 				userBinder.writeBean(user);
 
-				Address address = new Address();
-				addressBinder.writeBean(address);
+				Location userAddress = locationForm.getLocation();
+				if (userAddress != null) {
+					user.setAddress(userAddress);
+				}
 
-				user.setAddress(address);
+				Object personInfo = personForm.getPerson();
+
+				if (personInfo != null) {
+					if (personInfo instanceof Company) {
+						user.setFirstName(((Company) personInfo).getFirstName());
+						user.setLastName(((Company) personInfo).getLastName());
+						user.setPhoneNumber(((Company) personInfo).getPhoneNumber());
+						user.setEmail(((Company) personInfo).getEmail());
+					}
+				}
 
 				return user;
 			}
@@ -195,10 +150,10 @@ public class UserForm extends FormLayout {
 		return null;
 	}
 
-
 	private void openPasswordChangeDialog() {
 		CustomDialog dialog = new CustomDialog();
 		dialog.setHeader(UIUtils.createH4Label("Change Password"));
+		dialog.getCancelButton().addClickListener(e -> dialog.close());
 		dialog.setConfirmButton(UIUtils.createButton("Change", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
 
 		PasswordField currentPasswordField = new PasswordField("Input current password");
@@ -264,20 +219,6 @@ public class UserForm extends FormLayout {
 				newPasswordField2.setInvalid(true);
 				return;
 			}
-
-
-
-//			User currentUser = AuthenticationService.getSessionData().getUser();
-//			currentUser.setPassword(newPasswordField2.getValue());
-//
-//			if (UserFacade.getInstance().update(currentUser)) {
-//				AuthenticationService.getSessionData().setUser(currentUser);
-//				UIUtils.showNotification("Password updated successfully", UIUtils.NotificationType.SUCCESS);
-//				passwordField.setValue(newPasswordField2.getValue());
-//				dialog.close();
-//			} else {
-//				UIUtils.showNotification("Password updated error", UIUtils.NotificationType.ERROR);
-//			}
 
 			passwordField.setValue(newPasswordField2.getValue());
 			dialog.close();

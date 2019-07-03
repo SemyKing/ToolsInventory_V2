@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="components/app-bar.css">
 <link rel="stylesheet" href="components/brand-expression.css">
 <link rel="import"     href="components/charts.html">
+<link rel="import"     href="components/context-menu.html">
 <link rel="stylesheet" href="components/details-drawer.css">
 <link rel="import"     href="components/floating-action-button.html">
 <link rel="stylesheet" href="components/initials.css">
@@ -24,15 +25,17 @@
 <link rel="stylesheet" href="components/navi-item.css">
 <link rel="stylesheet" href="components/navi-menu.css">
 <link rel="stylesheet" href="components/tab-bar.css">
+<link rel="stylesheet" href="components/view-frame.css">
+<link rel="stylesheet" href="components/grid-view.css">
+<link rel="stylesheet" href="components/custom-dialog.css">
 
 <link rel="stylesheet" href="misc/box-shadow-borders.css">
 
 <link rel="stylesheet" href="views/login.css">
 <link rel="stylesheet" href="views/dashboard.css">
 <link rel="stylesheet" href="views/admin.css">
-<link rel="stylesheet" href="views/grid-view.css">
+<link rel="stylesheet" href="views/inventory.css">
 <link rel="stylesheet" href="views/report-details.css">
-<link rel="stylesheet" href="views/view-frame.css">
 
 <custom-style>
 	<style include="lumo-badge">
@@ -46,6 +49,7 @@
       --navi-item-indentation: calc(var(--lumo-icon-size-s) + var(--lumo-space-l));
 
       --details-drawer-width: calc(var(--lumo-size-m) * 11);
+      --large-details-drawer-width: calc(var(--lumo-size-m) * 18);
 
       --transition-duration-s: 160ms;
       --transition-duration-m: 240ms;
@@ -112,7 +116,13 @@
 
 	flow-component-renderer {
 		min-width: 100%;
+		display: flex;
 	}
+
+	flow-component-renderer > div {
+		min-width: 100%;
+	}
+
 
 	.notification-text-container {
 		flex-grow: 1;
@@ -126,29 +136,6 @@
 		margin-top: 0px;
 		margin-bottom: 0px;
 	}
-
-	.custom-dialog {
-
-	}
-
-	.custom-dialog__header {
-		padding-top: var(--lumo-space-l);
-		padding-left: var(--lumo-space-l);
-  		padding-right: var(--lumo-space-l);
-	}
-
-	.custom-dialog__content {
-		flex-direction: column;
-		padding: var(--lumo-space-l);
-	}
-
-	.custom-dialog__footer {
-		justify-content: space-between;
-		background-color: var(--lumo-contrast-5pct);
-		padding-left: 10px;
-		padding-right: 10px;
-	}
-
 
   </style>
 </custom-style>
@@ -171,21 +158,11 @@
 		<style>
 			[part="content"] {
 				padding: 0px;
+				display: flex;
 			}
-		</style>
-	</template>
-</dom-module>
-
-<dom-module id="my-vaadin-context-menu-theme" theme-for="vaadin-context-menu-overlay">
-	<template>
-		<style>
-			@media (max-width: 420px), (max-height: 420px) {
-				[part="content"] {
-					padding-top: 0px;
-					padding-bottom: 0px;
-					padding-left: 30px;
-					padding-right: 30px;
-				}
+			[part="overlay"] {
+				display: flex;
+				overflow: hidden;
 			}
 		</style>
 	</template>

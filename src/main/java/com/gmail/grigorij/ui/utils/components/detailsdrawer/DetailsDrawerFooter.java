@@ -27,7 +27,7 @@ public class DetailsDrawerFooter extends Composite<FlexBoxLayout> {
         cancel = UIUtils.createButton("Cancel");
         cancel.addClassName(LumoStyles.Margin.Left.AUTO);
 
-        save = UIUtils.createPrimaryButton("Save", VaadinIcon.CHECK);
+        save = UIUtils.createPrimaryButton("Save");
         getContent().add(delete, cancel, save);
     }
 
@@ -41,4 +41,12 @@ public class DetailsDrawerFooter extends Composite<FlexBoxLayout> {
     }
 
     public Button getDelete() { return delete;}
+
+    public void removeButton(Button button) {
+        getContent().remove(button);
+    }
+
+    public void removeAllButtons() {
+        getContent().remove(save, cancel, delete);
+    }
 }

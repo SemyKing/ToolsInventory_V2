@@ -4,8 +4,10 @@ import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.*;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -29,6 +31,7 @@ public class UIUtils {
 	public static final String COLUMN_WIDTH_M = "160px";
 	public static final String COLUMN_WIDTH_L = "200px";
 	public static final String COLUMN_WIDTH_XL = "240px";
+	public static final String COLUMN_WIDTH_XXL = "280px";
 
 	private static final String BUTTON_CLASS = "custom_button";
 
@@ -39,6 +42,18 @@ public class UIUtils {
 			.withInitial(() -> new DecimalFormat("#,00"));
 	private static final ThreadLocal<DateTimeFormatter> dateFormat = ThreadLocal
 			.withInitial(() -> DateTimeFormatter.ofPattern("dd.MM.YYYY"));
+
+
+	/**
+	 * Apply correct column span to FormLayout
+	 *
+	 * If element is hidden before custom column span is set, automatic column span is 1.
+	 */
+	public static void updateFormSize(FormLayout formLayout) {
+		if (UI.getCurrent() != null) {
+			UI.getCurrent().getPage().executeJavaScript("$0.notifyResize()", formLayout.getElement());
+		}
+	}
 
 
 	/* ==== BUTTONS ==== */
@@ -228,14 +243,14 @@ public class UIUtils {
 			}
 
 			if (!backgroundSet) {
-//				button.getStyle().set("background-color", "var(--lumo-shade-20pct)");
+				button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
 
 				if (!colorSet) {
 					button.getStyle().set("color", "var(--lumo-body-text-color)");
 				}
 			}
 		} else {
-//			button.getStyle().set("background-color", "var(--lumo-shade-20pct)");
+			button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
 			button.getStyle().set("color", "var(--lumo-body-text-color)");
 		}
 
@@ -319,7 +334,8 @@ public class UIUtils {
 
 	public static Span createBoldText(String text) {
 		Span span = new Span(text);
-		span.addClassName(LumoStyles.FontWeight.BOLD);
+		span.getElement().getStyle().set("font-weight", "bold");
+//		span.addClassName(LumoStyles.FontWeight.BOLD);
 		return span;
 	}
 
@@ -489,7 +505,7 @@ public class UIUtils {
 	/* === NOTIFICATIONS === */
 
 	public enum NotificationType {
-		INFO (      "#bbb41bf7",                    0),
+		INFO (      "#bbb41bf7",                    5000),
 		SUCCESS (   "var(--lumo-success-color)",    2000),
 		WARNING(    "#ff6700",                      5000),
 		ERROR (     "var(--lumo-error-color)",      0);
@@ -530,18 +546,14 @@ public class UIUtils {
 		layout.add(msgLabel);
 		layout.setBackgroundColor(type.getBackgroundColor());
 
+		layout.add(close);
+		close.addClickListener(ev -> notification.close());
+
 		if (duration.length > 0) {
 			notification.setDuration(duration[0]);
-		}
-
-		if (type.getDuration() <= 0) {
-			layout.add(close);
-
-			close.addClickListener(ev -> notification.close());
 		} else {
 			notification.setDuration(type.getDuration());
 		}
-
 
 		notification.add(layout);
 		notification.open();
