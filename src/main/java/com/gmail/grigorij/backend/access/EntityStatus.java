@@ -2,7 +2,8 @@ package com.gmail.grigorij.backend.access;
 
 public enum EntityStatus {
 
-	ACTIVE  ("Active",  false), //isDeleted()
+	//booleanValue -> isDeleted()
+	ACTIVE  ("Active",  false),
 	INACTIVE("Inactive",true);
 
 	private String stringValue;

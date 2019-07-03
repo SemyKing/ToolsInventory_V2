@@ -16,6 +16,7 @@ import com.gmail.grigorij.ui.utils.css.Shadow;
 public class FlexBoxLayout extends FlexLayout {
 
     public static final String BACKGROUND_COLOR = "background-color";
+    public static final String COLOR = "color";
     public static final String BORDER_RADIUS = "border-radius";
     public static final String BOX_SHADOW = "box-shadow";
     public static final String BOX_SIZING = "box-sizing";
@@ -34,9 +35,8 @@ public class FlexBoxLayout extends FlexLayout {
         getStyle().set(BACKGROUND_COLOR, value);
     }
 
-    public void setBackgroundColor(String value, String theme) {
-        getStyle().set(BACKGROUND_COLOR, value);
-        setTheme(theme);
+    public void setColor(String value) {
+        getStyle().set(COLOR, value);
     }
 
     public void removeBackgroundColor() {
@@ -63,6 +63,10 @@ public class FlexBoxLayout extends FlexLayout {
         getStyle().set(DISPLAY, display.getValue());
     }
 
+    public void setComponentDisplay(Component component, Display display) {
+        component.getElement().getStyle().set(DISPLAY, display.getValue());
+    }
+
     public void removeDisplay() {
         getStyle().remove(DISPLAY);
     }
@@ -87,6 +91,12 @@ public class FlexBoxLayout extends FlexLayout {
         getStyle().remove(FLEX_DIRECTION);
     }
 
+    public void setFlexGrow(String value, Component... components) {
+        for (Component component : components) {
+            component.getElement().getStyle().set("flex-grow", value);
+        }
+    }
+
     public void setFlexShrink(String value, Component... components) {
         for (Component component : components) {
             component.getElement().getStyle().set("flex-shrink", value);
@@ -105,6 +115,14 @@ public class FlexBoxLayout extends FlexLayout {
         for (Size size : sizes) {
             for (String attribute : size.getMarginAttributes()) {
                 getStyle().set(attribute, size.getVariable());
+            }
+        }
+    }
+
+    public void setComponentMargin(Component component, Size... sizes) {
+        for (Size size : sizes) {
+            for (String attribute : size.getMarginAttributes()) {
+                component.getElement().getStyle().set(attribute, size.getVariable());
             }
         }
     }
@@ -141,6 +159,14 @@ public class FlexBoxLayout extends FlexLayout {
         }
     }
 
+    public void setComponentPadding(Component component, Size... sizes) {
+        for (Size size : sizes) {
+            for (String attribute : size.getPaddingAttributes()) {
+                component.getElement().getStyle().set(attribute, size.getVariable());
+            }
+        }
+    }
+
     public void removePadding() {
         getStyle().remove("padding");
         getStyle().remove("padding-bottom");
@@ -168,14 +194,6 @@ public class FlexBoxLayout extends FlexLayout {
     public void setSpacing(Size... sizes) {
         for (Size size : sizes) {
             addClassName(size.getSpacingClassName());
-        }
-    }
-
-    public void setTheme(String theme) {
-        if (Lumo.DARK.equals(theme)) {
-            getElement().setAttribute("theme", "dark");
-        } else {
-            getElement().removeAttribute("theme");
         }
     }
 }

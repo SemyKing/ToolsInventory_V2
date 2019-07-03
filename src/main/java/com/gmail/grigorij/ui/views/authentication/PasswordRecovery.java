@@ -36,6 +36,8 @@ class PasswordRecovery {
 		dialog.setHeader(UIUtils.createH2Label("Password recovery"));
 		dialog.setContent(new Span("Enter your email to reset your password"), emailField);
 
+		dialog.getCancelButton().addClickListener(e -> dialog.close());
+
 		Button send = UIUtils.createButton("Send", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
 		dialog.setConfirmButton(send);
 		dialog.getConfirmButton().addClickListener(e -> {

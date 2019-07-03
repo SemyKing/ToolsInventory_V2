@@ -1,282 +1,188 @@
 package com.gmail.grigorij.ui.utils.forms;
 
-import com.gmail.grigorij.backend.database.facades.ToolFacade;
-import com.gmail.grigorij.backend.entities.tool.HierarchyType;
+import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.tool.Tool;
-import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.utils.converters.CustomConverter;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
+import com.gmail.grigorij.ui.utils.css.size.Horizontal;
+import com.gmail.grigorij.ui.utils.css.size.Vertical;
+import com.gmail.grigorij.utils.ProjectConstants;
+import com.gmail.grigorij.utils.converters.DateConverter;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.binder.ValidationResult;
-import com.vaadin.flow.data.binder.Validator;
-import com.vaadin.flow.data.converter.StringToDoubleConverter;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.binder.*;
 
-import java.time.LocalDate;
-import java.util.EnumSet;
+public class ToolForm extends FormLayout {
 
-public class ToolForm extends Div {
 
-	private Tool tool;
-
-//	private Binder<Tool> toolBinder = new Binder<>(Tool.class);
-//	private Binder<Tool> categoryBinder = new Binder<>(Tool.class);
 	private Binder<Tool> binder = new Binder<>(Tool.class);
 
-	private Div categoryFormLayout;
-	private Div toolFormLayout;
-
 	public ToolForm() {
-		setSizeFull();
+//		setSizeFull();
 
-		toolFormLayout = new Div();
-		toolFormLayout.setSizeFull();
-		toolFormLayout.add(constructToolForm());
+		TextField toolName = getTextField("Name", "", "");
+		ReadOnlyHasValue<Tool> name = new ReadOnlyHasValue<>(tool ->
+				toolName.setValue(tool.getName()));
 
+		TextField toolManufacturer = getTextField("Manufacturer", "", "");
+		ReadOnlyHasValue<Tool> manufacturer = new ReadOnlyHasValue<>(tool ->
+				toolManufacturer.setValue(tool.getManufacturer()));
 
-		categoryFormLayout = new Div();
-		categoryFormLayout.setSizeFull();
-		categoryFormLayout.add(constructCategoryForm());
-	}
+		TextField toolModel = getTextField("Model", "", "");
+		ReadOnlyHasValue<Tool> model = new ReadOnlyHasValue<>(tool ->
+				toolModel.setValue(tool.getModel()));
 
-	private FormLayout constructToolForm() {
-		TextField toolNameField = new TextField();
-		toolNameField.setWidth("100%");
+		TextField toolInfo = getTextField("Tool Info", "", "");
+		toolInfo.setReadOnly(true);
+		ReadOnlyHasValue<Tool> info = new ReadOnlyHasValue<>(tool ->
+				toolInfo.setValue(tool.getToolInfo()));
 
-		TextField manufacturerField = new TextField();
-		manufacturerField.setWidth("100%");
+		TextField toolSN = getTextField("SN", "", "");
+		ReadOnlyHasValue<Tool> sn = new ReadOnlyHasValue<>(tool ->
+				toolSN.setValue(tool.getSnCode()));
 
-		TextField modelField = new TextField();
-		modelField.setWidth("100%");
+		TextField toolBarcode = getTextField("Barcode", "", "");
+		ReadOnlyHasValue<Tool> barcode = new ReadOnlyHasValue<>(tool ->
+				toolBarcode.setValue(tool.getBarcode()));
 
-		TextField toolInfoField = new TextField();
-		toolInfoField.setWidth("100%");
+		TextField toolCategory = getTextField("Category", "", "");
+		ReadOnlyHasValue<Tool> category = new ReadOnlyHasValue<>(tool ->
+				toolCategory.setValue( tool.getParentCategory()==null ? "" : tool.getParentCategory().getName() )
+		);
 
-		TextField snCodeField = new TextField();
-		snCodeField.setWidth("100%");
+		TextField toolUsageStatus = getTextField("Status", "", "");
+		ReadOnlyHasValue<Tool> usageStatus = new ReadOnlyHasValue<>(tool ->
+				toolUsageStatus.setValue(tool.getUsageStatus().getStringValue()));
 
-		TextField barCodeField = new TextField();
-		barCodeField.setWidth("100%");
+		TextField toolUser = getTextField("In Use By", "", "");
+		ReadOnlyHasValue<Tool> user = new ReadOnlyHasValue<>(tool ->
+				toolUser.setValue( tool.getInUseByUserId()<0 ? "" : UserFacade.getInstance().getUserById(tool.getInUseByUserId()).getUsername()));
 
+		TextField toolReservedByUser = getTextField("Reserved By", "", "");
+		ReadOnlyHasValue<Tool> reservedByUser = new ReadOnlyHasValue<>(tool ->
+				toolReservedByUser.setValue( tool.getReservedByUserId()<0 ? "" : UserFacade.getInstance().getUserById(tool.getReservedByUserId()).getUsername()));
 
-		Divider divider1 = new Divider("1px");
+		TextField toolBoughtDate = getTextField("Bought", ProjectConstants.FORM_HALF_WIDTH, "");
+		ReadOnlyHasValue<Tool> boughtDate = new ReadOnlyHasValue<>(tool ->
+				toolBoughtDate.setValue( tool.getDateBought() == null ? "" : DateConverter.DateToString(tool.getDateBought())));
 
-
-		ComboBox<Tool> categoriesComboBox = new ComboBox<>();
-		categoriesComboBox.setItems(ToolFacade.getInstance().getAllCategoriesList());
-		categoriesComboBox.setItemLabelGenerator(Tool::getName);
-		categoriesComboBox.setWidth("100%");
-
-		TextField userField = new TextField();
-		userField.setWidth("100%");
-
-		ComboBox<ToolStatus> toolStatusComboBox = new ComboBox<>();
-		toolStatusComboBox.setItems(EnumSet.allOf(ToolStatus.class));
-		toolStatusComboBox.setItemLabelGenerator(ToolStatus::getStringValue);
-		toolStatusComboBox.setWidth("100%");
-
-		TextField reservedByField = new TextField();
-		reservedByField.setWidth("100%");
-
-
-		Divider divider2 = new Divider("1px");
-
-
-		DatePicker boughtDateField = new DatePicker("Bought");
-		boughtDateField.setWidth("calc(48% - 0rem)");
-		boughtDateField.setWeekNumbersVisible(true);
-
-		DatePicker nextMaintenanceDateField = new DatePicker("Next Maintenance");
-		nextMaintenanceDateField.setWidth("calc(48% - 0rem)");
-		nextMaintenanceDateField.setWeekNumbersVisible(true);
+		TextField toolNextMaintenanceDate = getTextField("Next Maintenance", ProjectConstants.FORM_HALF_WIDTH, "");
+		ReadOnlyHasValue<Tool> nextMaintenanceDate = new ReadOnlyHasValue<>(tool ->
+				toolNextMaintenanceDate.setValue( tool.getDateBought() == null ? "" : DateConverter.DateToString(tool.getDateNextMaintenance())));
 
 		FlexBoxLayout datesLayout = new FlexBoxLayout();
 		datesLayout.setFlexDirection(FlexDirection.ROW);
 		datesLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		datesLayout.add(boughtDateField, nextMaintenanceDateField);
+		datesLayout.add(toolBoughtDate, toolNextMaintenanceDate);
 
+		TextField toolPrice = getTextField("Price", ProjectConstants.FORM_HALF_WIDTH, "€");
+		ReadOnlyHasValue<Tool> price = new ReadOnlyHasValue<>(tool ->
+				toolPrice.setValue( tool.getPrice() == null ? "" : String.valueOf(tool.getPrice())));
 
-		TextField priceField = new TextField("Price");
-		priceField.setWidth("calc(48% - 0rem)");
-		priceField.setSuffixComponent(new Span("€"));
-		priceField.getElement().setAttribute("type", "number");
-//		priceField.getElement().setAttribute("step", "0.001");
-
-		TextField guaranteeField = new TextField("Guarantee");
-		guaranteeField.setWidth("calc(48% - 0rem)");
-		guaranteeField.setSuffixComponent(new Span("Months"));
+		TextField toolGuarantee = getTextField("Guarantee", ProjectConstants.FORM_HALF_WIDTH, "Months");
+		ReadOnlyHasValue<Tool> guarantee = new ReadOnlyHasValue<>(tool ->
+				toolGuarantee.setValue( tool.getGuarantee_months() == null ? "" : String.valueOf(tool.getGuarantee_months())));
 
 		FlexBoxLayout priceAndGuaranteeLayout = new FlexBoxLayout();
 		priceAndGuaranteeLayout.setFlexDirection(FlexDirection.ROW);
 		priceAndGuaranteeLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		priceAndGuaranteeLayout.add(priceField, guaranteeField);
+		priceAndGuaranteeLayout.add(toolPrice, toolGuarantee);
 
+		TextField toolAdditionalInfo = getTextField("Additional Info", "", "");
+		ReadOnlyHasValue<Tool> additionalInfo = new ReadOnlyHasValue<>(tool ->
+				toolAdditionalInfo.setValue(tool.getAdditionalInfo()));
 
-		TextArea additionalInfo = new TextArea();
-		additionalInfo.setWidth("100%");
-		additionalInfo.setMaxHeight("300px");
+		Divider divider = new Divider(Horizontal.NONE, Vertical.S);
+		Divider divider2 = new Divider(Horizontal.NONE, Vertical.S);
 
+		UIUtils.setColSpan(2, divider, divider2, toolAdditionalInfo);
 
 //      Form layout
-		FormLayout formLayout = new FormLayout();
-		formLayout.addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
-		formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		formLayout.addFormItem(toolNameField,       "Tool Name");
-		formLayout.addFormItem(manufacturerField,   "Manufacturer");
-		formLayout.addFormItem(modelField,          "Model");
-		formLayout.addFormItem(toolInfoField,       "Tool Info");
-		formLayout.addFormItem(snCodeField,         "SN");
-		formLayout.addFormItem(barCodeField,        "Barcode");
-		formLayout.addFormItem(divider1,"")
-				.getElement().setAttribute("colspan", "2");
-		formLayout.addFormItem(categoriesComboBox,  "Category");
-		formLayout.addFormItem(toolStatusComboBox,  "Status");
-		formLayout.addFormItem(userField,           "User");
-		formLayout.addFormItem(reservedByField,     "Reserved By");
-		formLayout.addFormItem(divider2,"")
-				.getElement().setAttribute("colspan", "2");
-		formLayout.addFormItem(datesLayout,         "");
-		formLayout.addFormItem(priceAndGuaranteeLayout,"");
-		formLayout.addFormItem(additionalInfo, "Additional Info")
-				.getElement().setAttribute("colspan", "2");
-
-//		.getElement().setAttribute("colspan", "2");
+//		FormLayout formLayout = new FormLayout();
+		addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
+		setResponsiveSteps(
+				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
+				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
+		add(toolName);
+		add(toolManufacturer);
+		add(toolModel);
+		add(toolInfo);
+		add(toolSN);
+		add(toolBarcode);
+		add(divider); //colspan 2
+		add(toolCategory);
+		add(toolUsageStatus);
+		add(toolUser);
+		add(toolReservedByUser);
+		add(divider2); //colspan 2
+		add(datesLayout);
+		add(priceAndGuaranteeLayout);
+		add(toolAdditionalInfo); //colspan 2
 
 
-
-		binder.forField(toolNameField)
-				.asRequired("Name is required")
-				.bind(Tool::getName, Tool::setName);
-		binder.forField(manufacturerField)
-				.bind(Tool::getManufacturer, Tool::setManufacturer);
-		binder.forField(modelField)
-				.bind(Tool::getModel, Tool::setModel);
-		binder.forField(toolInfoField)
-				.bind(Tool::getToolInfo, Tool::setToolInfo);
-		binder.forField(snCodeField)
-				.bind(Tool::getSnCode, Tool::setSnCode);
-		binder.forField(barCodeField)
-				.bind(Tool::getBarcode, Tool::setBarcode);
-		binder.forField(categoriesComboBox)
-				.asRequired("Category is required")
-				.withConverter(new CustomConverter.ToolCategoryConverter())
-				.bind(Tool::getParent, Tool::setParent);
-		binder.forField(userField)
-				.withConverter(new CustomConverter.UserById())
-				.bind(Tool::getInUseByUserId, Tool::setInUseByUserId);
-		binder.forField(toolStatusComboBox)
-				.asRequired("Status is required")
-				.bind(Tool::getStatus, Tool::setStatus);
-		binder.forField(reservedByField)
-				.withConverter(new CustomConverter.UserById())
-				.bind(Tool::getReservedByUserId, Tool::setReservedByUserId);
-		binder.forField(boughtDateField)
-				.bind(Tool::getDateBought, Tool::setDateBought);
-		binder.forField(priceField)
-				.withConverter(new StringToDoubleConverter("Price must be a number"))
-				.withNullRepresentation(0.00)
-				.bind(Tool::getPrice, Tool::setPrice);
-		binder.forField(guaranteeField)
-				.withConverter(new StringToIntegerConverter("Guarantee must be a number"))
-				.withNullRepresentation(0)
-				.bind(Tool::getGuarantee_months, Tool::setGuarantee_months);
-
-		binder.forField(nextMaintenanceDateField)
-				.withValidator((Validator<LocalDate>) (nextMaintenanceDate, valueContext) -> {
-					if (boughtDateField.getValue() == null) {
-						return ValidationResult.ok();
-					}
-					if (nextMaintenanceDate == null) {
-						return ValidationResult.ok();
-					} else {
-						if (nextMaintenanceDate.isBefore(boughtDateField.getValue())) {
-							return ValidationResult.error("Next maintenance date cannot be before purchase date");
-						} else {
-							return ValidationResult.ok();
-						}
-					}
-				})
-				.bind(Tool::getDateBought, Tool::setDateBought);
-
+		binder.forField(name)
+				.bind(tool -> tool, null);
+		binder.forField(manufacturer)
+				.bind(tool -> tool, null);
+		binder.forField(model)
+				.bind(tool -> tool, null);
+		binder.forField(info)
+				.bind(tool -> tool, null);
+		binder.forField(sn)
+				.bind(tool -> tool, null);
+		binder.forField(barcode)
+				.bind(tool -> tool, null);
+		binder.forField(category)
+				.bind(tool -> tool, null);
+		binder.forField(user)
+				.bind(tool -> tool, null);
+		binder.forField(usageStatus)
+				.bind(tool -> tool, null);
+		binder.forField(reservedByUser)
+				.bind(tool -> tool, null);
+		binder.forField(price)
+				.bind(tool -> tool, null);
+		binder.forField(guarantee)
+				.bind(tool -> tool, null);
+		binder.forField(boughtDate)
+				.bind(tool -> tool, null);
+		binder.forField(nextMaintenanceDate)
+				.bind(tool -> tool, null);
 		binder.forField(additionalInfo)
-				.bind(Tool::getAdditionalInfo, Tool::setAdditionalInfo);
+				.bind(tool -> tool, null);
 
-		return formLayout;
+//		add(formLayout);
 	}
 
-	private FormLayout constructCategoryForm() {
-		TextField toolCategoryField = new TextField();
-		toolCategoryField.setWidth("100%");
+	private TextField getTextField(String text, String width, String suffix) {
 
-//      Form layout
-		FormLayout formLayout = new FormLayout();
-		formLayout.addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
-		formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		formLayout.addFormItem(toolCategoryField, "Category Name");
+		TextField textField = new TextField(text);
+		if (width.length() > 0) {
+			textField.setWidth(width);
+		}
+		if (suffix.length() > 0) {
+			textField.setSuffixComponent(new Span(suffix));
+		}
+		textField.setReadOnly(true);
+		textField.getStyle().set("padding-top", "var(--lumo-space-s)");
 
-		binder.forField(toolCategoryField)
-				.asRequired("Name is required")
-				.bind(Tool::getName, Tool::setName);
-
-		return formLayout;
+		return textField;
 	}
 
-
-	public boolean setTool(Tool t, HierarchyType hierarchyType) {
-		if (t == null) {
-			System.out.println("Tool cannot be NULL");
-			return false;
-		}
-
-		removeAll();
-		binder.removeBean();
-
-		tool = t;
-
-		if (hierarchyType.equals(HierarchyType.CATEGORY)) {
-			add(categoryFormLayout);
-		} else if (hierarchyType.equals(HierarchyType.TOOL)) {
-			add(toolFormLayout);
-		} else {
-			System.out.println("Unknown ToolForm HierarchyType: " + hierarchyType.toString());
-			return false;
-		}
-
+	public boolean setTool(Tool tool) {
 		try {
-			binder.readBean(t);
+			binder.removeBean();
+			binder.readBean(tool);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
 
 		return true;
-	}
-
-	public Tool getTool() {
-		try {
-			binder.validate();
-
-			if (binder.isValid()) {
-				binder.writeBean(tool);
-
-				return tool;
-			}
-		} catch (ValidationException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return null;
 	}
 }

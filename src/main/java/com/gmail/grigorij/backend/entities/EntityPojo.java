@@ -6,7 +6,7 @@ import javax.persistence.*;
 public class EntityPojo {
 
 	@Id
-	@GeneratedValue( strategy= GenerationType.AUTO )
+	@GeneratedValue( strategy = GenerationType.AUTO )
 	@Column(name = "id", nullable = false, updatable = false)
 	protected long id;
 
@@ -14,7 +14,7 @@ public class EntityPojo {
 	private boolean deleted = false;
 
 	@Column(name = "additional_info")
-	private String additionalInfo;
+	private String additionalInfo = "";
 
 	public EntityPojo() {}
 

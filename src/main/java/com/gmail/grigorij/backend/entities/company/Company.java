@@ -18,47 +18,46 @@ import java.util.Set;
 				query="SELECT company FROM Company company WHERE company.id = :company_id"),
 		@NamedQuery(
 				name="Company.getAllCompanies",
-				query="SELECT company FROM Company company ORDER BY company.companyName ASC")
+				query="SELECT company FROM Company company ORDER BY company.name ASC")
 })
 public class Company extends Person {
 
 	@Column(name = "name")
-	private String companyName;
+	private String name;
 
 	@Column(name = "vat")
-	private String companyVAT;
+	private String vat;
 
 
-	@ManyToOne(cascade={CascadeType.ALL})
-	@JoinColumn(name="location_id")
-	private Location location;
+	@Embedded
+	private Location address;
 
 	/*
 	List of locations related to company: warehouses, construction sites, etc...
 	 */
-	@OneToMany(mappedBy = "location", cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+	@ElementCollection
 	private Set<Location> locations = new HashSet<>();
 
 
-	public String getCompanyName() {
-		return companyName;
+	public String getName() {
+		return name;
 	}
-	public void setCompanyName(String companyName) {
-		this.companyName = companyName;
-	}
-
-	public String getCompanyVAT() {
-		return companyVAT;
-	}
-	public void setCompanyVAT(String companyVAT) {
-		this.companyVAT = companyVAT;
+	public void setName(String name) {
+		this.name = name;
 	}
 
-	public Location getLocation() {
-		return location;
+	public String getVat() {
+		return vat;
 	}
-	public void setLocation(Location location) {
-		this.location = location;
+	public void setVat(String vat) {
+		this.vat = vat;
+	}
+
+	public Location getAddress() {
+		return (this.address == null) ? new Location() : address;
+	}
+	public void setAddress(Location address) {
+		this.address = address;
 	}
 
 	public List<Location> getLocations() {
@@ -70,17 +69,20 @@ public class Company extends Person {
 	public void addLocation(Location location) {
 		this.locations.add(location);
 	}
+	public void removeLocation(Location location) {
+		this.locations.remove(location);
+	}
 
 	public static Company getEmptyCompany() {
 		Company company = new Company();
-		company.setCompanyName("");
-		company.setCompanyVAT("");
+		company.setName("");
+		company.setVat("");
 		company.setDeleted(false);
 		company.setFirstName("");
 		company.setLastName("");
 		company.setEmail("");
 
-		company.setLocation(Location.getEmptyLocation());
+		company.setAddress(new Location());
 
 		return company;
 	}

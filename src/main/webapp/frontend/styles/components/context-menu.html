@@ -4,57 +4,44 @@
 			content: none;
 		}
 
-		.vaadin-menu-list-box {
-			padding: 5px;
+		.icon-text-component {
+			padding-left: 10px;
+			padding-right: 10px;
 		}
+
 
 		.vaadin-menu-item {
 			padding: 0px;
-			padding-left: 5px;
-			padding-right: 5px;
 			cursor: pointer;
 		}
 
-		.vaadin-menu-item {
-			cursor: pointer;
+		.vaadin-menu-item:focus {
+			outline: none;
 		}
 
 		.list-item.list-item__prefix {
 			margin-right: var(--lumo-space-m);
 		}
 
-		.vaadin-menu-item > .icon-text-component {
-			margin-left: 4px;
-		}
-
-		.text-component {
-
-		}
-
 	</style>
 </custom-style>
-
-
-
 <dom-module id="my-vaadin-context-menu-theme" theme-for="vaadin-context-menu-overlay">
 	<template>
 		<style>
 			[part="overlay"] {
 				max-height: 80vh;
-
-				.divider {
-					pointer-events: none !important;
-				}
 			}
+			[part="content"] {
+				padding-top: 0px;
+				padding-bottom: 0px;
+			}
+
 			@media (max-width: 420px), (max-height: 420px) {
 				[part="content"] {
-					padding-top: 0px;
-					padding-bottom: 0px;
 					padding-left: 30px;
 					padding-right: 30px;
 					-webkit-mask-image: none;
 					mask-image: none;
-					max-height: 80vh;
 				}
 			}
 		</style>

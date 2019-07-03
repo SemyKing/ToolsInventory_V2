@@ -3,6 +3,7 @@ package com.gmail.grigorij.backend.database.facades;
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.tool.HierarchyType;
 import com.gmail.grigorij.backend.entities.tool.Tool;
+import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
@@ -10,8 +11,16 @@ import java.util.List;
 
 public class ToolFacade {
 
+	private Tool rootCategory;
+	private List<Tool> emptyList;
+
 	private static ToolFacade mInstance;
-	private ToolFacade() {}
+	private ToolFacade() {
+		rootCategory  = Tool.getEmptyTool();
+		rootCategory.setName(ProjectConstants.ROOT_CATEGORY);
+
+		emptyList = new ArrayList<>();
+	}
 	public static ToolFacade getInstance() {
 		if (mInstance == null) {
 			mInstance = new ToolFacade();
@@ -19,11 +28,19 @@ public class ToolFacade {
 		return mInstance;
 	}
 
+	public Tool getRootCategory() {
+		return rootCategory;
+	}
 
-	public List<Tool> getAllToolsList() {
+	public List<Tool> getEmptyList() {
+		return emptyList;
+	}
+
+
+	public List<Tool> getAll() {
 		List<Tool> tools;
 		try {
-			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Tool.getAllToolsList", Tool.class)
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Tool.getAll", Tool.class)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -31,11 +48,11 @@ public class ToolFacade {
 		return tools;
 	}
 
-	public List<Tool> getAllToolsListInCompany(long companyId) {
+	public List<Tool> getAllInCompany(long companyId) {
 		List<Tool> tools;
 		try {
-			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Tool.getAllToolsListInCompany", Tool.class)
-					.setParameter("id", companyId)
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Tool.getAllInCompany", Tool.class)
+					.setParameter("id_var", companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -43,9 +60,35 @@ public class ToolFacade {
 		return tools;
 	}
 
-	public List<Tool> getAllCategoriesList() {
-		List<Tool> categories = new ArrayList<>(getAllToolsList());
+//	public List<Tool> getAllCategoriesList() {
+//		List<Tool> categories = new ArrayList<>(getAll());
+//		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
+//		return categories;
+//	}
+
+//	public List<Tool> getAllCategoriesWithRoot() {
+//		List<Tool> categories = new ArrayList<>(getAll());
+//		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
+//		categories.add(0, rootCategory);
+//		return categories;
+//	}
+
+	public List<Tool> getAllCategoriesInCompanyWithRoot(long companyId) {
+		List<Tool> categories = new ArrayList<>(getAllInCompany(companyId));
 		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
+		categories.add(0, rootCategory);
+		return categories;
+	}
+
+	public List<Tool> getAllToolsOnly() {
+		List<Tool> toolsOnly = new ArrayList<>(getAll());
+		toolsOnly.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.CATEGORY));
+		return toolsOnly;
+	}
+
+	public List<Tool> getAllToolsInCompanyOnly(long companyId) {
+		List<Tool> categories = new ArrayList<>(getAllInCompany(companyId));
+		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.CATEGORY));
 		return categories;
 	}
 

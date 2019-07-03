@@ -2,42 +2,44 @@ package com.gmail.grigorij.backend.entities.tool;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.location.Location;
-import com.gmail.grigorij.backend.entities.user.User;
 
 import javax.persistence.*;
 import java.sql.Date;
-import java.time.LocalDate;
 import java.util.*;
 
 
 /**
- * Tool entity class works as both Category and Tool
+ * Tool entity class works both as Category and Tool
+ *
+ * Grid element only accepts one object type
  *
  * Used by a TreeGrid in
  * @see com.gmail.grigorij.ui.views.navigation.inventory.Inventory
  *
  *
- * if {@link #children} is empty, entity is a tool else it is a Category
+ * if {@link #children} is empty or {@link #hierarchyType} is HierarchyType.TOOL, entity is a tool else it is a Category
  *
  */
 
 @Entity
 @Table(name = "tools")
 @NamedQueries({
-		@NamedQuery(name="Tool.getAllToolsList",
+		@NamedQuery(name="Tool.getAll",
 				query="SELECT tool FROM Tool tool"),
-		@NamedQuery(name="Tool.getAllToolsListInCompany",
-				query="SELECT tool FROM Tool tool WHERE tool.companyId = :id")
+		@NamedQuery(name="Tool.getAllInCompany",
+				query="SELECT tool FROM Tool tool WHERE tool.companyId = :id_var")
 })
 public class Tool extends EntityPojo {
 
-	@ManyToOne(cascade={CascadeType.ALL})
+	/*
+	NULL parentCategory is root category
+	 */
+	@ManyToOne(cascade={CascadeType.REFRESH})
 	@JoinColumn(name="parent_id")
-	private Tool parent;
+	private Tool parentCategory;
 
-	@OneToMany(mappedBy = "parent", cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "parentCategory", cascade={CascadeType.ALL}, orphanRemoval = true, fetch = FetchType.LAZY)
 	private Set<Tool> children = new HashSet<>();
-
 
 	/*
 	Allows to keep track of item position in tree hierarchy and sort list -> Parent must be added before child
@@ -45,12 +47,11 @@ public class Tool extends EntityPojo {
 	@Column(name = "level")
 	private Integer level = 1;
 
+	/*
+	Allows to easily identify if Tool is a tool or category
+	 */
 	@Enumerated(EnumType.STRING)
 	private HierarchyType hierarchyType = HierarchyType.TOOL;
-
-
-	public Tool() {
-	}
 
 
 	@Column(name = "name")
@@ -58,6 +59,18 @@ public class Tool extends EntityPojo {
 
 	@Column(name = "company_id")
 	private long companyId;
+
+	@Column(name = "serial_number")
+	private String serialNumber;
+
+	@Column(name = "sn_code")
+	private String snCode;
+
+	@Column(name = "rf_code")
+	private String rfCode;
+
+	@Column(name = "barcode")
+	private String barcode;
 
 	@Column(name = "manufacturer")
 	private String manufacturer;
@@ -69,7 +82,7 @@ public class Tool extends EntityPojo {
 	private String toolInfo;
 
 	@Enumerated(EnumType.STRING)
-	private ToolStatus status = null;
+	private ToolStatus usageStatus = null;
 
 	@Column(name = "bPersonal")
 	private boolean bPersonal;
@@ -83,17 +96,11 @@ public class Tool extends EntityPojo {
 	@Column(name = "reserved_by_user_id")
 	private long reservedByUserId = -1;
 
-	@Column(name = "sn_code")
-	private String snCode;
-
-	@Column(name = "barcode")
-	private String barcode;
-
 	@Column(name = "date_bought")
-	private LocalDate dateBought;
+	private Date dateBought;
 
 	@Column(name = "date_next_maintenance")
-	private LocalDate dateNextMaintenance;
+	private Date dateNextMaintenance;
 
 	@Column(name = "price")
 	private Double price;
@@ -104,12 +111,33 @@ public class Tool extends EntityPojo {
 	@Embedded
 	private Location currentLocation;
 
+	//TODO: Last known GeoLocation
 
-	public Tool getParent() {
-		return parent;
+
+	public Tool() {}
+
+	public Tool(Tool tool) {
+		this.setName(tool.getName());
+		this.setManufacturer(tool.getManufacturer());
+		this.setModel(tool.getModel());
+		this.setToolInfo(tool.getToolInfo());
+		this.setSnCode(tool.getSnCode());
+		this.setBarcode(tool.getBarcode());
+		this.setCompanyId(tool.getCompanyId());
+		this.setParentCategory(tool.getParentCategory());
+		this.setUsageStatus(tool.getUsageStatus());
+		this.setDateBought(tool.getDateBought());
+		this.setDateNextMaintenance(tool.getDateNextMaintenance());
+		this.setPrice(tool.getPrice());
+		this.setGuarantee_months(tool.getGuarantee_months());
+		this.setAdditionalInfo(tool.getAdditionalInfo());
 	}
-	public void setParent(Tool parent) {
-		this.parent = parent;
+
+	public Tool getParentCategory() {
+		return parentCategory;
+	}
+	public void setParentCategory(Tool parentCategory) {
+		this.parentCategory = parentCategory;
 	}
 
 	public Set<Tool> getChildren() {
@@ -167,11 +195,11 @@ public class Tool extends EntityPojo {
 		this.toolInfo = toolInfo;
 	}
 
-	public ToolStatus getStatus() {
-		return status;
+	public ToolStatus getUsageStatus() {
+		return usageStatus;
 	}
-	public void setStatus(ToolStatus status) {
-		this.status = status;
+	public void setUsageStatus(ToolStatus usageStatus) {
+		this.usageStatus = usageStatus;
 	}
 
 	public boolean isbPersonal() {
@@ -216,17 +244,17 @@ public class Tool extends EntityPojo {
 		this.barcode = barcode;
 	}
 
-	public LocalDate getDateBought() {
+	public Date getDateBought() {
 		return dateBought;
 	}
-	public void setDateBought(LocalDate dateBought) {
+	public void setDateBought(Date dateBought) {
 		this.dateBought = dateBought;
 	}
 
-	public LocalDate getDateNextMaintenance() {
+	public Date getDateNextMaintenance() {
 		return dateNextMaintenance;
 	}
-	public void setDateNextMaintenance(LocalDate dateNextMaintenance) {
+	public void setDateNextMaintenance(Date dateNextMaintenance) {
 		this.dateNextMaintenance = dateNextMaintenance;
 	}
 
@@ -245,7 +273,7 @@ public class Tool extends EntityPojo {
 	}
 
 	public Location getCurrentLocation() {
-		return currentLocation;
+		return (this.currentLocation == null) ? new Location() : currentLocation;
 	}
 	public void setCurrentLocation(Location currentLocation) {
 		this.currentLocation = currentLocation;
@@ -254,7 +282,7 @@ public class Tool extends EntityPojo {
 	public Integer getLevel() {
 		return level;
 	}
-	private void setLevel(Integer level) {
+	public void setLevel(Integer level) {
 		this.level = level;
 	}
 
@@ -264,4 +292,60 @@ public class Tool extends EntityPojo {
 	public void setHierarchyType(HierarchyType hierarchyType) {
 		this.hierarchyType = hierarchyType;
 	}
+
+	public boolean hasChildren() {
+		return (this.getChildren().size() > 0);
+	}
+
+
+	public static Tool getEmptyTool() {
+		Tool t = new Tool();
+		t.setName("");
+		t.setParentCategory(null);
+		t.setCompanyId(-1);
+		t.setManufacturer("");
+		t.setModel("");
+		t.setToolInfo("");
+		t.setOwner("");
+		t.setSnCode("");
+		t.setBarcode("");
+		t.setDateBought(null);
+		t.setDateNextMaintenance(null);
+		t.setPrice(null);
+		t.setGuarantee_months(null);
+
+		return t;
+	}
+
+	public String getSerialNumber() {
+		return serialNumber;
+	}
+
+	public void setSerialNumber(String serialNumber) {
+		this.serialNumber = serialNumber;
+	}
+
+	public String getRfCode() {
+		return rfCode;
+	}
+
+	public void setRfCode(String rfCode) {
+		this.rfCode = rfCode;
+	}
+
+
+//	@Override
+//	public String toString() {
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("\nName: ").append(this.name);
+//		sb.append("\nCompany Id: ").append(this.companyId);
+//		sb.append("\nHierarchyType ").append(this.hierarchyType.toString());
+//
+//		if (this.parentCategory != null) {
+//			sb.append("\nParent Info: ").append(this.parentCategory);
+////			sb.append("\nParent Name: ").append(this.parentCategory.getName());
+//		}
+//
+//		return sb.toString();
+//	}
 }

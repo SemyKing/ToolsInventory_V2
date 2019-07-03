@@ -48,6 +48,23 @@ public class DatabaseManager {
 	}
 
 
+	public <T> T merge(T pojo) {
+		EntityManager em = createEntityManager();
+		try {
+			em.getTransaction().begin();
+			T p = em.merge(pojo);
+			em.flush();
+			p = em.merge(p); // Related entities marked cascade-merge will become merged too.
+			em.getTransaction().commit();
+			return p;
+		} catch (RollbackException e) {
+			throw e;
+		} finally {
+			em.close();
+		}
+	}
+
+
 	public <T> T update(T pojo) {
 		System.out.println();
 		System.out.println("Updating pojo: " + pojo.getClass().getSimpleName());

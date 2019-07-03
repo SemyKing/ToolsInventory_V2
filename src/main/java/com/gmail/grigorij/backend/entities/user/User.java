@@ -16,10 +16,10 @@ import javax.persistence.*;
 				name="User.findUserInDatabaseByUsername",
 				query="SELECT user FROM User user WHERE user.username = :username ORDER BY user.username ASC"),
 		@NamedQuery(
-				name="User.listAllUsers",
+				name="User.getAllUsers",
 				query="SELECT user FROM User user ORDER BY user.username ASC"),
 		@NamedQuery(
-				name="User.listUsersByCompanyId",
+				name="User.getUsersByCompanyId",
 				query="SELECT user FROM User user WHERE user.companyId = :companyId"),
 		@NamedQuery(
 				name="User.getUserById",
@@ -98,7 +98,7 @@ public class User extends Person {
 		user.setEmail("");
 
 		user.setThemeVariant(Lumo.LIGHT);
-		user.setPersonLocation(Location.getEmptyLocation());
+		user.setAddress(new Location());
 
 		return user;
 	}

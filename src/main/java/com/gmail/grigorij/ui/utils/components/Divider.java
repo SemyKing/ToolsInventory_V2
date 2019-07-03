@@ -1,35 +1,31 @@
 package com.gmail.grigorij.ui.utils.components;
 
-import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.LumoStyles;
+import com.gmail.grigorij.ui.utils.css.size.Size;
+import com.vaadin.flow.component.html.Div;
 
-public class Divider extends Composite<FlexLayout> {
+public class Divider extends FlexBoxLayout {
 
-    private final String CLASS_NAME = "divider";
+    public Divider(Size... sizes) {
 
-    private final Div divider;
+        for (Size size : sizes) {
+            for (String attribute : size.getPaddingAttributes()) {
+                getStyle().set(attribute, size.getVariable());
+            }
+        }
+        String height = "1px";
 
-    public Divider(String height) {
-        this(FlexComponent.Alignment.CENTER, height);
+        getElement().getStyle().set("pointer-events", "none");
+        setHeight(height);
+        setWidth("100%");
+//        setComponentPadding(Horizontal.NONE, Vertical.S);
+        setAlignItems(Alignment.CENTER);
+
+        Div d = new Div();
+        d.setHeight(height);
+        d.setWidth("100%");
+        UIUtils.setBackgroundColor(LumoStyles.Color.Contrast._20, d);
+        add(d);
     }
-
-    public Divider(FlexComponent.Alignment alignItems, String height) {
-        getContent().setClassName(CLASS_NAME);
-
-        getContent().setAlignItems(alignItems);
-        getContent().setHeight(height);
-
-
-        divider = new Div();
-        UIUtils.setBackgroundColor(LumoStyles.Color.Contrast._20, divider);
-        divider.setHeight("1px");
-        divider.setWidth("100%");
-        divider.getElement().getStyle().set("padding", "0px");
-        getContent().add(divider);
-    }
-
 }

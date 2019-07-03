@@ -1,6 +1,9 @@
 package com.gmail.grigorij.ui.utils.components.navigation.bar;
 
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.ui.utils.css.size.Bottom;
+import com.gmail.grigorij.ui.utils.css.size.Top;
+import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
@@ -21,7 +24,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -42,7 +44,7 @@ public class AppBar extends Composite<FlexLayout> {
 
     private H4 title;
     private FlexBoxLayout actionItems;
-    private FlexLayout userInfo;
+    private FlexBoxLayout userInfo;
 
     private FlexBoxLayout tabContainer;
     private NaviTabs tabs;
@@ -109,40 +111,28 @@ public class AppBar extends Composite<FlexLayout> {
     }
 
     private void initUserInfo() {
-        userInfo = new FlexLayout();
-        userInfo.addClassNames(CLASS_NAME + "__user_info");
+        userInfo = new FlexBoxLayout();
+        userInfo.addClassNames(CLASS_NAME + "__user-info");
         userInfo.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        userInfo.setFlexDirection(FlexDirection.COLUMN);
 
-        String userText = (AuthenticationService.getSessionData().getUser() == null) ? "USER NULL" : AuthenticationService.getSessionData().getUser().getUsername();
-        userText += " (";
-        userText += (AuthenticationService.getSessionData().getCompany() == null) ? "COMPANY NULL" : AuthenticationService.getSessionData().getCompany().getCompanyName();
-        userText += ") ";
+        SessionData sessionData = AuthenticationService.getSessionData();
 
-        Span username = new Span(userText);
-        username.addClassName(CLASS_NAME + "__username");
+        ListItem item = new ListItem(sessionData.getUser().getUsername(), sessionData.getCompany().getName(), UIUtils.createInitials(sessionData.getUser().getInitials()));
+        item.setClassName("user-info-list-item");
+        item.getContent().setClassName("user-list-item__content");
+        item.getSuffix().setClassName("user-list-item__suffix");
 
-        userInfo.add(username, VaadinIcon.USER.create());
+        item.setHorizontalPadding(false);
+        userInfo.add(item);
 
 
         ContextMenu contextMenu = new ContextMenu(userInfo);
         contextMenu.setOpenOnClick(true);
 
-
-
-        FlexBoxLayout userInfo = new FlexBoxLayout();
-        userInfo.setFlexDirection(FlexDirection.COLUMN);
-        User user = AuthenticationService.getSessionData().getUser();
-        ListItem item = new ListItem(UIUtils.createInitials(user.getInitials()), user.getFirstName() + " " + user.getLastName(), user.getEmail());
-        item.setHorizontalPadding(false);
-        userInfo.add(item);
-
-
-        contextMenu.addItem(userInfo, e -> openUserInformationDialog());
-//        contextMenu.add(new Divider("1px"));
-//        contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.PASSWORD, UIUtils.createText("Change password")), e -> {
-//            openPasswordChangeDialog();
-//        });
-        contextMenu.add(new Divider("1px"));
+        contextMenu.add(new Divider(Bottom.XS));
+        contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.USER, UIUtils.createText("Profile")), e -> openUserInformationDialog());
+        contextMenu.add(new Divider(Vertical.XS));
         contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.MOON, UIUtils.createText("Change theme")), e -> {
             String themeVariant = AuthenticationService.getSessionData().getUser().getThemeVariant();
             if (themeVariant.equals(Lumo.DARK)) {
@@ -153,17 +143,16 @@ public class AppBar extends Composite<FlexLayout> {
             menuLayout.setThemeVariant(themeVariant);
             AuthenticationService.getSessionData().getUser().setThemeVariant(themeVariant);
         });
-        contextMenu.add(new Divider("1px"));
-        contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.SIGN_OUT, UIUtils.createText("Log Out")), e -> {
-            AuthenticationService.signOut();
-        });
+        contextMenu.add(new Divider(Vertical.XS));
+        contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.EXIT_O, UIUtils.createBoldText("Log Out")), e -> AuthenticationService.signOut());
+        contextMenu.add(new Divider(Top.XS));
     }
 
     private void openUserInformationDialog() {
         CustomDialog dialog = new CustomDialog();
         dialog.setHeader(UIUtils.createH4Label("User Information"));
         dialog.setConfirmButton(UIUtils.createButton("Save", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
-
+        dialog.getCancelButton().addClickListener(e -> dialog.close());
         dialog.getConfirmButton().addClickListener(e -> {
             User editedCurrentUser = userForm.getUser();
 

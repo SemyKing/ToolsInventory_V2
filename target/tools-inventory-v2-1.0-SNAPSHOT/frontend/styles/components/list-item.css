@@ -1,7 +1,6 @@
 .list-item {
   box-sizing: border-box;
   overflow: hidden;
-  padding: var(--lumo-space-wide-r-l);
   position: relative;
 }
 

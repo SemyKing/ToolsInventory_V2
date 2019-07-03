@@ -58,10 +58,10 @@ public class UserFacade {
 	}
 
 
-	public List<User> listAllUsers() {
+	public List<User> getAllUsers() {
 		List<User> users;
 		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.listAllUsers", User.class)
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getAllUsers", User.class)
 					.getResultList();
 		} catch (NoResultException nre) {
 			users = null;
@@ -70,10 +70,10 @@ public class UserFacade {
 	}
 
 
-	public List<User> listUsersByCompanyId(long companyId) {
+	public List<User> getUsersByCompanyId(long companyId) {
 		List<User> users;
 		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.listUsersByCompanyId", User.class)
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUsersByCompanyId", User.class)
 					.setParameter("companyId", companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
