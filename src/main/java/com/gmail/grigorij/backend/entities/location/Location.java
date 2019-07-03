@@ -60,15 +60,4 @@ public class Location {
 	public void setCountry(String country) {
 		this.country = country;
 	}
-
-//	public static Location getEmptyLocation() {
-//		Location location = new Location();
-//		location.setName("");
-//		location.setAddressLine1("");
-//		location.setAddressLine2("");
-//		location.setPostcode("");
-//		location.setCity("");
-//		location.setCountry("");
-//		return location;
-//	}
 }
