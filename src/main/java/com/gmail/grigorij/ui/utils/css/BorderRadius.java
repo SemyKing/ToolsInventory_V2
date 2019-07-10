@@ -2,6 +2,8 @@ package com.gmail.grigorij.ui.utils.css;
 
 public enum BorderRadius {
 
+
+    NONE("0"),
     S("var(--lumo-border-radius-s)"),
     M("var(--lumo-border-radius-m)"),
     L("var(--lumo-border-radius-l)"),

@@ -18,8 +18,9 @@ public class DetailsDrawerHeader extends FlexBoxLayout {
     public DetailsDrawerHeader(String title) {
         setDisplay(Display.FLEX);
         setFlexDirection(FlexDirection.ROW);
+        setAlignItems(Alignment.CENTER);
 
-        addClassNames(LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.M, LumoStyles.Padding.Bottom.S, BoxShadowBorders.BOTTOM);
+        addClassNames(LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Vertical.XS, BoxShadowBorders.BOTTOM);
         UIUtils.setBoxSizing(BoxSizing.BORDER_BOX, this);
         setWidth("100%");
 

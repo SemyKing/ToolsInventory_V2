@@ -96,6 +96,13 @@
             <version>23.6-jre</version>
         </dependency>
 
+        <!-- QR CODE READER -->
+        <dependency>
+            <groupId>org.vaadin.elmot.v10</groupId>
+            <artifactId>qr-reader</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
     </dependencies>
 
 

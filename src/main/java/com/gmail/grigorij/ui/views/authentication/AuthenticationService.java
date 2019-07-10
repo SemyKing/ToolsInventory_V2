@@ -1,8 +1,6 @@
 package com.gmail.grigorij.ui.views.authentication;
 
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.UI;
@@ -38,8 +36,7 @@ public class AuthenticationService {
     }
 
     public static SessionData getSessionData() {
-        SessionData sessionData = (SessionData) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA);
-        return sessionData;
+        return (SessionData) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA);
     }
 
     public static void setSessionData(SessionData sessionData) {
@@ -77,9 +74,9 @@ public class AuthenticationService {
         System.out.println();
 
         if (user == null)
-            user = UserFacade.getInstance().findUserInDatabaseByUsername(username);
+            user = UserFacade.getInstance().getUserByUsername(username);
 
-        Company company;
+//        Company company;
 
         if (user == null) {
             System.out.println("login fail, user not found (NULL)");
@@ -91,9 +88,9 @@ public class AuthenticationService {
                 return false;
             }
 
-            company = CompanyFacade.getInstance().findCompanyById(user.getCompanyId());
+//            company = CompanyFacade.getInstance().findCompanyById(user.getCompanyId());
 
-            if (company == null) {
+            if (user.getCompany() == null) {
                 UIUtils.showNotification("Company is NULL", UIUtils.NotificationType.ERROR, 10000);
                 System.out.println("login fail, NULL company");
                 return false;
@@ -102,7 +99,7 @@ public class AuthenticationService {
 
         SessionData sessionData = new SessionData();
         sessionData.setUser(user);
-        sessionData.setCompany(company);
+//        sessionData.setCompany(company);
 
         setSessionData(sessionData);
         System.out.println("--constructSessionData() successful");

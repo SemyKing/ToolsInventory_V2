@@ -159,7 +159,7 @@ public class ToolCopyForm extends FormLayout {
 			tool.setBarcode(originalTool.getBarcode());
 		}
 		if (company.getValue()) {
-			tool.setCompanyId(originalTool.getCompanyId());
+			tool.setCompany(originalTool.getCompany());
 		}
 		if (category.getValue()) {
 			tool.setParentCategory(originalTool.getParentCategory());

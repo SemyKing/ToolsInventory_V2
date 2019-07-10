@@ -4,9 +4,11 @@ import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.tool.HierarchyType;
 import com.gmail.grigorij.backend.entities.tool.Tool;
 import com.gmail.grigorij.utils.ProjectConstants;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
 
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class ToolFacade {
@@ -48,11 +50,11 @@ public class ToolFacade {
 		return tools;
 	}
 
-	public List<Tool> getAllInCompany(long companyId) {
+	private List<Tool> getAllInCompany(long companyId) {
 		List<Tool> tools;
 		try {
 			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Tool.getAllInCompany", Tool.class)
-					.setParameter("id_var", companyId)
+					.setParameter("company_id_var", companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -73,6 +75,12 @@ public class ToolFacade {
 //		return categories;
 //	}
 
+	public List<Tool> getAllCategoriesInCompany(long companyId) {
+		List<Tool> categories = new ArrayList<>(getAllInCompany(companyId));
+		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
+		return categories;
+	}
+
 	public List<Tool> getAllCategoriesInCompanyWithRoot(long companyId) {
 		List<Tool> categories = new ArrayList<>(getAllInCompany(companyId));
 		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
@@ -92,6 +100,33 @@ public class ToolFacade {
 		return categories;
 	}
 
+	public TreeData<Tool> getSortedToolsAndCategoriesByCompany(long companyId) {
+
+		TreeData<Tool> data = new TreeData<>();
+		List<Tool> toolsAndCategories = getAllInCompany(companyId);
+		toolsAndCategories.sort(Comparator.comparing(Tool::getLevel).thenComparing(Tool::getName));
+
+		// add root level items
+//		data.addItems(null, categories);
+
+		// add children for the root level items
+//		categories.forEach(category -> data.addItems(category, category.getChildren()));
+		toolsAndCategories.forEach(tool -> data.addItem(tool.getParentCategory(), tool));
+
+
+
+		/*
+		List must be sorted -> Parent must be added before child
+		*/
+//		toolsAndCategoriesInCompany.sort(Comparator.comparing(Tool::getLevel).thenComparing(Tool::getName));
+
+		/*
+		Add data to grid
+		 */
+//	    toolsAndCategoriesInCompany.forEach(tool -> grid.getTreeData().addItem(tool.getParentCategory(), tool));
+
+		return data;
+	}
 
 
 	public boolean insert(Tool tool) {
@@ -139,7 +174,6 @@ public class ToolFacade {
 		System.out.println("Tool UPDATE successful");
 		return true;
 	}
-
 
 	public boolean remove(Tool tool) {
 		System.out.println();

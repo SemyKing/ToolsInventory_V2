@@ -1,8 +1,7 @@
 package com.gmail.grigorij.ui.views.navigation.admin;
 
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.ToolFacade;
-import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.backend.entities.tool.HierarchyType;
 import com.gmail.grigorij.backend.entities.tool.Tool;
 import com.gmail.grigorij.backend.entities.tool.ToolStatus;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -14,18 +13,15 @@ import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.*;
 import com.gmail.grigorij.ui.utils.forms.ToolCopyForm;
-import com.gmail.grigorij.ui.utils.forms.admin.AdminToolBulkForm;
 import com.gmail.grigorij.ui.utils.forms.admin.AdminToolCategoryForm;
 import com.gmail.grigorij.ui.utils.forms.admin.AdminToolForm;
+import com.gmail.grigorij.ui.views.navigation.admin.AdminInventoryBulkEditor.OperationType;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.UIDetachedException;
+import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -34,6 +30,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,21 +39,23 @@ import java.util.List;
 public class AdminInventory extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-inventory";
-	final static String TAB_NAME = "Inventory";
+	final static String TAB_NAME = ProjectConstants.INVENTORY;
 
 	private AdminMain adminMain;
 	private AdminToolForm adminToolForm;
-	private AdminToolBulkForm bulkAdminToolForm = null;
+	private AdminInventoryBulkEditor bulkEditor = null;
 	private AdminToolCategoryForm adminCategoryForm = new AdminToolCategoryForm();
 	private ToolCopyForm toolCopyForm; //used for checkboxes(tool parameters) and numbers of copy
 
 	private Grid<Tool> grid;
 	private ListDataProvider<Tool> dataProvider;
+	private List<Tool> selectedTools = null;
 
 	private DetailsDrawer detailsDrawer;
 	private DetailsDrawerHeader detailsDrawerHeader;
-	private FlexBoxLayout bulkEditHeader = null;
-	private DetailsDrawerFooter detailsDrawerFooter;
+	private Button copyToolButton;
+	private Button deleteToolButton;
+	private Button editToolButton;
 
 
 	AdminInventory(AdminMain adminMain) {
@@ -79,12 +78,23 @@ public class AdminInventory extends FlexBoxLayout {
 		header.setClassName(CLASS_NAME + "__header");
 		header.setMargin(Top.S);
 
+		editToolButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
+		editToolButton.setMinWidth("52px"); //looks better
+		editToolButton.addClickListener(e -> editSelectedTools());
+		editToolButton.setEnabled(false);
+
+		header.add(editToolButton);
+
 		TextField searchField = new TextField();
 		searchField.setWidth("100%");
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Tools");
+		searchField.setValueChangeMode(ValueChangeMode.EAGER);
+//		searchField.setValueChangeMode(ValueChangeMode.ON_CHANGE);
+		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
+		header.setComponentMargin(searchField, Left.S);
 		header.add(searchField);
 
 		FlexBoxLayout optionsContextMenuButton = adminMain.constructOptionsButton();
@@ -117,13 +127,6 @@ public class AdminInventory extends FlexBoxLayout {
 		grid.setId("tools-grid");
 		grid.setClassName("grid-view");
 		grid.setSizeFull();
-		grid.asSingleSelect().addValueChangeListener(e -> {
-			if (grid.asSingleSelect().getValue() != null) {
-				showToolDetails(grid.asSingleSelect().getValue(), "Tool Details");
-			} else {
-				detailsDrawer.hide();
-			}
-		});
 
 		dataProvider = DataProvider.ofCollection(ToolFacade.getInstance().getAllToolsOnly());
 		grid.setDataProvider(dataProvider);
@@ -132,84 +135,238 @@ public class AdminInventory extends FlexBoxLayout {
 				.setWidth(UIUtils.COLUMN_WIDTH_XS)
 				.setFlexGrow(0);
 
-		ComponentRenderer<Span, Tool> toolCompanyRenderer = new ComponentRenderer<>(
-				tool -> {
-					Span companyName = new Span("");
-					companyName.setWidth("100%");
-					if (tool.getCompanyId() >= 0) {
-						companyName.setText(CompanyFacade.getInstance().findCompanyById(tool.getCompanyId()).getName());
-					}
-					return companyName;
-				});
-		grid.addColumn(toolCompanyRenderer)
+//		ComponentRenderer<Span, Tool> toolCompanyRenderer = new ComponentRenderer<>(
+//				tool -> {
+//					Span companyName = new Span("");
+//					companyName.setWidth("100%");
+//					if (tool.getCompany() != null) {
+//						companyName.setText(tool.getCompany().getName());
+//					}
+//					return companyName;
+//				});
+//		grid.addColumn(toolCompanyRenderer)
+//				.setHeader("Company")
+//				.setWidth(UIUtils.COLUMN_WIDTH_M);
+
+		grid.addColumn(tool -> (tool.getCompany() == null) ? "" : tool.getCompany().getName())
 				.setHeader("Company")
 				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
-		ComponentRenderer<Span, Tool> toolCategoryRenderer = new ComponentRenderer<>(
-				tool -> {
-					Span categoryName = new Span("");
-					categoryName.setWidth("100%");
-					if (tool.getParentCategory() != null) {
-						categoryName.setText(tool.getParentCategory().getName());
-					}
-					return categoryName;
-				});
-		grid.addColumn(toolCategoryRenderer)
+//		ComponentRenderer<Span, Tool> toolCategoryRenderer = new ComponentRenderer<>(
+//				tool -> {
+//					Span categoryName = new Span("");
+//					categoryName.setWidth("100%");
+//					if (tool.getParentCategory() != null) {
+//						categoryName.setText(tool.getParentCategory().getName());
+//					}
+//					return categoryName;
+//				});
+//		grid.addColumn(toolCategoryRenderer)
+//				.setHeader("Category")
+//				.setWidth(UIUtils.COLUMN_WIDTH_M);
+
+		grid.addColumn(tool -> (tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName())
 				.setHeader("Category")
 				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
 		grid.addColumn(Tool::getName).setHeader("Tool")
-				.setWidth(UIUtils.COLUMN_WIDTH_L);
+				.setWidth(UIUtils.COLUMN_WIDTH_XL);
 
-		ComponentRenderer<Badge, Tool> toolStatusRenderer = new ComponentRenderer<>(
-				tool -> {
-					ToolStatus status = tool.getUsageStatus();
-					Badge badge;
-					if (status == null) {
-						badge = new Badge("", null, null);
-					} else {
-						badge = new Badge(status.getStringValue(), status.getIcon(), status.getColor());
-					}
-					badge.setWidth("100%");
-					return badge;
-				});
-		grid.addColumn(toolStatusRenderer)
+//		ComponentRenderer<FlexBoxLayout, Tool> toolStatusRenderer = new ComponentRenderer<>(
+//				tool -> {
+//					FlexBoxLayout layout = new FlexBoxLayout();
+//					ToolStatus status = tool.getUsageStatus();
+//					if (status != null) {
+//						layout = new CustomBadge(status.getStringValue(), status.getColor(), status.getIcon());
+//					}
+//					return layout;
+//				});
+//		grid.addColumn(toolStatusRenderer)
+//				.setHeader("Status")
+//				.setWidth(UIUtils.COLUMN_WIDTH_S)
+//				.setFlexGrow(0);
+
+		grid.addColumn(tool -> (tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getStringValue())
 				.setHeader("Status")
 				.setWidth(UIUtils.COLUMN_WIDTH_S)
 				.setFlexGrow(0);
 
-		ComponentRenderer<Span, Tool> toolUserRenderer = new ComponentRenderer<>(
-				tool -> {
-					ToolStatus status = tool.getUsageStatus();
-					Span username = new Span("");
-					username.setWidth("100%");
+//		ComponentRenderer<Component, Tool> toolUserRenderer = new ComponentRenderer<>(
+//				tool -> {
+//					FlexBoxLayout layout  = new FlexBoxLayout();
+//					layout.setWidth("100%");
+//
+//					if (tool.getHierarchyType().equals(HierarchyType.TOOL)) {
+//						ToolStatus status = tool.getUsageStatus();
+//
+//						if (status == null) {
+//							System.err.println("Tools status is NULL");
+//							System.out.println("Tool: " + tool.toString());
+//						} else {
+//							if (status.equals(ToolStatus.IN_USE)) {
+//								Span username = new Span("");
+//								username.setWidth("100%");
+//
+//								if (tool.getUser() == null) {
+//									System.err.println("Tools User is NULL with status: " + status.getStringValue());
+//								} else {
+//									username.setText(tool.getUser().getUsername());
+//									layout.add(username);
+//								}
+//							} else if (status.equals(ToolStatus.RESERVED)) {
+//								if (tool.getUser() == null) {
+//									System.err.println("Tools User is NULL with status: " + status.getStringValue());
+//								}
+//								if (tool.getReservedByUser() == null) {
+//									System.err.println("Tools User (reserved by) is NULL with status: " + status.getStringValue());
+//								}
+//
+//								if (tool.getUser() != null && tool.getReservedByUser() != null) {
+//									ListItem item = new ListItem(tool.getUser().getUsername(), tool.getReservedByUser().getUsername());
+//									item.setHorizontalPadding(false);
+//									layout.add(item);
+//								}
+//							}
+//						}
+//					}
+//					return layout;
+//				});
+//		grid.addColumn(toolUserRenderer)
+//				.setHeader("User")
+//				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
-					if (status != null) {
-						if (status.equals(ToolStatus.IN_USE)) {
-							if (tool.getInUseByUserId() <= 0) {
-								//TODO: ADD TO LOG
-//								System.out.println("User id is <= 0 for tool with 'IN USE' status");
-//								System.out.println("Tool id: " + tool.getId() + ", name: " + tool.getName());
-							} else {
-								username.setText(UserFacade.getInstance().getUserById(tool.getInUseByUserId()).getUsername());
-							}
-						}
-					}
-					return username;
-				});
-		grid.addColumn(toolUserRenderer)
+		grid.addColumn(tool -> (tool.getUser() == null) ? "" : tool.getUser().getUsername())
 				.setHeader("User")
-				.setWidth(UIUtils.COLUMN_WIDTH_M)
-				.setFlexGrow(0);
+				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
 		grid.addColumn(new ComponentRenderer<>(tool -> UIUtils.createActiveGridIcon(tool.isDeleted()))).setHeader("Visible")
 				.setWidth(UIUtils.COLUMN_WIDTH_XS)
 				.setFlexGrow(0);
 
+		grid.setSelectionMode(Grid.SelectionMode.MULTI);
+
+
+		grid.addSelectionListener(event -> {
+			selectedTools = new ArrayList<>(event.getAllSelectedItems());
+			editToolButton.setEnabled((selectedTools.size() > 0));
+
+			if ((selectedTools.size() <= 0)) {
+				closeDetails();
+			}
+		});
+
 		add(grid);
 	}
 
-	private Button copyToolButton;
+	private void filterGrid(String searchString) {
+		dataProvider.clearFilters();
+		final String mainSearchString = searchString.trim();
+
+//		System.out.println("Main Search String: " + mainSearchString);
+//
+//		final String space = " ";
+//
+//		List<String> finalParams = new ArrayList<>();
+//
+//		//Add search parameters with double quotes: "param".
+//		if ((StringUtils.countMatches(mainSearchString, "\"") % 2) == 0) {
+//			String[] valuesInQuotes = StringUtils.substringsBetween(mainSearchString, "\"", "\"");
+//
+//			if (valuesInQuotes != null) {
+//				if (valuesInQuotes.length > 0) {
+//					finalParams.addAll(Arrays.asList(valuesInQuotes));
+//				}
+//			}
+//		}
+//
+//		String searchParamCopy = mainSearchString.replaceAll("\"", "");
+//
+//		for (String s : finalParams) {
+//			if (searchParamCopy.contains(s)) {
+//				searchParamCopy = searchParamCopy.replace(s, "");
+//			}
+//		}
+//
+////		searchParamCopy = searchParamCopy.trim();
+//
+//		if (searchParamCopy.contains(space)) {
+//			String[] searchParams = searchParamCopy.split(space);
+//
+//			for (String s : searchParams) {
+//				s = s.trim();
+//				if (s.length() > 0) {
+//					finalParams.add(s);
+//				}
+//			}
+//		}
+//
+//		System.out.println();
+//		System.out.println("Final parameters");
+//		for (String s : finalParams) {
+//			System.out.println("param: '" + s + "'");
+//		}
+//
+//
+//		dataProvider.addFilter(
+//			tool -> {
+//				boolean res = true;
+//				for (String sParam : finalParams) {
+//					res = StringUtils.containsIgnoreCase(tool.getName(), sParam) ||
+//							StringUtils.containsIgnoreCase(tool.getToolInfo(), sParam) ||
+//							StringUtils.containsIgnoreCase(tool.getManufacturer(), sParam) ||
+//							StringUtils.containsIgnoreCase(tool.getModel(), sParam) ||
+//							StringUtils.containsIgnoreCase(tool.getSnCode(), sParam) ||
+//							StringUtils.containsIgnoreCase(tool.getBarcode(), sParam) ||
+//
+//							(tool.getCompany() != null) ? StringUtils.containsIgnoreCase(tool.getCompany().getName(), sParam) : false ||
+//							(tool.getParentCategory() != null) ? StringUtils.containsIgnoreCase(tool.getParentCategory().getName(), sParam) : false ||
+//
+//							StringUtils.containsIgnoreCase(tool.getUsageStatus().getStringValue(), sParam);
+//
+//
+//					//(res) -> shows All items based on searchParams
+//					//(!res) -> shows ONE item based on searchParams
+//					if (!res)
+//						break;
+//				}
+//				return res;
+//			}
+//		);
+
+		if (mainSearchString.contains("+")) {
+			String[] searchParams = mainSearchString.split("\\+");
+
+			dataProvider.addFilter(
+					tool -> {
+						boolean res = true;
+
+						for (String sParam : searchParams) {
+							res =  StringUtils.containsIgnoreCase(tool.getName(), sParam) ||
+									StringUtils.containsIgnoreCase((tool.getUser() == null) ? "" : tool.getUser().getUsername(), sParam) ||
+									StringUtils.containsIgnoreCase((tool.getReservedByUser() == null) ? "" : tool.getReservedByUser().getUsername(), sParam) ||
+									StringUtils.containsIgnoreCase((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName(), sParam) ||
+									StringUtils.containsIgnoreCase((tool.getCompany() == null) ? "" : tool.getCompany().getName(), sParam) ||
+									StringUtils.containsIgnoreCase((tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getStringValue(), sParam);
+
+							//(res) -> shows All items based on searchParams (multiple rows)
+							//(!res) -> shows ONE item based on searchParams
+							if (!res)
+								break;
+						}
+						return res;
+					}
+			);
+		} else {
+			dataProvider.addFilter(
+					tool -> StringUtils.containsIgnoreCase(tool.getName(), mainSearchString)  ||
+							StringUtils.containsIgnoreCase((tool.getUser() == null) ? "" : tool.getUser().getUsername(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((tool.getReservedByUser() == null) ? "" : tool.getReservedByUser().getUsername(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((tool.getCompany() == null) ? "" : tool.getCompany().getName(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getStringValue(), mainSearchString)
+			);
+		}
+	}
 
 	private void createDetailsDrawer() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
@@ -220,20 +377,26 @@ public class AdminInventory extends FlexBoxLayout {
 		detailsDrawerHeader = new DetailsDrawerHeader("");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
-		copyToolButton = UIUtils.createTertiaryInlineButton(VaadinIcon.COPY);
+		copyToolButton = UIUtils.createIconButton(VaadinIcon.COPY, ButtonVariant.LUMO_CONTRAST);
 		copyToolButton.addClickListener(e -> constructToolCopyDialog());
-		detailsDrawerHeader.getContainer().add(copyToolButton);
-		detailsDrawerHeader.getContainer().setComponentMargin(copyToolButton, Left.AUTO);
 		UIUtils.setTooltip("Create a copy of this tool", copyToolButton);
+
+		deleteToolButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR);
+		deleteToolButton.addClickListener(e -> confirmDelete());
+		UIUtils.setTooltip("Delete this tool from Database", deleteToolButton);
+
+		detailsDrawerHeader.getContainer().add(copyToolButton, deleteToolButton);
+		detailsDrawerHeader.getContainer().setComponentMargin(copyToolButton, Left.AUTO);
+		detailsDrawerHeader.getContainer().setComponentMargin(deleteToolButton, Left.M);
+
 
 		detailsDrawer.setHeader(detailsDrawerHeader);
 		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
 
 		// Footer
-		detailsDrawerFooter = new DetailsDrawerFooter();
+		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.getSave().addClickListener(e -> updateTool());
 		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
-		detailsDrawerFooter.getDelete().addClickListener(e -> confirmDelete());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 
 		adminMain.setDetailsDrawer(detailsDrawer);
@@ -242,7 +405,7 @@ public class AdminInventory extends FlexBoxLayout {
 	private void showToolDetails(Tool tool, String title) {
 		detailsDrawerHeader.setTitle(title);
 
-		detailsDrawerFooter.getDelete().setEnabled( tool != null );
+		deleteToolButton.setEnabled( tool != null );
 		copyToolButton.setEnabled( tool != null );
 
 		adminToolForm.setTool(tool);
@@ -256,115 +419,6 @@ public class AdminInventory extends FlexBoxLayout {
 		grid.select(null);
 	}
 
-
-	private void updateCategory(Tool editedCategory) {
-		System.out.println("\nupdateCategory()");
-
-		if (editedCategory != null) {
-
-			System.out.println("editedCategory.getParentCategory(): " + editedCategory.getParentCategory());
-
-			if (editedCategory.getParentCategory() != null) {
-				if (editedCategory.getParentCategory().equals(ToolFacade.getInstance().getRootCategory())) {
-					editedCategory.setParentCategory(null);
-				}
-			}
-
-			if (ToolFacade.getInstance().update(editedCategory)) {
-				if (adminCategoryForm.isNew()) {
-					dataProvider.getItems().add(editedCategory);
-					UIUtils.showNotification("Category created successfully", UIUtils.NotificationType.SUCCESS);
-				} else {
-					UIUtils.showNotification("Category updated successfully", UIUtils.NotificationType.SUCCESS);
-				}
-				dataProvider.refreshAll();
-			} else {
-				UIUtils.showNotification("Category insert/updated failed", UIUtils.NotificationType.ERROR);
-			}
-		}
-	}
-
-	private void updateTool() {
-		System.out.println("updateTool()");
-
-		Tool editedTool = adminToolForm.getTool();
-
-		if (editedTool != null) {
-			if (editedTool.getParentCategory() != null) {
-				if (editedTool.getParentCategory().equals(ToolFacade.getInstance().getRootCategory())) {
-					editedTool.setParentCategory(null);
-				}
-			}
-
-			if (ToolFacade.getInstance().update(editedTool)) {
-				if (adminToolForm.isNew()) {
-					dataProvider.getItems().add(editedTool);
-					dataProvider.refreshAll();
-					UIUtils.showNotification("Tool created successfully", UIUtils.NotificationType.SUCCESS);
-				} else {
-					dataProvider.refreshItem(grid.asSingleSelect().getValue());
-					UIUtils.showNotification("Tool updated successfully", UIUtils.NotificationType.SUCCESS);
-				}
-
-				grid.select(editedTool);
-			} else {
-				UIUtils.showNotification("Tool insert/updated failed", UIUtils.NotificationType.ERROR);
-			}
-		}
-	}
-
-	private void confirmDelete() {
-		if (detailsDrawer.isOpen()) {
-
-			System.out.println("selectedCompany: " + grid.asSingleSelect().getValue());
-			final Tool selectedTool = grid.asSingleSelect().getValue();
-
-			if (selectedTool != null) {
-
-				CustomDialog dialog = new CustomDialog();
-				dialog.setHeader(UIUtils.createH4Label("Confirm delete"));
-
-				dialog.getCancelButton().addClickListener(e -> dialog.close());
-				dialog.setConfirmButton(UIUtils.createButton("Delete", VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY));
-				dialog.getConfirmButton().setEnabled(false);
-
-				TextField confirmInputField = new TextField("Input tool name to confirm action");
-				confirmInputField.setRequired(true);
-				confirmInputField.setValueChangeMode(ValueChangeMode.EAGER);
-				confirmInputField.addValueChangeListener(e -> {
-					dialog.getConfirmButton().setEnabled(false);
-
-					if (e.getValue() != null) {
-						if (e.getValue().length() > 0) {
-							if (e.getValue().equals(selectedTool.getName())) {
-								dialog.getConfirmButton().setEnabled(true);
-							}
-						}
-					}
-				});
-
-				dialog.setContent(
-						new Span("Are you sure you want to delete this tool?"),
-						new Span("This will completely remove selected tool from Database."),
-						new HorizontalLayout(new Span("Deleting tool: "), UIUtils.createBoldText(selectedTool.getName())),
-						confirmInputField
-				);
-
-				dialog.getConfirmButton().addClickListener(e -> {
-					if (ToolFacade.getInstance().remove(selectedTool)) {
-						dataProvider.getItems().remove(selectedTool);
-						dataProvider.refreshAll();
-						closeDetails();
-						UIUtils.showNotification("Tool deleted successfully", UIUtils.NotificationType.SUCCESS);
-					} else {
-						UIUtils.showNotification("Tool delete failed", UIUtils.NotificationType.ERROR);
-					}
-					dialog.close();
-				});
-				dialog.open();
-			}
-		}
-	}
 
 	public void constructToolCategoryDetails(Tool category) {
 
@@ -419,6 +473,123 @@ public class AdminInventory extends FlexBoxLayout {
 		dialog.open();
 	}
 
+
+	private void updateCategory(Tool editedCategory) {
+		System.out.println("\nupdateCategory()");
+
+		if (editedCategory != null) {
+
+			System.out.println("editedCategory.getParentCategory(): " + editedCategory.getParentCategory());
+
+			if (editedCategory.getParentCategory() != null) {
+				if (editedCategory.getParentCategory().equals(ToolFacade.getInstance().getRootCategory())) {
+					editedCategory.setParentCategory(null);
+				}
+			}
+
+			if (adminCategoryForm.isNew()) {
+				if (ToolFacade.getInstance().insert(editedCategory)) {
+					UIUtils.showNotification("Category created successfully", UIUtils.NotificationType.SUCCESS);
+				} else {
+					UIUtils.showNotification("Category insert failed", UIUtils.NotificationType.ERROR);
+				}
+			} else {
+				if (ToolFacade.getInstance().update(editedCategory)) {
+					UIUtils.showNotification("Category updated successfully", UIUtils.NotificationType.SUCCESS);
+				} else {
+					UIUtils.showNotification("Category updated failed", UIUtils.NotificationType.ERROR);
+				}
+			}
+		}
+	}
+
+	private void updateTool() {
+		System.out.println("updateTool()");
+
+		Tool editedTool = adminToolForm.getTool();
+
+		if (editedTool != null) {
+
+			System.out.println("editedTool.getParentCategory(): " + editedTool.getParentCategory());
+
+			if (editedTool.getParentCategory() != null) {
+				if (editedTool.getParentCategory().equals(ToolFacade.getInstance().getRootCategory())) {
+					editedTool.setParentCategory(null);
+				}
+			}
+
+			if (adminToolForm.isNew()) {
+				if (ToolFacade.getInstance().insert(editedTool)) {
+					UIUtils.showNotification("Tool created successfully", UIUtils.NotificationType.SUCCESS);
+					grid.select(editedTool);
+				} else {
+					UIUtils.showNotification("Tool insert failed", UIUtils.NotificationType.ERROR);
+				}
+			} else {
+				if (ToolFacade.getInstance().update(editedTool)) {
+					UIUtils.showNotification("Tool updated successfully", UIUtils.NotificationType.SUCCESS);
+				} else {
+					UIUtils.showNotification("Tool update failed", UIUtils.NotificationType.ERROR);
+				}
+			}
+			dataProvider.refreshAll();
+		}
+	}
+
+	private void confirmDelete() {
+		if (detailsDrawer.isOpen()) {
+
+			final Tool selectedTool = selectedTools.get(0);
+
+			if (selectedTool != null) {
+
+				CustomDialog dialog = new CustomDialog();
+				dialog.setHeader(UIUtils.createH4Label("Confirm delete"));
+
+				dialog.getCancelButton().addClickListener(e -> dialog.close());
+				dialog.setConfirmButton(UIUtils.createButton("Delete", VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY));
+				dialog.getConfirmButton().setEnabled(false);
+
+				TextField confirmInputField = new TextField("Input tool name to confirm action");
+				confirmInputField.setRequired(true);
+				confirmInputField.setValueChangeMode(ValueChangeMode.EAGER);
+				confirmInputField.addValueChangeListener(e -> {
+					dialog.getConfirmButton().setEnabled(false);
+
+					if (e.getValue() != null) {
+						if (e.getValue().length() > 0) {
+							if (e.getValue().equals(selectedTool.getName())) {
+								dialog.getConfirmButton().setEnabled(true);
+							}
+						}
+					}
+				});
+
+				dialog.setContent(
+						new Span("Are you sure you want to delete this tool?"),
+						new Span("This will completely remove selected tool from Database."),
+						new HorizontalLayout(new Span("Deleting tool: "), UIUtils.createBoldText(selectedTool.getName())),
+						confirmInputField
+				);
+
+				dialog.getConfirmButton().addClickListener(e -> {
+					if (ToolFacade.getInstance().remove(selectedTool)) {
+						dataProvider.getItems().remove(selectedTool);
+						dataProvider.refreshAll();
+						closeDetails();
+						UIUtils.showNotification("Tool deleted successfully", UIUtils.NotificationType.SUCCESS);
+					} else {
+						UIUtils.showNotification("Tool delete failed", UIUtils.NotificationType.ERROR);
+					}
+					dialog.close();
+				});
+				dialog.open();
+			}
+		}
+	}
+
+
+
 	private void exportTools() {
 		System.out.println("Export Tools...");
 	}
@@ -428,71 +599,36 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 
+	private void editSelectedTools() {
+		if (selectedTools != null) {
+			if (selectedTools.size() > 0) {
+				if (selectedTools.size() == 1) {
+					showToolDetails(selectedTools.get(0), "Tool Details");
+				} else {
+					bulkEditor = new AdminInventoryBulkEditor(this, OperationType.EDIT, selectedTools.size());
+					bulkEditor.setBulkEditTools(selectedTools);
+					bulkEditor.initToolBulkEdit();
 
-
-	/*
-	Tools Bulk Operations
-	 */
-	private void constructBulkEditHeader() {
-		// Header for tools bulk edit operation
-		bulkEditHeader = new FlexBoxLayout();
-		bulkEditHeader.setFlexDirection(FlexDirection.ROW);
-		bulkEditHeader.setAlignItems(Alignment.CENTER);
-		bulkEditHeader.add(UIUtils.createH4Label("Tool"));
-
-		nOfCopyLabel = UIUtils.createH4Label("1");
-		bulkEditHeader.add(nOfCopyLabel);
-		bulkEditHeader.setComponentMargin(nOfCopyLabel, Left.M);
-
-		Label slash = UIUtils.createH4Label("/");
-		bulkEditHeader.add(slash);
-		bulkEditHeader.setComponentMargin(slash, Horizontal.S);
-
-		nOfCopiesLabel = UIUtils.createH4Label("100");
-		bulkEditHeader.add(nOfCopiesLabel);
-
-		Button toolsToLeftButton = UIUtils.createButton(VaadinIcon.ANGLE_LEFT);
-		toolsToLeftButton.addClickListener(e -> {
-			if (currentBulkEditToolIndex > 0) {
-				Tool editedTool = bulkAdminToolForm.getTool();
-				if (editedTool != null) {
-					bulkEditTools.set(currentBulkEditToolIndex, editedTool);
-
-					--currentBulkEditToolIndex;
-					setToolBulkEditDialogContent(bulkEditTools.get(currentBulkEditToolIndex));
-
-					nOfCopyLabel.setText(""+(currentBulkEditToolIndex+1));
+					if (UI.getCurrent() != null) {
+						try {
+							UI.getCurrent().access(this::closeDetails);
+						} catch (UIDetachedException e) {
+							e.printStackTrace();
+						}
+					}
 				}
 			}
-		});
-		bulkEditHeader.add(toolsToLeftButton);
-
-		Button toolsToRightButton = UIUtils.createButton(VaadinIcon.ANGLE_RIGHT);
-		toolsToRightButton.addClickListener(e -> {
-			if (currentBulkEditToolIndex < (maxNumberOfBulkEditTools-1)) {
-				Tool editedTool = bulkAdminToolForm.getTool();
-				if (editedTool != null) {
-					bulkEditTools.set(currentBulkEditToolIndex, editedTool);
-
-					++currentBulkEditToolIndex;
-					setToolBulkEditDialogContent(bulkEditTools.get(currentBulkEditToolIndex));
-
-					nOfCopyLabel.setText(""+(currentBulkEditToolIndex+1));
-				}
-			}
-		});
-		bulkEditHeader.add(toolsToRightButton);
-		bulkEditHeader.setComponentMargin(toolsToLeftButton, Left.AUTO);
+		}
 	}
 
 	private void constructToolCopyDialog() {
 		CustomDialog dialog = new CustomDialog();
-		dialog.setHeader(UIUtils.createH4Label("Copy tool parameters"));
+		dialog.setHeader(UIUtils.createH4Label("Copy Tool Parameters"));
 		dialog.getCancelButton().addClickListener(e -> dialog.close());
 		dialog.setConfirmButton(UIUtils.createButton("Copy", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
 
 		toolCopyForm = new ToolCopyForm();
-		if (!toolCopyForm.setOriginalTool(grid.asSingleSelect().getValue())) {
+		if (!toolCopyForm.setOriginalTool(selectedTools.get(0))) {
 			System.out.println("ORIGINAL TOOL NULL");
 			return;
 		}
@@ -501,135 +637,23 @@ public class AdminInventory extends FlexBoxLayout {
 			Tool toolCopy = toolCopyForm.getToolCopy();
 			if (toolCopy != null) {
 				dialog.close();
-				initToolBulkEdit(toolCopy, toolCopyForm.getNumberOfCopies());
+				bulkEditor = new AdminInventoryBulkEditor(this, OperationType.COPY, toolCopyForm.getNumberOfCopies());
+				bulkEditor.setBulkEditTool(toolCopy);
+				bulkEditor.initToolBulkEdit();
+
+				if (UI.getCurrent() != null) {
+					try {
+						UI.getCurrent().access(this::closeDetails);
+					} catch (UIDetachedException uiDetachException) {
+						uiDetachException.printStackTrace();
+					}
+				}
 			}
 		});
 		dialog.open();
 	}
 
-	private Label nOfCopyLabel;
-	private Label nOfCopiesLabel;
-	private CustomDialog toolBulkEditDialog;
-	private List<Tool> bulkEditTools = null;
-	private int currentBulkEditToolIndex = -1;
-	private int maxNumberOfBulkEditTools = -1;
-
-	private void initToolBulkEdit(Tool tool, int numberOfCopies) {
-		if (UI.getCurrent() != null) {
-			try {
-				UI.getCurrent().access(this::closeDetails);
-			} catch (UIDetachedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		if (bulkEditHeader == null) {
-			constructBulkEditHeader();
-		}
-
-		bulkEditTools = new ArrayList<>();
-		for (int i = 0; i < numberOfCopies; i++) {
-			Tool newTool = new Tool(tool);
-			bulkEditTools.add(newTool);
-		}
-
-		currentBulkEditToolIndex = 0;
-		maxNumberOfBulkEditTools = numberOfCopies;
-
-		nOfCopiesLabel.setText(""+numberOfCopies);
-
-		toolBulkEditDialog = new CustomDialog();
-		toolBulkEditDialog.setCloseOnEsc(false);
-		toolBulkEditDialog.setCloseOnOutsideClick(false);
-
-		toolBulkEditDialog.setHeader(bulkEditHeader);
-
-		setToolBulkEditDialogContent(bulkEditTools.get(currentBulkEditToolIndex));
-
-		toolBulkEditDialog.getCancelButton().setText("Cancel");
-		toolBulkEditDialog.getCancelButton().addClickListener(e -> {
-			confirmBulkEditClose();
-		});
-
-		toolBulkEditDialog.setConfirmButton(UIUtils.createButton("Save All", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
-		toolBulkEditDialog.getConfirmButton().addClickListener(e -> {
-
-			Tool editedTool = bulkAdminToolForm.getTool();
-			if (editedTool != null) {
-				bulkEditTools.set(currentBulkEditToolIndex, editedTool);
-
-				boolean errorOccur = false;
-
-				for (Tool t : bulkEditTools) {
-
-					if (t.getParentCategory() != null) {
-						t.setLevel((t.getParentCategory().getLevel()+1));
-					}
-
-					if (!ToolFacade.getInstance().insert(t)) {
-						errorOccur = true;
-					}
-					dataProvider.getItems().add(t);
-				}
-
-				if (!errorOccur) {
-					UIUtils.showNotification("Tools inserted successfully", UIUtils.NotificationType.SUCCESS);
-				} else {
-					UIUtils.showNotification("Error(s) inserting tool(s)", UIUtils.NotificationType.ERROR);
-				}
-
-				toolBulkEditDialog.close();
-				dataProvider.refreshAll();
-			}
-		});
-		toolBulkEditDialog.open();
-	}
-
-	private void setToolBulkEditDialogContent(Tool tool) {
-		if (bulkAdminToolForm == null) {
-			this.bulkAdminToolForm = new AdminToolBulkForm(this);
-		}
-		bulkAdminToolForm.setTool(tool);
-		toolBulkEditDialog.setContent(bulkAdminToolForm);
-	}
-
-	private void confirmBulkEditClose() {
-		CustomDialog dialog = new CustomDialog();
-		dialog.setCloseOnEsc(false);
-		dialog.setCloseOnOutsideClick(false);
-
-		dialog.setHeader(UIUtils.createH4Label("Cancel tool copies edit?"));
-
-		Paragraph content = new Paragraph();
-		content.add(new Span("This will discard all copies and made changes. Are you sure you want to cancel?"));
-
-		dialog.setContent(content);
-
-		dialog.getCancelButton().setText("No");
-		dialog.getCancelButton().addClickListener(e -> dialog.close());
-		dialog.setConfirmButton(UIUtils.createButton("Yes", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
-		dialog.getConfirmButton().addClickListener(e -> {
-			dialog.close();
-			toolBulkEditDialog.close();
-		});
-		dialog.open();
-	}
-
-	/**
-	 * Method used from {@link AdminToolBulkForm} setAllButton action
-	 * @param companyId
-	 * @param category
-	 */
-	public void setBulkCompaniesAndCategories(long companyId, Tool category) {
-		try {
-			for (Tool t : bulkEditTools) {
-				t.setCompanyId(companyId);
-				t.setParentCategory(category);
-			}
-			UIUtils.showNotification("Companies and categories set", UIUtils.NotificationType.SUCCESS);
-		} catch (Exception e) {
-			e.printStackTrace();
-			UIUtils.showNotification("Error setting companyId and/or parent category", UIUtils.NotificationType.ERROR);
-		}
+	ListDataProvider<Tool> getDataProvider() {
+		return this.dataProvider;
 	}
 }

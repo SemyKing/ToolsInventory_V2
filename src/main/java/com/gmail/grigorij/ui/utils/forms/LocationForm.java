@@ -20,7 +20,6 @@ public class LocationForm extends FormLayout {
 
 	public LocationForm() {
 		TextField locationName = getTextField("Location Name", "", Top.S);
-		locationName.setRequired(true);
 		TextField addressLine1 = getTextField("Address Line 1", "", Top.S);
 		TextField addressLine2 = getTextField("Address Line 2", "", Top.S);
 		TextField postcode = getTextField("Postcode", "32%", Top.S);
@@ -44,7 +43,6 @@ public class LocationForm extends FormLayout {
 		add(layout);
 
 		binder.forField(locationName)
-				.asRequired("Location name is required")
 				.bind(Location::getName, Location::setName);
 		binder.forField(addressLine1)
 				.bind(Location::getAddressLine1, Location::setAddressLine1);

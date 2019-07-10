@@ -87,8 +87,16 @@ public class FlexBoxLayout extends FlexLayout {
         getStyle().set(FLEX_DIRECTION, direction.getValue());
     }
 
+    public void setComponentFlexDirection(Component component, FlexDirection direction) {
+        component.getElement().getStyle().set(FLEX_DIRECTION, direction.getValue());
+    }
+
     public void removeFlexDirection() {
         getStyle().remove(FLEX_DIRECTION);
+    }
+
+    public void setFlexGrowSelf(String value) {
+        getElement().getStyle().set("flex-grow", value);
     }
 
     public void setFlexGrow(String value, Component... components) {

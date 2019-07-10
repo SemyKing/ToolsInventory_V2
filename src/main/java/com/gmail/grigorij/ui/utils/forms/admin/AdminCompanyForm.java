@@ -78,7 +78,7 @@ public class AdminCompanyForm extends FormLayout {
 			}
 		});
 
-		Button newLocationButton = UIUtils.createButton(VaadinIcon.PLUS);
+		Button newLocationButton = UIUtils.createIconButton(VaadinIcon.FILE_ADD, ButtonVariant.LUMO_CONTRAST);
 		UIUtils.setTooltip("Add new Location", newLocationButton);
 		newLocationButton.addClickListener(e -> openLocationDialog(null));
 

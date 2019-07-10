@@ -94,8 +94,8 @@ public class UserForm extends FormLayout {
 				.bind(User::getPassword, User::setPassword);
 		userBinder.forField(companyComboBox)
 				.asRequired("Company is required")
-				.withConverter(new CustomConverter.CompanyConverter())
-				.bind(User::getCompanyId, User::setCompanyId);
+//				.withConverter(new CustomConverter.CompanyConverter())
+				.bind(User::getCompany, User::setCompany);
 		userBinder.forField(additionalInfo)
 				.bind(User::getAdditionalInfo, User::setAdditionalInfo);
 	}

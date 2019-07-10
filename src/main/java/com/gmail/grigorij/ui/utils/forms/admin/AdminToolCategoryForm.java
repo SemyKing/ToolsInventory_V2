@@ -37,12 +37,15 @@ public class AdminToolCategoryForm extends FormLayout {
 		categoryStatus.setWidth("25%");
 		categoryStatus.setLabel("Status");
 
-		FlexBoxLayout categoryLayout = new FlexBoxLayout();
-		categoryLayout.setFlexDirection(FlexDirection.ROW);
-		categoryLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		categoryLayout.add(categoryNameField, categoryStatus);
-		categoryLayout.setComponentMargin(categoryStatus, Left.M);
-		categoryLayout.setFlexGrow("1", categoryNameField);
+		FlexBoxLayout nameLayout = new FlexBoxLayout();
+		nameLayout.setFlexDirection(FlexDirection.ROW);
+		nameLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+		nameLayout.add(categoryNameField, categoryStatus);
+		nameLayout.setComponentMargin(categoryStatus, Left.M);
+		nameLayout.setFlexGrow("1", categoryNameField);
+
+
+		categoriesComboBox = new ComboBox<>();
 
 		ComboBox<Company> companyComboBox = new ComboBox<>();
 		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
@@ -52,12 +55,12 @@ public class AdminToolCategoryForm extends FormLayout {
 		companyComboBox.addValueChangeListener(e -> {
 			if (e != null) {
 				if (e.getValue() != null) {
-					updateCategoriesProvider(e.getValue());
+					categoriesComboBox.setValue(null);
+					updateCategoriesComboBoxData(e.getValue());
 				}
 			}
 		});
 
-		categoriesComboBox = new ComboBox<>();
 		categoriesComboBox.setItems(ToolFacade.getInstance().getEmptyList());
 		categoriesComboBox.setLabel("Parent Category");
 		categoriesComboBox.setItemLabelGenerator(Tool::getName);
@@ -67,7 +70,7 @@ public class AdminToolCategoryForm extends FormLayout {
 
 //      Form layout
 		setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		add(categoryLayout);
+		add(nameLayout);
 		add(companyComboBox);
 		add(categoriesComboBox);
 
@@ -80,15 +83,14 @@ public class AdminToolCategoryForm extends FormLayout {
 				.bind(Tool::isDeleted, Tool::setDeleted);
 		binder.forField(companyComboBox)
 				.asRequired("Company is required")
-				.withConverter(new CustomConverter.CompanyConverter())
-				.bind(Tool::getCompanyId, Tool::setCompanyId);
+				.bind(Tool::getCompany, Tool::setCompany);
 		binder.forField(categoriesComboBox)
 				.asRequired("Parent Category is required")
 				.withConverter(new CustomConverter.ToolCategoryConverter())
 				.bind(Tool::getParentCategory, Tool::setParentCategory);
 	}
 
-	private long initialCompanyId;
+	private Company initialCompany;
 
 	public void setCategory(Tool c) {
 		category = c;
@@ -102,7 +104,7 @@ public class AdminToolCategoryForm extends FormLayout {
 		category.setHierarchyType(HierarchyType.CATEGORY);
 
 		try {
-			initialCompanyId = category.getCompanyId();
+			initialCompany = category.getCompany();
 
 			binder.readBean(category);
 		} catch (Exception e) {
@@ -120,9 +122,9 @@ public class AdminToolCategoryForm extends FormLayout {
 				/*
 				If category company was changed, it must also be changed for all category children
 				 */
-				if (initialCompanyId != category.getCompanyId()) {
+				if (initialCompany != category.getCompany()) {
 					for (Tool tool : category.getChildren()) {
-						tool.setCompanyId(category.getCompanyId());
+						tool.setCompany(category.getCompany());
 					}
 				}
 
@@ -140,15 +142,18 @@ public class AdminToolCategoryForm extends FormLayout {
 		return null;
 	}
 
-	private void updateCategoriesProvider(Company company) {
-		if (company.getId() <= 0) {
-			System.err.println("Company ID is <= 0, company name: " + company.getName());
+	private void updateCategoriesComboBoxData(Company company) {
+		System.out.println("updateCategoriesComboBoxData()");
+		if (company == null) {
+			System.err.println("Company is NULL (should be impossible), updateCategoriesComboBoxData(), " + this.getClass().getSimpleName());
 			return;
 		}
 
 		List<Tool> categories = ToolFacade.getInstance().getAllCategoriesInCompanyWithRoot(company.getId());
 
-		categories.removeIf((Tool category) -> category.getId().equals(initialCompanyId));
+		if (initialCompany != null) {
+			categories.removeIf((Tool category) -> category.getId().equals(initialCompany.getId()));
+		}
 		categoriesComboBox.setItems(categories);
 	}
 

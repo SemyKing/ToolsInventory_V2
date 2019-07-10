@@ -1,27 +1,29 @@
 package com.gmail.grigorij.ui.views.navigation.admin;
 
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.utils.components.*;
+import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
+import com.gmail.grigorij.ui.utils.components.Divider;
+import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.utils.components.ListItem;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.css.size.*;
+import com.gmail.grigorij.ui.utils.css.size.Bottom;
+import com.gmail.grigorij.ui.utils.css.size.Left;
+import com.gmail.grigorij.ui.utils.css.size.Top;
+import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.utils.forms.admin.AdminUserForm;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
@@ -42,7 +44,7 @@ import java.util.stream.Collectors;
 class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
-	final static String TAB_NAME = "Personnel";
+	final static String TAB_NAME = ProjectConstants.PERSONNEL;
 
 	private AdminMain adminMain;
 	private AdminUserForm userForm = new AdminUserForm();
@@ -51,7 +53,7 @@ class AdminPersonnel extends FlexBoxLayout {
 	private ListDataProvider<User> dataProvider;
 
 	private DetailsDrawer detailsDrawer;
-	private DetailsDrawerFooter detailsDrawerFooter;
+	private Button deleteButton;
 
 
 	AdminPersonnel(AdminMain adminMain) {
@@ -101,9 +103,60 @@ class AdminPersonnel extends FlexBoxLayout {
 		add(header);
 	}
 
-	private void filterGrid(String s) {
+	private void createGrid() {
+		grid = new Grid<>();
+		grid.setId("personnel-grid");
+		grid.setClassName("grid-view");
+		grid.setSizeFull();
+		grid.asSingleSelect().addValueChangeListener(e -> {
+			if (grid.asSingleSelect().getValue() != null) {
+				showDetails(grid.asSingleSelect().getValue());
+			} else {
+				detailsDrawer.hide();
+			}
+		});
+
+		dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getAllUsers());
+		grid.setDataProvider(dataProvider);
+
+		grid.addColumn(User::getId).setHeader("ID")
+				.setWidth(UIUtils.COLUMN_WIDTH_XS)
+				.setFlexGrow(0);
+
+		grid.addColumn(User::getUsername)
+				.setHeader("Username")
+				.setWidth(UIUtils.COLUMN_WIDTH_L);
+
+		grid.addColumn(user -> (user.getCompany() == null) ? "" : user.getCompany().getName())
+				.setHeader("Company")
+				.setWidth(UIUtils.COLUMN_WIDTH_L);
+
+		ComponentRenderer<ListItem, User> personalInfoRenderer = new ComponentRenderer<>(
+				user -> {
+					ListItem item = new ListItem(UIUtils.createInitials(user.getInitials()),
+							user.getFirstName() + " " + user.getLastName(), user.getEmail());
+					item.setHorizontalPadding(false);
+					item.setWidth("100%");
+					return item;
+				});
+		grid.addColumn(personalInfoRenderer)
+				.setHeader("Personal Info")
+				.setWidth(UIUtils.COLUMN_WIDTH_XL);
+
+//		grid.addColumn(new ComponentRenderer<>(this::createGridUserInfo)).setHeader("Person")
+//				.setWidth(UIUtils.COLUMN_WIDTH_XXL);
+
+
+		grid.addColumn(new ComponentRenderer<>(selectedUser -> UIUtils.createActiveGridIcon(selectedUser.isDeleted()))).setHeader("Active")
+				.setWidth(UIUtils.COLUMN_WIDTH_XS)
+				.setFlexGrow(0);
+
+		add(grid);
+	}
+
+	private void filterGrid(String searchString) {
 		dataProvider.clearFilters();
-		final String searchParam = s.trim();
+		final String searchParam = searchString.trim();
 
 		if (searchParam.contains(" ")) {
 			String[] searchParams = searchParam.split(" ");
@@ -136,42 +189,6 @@ class AdminPersonnel extends FlexBoxLayout {
 
 	}
 
-	private void createGrid() {
-		grid = new Grid<>();
-		grid.setId("personnel-grid");
-		grid.setClassName("grid-view");
-		grid.setSizeFull();
-		grid.asSingleSelect().addValueChangeListener(e -> {
-			if (grid.asSingleSelect().getValue() != null) {
-				showDetails(grid.asSingleSelect().getValue());
-			} else {
-				detailsDrawer.hide();
-			}
-		});
-
-		dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getAllUsers());
-		grid.setDataProvider(dataProvider);
-
-		grid.addColumn(User::getId).setHeader("ID")
-				.setWidth(UIUtils.COLUMN_WIDTH_XS)
-				.setFlexGrow(0);
-		grid.addColumn(User::getUsername).setHeader("Username")
-				.setWidth(UIUtils.COLUMN_WIDTH_L);
-		grid.addColumn(new ComponentRenderer<>(this::createGridUserInfo)).setHeader("Person")
-				.setWidth(UIUtils.COLUMN_WIDTH_XXL);
-		grid.addColumn(new ComponentRenderer<>(selectedUser -> UIUtils.createActiveGridIcon(selectedUser.isDeleted()))).setHeader("Active")
-				.setWidth(UIUtils.COLUMN_WIDTH_XS)
-				.setFlexGrow(0);
-
-		add(grid);
-	}
-
-	private Component createGridUserInfo(User user) {
-		ListItem item = new ListItem(UIUtils.createInitials(user.getInitials()), user.getFirstName() + " " + user.getLastName(), user.getEmail());
-		item.setHorizontalPadding(false);
-		return item;
-	}
-
 	private void createDetailsDrawer() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
@@ -181,21 +198,27 @@ class AdminPersonnel extends FlexBoxLayout {
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("User Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
+		deleteButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR);
+		deleteButton.addClickListener(e -> confirmDelete());
+		UIUtils.setTooltip("Delete this user from Database", deleteButton);
+
+		detailsDrawerHeader.add(deleteButton);
+		detailsDrawerHeader.getContainer().setComponentMargin(deleteButton, Left.AUTO);
+
 		detailsDrawer.setHeader(detailsDrawerHeader);
 		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
 
 		// Footer
-		detailsDrawerFooter = new DetailsDrawerFooter();
+		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.getSave().addClickListener(e -> updateUser());
 		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
-		detailsDrawerFooter.getDelete().addClickListener(e -> confirmUserDelete());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 
 		adminMain.setDetailsDrawer(detailsDrawer);
 	}
 
 	private void showDetails(User user) {
-		detailsDrawerFooter.getDelete().setEnabled( user != null );
+		deleteButton.setEnabled( user != null );
 		userForm.setUser(user);
 		detailsDrawer.show();
 
@@ -231,7 +254,7 @@ class AdminPersonnel extends FlexBoxLayout {
 		}
 	}
 
-	private void confirmUserDelete() {
+	private void confirmDelete() {
 		System.out.println("Delete selected user...");
 
 		if (detailsDrawer.isOpen()) {
@@ -270,63 +293,62 @@ class AdminPersonnel extends FlexBoxLayout {
 		importDialog.open();
 
 		upload.addSucceededListener(event -> {
-			importUsers(buffer);
-			importDialog.close();
+//			importUsers(buffer);
+//			importDialog.close();
 		});
 	}
 
-	private void importUsers(MemoryBuffer buffer) {
-		try {
-			InputStreamReader inputStreamReader = new InputStreamReader(buffer.getInputStream(), StandardCharsets.UTF_8);
-			BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-
-			//Skipping first line of the csv which is grid headers
-			List<String> list = bufferedReader.lines().skip(1).collect(Collectors.toList());
-
-			ArrayList<User> importedUsers = new ArrayList<>();
-
-			String separator = "";
-
-			if (list.size() > 0) {
-				if (list.get(0).split(",").length > 1) {
-					separator = ",";
-				} else if (list.get(0).split(";").length > 1) {
-					separator = ";";
-				}
-			}
-
-			for (String row : list) {
-				String[] rowSplit = row.split(separator);
-
-				System.out.println("ROW: " + row);
-
-				User user = new User();
-				user.setUsername(rowSplit[0]);
-				user.setPassword(rowSplit[1]);
-				user.setCompanyId(Integer.parseInt(rowSplit[2]));
-				user.setAccessGroup(Integer.parseInt(rowSplit[3]));
-				user.setDeleted(Boolean.parseBoolean(rowSplit[4]));
-				user.setFirstName(rowSplit[5]);
-				user.setLastName(rowSplit[6]);
-				user.setPhoneNumber(rowSplit[7]);
-				user.setEmail(rowSplit[8]);
-
-				importedUsers.add(user);
-			}
-
-			for (User u : importedUsers) {
-				UserFacade.getInstance().insert(u);
-			}
-
-			UIUtils.showNotification("Users imported successfully", UIUtils.NotificationType.SUCCESS);
-		} catch (Exception e) {
-			UIUtils.showNotification("Users import failed", UIUtils.NotificationType.ERROR);
-			e.printStackTrace();
-		}
-	}
+//	private void importUsers(MemoryBuffer buffer) {
+//		try {
+//			InputStreamReader inputStreamReader = new InputStreamReader(buffer.getInputStream(), StandardCharsets.UTF_8);
+//			BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+//
+//			//Skipping first line of the csv which is grid headers
+//			List<String> list = bufferedReader.lines().skip(1).collect(Collectors.toList());
+//
+//			ArrayList<User> importedUsers = new ArrayList<>();
+//
+//			String separator = "";
+//
+//			if (list.size() > 0) {
+//				if (list.get(0).split(",").length > 1) {
+//					separator = ",";
+//				} else if (list.get(0).split(";").length > 1) {
+//					separator = ";";
+//				}
+//			}
+//
+//			for (String row : list) {
+//				String[] rowSplit = row.split(separator);
+//
+//				System.out.println("ROW: " + row);
+//
+//				User user = new User();
+//				user.setUsername(rowSplit[0]);
+//				user.setPassword(rowSplit[1]);
+//				user.setCompanyId(Integer.parseInt(rowSplit[2]));
+//				user.setAccessGroup(Integer.parseInt(rowSplit[3]));
+//				user.setDeleted(Boolean.parseBoolean(rowSplit[4]));
+//				user.setFirstName(rowSplit[5]);
+//				user.setLastName(rowSplit[6]);
+//				user.setPhoneNumber(rowSplit[7]);
+//				user.setEmail(rowSplit[8]);
+//
+//				importedUsers.add(user);
+//			}
+//
+//			for (User u : importedUsers) {
+//				UserFacade.getInstance().insert(u);
+//			}
+//
+//			UIUtils.showNotification("Users imported successfully", UIUtils.NotificationType.SUCCESS);
+//		} catch (Exception e) {
+//			UIUtils.showNotification("Users import failed", UIUtils.NotificationType.ERROR);
+//			e.printStackTrace();
+//		}
+//	}
 
 	private void exportOnClick() {
 		System.out.println("Export Users...");
-
 	}
 }

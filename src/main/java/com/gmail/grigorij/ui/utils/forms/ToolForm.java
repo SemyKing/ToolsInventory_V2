@@ -1,6 +1,5 @@
 package com.gmail.grigorij.ui.utils.forms;
 
-import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.tool.Tool;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.Divider;
@@ -61,11 +60,13 @@ public class ToolForm extends FormLayout {
 
 		TextField toolUser = getTextField("In Use By", "", "");
 		ReadOnlyHasValue<Tool> user = new ReadOnlyHasValue<>(tool ->
-				toolUser.setValue( tool.getInUseByUserId()<0 ? "" : UserFacade.getInstance().getUserById(tool.getInUseByUserId()).getUsername()));
+//				toolUser.setValue( tool.getInUseByUserId()<0 ? "" : UserFacade.getInstance().getUserById(tool.getInUseByUserId()).getUsername()));
+				toolUser.setValue( tool.getUser() == null ? "" : tool.getUser().getUsername()));
 
 		TextField toolReservedByUser = getTextField("Reserved By", "", "");
 		ReadOnlyHasValue<Tool> reservedByUser = new ReadOnlyHasValue<>(tool ->
-				toolReservedByUser.setValue( tool.getReservedByUserId()<0 ? "" : UserFacade.getInstance().getUserById(tool.getReservedByUserId()).getUsername()));
+//				toolReservedByUser.setValue( tool.getReservedByUserId()<0 ? "" : UserFacade.getInstance().getUserById(tool.getReservedByUserId()).getUsername()));
+				toolReservedByUser.setValue( tool.getReservedByUser() == null ? "" : tool.getReservedByUser().getUsername()));
 
 		TextField toolBoughtDate = getTextField("Bought", ProjectConstants.FORM_HALF_WIDTH, "");
 		ReadOnlyHasValue<Tool> boughtDate = new ReadOnlyHasValue<>(tool ->

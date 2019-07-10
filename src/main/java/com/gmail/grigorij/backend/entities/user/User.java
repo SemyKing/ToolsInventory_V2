@@ -1,6 +1,7 @@
 package com.gmail.grigorij.backend.entities.user;
 
 
+import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.location.Location;
 import com.vaadin.flow.theme.lumo.Lumo;
 
@@ -13,14 +14,14 @@ import javax.persistence.*;
 				name="User.findUserInDatabase",
 				query="SELECT user FROM User user WHERE user.username = :username AND user.password = :password"),
 		@NamedQuery(
-				name="User.findUserInDatabaseByUsername",
+				name="User.getUserByUsername",
 				query="SELECT user FROM User user WHERE user.username = :username ORDER BY user.username ASC"),
 		@NamedQuery(
 				name="User.getAllUsers",
 				query="SELECT user FROM User user ORDER BY user.username ASC"),
 		@NamedQuery(
 				name="User.getUsersByCompanyId",
-				query="SELECT user FROM User user WHERE user.companyId = :companyId"),
+				query="SELECT user FROM User user WHERE user.company.id = :id_var"),
 		@NamedQuery(
 				name="User.getUserById",
 				query="SELECT user FROM User user WHERE user.id = :id")
@@ -39,8 +40,8 @@ public class User extends Person {
 	@Column(name = "locale")
 	private String locale;
 
-	@Column(name = "company_id")
-	private long companyId;
+	@OneToOne
+	private Company company;
 
 	@Column(name = "access_group")
 	private int accessGroup;
@@ -65,13 +66,6 @@ public class User extends Person {
 		this.password = password;
 	}
 
-	public long getCompanyId() {
-		return companyId;
-	}
-	public void setCompanyId(long companyId) {
-		this.companyId = companyId;
-	}
-
 	public int getAccessGroup() {
 		return accessGroup;
 	}
@@ -91,7 +85,8 @@ public class User extends Person {
 		User user = new User();
 		user.setUsername("");
 		user.setPassword("");
-		user.setCompanyId(-1);
+//		user.setCompanyId(-1);
+		user.setCompany(null);
 		user.setDeleted(false);
 		user.setFirstName("");
 		user.setLastName("");
@@ -101,5 +96,13 @@ public class User extends Person {
 		user.setAddress(new Location());
 
 		return user;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 }

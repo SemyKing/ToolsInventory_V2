@@ -1,16 +1,22 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
+import com.gmail.grigorij.backend.entities.tool.Tool;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
 
 import javax.persistence.NoResultException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserFacade {
 
+	private List<User> emptyList;
+
 	private static UserFacade mInstance;
-	private UserFacade() {}
+	private UserFacade() {
+		emptyList = new ArrayList<>();
+	}
 	public static UserFacade getInstance() {
 		if (mInstance == null) {
 			mInstance = new UserFacade();
@@ -33,10 +39,10 @@ public class UserFacade {
 	}
 
 
-	public User findUserInDatabaseByUsername(String username) {
+	public User getUserByUsername(String username) {
 		User user;
 		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.findUserInDatabaseByUsername")
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUserByUsername")
 					.setParameter("username", username)
 					.getSingleResult();
 		} catch (NoResultException nre) {
@@ -74,7 +80,7 @@ public class UserFacade {
 		List<User> users;
 		try {
 			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUsersByCompanyId", User.class)
-					.setParameter("companyId", companyId)
+					.setParameter("id_var", companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			users = null;
@@ -147,5 +153,9 @@ public class UserFacade {
 		}
 		System.out.println("User REMOVE successful");
 		return true;
+	}
+
+	public List<User> getEmptyList() {
+		return emptyList;
 	}
 }

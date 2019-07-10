@@ -116,9 +116,9 @@ public class AppBar extends Composite<FlexLayout> {
         userInfo.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         userInfo.setFlexDirection(FlexDirection.COLUMN);
 
-        SessionData sessionData = AuthenticationService.getSessionData();
+        User user = AuthenticationService.getSessionData().getUser();
 
-        ListItem item = new ListItem(sessionData.getUser().getUsername(), sessionData.getCompany().getName(), UIUtils.createInitials(sessionData.getUser().getInitials()));
+        ListItem item = new ListItem(user.getUsername(), user.getCompany().getName(), UIUtils.createInitials(user.getInitials()));
         item.setClassName("user-info-list-item");
         item.getContent().setClassName("user-list-item__content");
         item.getSuffix().setClassName("user-list-item__suffix");
@@ -247,11 +247,11 @@ public class AppBar extends Composite<FlexLayout> {
         return component;
     }
 
-    public Button addActionItem(VaadinIcon icon) {
-        Button button = UIUtils.createButton(icon, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-        addActionItem(button);
-        return button;
-    }
+//    public Button addActionItem(VaadinIcon icon) {
+//        Button button = UIUtils.createButton(icon, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+//        addActionItem(button);
+//        return button;
+//    }
 
     public void removeAllActionItems() {
         actionItems.removeAll();

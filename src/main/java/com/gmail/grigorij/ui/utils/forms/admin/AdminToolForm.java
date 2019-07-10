@@ -2,10 +2,13 @@ package com.gmail.grigorij.ui.utils.forms.admin;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.ToolFacade;
+import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.tool.Tool;
 import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
@@ -13,10 +16,13 @@ import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
+import com.gmail.grigorij.ui.utils.scanners.barcode.BarcodeReader;
+import com.gmail.grigorij.ui.utils.scanners.qr.QRReader;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminInventory;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -41,37 +47,76 @@ import java.util.EnumSet;
 public class AdminToolForm extends FormLayout {
 
 	private Binder<Tool> binder = new Binder<>(Tool.class);
-
 	private Tool tool;
 	private boolean isNew;
 
 	private ComboBox<Tool> categoriesComboBox;
+	private ComboBox<User> toolUserComboBox;
+	private ComboBox<User> toolReservedComboBox;
+
 	private Button editCategoryButton;
+	private TextField qrCodeField, barCodeField;
 
 
 	public AdminToolForm(AdminInventory adminTools) {
 
 		TextField toolNameField = new TextField("Name");
 
-		Select<String> toolVisibility = new Select<>(ProjectConstants.ACTIVE, ProjectConstants.INACTIVE);
-		toolVisibility.setWidth("25%");
-		toolVisibility.setLabel("Status (Visibility)");
+		Select<String> status = new Select<>(ProjectConstants.ACTIVE, ProjectConstants.INACTIVE);
+		status.setWidth("25%");
+		status.setLabel("Status");
 
-		FlexBoxLayout toolLayout = new FlexBoxLayout();
-		toolLayout.setFlexDirection(FlexDirection.ROW);
-		toolLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		toolLayout.add(toolNameField, toolVisibility);
-		toolLayout.setComponentMargin(toolVisibility, Left.M);
-		toolLayout.setFlexGrow("1", toolNameField);
+		FlexBoxLayout toolNameLayout = new FlexBoxLayout();
+		toolNameLayout.setFlexDirection(FlexDirection.ROW);
+		toolNameLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+		toolNameLayout.add(toolNameField, status);
+		toolNameLayout.setComponentMargin(status, Left.M);
+		toolNameLayout.setFlexGrow("1", toolNameField);
 
 
+		/*
+		QR CODE
+		 */
+		qrCodeField = new TextField("QR Code");
+
+		Button newQrCodeButton = UIUtils.createIconButton(VaadinIcon.QRCODE, ButtonVariant.LUMO_CONTRAST);
+		newQrCodeButton.addClickListener(e -> handleQrCode());
+		UIUtils.setTooltip("Scan QR Code with camera", newQrCodeButton);
+
+		FlexBoxLayout qrCodeLayout = new FlexBoxLayout();
+		qrCodeLayout.setFlexDirection(FlexDirection.ROW);
+		qrCodeLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+		qrCodeLayout.add(qrCodeField, newQrCodeButton);
+		qrCodeLayout.setComponentMargin(newQrCodeButton, Left.M);
+		qrCodeLayout.setFlexGrow("1", qrCodeField);
+		qrCodeLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+
+
+		/*
+		BARCODE
+		 */
+		barCodeField = new TextField("Barcode");
+
+		Button newBarcodeButton = UIUtils.createIconButton(VaadinIcon.BARCODE, ButtonVariant.LUMO_CONTRAST);
+		newBarcodeButton.addClickListener(e -> handleBarcode());
+		UIUtils.setTooltip("Scan Barcode with camera", newQrCodeButton);
+
+		FlexBoxLayout barcodeLayout = new FlexBoxLayout();
+		barcodeLayout.setFlexDirection(FlexDirection.ROW);
+		barcodeLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+		barcodeLayout.add(barCodeField, newBarcodeButton);
+		barcodeLayout.setComponentMargin(newBarcodeButton, Left.M);
+		barcodeLayout.setFlexGrow("1", barCodeField);
+		barcodeLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+
+
+		TextField toolInfoField = new TextField("Tool Info");
 		TextField manufacturerField = new TextField("Manufacturer");
 		TextField modelField = new TextField("Model");
-		TextField toolInfoField = new TextField("Tool Info");
 		TextField snCodeField = new TextField("SN");
-		TextField barCodeField = new TextField("Barcode");
 
-		editCategoryButton = UIUtils.createButton(VaadinIcon.PENCIL);
+
+		editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
 		editCategoryButton.addClickListener(e -> {
 			if (e != null) {
 				Tool selectedCategory = categoriesComboBox.getValue();
@@ -90,7 +135,7 @@ public class AdminToolForm extends FormLayout {
 		companyComboBox.addValueChangeListener(e -> {
 			if (e != null) {
 				if (e.getValue() != null) {
-					updateCategoriesProvider(e.getValue());
+					updateComboBoxData(e.getValue());
 				}
 			}
 		});
@@ -117,14 +162,20 @@ public class AdminToolForm extends FormLayout {
 		categoryLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
 
 
-		TextField userField = new TextField("In Use By");
-
 		ComboBox<ToolStatus> toolStatusComboBox = new ComboBox<>();
 		toolStatusComboBox.setLabel("Status (Usage)");
 		toolStatusComboBox.setItems(EnumSet.allOf(ToolStatus.class));
 		toolStatusComboBox.setItemLabelGenerator(ToolStatus::getStringValue);
 
-		TextField reservedByField = new TextField("Reserved By");
+		toolUserComboBox = new ComboBox<>();
+		toolUserComboBox.setItems(UserFacade.getInstance().getEmptyList());
+		toolUserComboBox.setLabel("Current User");
+		toolUserComboBox.setItemLabelGenerator(User::getUsername);
+
+		toolReservedComboBox = new ComboBox<>();
+		toolReservedComboBox.setItems(UserFacade.getInstance().getEmptyList());
+		toolReservedComboBox.setLabel("Reserved By User");
+		toolReservedComboBox.setItemLabelGenerator(User::getUsername);
 
 		DatePicker boughtDateField = new DatePicker("Bought");
 		boughtDateField.setWidth("calc(48% - 0rem)");
@@ -159,39 +210,44 @@ public class AdminToolForm extends FormLayout {
 		Divider divider = new Divider(Horizontal.NONE, Vertical.S);
 		Divider divider2 = new Divider(Horizontal.NONE, Vertical.S);
 
-		UIUtils.setColSpan(2, toolLayout, toolInfoField, companyComboBox, additionalInfo, divider, divider2);
+
+		UIUtils.setColSpan(2, toolNameLayout, qrCodeLayout, barcodeLayout, toolInfoField,
+				companyComboBox, categoryLayout, additionalInfo, divider, divider2, datesLayout,
+				priceAndGuaranteeLayout);
 
 //      Form layout
-//		FormLayout formLayout = new FormLayout();
 		addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		add(toolLayout);    //colspan 2
-		add(toolInfoField); //colspan 2
+		add(toolNameLayout);
+		add(qrCodeLayout);
+		add(barcodeLayout);
+		add(toolInfoField);
 		add(manufacturerField);
 		add(modelField);
 		add(snCodeField);
-		add(barCodeField);
-		add(divider);       //colspan 2
-		add(companyComboBox); //colspan 2
+		add(divider);
+		add(companyComboBox);
 		add(categoryLayout);
 		add(toolStatusComboBox);
-		add(userField);
-		add(reservedByField);
-		add(divider2);      //colspan 2
+		add(toolUserComboBox);
+		add(toolReservedComboBox);
+		add(divider2);
 		add(datesLayout);
 		add(priceAndGuaranteeLayout);
-		add(additionalInfo); //colspan 2
+		add(additionalInfo);
 
 
 		binder.forField(toolNameField)
 				.asRequired("Name is required")
 				.bind(Tool::getName, Tool::setName);
-		binder.forField(toolVisibility)
+		binder.forField(status)
 				.asRequired("Status is required")
 				.withConverter(new CustomConverter.StatusConverter())
 				.bind(Tool::isDeleted, Tool::setDeleted);
+		binder.forField(qrCodeField)
+				.bind(Tool::getQrCode, Tool::setQrCode);
 		binder.forField(manufacturerField)
 				.bind(Tool::getManufacturer, Tool::setManufacturer);
 		binder.forField(modelField)
@@ -204,21 +260,39 @@ public class AdminToolForm extends FormLayout {
 				.bind(Tool::getBarcode, Tool::setBarcode);
 		binder.forField(companyComboBox)
 				.asRequired("Company is required")
-				.withConverter(new CustomConverter.CompanyConverter())
-				.bind(Tool::getCompanyId, Tool::setCompanyId);
+				.bind(Tool::getCompany, Tool::setCompany);
 		binder.forField(categoriesComboBox)
 				.asRequired("Category is required")
 				.withConverter(new CustomConverter.ToolCategoryConverter())
 				.bind(Tool::getParentCategory, Tool::setParentCategory);
-		binder.forField(userField)
-				.withConverter(new CustomConverter.UserById())
-				.bind(Tool::getInUseByUserId, Tool::setInUseByUserId);
 		binder.forField(toolStatusComboBox)
 				.asRequired("Status is required")
 				.bind(Tool::getUsageStatus, Tool::setUsageStatus);
-		binder.forField(reservedByField)
-				.withConverter(new CustomConverter.UserById())
-				.bind(Tool::getReservedByUserId, Tool::setReservedByUserId);
+
+		binder.forField(toolUserComboBox)
+				.withValidator((s, valueContext) -> {
+					if (toolStatusComboBox.getValue() != null) {
+						if(toolStatusComboBox.getValue().equals(ToolStatus.IN_USE) || toolStatusComboBox.getValue().equals(ToolStatus.RESERVED)) {
+							if (toolUserComboBox.getValue() == null) {
+								return ValidationResult.error("User required for status: " + toolStatusComboBox.getValue().getStringValue());
+							}
+						}
+					}
+					return ValidationResult.ok();
+				}).bind(Tool::getUser, Tool::setUser);
+
+		binder.forField(toolReservedComboBox)
+				.withValidator((s, valueContext) -> {
+					if (toolStatusComboBox.getValue() != null) {
+						if(toolStatusComboBox.getValue().equals(ToolStatus.RESERVED)) {
+							if (toolReservedComboBox.getValue() == null) {
+								return ValidationResult.error("User required for status: " + toolStatusComboBox.getValue().getStringValue());
+							}
+						}
+					}
+					return ValidationResult.ok();
+				}).bind(Tool::getReservedByUser, Tool::setReservedByUser);
+
 		binder.forField(priceField)
 				.withConverter(new StringToDoubleConverter("Price must be a number"))
 				.withNullRepresentation(0.00)
@@ -256,6 +330,114 @@ public class AdminToolForm extends FormLayout {
 				.bind(Tool::getAdditionalInfo, Tool::setAdditionalInfo);
 	}
 
+	private QRReader qrReader;
+	private boolean qrEventActive = false;
+
+	private void handleQrCode() {
+		CustomDialog qrDialog = new CustomDialog();
+		qrDialog.setCloseOnEsc(false);
+		qrDialog.setCloseOnOutsideClick(false);
+
+		qrDialog.setHeader(UIUtils.createH2Label("QR Code"));
+
+		TextArea qrTextArea = new TextArea("QR Code");
+		qrTextArea.setMinWidth("400px");
+		qrTextArea.getStyle().set("text-align", "center");
+
+		Button retakeQrCodeButton = UIUtils.createButton("Take New", VaadinIcon.QRCODE, ButtonVariant.LUMO_CONTRAST);
+		retakeQrCodeButton.setIconAfterText(true);
+		retakeQrCodeButton.addClickListener(e -> {
+			if (!qrEventActive) {
+				qrDialog.setContent(qrTextArea, qrReader);
+				qrReader.reset();
+			}
+		});
+
+		qrDialog.getHeader().add(retakeQrCodeButton);
+		qrDialog.getHeader().setComponentMargin(retakeQrCodeButton, Left.AUTO);
+
+
+		qrEventActive = true;
+		qrReader = new QRReader(readEvent -> {
+			if (readEvent != null) {
+				qrReader.stop();
+				qrDialog.getContent().remove(qrReader);
+
+				qrTextArea.setValue(readEvent);
+				qrEventActive = false;
+			}
+		});
+
+		qrDialog.setContent(qrTextArea, qrReader);
+		qrDialog.getCancelButton().addClickListener(e -> {
+			qrReader.stop();
+			qrDialog.close();
+		});
+
+		qrDialog.getConfirmButton().setText("Add");
+		qrDialog.getConfirmButton().addClickListener(e -> {
+			qrReader.stop();
+
+			qrCodeField.setValue(qrTextArea.getValue());
+			qrDialog.close();
+		});
+		qrDialog.open();
+	}
+
+	private BarcodeReader barcodeReader;
+	private boolean codeEventActive = false;
+
+	private void handleBarcode() {
+		CustomDialog dialog = new CustomDialog();
+		dialog.setCloseOnEsc(false);
+		dialog.setCloseOnOutsideClick(false);
+
+		dialog.setHeader(UIUtils.createH2Label("Barcode"));
+
+		TextArea codeTextArea = new TextArea("Barcode");
+		codeTextArea.setMinWidth("400px");
+		codeTextArea.getStyle().set("text-align", "center");
+
+		Button retakeCodeButton = UIUtils.createButton("Take New", VaadinIcon.BARCODE, ButtonVariant.LUMO_CONTRAST);
+		retakeCodeButton.setIconAfterText(true);
+		retakeCodeButton.addClickListener(e -> {
+			if (!codeEventActive) {
+				dialog.setContent(codeTextArea, barcodeReader);
+				barcodeReader.reset();
+			}
+		});
+
+		dialog.getHeader().add(retakeCodeButton);
+		dialog.getHeader().setComponentMargin(retakeCodeButton, Left.AUTO);
+
+
+		codeEventActive = true;
+		barcodeReader = new BarcodeReader(readEvent -> {
+			if (readEvent != null) {
+				barcodeReader.stop();
+				dialog.getContent().remove(barcodeReader);
+
+				codeTextArea.setValue(readEvent);
+				codeEventActive = false;
+			}
+		});
+
+		dialog.setContent(codeTextArea, barcodeReader);
+		dialog.getCancelButton().addClickListener(e -> {
+			barcodeReader.stop();
+			dialog.close();
+		});
+
+		dialog.getConfirmButton().setText("Add");
+		dialog.getConfirmButton().addClickListener(e -> {
+			barcodeReader.stop();
+
+			barCodeField.setValue(codeTextArea.getValue());
+			dialog.close();
+		});
+		dialog.open();
+	}
+
 	public void setTool(Tool t) {
 		tool = t;
 		isNew = false;
@@ -273,7 +455,7 @@ public class AdminToolForm extends FormLayout {
 		}
 	}
 
-	private void updateCategoriesProvider(Company company) {
+	private void updateComboBoxData(Company company) {
 		if (company.getId() <= 0) {
 			System.err.println("Company ID is <= 0, company name: " + company.getName());
 			return;
@@ -282,6 +464,9 @@ public class AdminToolForm extends FormLayout {
 		if (categoriesComboBox.getValue() != null) {
 			editCategoryButton.setEnabled(!categoriesComboBox.getValue().equals(ToolFacade.getInstance().getRootCategory()));
 		}
+
+		toolUserComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
+		toolReservedComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
 	}
 
 	public Tool getTool() {
@@ -290,6 +475,7 @@ public class AdminToolForm extends FormLayout {
 
 			if (binder.isValid()) {
 				binder.writeBean(tool);
+
 				return tool;
 			}
 		} catch (ValidationException e) {
@@ -303,7 +489,5 @@ public class AdminToolForm extends FormLayout {
 		return isNew;
 	}
 
-	public void setNew(boolean b) {
-		this.isNew = b;
-	}
+
 }

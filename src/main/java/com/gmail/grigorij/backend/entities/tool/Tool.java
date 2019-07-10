@@ -1,7 +1,9 @@
 package com.gmail.grigorij.backend.entities.tool;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.location.Location;
+import com.gmail.grigorij.backend.entities.user.User;
 
 import javax.persistence.*;
 import java.sql.Date;
@@ -27,7 +29,7 @@ import java.util.*;
 		@NamedQuery(name="Tool.getAll",
 				query="SELECT tool FROM Tool tool"),
 		@NamedQuery(name="Tool.getAllInCompany",
-				query="SELECT tool FROM Tool tool WHERE tool.companyId = :id_var")
+				query="SELECT tool FROM Tool tool WHERE tool.company IS NOT NULL and tool.company.id = :company_id_var")
 })
 public class Tool extends EntityPojo {
 
@@ -57,8 +59,8 @@ public class Tool extends EntityPojo {
 	@Column(name = "name")
 	private String name;
 
-	@Column(name = "company_id")
-	private long companyId;
+	@Column(name = "qr_code")
+	private String qrCode;
 
 	@Column(name = "serial_number")
 	private String serialNumber;
@@ -90,11 +92,14 @@ public class Tool extends EntityPojo {
 	@Column(name = "owner")
 	private String owner;
 
-	@Column(name = "in_use_by_user_id")
-	private long inUseByUserId = -1;
+	@OneToOne
+	private Company company = null;
 
-	@Column(name = "reserved_by_user_id")
-	private long reservedByUserId = -1;
+	@OneToOne
+	private User user = null;
+
+	@OneToOne
+	private User reservedByUser = null;
 
 	@Column(name = "date_bought")
 	private Date dateBought;
@@ -123,7 +128,7 @@ public class Tool extends EntityPojo {
 		this.setToolInfo(tool.getToolInfo());
 		this.setSnCode(tool.getSnCode());
 		this.setBarcode(tool.getBarcode());
-		this.setCompanyId(tool.getCompanyId());
+		this.setCompany(tool.getCompany());
 		this.setParentCategory(tool.getParentCategory());
 		this.setUsageStatus(tool.getUsageStatus());
 		this.setDateBought(tool.getDateBought());
@@ -167,13 +172,6 @@ public class Tool extends EntityPojo {
 		this.name = name;
 	}
 
-	public long getCompanyId() {
-		return companyId;
-	}
-	public void setCompanyId(long companyId) {
-		this.companyId = companyId;
-	}
-
 	public String getManufacturer() {
 		return manufacturer;
 	}
@@ -214,20 +212,6 @@ public class Tool extends EntityPojo {
 	}
 	public void setOwner(String owner) {
 		this.owner = owner;
-	}
-
-	public long getInUseByUserId() {
-		return inUseByUserId;
-	}
-	public void setInUseByUserId(long inUseByUserId) {
-		this.inUseByUserId = inUseByUserId;
-	}
-
-	public long getReservedByUserId() {
-		return reservedByUserId;
-	}
-	public void setReservedByUserId(long reservedByUserId) {
-		this.reservedByUserId = reservedByUserId;
 	}
 
 	public String getSnCode() {
@@ -302,7 +286,7 @@ public class Tool extends EntityPojo {
 		Tool t = new Tool();
 		t.setName("");
 		t.setParentCategory(null);
-		t.setCompanyId(-1);
+//		t.setCompany(null);
 		t.setManufacturer("");
 		t.setModel("");
 		t.setToolInfo("");
@@ -333,17 +317,48 @@ public class Tool extends EntityPojo {
 		this.rfCode = rfCode;
 	}
 
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public User getReservedByUser() {
+		return reservedByUser;
+	}
+
+	public void setReservedByUser(User reservedByUser) {
+		this.reservedByUser = reservedByUser;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
+	}
+
+	public String getQrCode() {
+		return qrCode;
+	}
+
+	public void setQrCode(String qrCode) {
+		this.qrCode = qrCode;
+	}
+
 
 //	@Override
 //	public String toString() {
 //		StringBuilder sb = new StringBuilder();
 //		sb.append("\nName: ").append(this.name);
-//		sb.append("\nCompany Id: ").append(this.companyId);
+//		sb.append("\nCompany: ").append(this.company.getName());
 //		sb.append("\nHierarchyType ").append(this.hierarchyType.toString());
 //
 //		if (this.parentCategory != null) {
 //			sb.append("\nParent Info: ").append(this.parentCategory);
-////			sb.append("\nParent Name: ").append(this.parentCategory.getName());
 //		}
 //
 //		return sb.toString();

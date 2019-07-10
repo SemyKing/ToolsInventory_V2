@@ -15,7 +15,6 @@ import com.vaadin.flow.data.validator.EmailValidator;
 
 class PasswordRecovery {
 
-	private static final String CLASS_NAME = "password-recovery-dialog";
 	private OperationStatus operationStatus;
 
 	PasswordRecovery(OperationStatus operationStatus) {
@@ -25,7 +24,7 @@ class PasswordRecovery {
 
 	private void constructPasswordRecoveryDialog() {
 		EmailField emailField = new EmailField("E-mail");
-		UIUtils.setWidth("100%", emailField);
+		emailField.setMinWidth("400px");
 
 		Binder<Person> binder = new Binder<>();
 		binder.forField(emailField)

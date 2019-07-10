@@ -1,12 +1,15 @@
 package com.gmail.grigorij.backend.entities.tool;
 
-import com.gmail.grigorij.ui.utils.css.badge.BadgeColor;
+import com.gmail.grigorij.ui.utils.components.CustomBadge.BadgeColor;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 public enum ToolStatus {
-	IN_USE( "In Use",   VaadinIcon.CLOCK,   BadgeColor.CONTRAST),
-	FREE(   "Free",     VaadinIcon.CHECK,   BadgeColor.SUCCESS),
-	LOST(   "Lost",     VaadinIcon.WARNING, BadgeColor.ERROR);
+
+	IN_USE(     "In Use",       VaadinIcon.CLOCK,           BadgeColor.GREY),
+	RESERVED(   "Reserved",     VaadinIcon.CALENDAR_CLOCK,  BadgeColor.BLUE),
+	FREE(       "Free",         VaadinIcon.CHECK,           BadgeColor.GREEN),
+	LOST(       "Lost",         VaadinIcon.WARNING,         BadgeColor.RED),
+	BROKEN(     "Broken",       VaadinIcon.WRENCH,          BadgeColor.RED);
 
 	private String stringValue;
 	private VaadinIcon icon;

@@ -3,11 +3,15 @@ package com.gmail.grigorij.backend;
 import com.gmail.grigorij.backend.access.AccessGroups;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.ToolFacade;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.location.Location;
 import com.gmail.grigorij.backend.entities.tool.Tool;
 import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
+import com.gmail.grigorij.backend.entities.transaction.TransactionOperation;
+import com.gmail.grigorij.backend.entities.transaction.TransactionTarget;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -20,9 +24,10 @@ public class DatabaseDummyInsert {
 
 	public static boolean entitiesGenerated = false;
 
-	private int usersCount = 10;
+	private final String ADMINISTRATION_COMPANY_NAME = "ADMINISTRATION";
+
 	private int companiesCount = 3; //excluding 1st company: ADMINISTRATION
-	private int usersPerCompany = usersCount / companiesCount;
+	private int usersPerCompany = 10;
 
 	private int toolsCount = 10;
 	private int toolCategoriesCount = 5;
@@ -33,6 +38,7 @@ public class DatabaseDummyInsert {
 	private List<Company> companies, companiesFromDB;
 	private List<Tool> tools;
 
+	private User transactionUser;
 
 	public DatabaseDummyInsert() {
 		users = new ArrayList<>();
@@ -52,66 +58,45 @@ public class DatabaseDummyInsert {
 	}
 
 	private void generateUsers() {
-		User user1 = new User();
-		user1.setUsername("u");
-		user1.setPassword("p");
-		user1.setCompanyId(1);
-		user1.setAccessGroup(AccessGroups.ADMIN.getIntValue());
-		user1.setDeleted(false);
+		for (int compInd = 0; compInd < (companiesFromDB.size()); compInd++) {
 
-		user1.setFirstName("Grigorij");
-		user1.setLastName("Semykin");
-		user1.setPhoneNumber("046123456");
-		user1.setEmail("gs@mail.com");
+			Company company = companiesFromDB.get(compInd);
 
-		user1.setThemeVariant(LumoStyles.LIGHT);
-		user1.setAdditionalInfo("ABCDEFG");
+			for (int userInd = 0; userInd < usersPerCompany; userInd++) {
 
-		users.add(user1);
+				User user = new User();
+				user.setUsername("u" + compInd + "." + userInd);
+				user.setPassword("p" + compInd + "." + userInd);
+				user.setCompany(company);
+				user.setAccessGroup(AccessGroups.EMPLOYEE.getIntValue());
+				user.setDeleted(false);
 
+				String rf = RandomStringUtils.randomAlphabetic(1);
+				String rl = RandomStringUtils.randomAlphabetic(1);
 
-		int companyId = 2;
+				user.setFirstName(rf + "UserFirstName");
+				user.setLastName(rl + "UserLastName");
+				user.setPhoneNumber("046" + compInd + "." + userInd);
+				user.setEmail(rf+rl +  "@mail.com");
 
-		for (int i = 1; i < usersCount; i++) {
+				Location location = new Location();
+				location.setAddressLine1("Street Name" + compInd + "." + userInd);
+				location.setCountry("Country Name" + compInd + "." + userInd);
+				location.setCity("City Name" + compInd + "." + userInd);
+				location.setPostcode("Postcode" + compInd + "." + userInd);
 
-			if (i >= usersPerCompany) {
-				companyId++;
-				usersPerCompany += usersPerCompany;
+				user.setAddress(location);
+
+				users.add(user);
 			}
-
-			User user = new User();
-			user.setUsername("uname" + i);
-			user.setPassword("upass" + i);
-			user.setCompanyId(companyId);
-			user.setAccessGroup(AccessGroups.EMPLOYEE.getIntValue());
-			user.setDeleted(false);
-
-			String rf = RandomStringUtils.randomAlphabetic(1);
-			String rl = RandomStringUtils.randomAlphabetic(1);
-
-			user.setFirstName(rf + "UserFirstName");
-			user.setLastName(rl + "UserLastName");
-			user.setPhoneNumber("046" + i);
-			user.setEmail(rf+rl +  "@mail.com");
-
-			Location location = new Location();
-			location.setAddressLine1("UserAddress" + i);
-			location.setCountry("UserCountry" + i);
-			location.setCity("UserCity" + i);
-			location.setPostcode("UserPostCode" + i);
-
-			user.setAddress(location);
-
-			users.add(user);
 		}
-		System.out.println("users generated");
 
 		insertUsers();
 	}
 
 	private void generateCompanies() {
 		Company aCompany = new Company();
-		aCompany.setName("Administration");
+		aCompany.setName(ADMINISTRATION_COMPANY_NAME);
 		aCompany.setVat("012345ABCD");
 		aCompany.setDeleted(false);
 
@@ -130,7 +115,6 @@ public class DatabaseDummyInsert {
 		aCompany.setAdditionalInfo("ADMINISTRATION COMPANY FOR ADMINS ONLY");
 
 		companies.add(aCompany);
-
 
 		for (int i = 1; i < (companiesCount+1); i++) {
 			Company company = new Company();
@@ -167,7 +151,7 @@ public class DatabaseDummyInsert {
 		int subCategoryCounter = 1;
 		int toolCounter = 1;
 
-		for (int comp = 1; comp < (companiesCount+1); comp++) {
+		for (int comp = 0; comp < (companiesFromDB.size()); comp++) {
 
 			Company company = companiesFromDB.get(comp);
 			List<User> companyUsers = UserFacade.getInstance().getUsersByCompanyId(company.getId());
@@ -176,20 +160,20 @@ public class DatabaseDummyInsert {
 			for (int i = 0; i < toolCategoriesCount; i++) {
 				Tool p = new Tool();
 				p.setName("Category " + categoryCounter);
-				p.setCompanyId(company.getId());
+				p.setCompany(company);
 
 				for (int j = 0; j < subCategories; j++) {
 					Tool c = new Tool();
 					c.setName("Sub Category " + subCategoryCounter + " (P: " + categoryCounter  +")");
 					c.setParentCategory(p);
-					c.setCompanyId(company.getId());
+					c.setCompany(company);
 
 					p.addTool(c);
 
 					for (int k = 0; k < toolsPerCategory; k++) {
 						Tool cc = new Tool();
 
-						int random = (int )(Math.random() * 3);
+						int random = (int )(Math.random() * 5);
 						ToolStatus status = ToolStatus.IN_USE;
 
 						if (random == 0) {
@@ -198,6 +182,10 @@ public class DatabaseDummyInsert {
 							status = ToolStatus.IN_USE;
 						} else if (random == 2) {
 							status = ToolStatus.LOST;
+						} else if (random == 3) {
+							status = ToolStatus.RESERVED;
+						} else if (random == 4) {
+							status = ToolStatus.BROKEN;
 						}
 
 						cc.setUsageStatus(status);
@@ -205,10 +193,23 @@ public class DatabaseDummyInsert {
 						if (status.equals(ToolStatus.IN_USE)) {
 							int randomUserIndex = (int )(Math.random() * (companyUsers.size()));
 							User user = companyUsers.get(randomUserIndex);
-							cc.setInUseByUserId(user.getId());
+							cc.setUser(user);
 						}
 
-						cc.setCompanyId(company.getId());
+						if (status.equals(ToolStatus.RESERVED)) {
+							int randomUserIndex1 = (int )(Math.random() * (companyUsers.size()));
+							int randomUserIndex2 = (int )(Math.random() * (companyUsers.size()));
+							User user1 = companyUsers.get(randomUserIndex1);
+							User user2 = companyUsers.get(randomUserIndex2);
+
+							cc.setReservedByUser(user1);
+							cc.setUser(user2);
+						}
+
+
+
+
+						cc.setCompany(company);
 						cc.setName("Tool " + toolCounter + " (P: " + categoryCounter  +", SP: "+ subCategoryCounter+ ")");
 						cc.setManufacturer(RandomStringUtils.randomAlphabetic(5));
 						cc.setModel(RandomStringUtils.randomNumeric(10));
@@ -240,24 +241,76 @@ public class DatabaseDummyInsert {
 		insertTools();
 	}
 
+	private void insertCompanies() {
+		for (Company company : companies) {
+			CompanyFacade.getInstance().insert(company);
+
+
+			Transaction transaction = new Transaction();
+			transaction.setWhoDid(transactionUser);
+			transaction.setTransactionOperation(TransactionOperation.ADD);
+			transaction.setTransactionTarget(TransactionTarget.COMPANY);
+			transaction.setCompany(company);
+
+			TransactionFacade.getInstance().insert(transaction);
+		}
+
+		companiesFromDB = CompanyFacade.getInstance().getAllCompanies();
+
+		Company administration = null;
+
+		for (Company c : companiesFromDB) {
+			if (c.getName().equals(ADMINISTRATION_COMPANY_NAME)) {
+				administration = c;
+				break;
+			}
+		}
+
+
+		User admin = new User();
+		admin.setUsername("u");
+		admin.setPassword("p");
+		admin.setCompany(administration);
+		admin.setAccessGroup(AccessGroups.ADMIN.getIntValue());
+		admin.setDeleted(false);
+
+		admin.setFirstName("Grigorij");
+		admin.setLastName("Semykin");
+		admin.setPhoneNumber("046123456");
+		admin.setEmail("gs@mail.com");
+
+		admin.setThemeVariant(LumoStyles.LIGHT);
+		admin.setAdditionalInfo("ABCDEFG");
+
+		UserFacade.getInstance().insert(admin);
+		transactionUser = UserFacade.getInstance().getUserByUsername(admin.getUsername());
+	}
 
 	private void insertUsers() {
 		for (User user : users) {
 			UserFacade.getInstance().insert(user);
-		}
-	}
 
-	private void insertCompanies() {
-		for (Company company : companies) {
-			CompanyFacade.getInstance().insert(company);
-		}
+			Transaction transaction = new Transaction();
+			transaction.setWhoDid(transactionUser);
+			transaction.setTransactionOperation(TransactionOperation.ADD);
+			transaction.setTransactionTarget(TransactionTarget.USER);
+			transaction.setDestinationUser(user);
 
-		companiesFromDB = CompanyFacade.getInstance().getAllCompanies();
+			TransactionFacade.getInstance().insert(transaction);
+		}
 	}
 
 	private void insertTools() {
 		for (Tool tool : tools) {
 			ToolFacade.getInstance().insert(tool);
+
+
+			Transaction transaction = new Transaction();
+			transaction.setWhoDid(transactionUser);
+			transaction.setTransactionOperation(TransactionOperation.ADD);
+			transaction.setTool(tool); // <--TransactionTarget is set automatically TOOL/CATEGORY
+
+			TransactionFacade.getInstance().insert(transaction);
 		}
 	}
 }

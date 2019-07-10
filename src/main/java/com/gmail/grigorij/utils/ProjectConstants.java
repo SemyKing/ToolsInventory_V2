@@ -20,13 +20,19 @@ public final class ProjectConstants {
 	public static final String REPORTING = "Reporting";
 	public static final String ADMIN = "Admin";
 
+	//Tab names
+	public static final String COMPANIES = "Companies";
+	public static final String PERSONNEL = "Personnel";
+//	public static final String INVENTORY = "Inventory"; //defined
+
 	//EntityStatus
 	public static final String ACTIVE = "Active";
 	public static final String INACTIVE = "Inactive";
 
 	public static final String FORM_LAYOUT_LARGE_ATTR = "large";
-	public static final String FORM_HALF_WIDTH = "calc(48% - 0rem)";
-	public static final String COL_2_MIN_WIDTH = "450px";
+//	public static final String FORM_HALF_WIDTH = "calc(48% - 0rem)";
+	public static final String FORM_HALF_WIDTH = "48%";
+	public static final String COL_2_MIN_WIDTH = "520px";
 
 	public static final String ROOT_CATEGORY = "**Root Category**";
 

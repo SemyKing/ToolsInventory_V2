@@ -12,9 +12,7 @@ import javax.persistence.RollbackException;
 public class DatabaseManager {
 
 	private static DatabaseManager mInstance;
-
 	private DatabaseManager() {}
-
 	public static DatabaseManager getInstance() {
 		if (mInstance == null) {
 			mInstance = new DatabaseManager();

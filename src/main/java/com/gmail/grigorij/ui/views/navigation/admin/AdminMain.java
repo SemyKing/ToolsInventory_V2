@@ -6,7 +6,7 @@ import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
-import com.gmail.grigorij.ui.utils.frames.SplitViewFrame;
+import com.gmail.grigorij.ui.utils.components.frames.SplitViewFrame;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;

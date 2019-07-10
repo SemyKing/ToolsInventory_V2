@@ -101,35 +101,48 @@ public class CustomConverter {
 		}
 	}
 
-	public static class UserById implements Converter<String, Long> {
-		@Override
-		public Result<Long> convertToModel(String username, ValueContext valueContext) {
-			try {
-				if (username == null) {
-					return null;
-				} else {
-					if (username.length() <= 0) {
-						return Result.ok(-1L);
-					}
+//	public static class ToolUser implements Converter<String, User> {
+//		@Override
+//		public Result<User> convertToModel(String s, ValueContext valueContext) {
+//			if (s.length() <= 0) {
+//				return null;
+//			} else {
+//				return Result.ok(UserFacade.getInstance().getUserByUsername(s));
+//			}
+//		}
+//
+//		@Override
+//		public String convertToPresentation(User user, ValueContext valueContext) {
+//			if (user == null) {
+//				return "";
+//			} else {
+//				return user.getUsername();
+//			}
+//		}
+//	}
 
-					return Result.ok(UserFacade.getInstance().findUserInDatabaseByUsername(username).getId());
-				}
-			} catch (Exception e) {
-				return Result.error("Company convertToModel error");
-			}
-		}
+//	public static class ToolUser implements Converter<User, String> {
+//
+//		@Override
+//		public Result<String> convertToModel(User user, ValueContext valueContext) {
+//			if (user == null) {
+//				return Result.ok("");
+//			} else {
+//				return Result.ok(user.getUsername());
+//			}
+//		}
+//
+//		@Override
+//		public User convertToPresentation(String s, ValueContext valueContext) {
+//			if (s.length() <= 0) {
+//				return null;
+//			} else {
+//				return UserFacade.getInstance().getUserByUsername(s);
+//			}
+//		}
+//	}
 
-		@Override
-		public String convertToPresentation(Long id, ValueContext valueContext) {
-			if (id == null) {
-				return "";
-			} else {
-				if (id < 0) {
-					return "";
-				}
-
-				return UserFacade.getInstance().getUserById(id).getUsername();
-			}
-		}
-	}
+//	public static class ToolUser implements Converter<User, User> {
+//
+//	}
 }

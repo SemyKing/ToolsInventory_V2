@@ -1,10 +1,12 @@
 package com.gmail.grigorij.ui.utils.components;
 
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.FlexWrap;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -29,7 +31,7 @@ public class ConfirmDialog extends FlexBoxLayout {
 	private FlexBoxLayout content;
 	private FlexBoxLayout footer;
 
-	public ConfirmDialog() {
+	public ConfirmDialog(String message) {
 		addClassName(CLASS_NAME);
 
 		header = new FlexBoxLayout();
@@ -38,10 +40,10 @@ public class ConfirmDialog extends FlexBoxLayout {
 
 		content = new FlexBoxLayout();
 		content.addClassName(CLASS_NAME  + "__content");
-		content.add(new Span("Are you sure you want to proceed?"));
+		content.add(new Span(message));
 
-		cancelButton = UIUtils.createButton("NO", ButtonVariant.LUMO_TERTIARY);
-		confirmButton = UIUtils.createButton("YES", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
+		cancelButton = UIUtils.createButton("No", ButtonVariant.LUMO_TERTIARY);
+		confirmButton = UIUtils.createButton("Yes", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
 
 		footer = new FlexBoxLayout();
 		footer.addClassName(CLASS_NAME  + "__footer");
@@ -75,18 +77,22 @@ public class ConfirmDialog extends FlexBoxLayout {
 		DELETE DIALOG WITH CONFIRM INPUT FIELD
 		 */
 		if (type.equals(Type.DELETE)) {
-			header.add(UIUtils.createH4Label("Confirm delete"));
+			header.add(UIUtils.createH4Label("Confirm Delete"));
+
+			FlexBoxLayout layout = new FlexBoxLayout();
+			layout.setFlexWrap(FlexWrap.WRAP);
 
 			Paragraph p = new Paragraph();
-			p.add(new Span("Are you sure you want to delete this " + entity + "? This will completely remove selected " + entity + " from Database."));
-			p.add(new HorizontalLayout(new Span("Entities that have reference to this entity, will throw "), UIUtils.createBoldText("NullPointerException")));
-			p.add(new HorizontalLayout(new Span("Deleting " + entity + ": "), targetBold));
+			p.add(new Span("Are you sure you want to delete " + entity + "? This operation will completely remove " + entity + " from Database."));
+//			layout.add(new Label("Entities that have reference to this entity, will throw: "), UIUtils.createBoldText("NullPointerException"));
+//			p.add(layout);
+			p.add(new HorizontalLayout(new Span("Confirmation text :"), targetBold));
 
 			content.add(p);
 
 			this.confirmButton.setEnabled(false);
 
-			TextField confirmInputField = new TextField("Input "+entity+" name to confirm");
+			TextField confirmInputField = new TextField("Input confirmation text to proceed");
 			confirmInputField.setRequired(true);
 			confirmInputField.setValueChangeMode(ValueChangeMode.EAGER);
 			confirmInputField.addValueChangeListener(e -> {

@@ -2,9 +2,11 @@ package com.gmail.grigorij.ui.utils.forms.admin;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.ToolFacade;
+import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.tool.Tool;
 import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
@@ -13,9 +15,11 @@ import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminInventory;
+import com.gmail.grigorij.ui.views.navigation.admin.AdminInventoryBulkEditor;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -37,17 +41,16 @@ import java.util.EnumSet;
 
 public class AdminToolBulkForm extends FormLayout {
 
-	private Binder<Tool> binder = new Binder<>(Tool.class);
 
+	private Binder<Tool> binder = new Binder<>(Tool.class);
 	private Tool tool;
 
-	private final AdminInventory adminInventory;
-
 	private ComboBox<Tool> categoriesComboBox;
+	private ComboBox<User> toolUserComboBox;
+	private ComboBox<User> toolReservedComboBox;
 
 
-	public AdminToolBulkForm(AdminInventory adminInventory) {
-		this.adminInventory = adminInventory;
+	public AdminToolBulkForm(AdminInventoryBulkEditor bulkEditor) {
 
 		TextField toolNameField = new TextField("Name");
 		TextField manufacturerField = new TextField("Manufacturer");
@@ -57,6 +60,15 @@ public class AdminToolBulkForm extends FormLayout {
 		TextField barCodeField = new TextField("Barcode");
 
 
+
+		//--------------COMPANY
+		FlexBoxLayout companyLayout = new FlexBoxLayout();
+		companyLayout.setWidth("100%");
+		companyLayout.setFlexDirection(FlexDirection.ROW);
+		companyLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+
+		Button setAllCompaniesButton = UIUtils.createButton("Set all", ButtonVariant.LUMO_CONTRAST);
+
 		ComboBox<Company> companyComboBox = new ComboBox<>();
 		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
 		companyComboBox.setItemLabelGenerator(Company::getName);
@@ -65,10 +77,34 @@ public class AdminToolBulkForm extends FormLayout {
 		companyComboBox.addValueChangeListener(e -> {
 			if (e != null) {
 				if (e.getValue() != null) {
-					updateCategoriesProvider(e.getValue());
+					updateComboBoxData(e.getValue());
 				}
 			}
 		});
+
+		setAllCompaniesButton.addClickListener(e -> {
+			if (e != null) {
+				if (companyComboBox.getValue() != null) {
+					bulkEditor.setBulkCompanies(companyComboBox.getValue());
+				}
+			}
+		});
+		UIUtils.setTooltip("Set selected company to all tools", setAllCompaniesButton);
+
+		companyLayout.add(companyComboBox, setAllCompaniesButton);
+		companyLayout.setComponentMargin(setAllCompaniesButton, Left.S);
+		companyLayout.setFlexGrow("1", companyComboBox);
+		//COMPANY--------------
+
+
+
+		//--------------CATEGORY
+		FlexBoxLayout categoryLayout = new FlexBoxLayout();
+		categoryLayout.setWidth("100%");
+		categoryLayout.setFlexDirection(FlexDirection.ROW);
+		categoryLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+
+		Button setAllCategoriesButton = UIUtils.createButton("Set all", ButtonVariant.LUMO_CONTRAST);
 
 		categoriesComboBox = new ComboBox<>();
 		categoriesComboBox.setItems(ToolFacade.getInstance().getEmptyList());
@@ -76,33 +112,59 @@ public class AdminToolBulkForm extends FormLayout {
 		categoriesComboBox.setItemLabelGenerator(Tool::getName);
 		categoriesComboBox.setRequired(true);
 
-		Button setAllButton = UIUtils.createButton("Set all");
-		setAllButton.addClickListener(e -> {
+		setAllCategoriesButton.addClickListener(e -> {
 			if (e != null) {
-				if (companyComboBox.getValue() != null && categoriesComboBox.getValue() != null) {
-					adminInventory.setBulkCompaniesAndCategories(companyComboBox.getValue().getId(), categoriesComboBox.getValue());
+				if (categoriesComboBox.getValue() != null) {
+					bulkEditor.setBulkCategories(categoriesComboBox.getValue());
 				}
 			}
 		});
-		UIUtils.setTooltip("Set selected company and category to all tools", setAllButton);
+		UIUtils.setTooltip("Set selected category to all tools", setAllCategoriesButton);
 
-		FlexBoxLayout categoryLayout = new FlexBoxLayout();
-		categoryLayout.setWidth("100%");
-		categoryLayout.setFlexDirection(FlexDirection.ROW);
-		categoryLayout.add(categoriesComboBox, setAllButton);
-		categoryLayout.setComponentMargin(setAllButton, Left.S);
+		categoryLayout.add(categoriesComboBox, setAllCategoriesButton);
+		categoryLayout.setComponentMargin(setAllCategoriesButton, Left.S);
 		categoryLayout.setFlexGrow("1", categoriesComboBox);
-		categoryLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+		//CATEGORY--------------
 
 
-		TextField userField = new TextField("In Use By");
+		//--------------USAGE STATUS
+		FlexBoxLayout statusLayout = new FlexBoxLayout();
+		statusLayout.setWidth("100%");
+		statusLayout.setFlexDirection(FlexDirection.ROW);
+		statusLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+
+		Button setAllUsageStatusButton = UIUtils.createButton("Set all", ButtonVariant.LUMO_CONTRAST);
 
 		ComboBox<ToolStatus> toolStatusComboBox = new ComboBox<>();
 		toolStatusComboBox.setLabel("Status");
 		toolStatusComboBox.setItems(EnumSet.allOf(ToolStatus.class));
 		toolStatusComboBox.setItemLabelGenerator(ToolStatus::getStringValue);
 
-		TextField reservedByField = new TextField("Reserved By");
+		setAllUsageStatusButton.addClickListener(e -> {
+			if (e != null) {
+				if (toolStatusComboBox.getValue() != null) {
+					bulkEditor.setBulkUsageStatus(toolStatusComboBox.getValue());
+				}
+			}
+		});
+		UIUtils.setTooltip("Set selected usage status to all tools", setAllCategoriesButton);
+
+		statusLayout.add(toolStatusComboBox, setAllUsageStatusButton);
+		statusLayout.setComponentMargin(setAllUsageStatusButton, Left.S);
+		statusLayout.setFlexGrow("1", toolStatusComboBox);
+		//USAGE STATUS--------------
+
+
+		toolUserComboBox = new ComboBox<>();
+		toolUserComboBox.setItems(UserFacade.getInstance().getEmptyList());
+		toolUserComboBox.setLabel("In Use By");
+		toolUserComboBox.setItemLabelGenerator(User::getUsername);
+
+		toolReservedComboBox = new ComboBox<>();
+		toolReservedComboBox.setItems(UserFacade.getInstance().getEmptyList());
+		toolReservedComboBox.setLabel("Reserved By");
+		toolReservedComboBox.setItemLabelGenerator(User::getUsername);
+
 
 		DatePicker boughtDateField = new DatePicker("Bought");
 		boughtDateField.setWidth("calc(48% - 0rem)");
@@ -137,11 +199,9 @@ public class AdminToolBulkForm extends FormLayout {
 		Divider divider = new Divider(Horizontal.NONE, Vertical.S);
 		Divider divider2 = new Divider(Horizontal.NONE, Vertical.S);
 
-		UIUtils.setColSpan(2, companyComboBox, categoryLayout, additionalInfo, divider, divider2);
+		UIUtils.setColSpan(2, companyLayout, categoryLayout, statusLayout, additionalInfo, datesLayout, priceAndGuaranteeLayout, divider, divider2);
 
 //      Form layout
-//		FormLayout formLayout = new FormLayout();
-//		addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(
 				new ResponsiveStep("0", 1, ResponsiveStep.LabelsPosition.TOP),
 				new ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, ResponsiveStep.LabelsPosition.TOP));
@@ -151,16 +211,16 @@ public class AdminToolBulkForm extends FormLayout {
 		add(toolInfoField);
 		add(snCodeField);
 		add(barCodeField);
-		add(divider); //colspan 2
-		add(companyComboBox); //colspan 2
+		add(divider);
+		add(companyLayout);
 		add(categoryLayout);
-		add(toolStatusComboBox);
-		add(userField);
-		add(reservedByField);
-		add(divider2); //colspan 2
+		add(statusLayout);
+		add(toolUserComboBox);
+		add(toolReservedComboBox);
+		add(divider2);
 		add(datesLayout);
 		add(priceAndGuaranteeLayout);
-		add(additionalInfo); //colspan 2
+		add(additionalInfo);
 
 
 		binder.forField(toolNameField)
@@ -178,21 +238,37 @@ public class AdminToolBulkForm extends FormLayout {
 				.bind(Tool::getBarcode, Tool::setBarcode);
 		binder.forField(companyComboBox)
 				.asRequired("Company is required")
-				.withConverter(new CustomConverter.CompanyConverter())
-				.bind(Tool::getCompanyId, Tool::setCompanyId);
+//				.withConverter(new CustomConverter.CompanyConverter())
+				.bind(Tool::getCompany, Tool::setCompany);
 		binder.forField(categoriesComboBox)
 				.asRequired("Category is required")
 				.withConverter(new CustomConverter.ToolCategoryConverter())
 				.bind(Tool::getParentCategory, Tool::setParentCategory);
-		binder.forField(userField)
-				.withConverter(new CustomConverter.UserById())
-				.bind(Tool::getInUseByUserId, Tool::setInUseByUserId);
+
 		binder.forField(toolStatusComboBox)
 				.asRequired("Status is required")
 				.bind(Tool::getUsageStatus, Tool::setUsageStatus);
-		binder.forField(reservedByField)
-				.withConverter(new CustomConverter.UserById())
-				.bind(Tool::getReservedByUserId, Tool::setReservedByUserId);
+
+		binder.forField(toolUserComboBox)
+				.withValidator((s, valueContext) -> {
+					if(toolStatusComboBox.getValue().equals(ToolStatus.IN_USE) || toolStatusComboBox.getValue().equals(ToolStatus.RESERVED)) {
+						if (toolUserComboBox.getValue() == null) {
+							return ValidationResult.error("User required for status: " + toolStatusComboBox.getValue().getStringValue());
+						}
+					}
+					return ValidationResult.ok();
+				}).bind(Tool::getUser, Tool::setUser);
+
+		binder.forField(toolReservedComboBox)
+				.withValidator((s, valueContext) -> {
+					if(toolStatusComboBox.getValue().equals(ToolStatus.RESERVED)) {
+						if (toolReservedComboBox.getValue() == null) {
+							return ValidationResult.error("User required for status: " + toolStatusComboBox.getValue().getStringValue());
+						}
+					}
+					return ValidationResult.ok();
+				}).bind(Tool::getReservedByUser, Tool::setReservedByUser);
+
 		binder.forField(priceField)
 				.withConverter(new StringToDoubleConverter("Price must be a number"))
 				.withNullRepresentation(0.00)
@@ -241,12 +317,14 @@ public class AdminToolBulkForm extends FormLayout {
 		}
 	}
 
-	private void updateCategoriesProvider(Company company) {
+	private void updateComboBoxData(Company company) {
 		if (company.getId() <= 0) {
 			System.err.println("Company ID is <= 0, company name: " + company.getName());
 			return;
 		}
 		categoriesComboBox.setItems(ToolFacade.getInstance().getAllCategoriesInCompanyWithRoot(company.getId()));
+		toolUserComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
+		toolReservedComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
 	}
 
 	public Tool getTool() {

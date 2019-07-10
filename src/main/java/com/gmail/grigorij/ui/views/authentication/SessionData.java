@@ -19,11 +19,11 @@ public class SessionData {
 		this.user = user;
 	}
 
-	public Company getCompany() {
-		return company;
-	}
+//	public Company getCompany() {
+//		return company;
+//	}
 
-	public void setCompany(Company company) {
-		this.company = company;
-	}
+//	public void setCompany(Company company) {
+//		this.company = company;
+//	}
 }

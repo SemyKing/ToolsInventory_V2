@@ -4,6 +4,9 @@ import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.access.EntityStatus;
+import com.gmail.grigorij.backend.entities.tool.HierarchyType;
+import com.gmail.grigorij.backend.entities.tool.Tool;
+import com.gmail.grigorij.backend.entities.tool.ToolStatus;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.components.*;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
@@ -16,6 +19,7 @@ import com.gmail.grigorij.ui.utils.css.size.*;
 import com.gmail.grigorij.ui.utils.forms.admin.AdminCompanyForm;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
@@ -26,6 +30,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -34,7 +40,7 @@ import java.util.List;
 class AdminCompanies extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-companies";
-	final static String TAB_NAME = "Companies";
+	final static String TAB_NAME = ProjectConstants.COMPANIES;
 
 	private AdminMain adminMain;
 	private AdminCompanyForm companyForm = new AdminCompanyForm();
@@ -43,7 +49,7 @@ class AdminCompanies extends FlexBoxLayout {
 	private ListDataProvider<Company> dataProvider;
 
 	private DetailsDrawer detailsDrawer;
-	private DetailsDrawerFooter detailsDrawerFooter;
+	private Button deleteButton;
 
 
 	AdminCompanies(AdminMain adminMain) {
@@ -68,6 +74,8 @@ class AdminCompanies extends FlexBoxLayout {
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Companies");
+		searchField.setValueChangeMode(ValueChangeMode.EAGER);
+		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
 		header.add(searchField);
 
@@ -112,9 +120,26 @@ class AdminCompanies extends FlexBoxLayout {
 				.setFlexGrow(0);
 		grid.addColumn(Company::getName).setHeader("Name")
 				.setWidth(UIUtils.COLUMN_WIDTH_L);
-		grid.addColumn(new ComponentRenderer<>(this::createContactPersonInfo))
+
+
+		ComponentRenderer<ListItem, Company> contactPersonRenderer = new ComponentRenderer<>(
+				company -> {
+					ListItem item = new ListItem(UIUtils.createInitials(company.getInitials()),
+							company.getFirstName() + " " + company.getLastName(), company.getEmail());
+					item.setHorizontalPadding(false);
+					item.setWidth("100%");
+					return item;
+				});
+		grid.addColumn(contactPersonRenderer)
 				.setHeader("Contact Person")
-				.setWidth(UIUtils.COLUMN_WIDTH_XXL);
+				.setWidth(UIUtils.COLUMN_WIDTH_XL);
+
+
+//		grid.addColumn(new ComponentRenderer<>(this::createContactPersonInfo))
+//				.setHeader("Contact Person")
+//				.setWidth(UIUtils.COLUMN_WIDTH_XXL);
+
+
 		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted()))).setHeader("Active")
 				.setWidth(UIUtils.COLUMN_WIDTH_XS)
 				.setFlexGrow(0);
@@ -122,10 +147,40 @@ class AdminCompanies extends FlexBoxLayout {
 		add(grid);
 	}
 
-	private Component createContactPersonInfo(Company company) {
-		ListItem item = new ListItem(UIUtils.createInitials(company.getInitials()), company.getFirstName() + " " + company.getLastName(), company.getEmail());
-		item.setHorizontalPadding(false);
-		return item;
+	private void filterGrid(String searchString) {
+		dataProvider.clearFilters();
+		final String mainSearchString = searchString.trim();
+
+		if (mainSearchString.contains("+")) {
+			String[] searchParams = mainSearchString.split("\\+");
+
+			dataProvider.addFilter(
+					company -> {
+						boolean res = true;
+						for (String sParam : searchParams) {
+							res =  StringUtils.containsIgnoreCase(company.getName(), sParam) ||
+									StringUtils.containsIgnoreCase(company.getVat(), sParam) ||
+									StringUtils.containsIgnoreCase(company.getFirstName(), sParam) ||
+									StringUtils.containsIgnoreCase(company.getLastName(), sParam) ||
+									StringUtils.containsIgnoreCase(company.getEmail(), sParam);
+
+							//(res) -> shows All items based on searchParams
+							//(!res) -> shows ONE item based on searchParams
+							if (!res)
+								break;
+						}
+						return res;
+					}
+			);
+		} else {
+			dataProvider.addFilter(
+					company -> StringUtils.containsIgnoreCase(company.getName(), mainSearchString)  ||
+							StringUtils.containsIgnoreCase(company.getVat(), mainSearchString) ||
+							StringUtils.containsIgnoreCase(company.getFirstName(), mainSearchString)  ||
+							StringUtils.containsIgnoreCase(company.getLastName(), mainSearchString)  ||
+							StringUtils.containsIgnoreCase(company.getEmail(), mainSearchString)
+			);
+		}
 	}
 
 	private void createDetailsDrawer() {
@@ -137,14 +192,20 @@ class AdminCompanies extends FlexBoxLayout {
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Company Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
+		deleteButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR);
+		deleteButton.addClickListener(e -> confirmDelete());
+		UIUtils.setTooltip("Delete this company from Database", deleteButton);
+
+		detailsDrawerHeader.getContainer().add(deleteButton);
+		detailsDrawerHeader.getContainer().setComponentMargin(deleteButton, Left.AUTO);
+
 		detailsDrawer.setHeader(detailsDrawerHeader);
 		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
 
 		// Footer
-		detailsDrawerFooter = new DetailsDrawerFooter();
+		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.getSave().addClickListener(e -> updateCompany());
-		detailsDrawerFooter.getCancel().addClickListener(e -> detailsDrawer.hide());
-		detailsDrawerFooter.getDelete().addClickListener(e -> confirmCompanyDelete());
+		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 
 		adminMain.setDetailsDrawer(detailsDrawer);
@@ -154,7 +215,7 @@ class AdminCompanies extends FlexBoxLayout {
 	private boolean previousStatus;
 
 	private void showDetails(Company company) {
-		detailsDrawerFooter.getDelete().setEnabled( company != null );
+		deleteButton.setEnabled( company != null );
 
 		if (company != null)
 			previousStatus = company.isDeleted();
@@ -242,7 +303,7 @@ class AdminCompanies extends FlexBoxLayout {
 		dialog.open();
 	}
 
-	private void confirmCompanyDelete() {
+	private void confirmDelete() {
 		System.out.println("Delete selected company...");
 
 		if (detailsDrawer.isOpen()) {

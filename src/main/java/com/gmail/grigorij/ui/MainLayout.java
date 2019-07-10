@@ -44,6 +44,8 @@ public class MainLayout extends Div {
 		//TODO:REMOVE AT PRODUCTION
 		DatabaseDummyInsert dbDummy = new DatabaseDummyInsert();
 		dbDummy.generateAndInsert();
+		System.out.println("DatabaseDummyInsert done");
+
 
 		if (UI.getCurrent() != null) {
 			UI.getCurrent().getElement().setAttribute(LumoStyles.THEME, Lumo.DARK);

@@ -19,6 +19,7 @@ import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
@@ -92,7 +93,7 @@ public class AdminUserForm extends FormLayout {
 		accessComboBox.setLabel("Access Group");
 		accessComboBox.setRequired(true);
 
-		Button editAccessButton = UIUtils.createButton(VaadinIcon.PENCIL);
+		Button editAccessButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
 		editAccessButton.addClickListener(e -> {
 			if (e != null) {
 //				Tool selectedCategory = categoriesComboBox.getValue();
@@ -159,8 +160,8 @@ public class AdminUserForm extends FormLayout {
 				.bind(User::getPassword, User::setPassword);
 		userBinder.forField(companyComboBox)
 				.asRequired("Company is required")
-				.withConverter(new CustomConverter.CompanyConverter())
-				.bind(User::getCompanyId, User::setCompanyId);
+//				.withConverter(new CustomConverter.CompanyConverter())
+				.bind(User::getCompany, User::setCompany);
 		userBinder.forField(accessComboBox)
 				.asRequired("Access Group is required")
 				.withConverter(new CustomConverter.AccessGroupsConverter())

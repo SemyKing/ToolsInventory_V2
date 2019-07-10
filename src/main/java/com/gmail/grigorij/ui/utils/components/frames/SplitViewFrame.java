@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.utils.frames;
+package com.gmail.grigorij.ui.utils.components.frames;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;

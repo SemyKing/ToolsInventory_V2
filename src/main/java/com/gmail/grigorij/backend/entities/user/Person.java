@@ -9,13 +9,13 @@ import javax.persistence.*;
 @MappedSuperclass
 public class Person extends EntityPojo {
 
-	private String firstName;
-	private String lastName;
-	private String phoneNumber;
-	private String email;
+	private String firstName = "";
+	private String lastName = "";
+	private String phoneNumber = "";
+	private String email = "";
 
 	@Embedded
-	private Location address;
+	private Location address = null;
 
 	public Person() {
 	}
@@ -49,15 +49,18 @@ public class Person extends EntityPojo {
 	}
 
 
-
 	public String getInitials() {
 		String initials = "";
 		if (getFirstName().length() >= 1) {
 			initials += getFirstName().substring(0, 1);
+		} else {
+			initials += " ";
 		}
 
 		if (getLastName().length() >= 1) {
 			initials += getLastName().substring(0, 1);
+		} else {
+			initials += " ";
 		}
 		return initials;
 	}
@@ -67,14 +70,5 @@ public class Person extends EntityPojo {
 	}
 	public void setAddress(Location address) {
 		this.address = address;
-	}
-
-	public static Person getEmptyPerson() {
-		Person person = new Person();
-		person.setFirstName("");
-		person.setLastName("");
-		person.setPhoneNumber("");
-		person.setEmail("");
-		return person;
 	}
 }
