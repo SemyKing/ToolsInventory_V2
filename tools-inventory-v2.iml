@@ -10,6 +10,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: com.google.zxing:core:3.4.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.zxing:javase:3.4.0" level="project" />
+    <orderEntry type="library" name="Maven: com.beust:jcommander:1.72" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jai-imageio:jai-imageio-core:1.4.0" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:vaadin:13.0.3" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:vaadin-core:13.0.3" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:flow-server:1.4.3" level="project" />
