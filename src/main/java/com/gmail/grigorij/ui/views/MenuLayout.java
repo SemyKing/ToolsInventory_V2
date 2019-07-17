@@ -2,6 +2,7 @@ package com.gmail.grigorij.ui.views;
 
 import com.gmail.grigorij.ui.MainLayout;
 import com.gmail.grigorij.backend.access.AccessGroups;
+import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
@@ -18,8 +19,11 @@ import com.gmail.grigorij.ui.views.navigation.reporting.Reporting;
 import com.gmail.grigorij.ui.views.navigation.transactions.Transactions;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
@@ -63,6 +67,16 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 		// Populate the navigation drawer
 		//!!! Must be constructed after initHeadersAndFooters();
 		initNaviItems();
+
+
+		if (UI.getCurrent() != null) {
+			Page page = UI.getCurrent().getPage();
+
+			if (page != null) {
+				System.out.println("execute js");
+				page.executeJavaScript("window.onbeforeunload = confirmExit; function confirmExit() { return 'Are you sure, you want to close?';}");
+			}
+		}
 	}
 
 	public void setThemeVariant(String themeVariant) {
@@ -107,6 +121,7 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 		NaviItem transaction = new NaviItem(VaadinIcon.EXCHANGE, ProjectConstants.TRANSACTIONS, false);
 		NaviItem reporting = new NaviItem(VaadinIcon.CLIPBOARD_TEXT, ProjectConstants.REPORTING, false);
 		NaviItem admin = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN, false);
+
 
 		dashboard.addClickListener(e-> {
 			naviItemOnClick(dashboard);

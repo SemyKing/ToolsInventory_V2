@@ -8,6 +8,7 @@ import com.gmail.grigorij.backend.entities.tool.Tool;
 import com.gmail.grigorij.backend.entities.tool.ToolStatus;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.camera.CameraView;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
@@ -16,11 +17,11 @@ import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
-import com.gmail.grigorij.ui.utils.scanners.barcode.BarcodeReader;
-import com.gmail.grigorij.ui.utils.scanners.qr.QRReader;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminInventory;
+import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.converters.CustomConverter;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -55,7 +56,7 @@ public class AdminToolForm extends FormLayout {
 	private ComboBox<User> toolReservedComboBox;
 
 	private Button editCategoryButton;
-	private TextField qrCodeField, barCodeField;
+	private TextField QRCodeField, barCodeField;
 
 
 	public AdminToolForm(AdminInventory adminTools) {
@@ -77,18 +78,18 @@ public class AdminToolForm extends FormLayout {
 		/*
 		QR CODE
 		 */
-		qrCodeField = new TextField("QR Code");
+		QRCodeField = new TextField("QR Code");
 
-		Button newQrCodeButton = UIUtils.createIconButton(VaadinIcon.QRCODE, ButtonVariant.LUMO_CONTRAST);
-		newQrCodeButton.addClickListener(e -> handleQrCode());
+		Button newQrCodeButton = UIUtils.createIconButton(VaadinIcon.CAMERA, ButtonVariant.LUMO_CONTRAST);
+		newQrCodeButton.addClickListener(e -> constructCodeScanDialog(QRCodeField));
 		UIUtils.setTooltip("Scan QR Code with camera", newQrCodeButton);
 
 		FlexBoxLayout qrCodeLayout = new FlexBoxLayout();
 		qrCodeLayout.setFlexDirection(FlexDirection.ROW);
 		qrCodeLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		qrCodeLayout.add(qrCodeField, newQrCodeButton);
+		qrCodeLayout.add(QRCodeField, newQrCodeButton);
 		qrCodeLayout.setComponentMargin(newQrCodeButton, Left.M);
-		qrCodeLayout.setFlexGrow("1", qrCodeField);
+		qrCodeLayout.setFlexGrow("1", QRCodeField);
 		qrCodeLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
 
 
@@ -97,8 +98,8 @@ public class AdminToolForm extends FormLayout {
 		 */
 		barCodeField = new TextField("Barcode");
 
-		Button newBarcodeButton = UIUtils.createIconButton(VaadinIcon.BARCODE, ButtonVariant.LUMO_CONTRAST);
-		newBarcodeButton.addClickListener(e -> handleBarcode());
+		Button newBarcodeButton = UIUtils.createIconButton(VaadinIcon.CAMERA, ButtonVariant.LUMO_CONTRAST);
+		newBarcodeButton.addClickListener(e -> constructCodeScanDialog(barCodeField));
 		UIUtils.setTooltip("Scan Barcode with camera", newQrCodeButton);
 
 		FlexBoxLayout barcodeLayout = new FlexBoxLayout();
@@ -246,7 +247,7 @@ public class AdminToolForm extends FormLayout {
 				.asRequired("Status is required")
 				.withConverter(new CustomConverter.StatusConverter())
 				.bind(Tool::isDeleted, Tool::setDeleted);
-		binder.forField(qrCodeField)
+		binder.forField(QRCodeField)
 				.bind(Tool::getQrCode, Tool::setQrCode);
 		binder.forField(manufacturerField)
 				.bind(Tool::getManufacturer, Tool::setManufacturer);
@@ -330,113 +331,81 @@ public class AdminToolForm extends FormLayout {
 				.bind(Tool::getAdditionalInfo, Tool::setAdditionalInfo);
 	}
 
-	private QRReader qrReader;
-	private boolean qrEventActive = false;
 
-	private void handleQrCode() {
-		CustomDialog qrDialog = new CustomDialog();
-		qrDialog.setCloseOnEsc(false);
-		qrDialog.setCloseOnOutsideClick(false);
+	private boolean cameraActive = false;
 
-		qrDialog.setHeader(UIUtils.createH2Label("QR Code"));
-
-		TextArea qrTextArea = new TextArea("QR Code");
-		qrTextArea.setMinWidth("400px");
-		qrTextArea.getStyle().set("text-align", "center");
-
-		Button retakeQrCodeButton = UIUtils.createButton("Take New", VaadinIcon.QRCODE, ButtonVariant.LUMO_CONTRAST);
-		retakeQrCodeButton.setIconAfterText(true);
-		retakeQrCodeButton.addClickListener(e -> {
-			if (!qrEventActive) {
-				qrDialog.setContent(qrTextArea, qrReader);
-				qrReader.reset();
-			}
-		});
-
-		qrDialog.getHeader().add(retakeQrCodeButton);
-		qrDialog.getHeader().setComponentMargin(retakeQrCodeButton, Left.AUTO);
-
-
-		qrEventActive = true;
-		qrReader = new QRReader(readEvent -> {
-			if (readEvent != null) {
-				qrReader.stop();
-				qrDialog.getContent().remove(qrReader);
-
-				qrTextArea.setValue(readEvent);
-				qrEventActive = false;
-			}
-		});
-
-		qrDialog.setContent(qrTextArea, qrReader);
-		qrDialog.getCancelButton().addClickListener(e -> {
-			qrReader.stop();
-			qrDialog.close();
-		});
-
-		qrDialog.getConfirmButton().setText("Add");
-		qrDialog.getConfirmButton().addClickListener(e -> {
-			qrReader.stop();
-
-			qrCodeField.setValue(qrTextArea.getValue());
-			qrDialog.close();
-		});
-		qrDialog.open();
-	}
-
-	private BarcodeReader barcodeReader;
-	private boolean codeEventActive = false;
-
-	private void handleBarcode() {
+	private void constructCodeScanDialog(TextField formCodeField) {
 		CustomDialog dialog = new CustomDialog();
 		dialog.setCloseOnEsc(false);
 		dialog.setCloseOnOutsideClick(false);
 
-		dialog.setHeader(UIUtils.createH2Label("Barcode"));
+		dialog.setHeader(UIUtils.createH2Label("Scan Code"));
 
-		TextArea codeTextArea = new TextArea("Barcode");
-		codeTextArea.setMinWidth("400px");
-		codeTextArea.getStyle().set("text-align", "center");
+		CameraView cameraView = new CameraView();
 
-		Button retakeCodeButton = UIUtils.createButton("Take New", VaadinIcon.BARCODE, ButtonVariant.LUMO_CONTRAST);
-		retakeCodeButton.setIconAfterText(true);
-		retakeCodeButton.addClickListener(e -> {
-			if (!codeEventActive) {
-				dialog.setContent(codeTextArea, barcodeReader);
-				barcodeReader.reset();
+		TextField codeField = new TextField("Code");
+		codeField.setReadOnly(true);
+
+		cameraView.addClickListener(imageClickEvent -> {
+			if (cameraActive) {
+				cameraView.takePicture();
+			} else {
+				cameraView.showPreview();
+				cameraActive = true;
 			}
 		});
 
-		dialog.getHeader().add(retakeCodeButton);
-		dialog.getHeader().setComponentMargin(retakeCodeButton, Left.AUTO);
+		dialog.setContent(codeField, cameraView);
 
-
-		codeEventActive = true;
-		barcodeReader = new BarcodeReader(readEvent -> {
-			if (readEvent != null) {
-				barcodeReader.stop();
-				dialog.getContent().remove(barcodeReader);
-
-				codeTextArea.setValue(readEvent);
-				codeEventActive = false;
-			}
-		});
-
-		dialog.setContent(codeTextArea, barcodeReader);
 		dialog.getCancelButton().addClickListener(e -> {
-			barcodeReader.stop();
+			cameraView.stop();
 			dialog.close();
 		});
 
 		dialog.getConfirmButton().setText("Add");
 		dialog.getConfirmButton().addClickListener(e -> {
-			barcodeReader.stop();
 
-			barCodeField.setValue(codeTextArea.getValue());
+			if (cameraActive) {
+				cameraView.takePicture();
+			}
+
+			formCodeField.setValue(codeField.getValue());
+			cameraView.stop();
 			dialog.close();
 		});
 		dialog.open();
+
+		cameraView.showPreview();
+		cameraActive = true;
+
+
+		cameraView.onFinished(new OperationStatus() {
+			@Override
+			public void onSuccess(String msg) {
+				if (UI.getCurrent() != null) {
+					UI.getCurrent().access(() -> {
+						UIUtils.showNotification("Code scanned successfully", UIUtils.NotificationType.SUCCESS);
+
+						codeField.setValue(msg);
+						cameraView.stop();
+						cameraActive = false;
+					});
+					UI.getCurrent().push();
+				}
+			}
+
+			@Override
+			public void onFail(String msg) {
+				if (UI.getCurrent() != null) {
+					UI.getCurrent().access(() -> {
+						UIUtils.showNotification(msg, UIUtils.NotificationType.INFO, 2000);
+					});
+					UI.getCurrent().push();
+				}
+			}
+		});
 	}
+
 
 	public void setTool(Tool t) {
 		tool = t;
@@ -488,6 +457,4 @@ public class AdminToolForm extends FormLayout {
 	public boolean isNew() {
 		return isNew;
 	}
-
-
 }

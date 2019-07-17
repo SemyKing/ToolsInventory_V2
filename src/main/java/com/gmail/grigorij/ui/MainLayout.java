@@ -1,6 +1,7 @@
 package com.gmail.grigorij.ui;
 
 import com.gmail.grigorij.backend.DatabaseDummyInsert;
+import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
@@ -11,11 +12,13 @@ import com.gmail.grigorij.utils.OperationStatus;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.lumo.Lumo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 //@Push
+@Push(PushMode.MANUAL)
 @Route("")
 @HtmlImport("frontend://styles/shared-styles.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
@@ -97,6 +101,13 @@ public class MainLayout extends Div {
 		this.removeAll();
 
 		add(new MenuLayout(this));
+
+//		addDetachListener(closeEvent -> {
+//			ConfirmDialog dialog = new ConfirmDialog("Are you sure you want to Exit?");
+//			dialog.getConfirmButton().addClickListener(confirmEvent -> {
+//				removeAll();
+//			});
+//		});
 	}
 
 	public void setThemeVariant(String themeVariant) {

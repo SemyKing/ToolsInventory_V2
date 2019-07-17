@@ -142,6 +142,9 @@
     <orderEntry type="library" name="Maven: com.google.errorprone:error_prone_annotations:2.1.3" level="project" />
     <orderEntry type="library" name="Maven: com.google.j2objc:j2objc-annotations:1.1" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.mojo:animal-sniffer-annotations:1.14" level="project" />
-    <orderEntry type="library" name="Maven: org.vaadin.elmot.v10:qr-reader:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.zxing:core:3.4.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.zxing:javase:3.4.0" level="project" />
+    <orderEntry type="library" name="Maven: com.beust:jcommander:1.72" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.github.jai-imageio:jai-imageio-core:1.4.0" level="project" />
   </component>
 </module>
