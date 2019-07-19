@@ -3,8 +3,8 @@ package com.gmail.grigorij.ui.utils.forms.admin;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.ToolFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.tool.HierarchyType;
-import com.gmail.grigorij.backend.entities.tool.Tool;
+import com.gmail.grigorij.backend.entities.inventory.HierarchyType;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.Left;
@@ -22,12 +22,12 @@ import java.util.List;
 
 public class AdminToolCategoryForm extends FormLayout {
 
-	private Binder<Tool> binder = new Binder<>(Tool.class);
+	private Binder<InventoryEntity> binder = new Binder<>(InventoryEntity.class);
 
-	private Tool category;
+	private InventoryEntity category;
 	private boolean isNew;
 
-	private ComboBox<Tool> categoriesComboBox;
+	private ComboBox<InventoryEntity> categoriesComboBox;
 
 	public AdminToolCategoryForm() {
 		TextField categoryNameField = new TextField("Name");
@@ -63,7 +63,7 @@ public class AdminToolCategoryForm extends FormLayout {
 
 		categoriesComboBox.setItems(ToolFacade.getInstance().getEmptyList());
 		categoriesComboBox.setLabel("Parent Category");
-		categoriesComboBox.setItemLabelGenerator(Tool::getName);
+		categoriesComboBox.setItemLabelGenerator(InventoryEntity::getName);
 		categoriesComboBox.setRequired(true);
 
 //		UIUtils.setColSpan(2, categoryLayout);
@@ -76,29 +76,29 @@ public class AdminToolCategoryForm extends FormLayout {
 
 		binder.forField(categoryNameField)
 				.asRequired("Name is required")
-				.bind(Tool::getName, Tool::setName);
+				.bind(InventoryEntity::getName, InventoryEntity::setName);
 		binder.forField(categoryStatus)
 				.asRequired("Status is required")
 				.withConverter(new CustomConverter.StatusConverter())
-				.bind(Tool::isDeleted, Tool::setDeleted);
+				.bind(InventoryEntity::isDeleted, InventoryEntity::setDeleted);
 		binder.forField(companyComboBox)
 				.asRequired("Company is required")
-				.bind(Tool::getCompany, Tool::setCompany);
+				.bind(InventoryEntity::getCompany, InventoryEntity::setCompany);
 		binder.forField(categoriesComboBox)
 				.asRequired("Parent Category is required")
 				.withConverter(new CustomConverter.ToolCategoryConverter())
-				.bind(Tool::getParentCategory, Tool::setParentCategory);
+				.bind(InventoryEntity::getParentCategory, InventoryEntity::setParentCategory);
 	}
 
 	private Company initialCompany;
 
-	public void setCategory(Tool c) {
+	public void setCategory(InventoryEntity c) {
 		category = c;
 		isNew = false;
 		binder.removeBean();
 
 		if (category == null) {
-			category = Tool.getEmptyTool();
+			category = InventoryEntity.getEmptyTool();
 			isNew = true;
 		}
 		category.setHierarchyType(HierarchyType.CATEGORY);
@@ -112,7 +112,7 @@ public class AdminToolCategoryForm extends FormLayout {
 		}
 	}
 
-	public Tool getCategory() {
+	public InventoryEntity getCategory() {
 		try {
 			binder.validate();
 
@@ -123,7 +123,7 @@ public class AdminToolCategoryForm extends FormLayout {
 				If category company was changed, it must also be changed for all category children
 				 */
 				if (initialCompany != category.getCompany()) {
-					for (Tool tool : category.getChildren()) {
+					for (InventoryEntity tool : category.getChildren()) {
 						tool.setCompany(category.getCompany());
 					}
 				}
@@ -149,10 +149,10 @@ public class AdminToolCategoryForm extends FormLayout {
 			return;
 		}
 
-		List<Tool> categories = ToolFacade.getInstance().getAllCategoriesInCompanyWithRoot(company.getId());
+		List<InventoryEntity> categories = ToolFacade.getInstance().getAllCategoriesInCompanyWithRoot(company.getId());
 
 		if (initialCompany != null) {
-			categories.removeIf((Tool category) -> category.getId().equals(initialCompany.getId()));
+			categories.removeIf((InventoryEntity category) -> category.getId().equals(initialCompany.getId()));
 		}
 		categoriesComboBox.setItems(categories);
 	}

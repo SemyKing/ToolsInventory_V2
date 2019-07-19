@@ -1,22 +1,14 @@
 package com.gmail.grigorij.utils.converters;
 
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.ToolFacade;
-import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.access.AccessGroups;
-import com.gmail.grigorij.backend.access.EntityStatus;
-import com.gmail.grigorij.backend.entities.tool.Tool;
-import com.gmail.grigorij.backend.entities.tool.ToolStatus;
-import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.database.facades.ToolFacade;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 
 import java.util.EnumSet;
-import java.util.List;
-
 
 public class CustomConverter {
 
@@ -57,29 +49,9 @@ public class CustomConverter {
 		}
 	}
 
-	public static class CompanyConverter implements Converter<Company, Long> {
+	public static class ToolCategoryConverter implements Converter<InventoryEntity, InventoryEntity> {
 		@Override
-		public Result<Long> convertToModel(Company company, ValueContext valueContext) {
-			try {
-				return Result.ok(company.getId());
-			} catch (Exception e) {
-				return Result.error("Company convertToModel error");
-			}
-		}
-
-		@Override
-		public Company convertToPresentation(Long longId, ValueContext valueContext) {
-			if (longId == null) {
-				return null;
-			} else {
-				return CompanyFacade.getInstance().findCompanyById(longId);
-			}
-		}
-	}
-
-	public static class ToolCategoryConverter implements Converter<Tool, Tool> {
-		@Override
-		public Result<Tool> convertToModel(Tool category, ValueContext valueContext) {
+		public Result<InventoryEntity> convertToModel(InventoryEntity category, ValueContext valueContext) {
 			try {
 				if (category == null || category.equals(ToolFacade.getInstance().getRootCategory())) {
 					return Result.ok(null);
@@ -92,7 +64,7 @@ public class CustomConverter {
 		}
 
 		@Override
-		public Tool convertToPresentation(Tool toolParent, ValueContext valueContext) {
+		public InventoryEntity convertToPresentation(InventoryEntity toolParent, ValueContext valueContext) {
 			if (toolParent == null) {
 				return ToolFacade.getInstance().getRootCategory();
 			} else {
@@ -100,49 +72,4 @@ public class CustomConverter {
 			}
 		}
 	}
-
-//	public static class ToolUser implements Converter<String, User> {
-//		@Override
-//		public Result<User> convertToModel(String s, ValueContext valueContext) {
-//			if (s.length() <= 0) {
-//				return null;
-//			} else {
-//				return Result.ok(UserFacade.getInstance().getUserByUsername(s));
-//			}
-//		}
-//
-//		@Override
-//		public String convertToPresentation(User user, ValueContext valueContext) {
-//			if (user == null) {
-//				return "";
-//			} else {
-//				return user.getUsername();
-//			}
-//		}
-//	}
-
-//	public static class ToolUser implements Converter<User, String> {
-//
-//		@Override
-//		public Result<String> convertToModel(User user, ValueContext valueContext) {
-//			if (user == null) {
-//				return Result.ok("");
-//			} else {
-//				return Result.ok(user.getUsername());
-//			}
-//		}
-//
-//		@Override
-//		public User convertToPresentation(String s, ValueContext valueContext) {
-//			if (s.length() <= 0) {
-//				return null;
-//			} else {
-//				return UserFacade.getInstance().getUserByUsername(s);
-//			}
-//		}
-//	}
-
-//	public static class ToolUser implements Converter<User, User> {
-//
-//	}
 }

@@ -6,8 +6,9 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
-@WebServlet(urlPatterns = { "/*"}, name = "MySessionServlet", asyncSupported = true, initParams = {
+@WebServlet(urlPatterns = {"/*"}, name = "MySessionServlet", asyncSupported = true, initParams = {
 		@WebInitParam(name = Constants.I18N_PROVIDER, value = "com.gmail.grigorij.utils.TranslationProvider") })
+//@VaadinServletConfiguration(productionMode = true)
 public class SessionServlet extends VaadinServlet implements SessionInitListener, SessionDestroyListener {
 
 	@Override

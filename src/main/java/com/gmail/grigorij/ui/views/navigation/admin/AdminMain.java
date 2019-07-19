@@ -7,6 +7,7 @@ import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
 import com.gmail.grigorij.ui.utils.components.frames.SplitViewFrame;
+import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
@@ -30,8 +31,6 @@ public class AdminMain extends SplitViewFrame {
 
 	public AdminMain(MenuLayout menuLayout) {
 		this.menuLayout = menuLayout;
-//		setClassName(CLASS_NAME);
-//		setSizeFull();
 
 		initAppBar();
 		setViewContent(createContent());
@@ -42,9 +41,9 @@ public class AdminMain extends SplitViewFrame {
 		appBar = menuLayout.getAppBar();
 		appBar.setTabsVariant(TabsVariant.LUMO_SMALL);
 
-		appBar.addTab(AdminCompanies.TAB_NAME);
-		appBar.addTab(AdminPersonnel.TAB_NAME);
-		appBar.addTab(AdminInventory.TAB_NAME);
+		appBar.addTab(ProjectConstants.COMPANIES);
+		appBar.addTab(ProjectConstants.PERSONNEL);
+		appBar.addTab(ProjectConstants.ADMIN_INVENTORY);
 
 		appBar.addTabSelectionListener(e -> {
 			if (detailsDrawer != null)
@@ -58,17 +57,19 @@ public class AdminMain extends SplitViewFrame {
 		this.content.removeAll();
 
 		if (appBar.getSelectedTab() != null) {
-			if (appBar.getSelectedTab().getLabel().equals(AdminCompanies.TAB_NAME)) {
+			menuLayout.selectCorrectNaviItem(appBar.getSelectedTab().getLabel(), true);
+
+			if (appBar.getSelectedTab().getLabel().equals(ProjectConstants.COMPANIES)) {
 				this.content.add(new AdminCompanies(this));
 				return;
 			}
 
-			if (appBar.getSelectedTab().getLabel().equals(AdminPersonnel.TAB_NAME)) {
+			if (appBar.getSelectedTab().getLabel().equals(ProjectConstants.PERSONNEL)) {
 				this.content.add(new AdminPersonnel(this));
 				return;
 			}
 
-			if (appBar.getSelectedTab().getLabel().equals(AdminInventory.TAB_NAME)) {
+			if (appBar.getSelectedTab().getLabel().equals(ProjectConstants.ADMIN_INVENTORY)) {
 				this.content.add(new AdminInventory(this));
 				return;
 			}

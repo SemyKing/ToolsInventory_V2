@@ -97,7 +97,7 @@
             <version>23.6-jre</version>
         </dependency>
 
-        <!-- QR-/BARCODE READER -->
+        <!-- QR-/BARCODE DECODER -->
         <dependency>
             <groupId>com.google.zxing</groupId>
             <artifactId>core</artifactId>
@@ -120,6 +120,7 @@
                 <configuration>
 <!--                    <scanIntervalSeconds>5</scanIntervalSeconds>-->
                     <reload>manual</reload>
+<!--                    USE HTTPS-->
                     <jettyXml>src/main/resources/jetty-conf/jetty.xml,src/main/resources/jetty-conf/jetty-ssl.xml,src/main/resources/jetty-conf/jetty-ssl-context.xml,src/main/resources/jetty-conf/jetty-https.xml</jettyXml>
                 </configuration>
             </plugin>

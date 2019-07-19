@@ -7,8 +7,8 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.location.Location;
-import com.gmail.grigorij.backend.entities.tool.Tool;
-import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.inventory.ToolStatus;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.transaction.TransactionOperation;
 import com.gmail.grigorij.backend.entities.transaction.TransactionTarget;
@@ -36,7 +36,7 @@ public class DatabaseDummyInsert {
 
 	private List<User> users;
 	private List<Company> companies, companiesFromDB;
-	private List<Tool> tools;
+	private List<InventoryEntity> tools;
 
 	private User transactionUser;
 
@@ -158,12 +158,12 @@ public class DatabaseDummyInsert {
 			System.out.println("USERS IN COMPANY: " + companyUsers.size());
 
 			for (int i = 0; i < toolCategoriesCount; i++) {
-				Tool p = new Tool();
+				InventoryEntity p = new InventoryEntity();
 				p.setName("Category " + categoryCounter);
 				p.setCompany(company);
 
 				for (int j = 0; j < subCategories; j++) {
-					Tool c = new Tool();
+					InventoryEntity c = new InventoryEntity();
 					c.setName("Sub Category " + subCategoryCounter + " (P: " + categoryCounter  +")");
 					c.setParentCategory(p);
 					c.setCompany(company);
@@ -171,7 +171,7 @@ public class DatabaseDummyInsert {
 					p.addTool(c);
 
 					for (int k = 0; k < toolsPerCategory; k++) {
-						Tool cc = new Tool();
+						InventoryEntity cc = new InventoryEntity();
 
 						int random = (int )(Math.random() * 5);
 						ToolStatus status = ToolStatus.IN_USE;
@@ -301,7 +301,7 @@ public class DatabaseDummyInsert {
 	}
 
 	private void insertTools() {
-		for (Tool tool : tools) {
+		for (InventoryEntity tool : tools) {
 			ToolFacade.getInstance().insert(tool);
 
 

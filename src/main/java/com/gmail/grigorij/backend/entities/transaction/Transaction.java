@@ -2,8 +2,8 @@ package com.gmail.grigorij.backend.entities.transaction;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.tool.HierarchyType;
-import com.gmail.grigorij.backend.entities.tool.Tool;
+import com.gmail.grigorij.backend.entities.inventory.HierarchyType;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.backend.entities.user.User;
 
 import javax.persistence.*;
@@ -36,7 +36,7 @@ public class Transaction extends EntityPojo {
 	private Company company;
 
 	@OneToOne
-	private Tool tool;
+	private InventoryEntity tool;
 
 	private String message;
 
@@ -99,15 +99,15 @@ public class Transaction extends EntityPojo {
 		this.company = company;
 	}
 
-	public Tool getTool() {
+	public InventoryEntity getTool() {
 		return tool;
 	}
 
-	public void setTool(Tool tool) {
+	public void setTool(InventoryEntity tool) {
 		this.tool = tool;
 
 		if (tool.getHierarchyType() == null) {
-			System.err.println("Unknown HierarchyType of tool: " + tool.getName() + " in Transaction");
+			System.err.println("Unknown HierarchyType of inventory: " + tool.getName() + " in Transaction");
 		} else {
 			if (tool.getHierarchyType().equals(HierarchyType.CATEGORY)) {
 				this.setTransactionTarget(TransactionTarget.CATEGORY);

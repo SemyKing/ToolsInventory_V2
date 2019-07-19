@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
-	final static String TAB_NAME = ProjectConstants.PERSONNEL;
 
 	private AdminMain adminMain;
 	private AdminUserForm userForm = new AdminUserForm();
@@ -168,7 +167,8 @@ class AdminPersonnel extends FlexBoxLayout {
 							res =  StringUtils.containsIgnoreCase(user.getUsername(), sParam) ||
 									StringUtils.containsIgnoreCase(user.getFirstName(), sParam) ||
 									StringUtils.containsIgnoreCase(user.getLastName(), sParam) ||
-									StringUtils.containsIgnoreCase(user.getEmail(), sParam);
+									StringUtils.containsIgnoreCase(user.getEmail(), sParam) ||
+									StringUtils.containsIgnoreCase((user.getCompany() == null) ? "" : user.getCompany().getName(), sParam);
 
 							//(res) -> shows All items based on searchParams
 							//(!res) -> shows ONE item based on searchParams
@@ -183,7 +183,8 @@ class AdminPersonnel extends FlexBoxLayout {
 					user -> StringUtils.containsIgnoreCase(user.getUsername(), searchParam)  ||
 							StringUtils.containsIgnoreCase(user.getFirstName(), searchParam) ||
 							StringUtils.containsIgnoreCase(user.getLastName(), searchParam)  ||
-							StringUtils.containsIgnoreCase(user.getEmail(), searchParam)
+							StringUtils.containsIgnoreCase(user.getEmail(), searchParam) ||
+							StringUtils.containsIgnoreCase((user.getCompany() == null) ? "" : user.getCompany().getName(), searchParam)
 			);
 		}
 
@@ -231,26 +232,34 @@ class AdminPersonnel extends FlexBoxLayout {
 	}
 
 	private void updateUser() {
-		System.out.println();
 		System.out.println("updateUser()");
 
 		User editedUser = userForm.getUser();
 
 		if (editedUser != null) {
-			if (UserFacade.getInstance().update(editedUser)) {
-				if (userForm.isNew()) {
+
+			if (userForm.isNew()) {
+				if (UserFacade.getInstance().insert(editedUser)) {
 					dataProvider.getItems().add(editedUser);
+					dataProvider.refreshAll();
 					UIUtils.showNotification("User created successfully", UIUtils.NotificationType.SUCCESS);
 				} else {
+					UIUtils.showNotification("User insert failed", UIUtils.NotificationType.ERROR);
+				}
+			} else {
+				if (UserFacade.getInstance().update(editedUser)) {
+					if (grid.asSingleSelect().getValue() != null) {
+						dataProvider.refreshItem(grid.asSingleSelect().getValue());
+					}
+
 					UIUtils.showNotification("User updated successfully", UIUtils.NotificationType.SUCCESS);
-					dataProvider.refreshItem(grid.asSingleSelect().getValue());
+				} else {
+					UIUtils.showNotification("User update failed", UIUtils.NotificationType.ERROR);
 				}
 
-				dataProvider.refreshAll();
-				grid.select(editedUser);
-			} else {
-				UIUtils.showNotification("User create/edit failed", UIUtils.NotificationType.ERROR);
 			}
+
+			grid.select(editedUser);
 		}
 	}
 
@@ -262,7 +271,7 @@ class AdminPersonnel extends FlexBoxLayout {
 			final User selectedUser =  grid.asSingleSelect().getValue();
 			if (selectedUser != null) {
 
-				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "user", selectedUser.getUsername());
+				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "selected user", selectedUser.getUsername());
 				dialog.closeOnCancel();
 				dialog.getConfirmButton().addClickListener(e -> {
 					if (UserFacade.getInstance().remove(selectedUser)) {

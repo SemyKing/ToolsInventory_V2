@@ -35,16 +35,16 @@ public class AuthenticationService {
         return getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA) != null || loginRememberedUser();
     }
 
-    public static SessionData getSessionData() {
-        return (SessionData) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA);
+    public static User getCurrentSessionUser() {
+        return (User) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA);
     }
 
-    public static void setSessionData(SessionData sessionData) {
-        if (sessionData == null) {
+    public static void setCurrentSessionUser(User user) {
+        if (user == null) {
             return;
         }
         getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
-        getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, sessionData);
+        getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, user);
     }
 
     static boolean signIn(String username, String password, boolean rememberMe) {
@@ -54,7 +54,7 @@ public class AuthenticationService {
         if (password == null || password.isEmpty())
             return false;
 
-        User user = UserFacade.getInstance().findUserInDatabase(username, password);
+        com.gmail.grigorij.backend.entities.user.User user = UserFacade.getInstance().findUserInDatabase(username, password);
 
         if (user != null) {
             if (!constructSessionData(user, null)) {
@@ -69,7 +69,7 @@ public class AuthenticationService {
         }
     }
 
-    private static boolean constructSessionData(User user, String username) {
+    private static boolean constructSessionData(com.gmail.grigorij.backend.entities.user.User user, String username) {
         System.out.println("constructSessionData()--");
         System.out.println();
 
@@ -88,24 +88,17 @@ public class AuthenticationService {
                 return false;
             }
 
-//            company = CompanyFacade.getInstance().findCompanyById(user.getCompanyId());
-
             if (user.getCompany() == null) {
-                UIUtils.showNotification("Company is NULL", UIUtils.NotificationType.ERROR, 10000);
+                UIUtils.showNotification("Company is NULL", UIUtils.NotificationType.ERROR);
                 System.out.println("login fail, NULL company");
                 return false;
             }
         }
 
-        SessionData sessionData = new SessionData();
-        sessionData.setUser(user);
-//        sessionData.setCompany(company);
-
-        setSessionData(sessionData);
+        setCurrentSessionUser(user);
         System.out.println("--constructSessionData() successful");
         return true;
     }
-
 
 
 

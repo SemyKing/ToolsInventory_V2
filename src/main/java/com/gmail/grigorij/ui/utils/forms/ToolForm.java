@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.utils.forms;
 
-import com.gmail.grigorij.backend.entities.tool.Tool;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
@@ -19,61 +19,61 @@ import com.vaadin.flow.data.binder.*;
 public class ToolForm extends FormLayout {
 
 
-	private Binder<Tool> binder = new Binder<>(Tool.class);
+	private Binder<InventoryEntity> binder = new Binder<>(InventoryEntity.class);
 
 	public ToolForm() {
 //		setSizeFull();
 
 		TextField toolName = getTextField("Name", "", "");
-		ReadOnlyHasValue<Tool> name = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> name = new ReadOnlyHasValue<>(tool ->
 				toolName.setValue(tool.getName()));
 
 		TextField toolManufacturer = getTextField("Manufacturer", "", "");
-		ReadOnlyHasValue<Tool> manufacturer = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> manufacturer = new ReadOnlyHasValue<>(tool ->
 				toolManufacturer.setValue(tool.getManufacturer()));
 
 		TextField toolModel = getTextField("Model", "", "");
-		ReadOnlyHasValue<Tool> model = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> model = new ReadOnlyHasValue<>(tool ->
 				toolModel.setValue(tool.getModel()));
 
 		TextField toolInfo = getTextField("Tool Info", "", "");
 		toolInfo.setReadOnly(true);
-		ReadOnlyHasValue<Tool> info = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> info = new ReadOnlyHasValue<>(tool ->
 				toolInfo.setValue(tool.getToolInfo()));
 
 		TextField toolSN = getTextField("SN", "", "");
-		ReadOnlyHasValue<Tool> sn = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> sn = new ReadOnlyHasValue<>(tool ->
 				toolSN.setValue(tool.getSnCode()));
 
 		TextField toolBarcode = getTextField("Barcode", "", "");
-		ReadOnlyHasValue<Tool> barcode = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> barcode = new ReadOnlyHasValue<>(tool ->
 				toolBarcode.setValue(tool.getBarcode()));
 
 		TextField toolCategory = getTextField("Category", "", "");
-		ReadOnlyHasValue<Tool> category = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> category = new ReadOnlyHasValue<>(tool ->
 				toolCategory.setValue( tool.getParentCategory()==null ? "" : tool.getParentCategory().getName() )
 		);
 
 		TextField toolUsageStatus = getTextField("Status", "", "");
-		ReadOnlyHasValue<Tool> usageStatus = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> usageStatus = new ReadOnlyHasValue<>(tool ->
 				toolUsageStatus.setValue(tool.getUsageStatus().getStringValue()));
 
 		TextField toolUser = getTextField("In Use By", "", "");
-		ReadOnlyHasValue<Tool> user = new ReadOnlyHasValue<>(tool ->
-//				toolUser.setValue( tool.getInUseByUserId()<0 ? "" : UserFacade.getInstance().getUserById(tool.getInUseByUserId()).getUsername()));
+		ReadOnlyHasValue<InventoryEntity> user = new ReadOnlyHasValue<>(tool ->
+//				toolUser.setValue( inventory.getInUseByUserId()<0 ? "" : UserFacade.getInstance().getUserById(inventory.getInUseByUserId()).getUsername()));
 				toolUser.setValue( tool.getUser() == null ? "" : tool.getUser().getUsername()));
 
 		TextField toolReservedByUser = getTextField("Reserved By", "", "");
-		ReadOnlyHasValue<Tool> reservedByUser = new ReadOnlyHasValue<>(tool ->
-//				toolReservedByUser.setValue( tool.getReservedByUserId()<0 ? "" : UserFacade.getInstance().getUserById(tool.getReservedByUserId()).getUsername()));
+		ReadOnlyHasValue<InventoryEntity> reservedByUser = new ReadOnlyHasValue<>(tool ->
+//				toolReservedByUser.setValue( inventory.getReservedByUserId()<0 ? "" : UserFacade.getInstance().getUserById(inventory.getReservedByUserId()).getUsername()));
 				toolReservedByUser.setValue( tool.getReservedByUser() == null ? "" : tool.getReservedByUser().getUsername()));
 
 		TextField toolBoughtDate = getTextField("Bought", ProjectConstants.FORM_HALF_WIDTH, "");
-		ReadOnlyHasValue<Tool> boughtDate = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> boughtDate = new ReadOnlyHasValue<>(tool ->
 				toolBoughtDate.setValue( tool.getDateBought() == null ? "" : DateConverter.DateToString(tool.getDateBought())));
 
 		TextField toolNextMaintenanceDate = getTextField("Next Maintenance", ProjectConstants.FORM_HALF_WIDTH, "");
-		ReadOnlyHasValue<Tool> nextMaintenanceDate = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> nextMaintenanceDate = new ReadOnlyHasValue<>(tool ->
 				toolNextMaintenanceDate.setValue( tool.getDateBought() == null ? "" : DateConverter.DateToString(tool.getDateNextMaintenance())));
 
 		FlexBoxLayout datesLayout = new FlexBoxLayout();
@@ -82,11 +82,11 @@ public class ToolForm extends FormLayout {
 		datesLayout.add(toolBoughtDate, toolNextMaintenanceDate);
 
 		TextField toolPrice = getTextField("Price", ProjectConstants.FORM_HALF_WIDTH, "€");
-		ReadOnlyHasValue<Tool> price = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> price = new ReadOnlyHasValue<>(tool ->
 				toolPrice.setValue( tool.getPrice() == null ? "" : String.valueOf(tool.getPrice())));
 
 		TextField toolGuarantee = getTextField("Guarantee", ProjectConstants.FORM_HALF_WIDTH, "Months");
-		ReadOnlyHasValue<Tool> guarantee = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> guarantee = new ReadOnlyHasValue<>(tool ->
 				toolGuarantee.setValue( tool.getGuarantee_months() == null ? "" : String.valueOf(tool.getGuarantee_months())));
 
 		FlexBoxLayout priceAndGuaranteeLayout = new FlexBoxLayout();
@@ -95,7 +95,7 @@ public class ToolForm extends FormLayout {
 		priceAndGuaranteeLayout.add(toolPrice, toolGuarantee);
 
 		TextField toolAdditionalInfo = getTextField("Additional Info", "", "");
-		ReadOnlyHasValue<Tool> additionalInfo = new ReadOnlyHasValue<>(tool ->
+		ReadOnlyHasValue<InventoryEntity> additionalInfo = new ReadOnlyHasValue<>(tool ->
 				toolAdditionalInfo.setValue(tool.getAdditionalInfo()));
 
 		Divider divider = new Divider(Horizontal.NONE, Vertical.S);
@@ -175,7 +175,7 @@ public class ToolForm extends FormLayout {
 		return textField;
 	}
 
-	public boolean setTool(Tool tool) {
+	public boolean setTool(InventoryEntity tool) {
 		try {
 			binder.removeBean();
 			binder.readBean(tool);

@@ -2,6 +2,7 @@ package com.gmail.grigorij.ui.utils;
 
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.*;
+import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -16,6 +17,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
+import javafx.scene.control.ComboBox;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -40,6 +42,8 @@ public class UIUtils {
 			.withInitial(() -> DateTimeFormatter.ofPattern("dd.MM.YYYY"));
 
 
+	/* ==== FORMS ==== */
+
 	/**
 	 * Apply correct column span to FormLayout
 	 *
@@ -49,6 +53,17 @@ public class UIUtils {
 		if (UI.getCurrent() != null) {
 			UI.getCurrent().getPage().executeJavaScript("$0.notifyResize()", formLayout.getElement());
 		}
+	}
+
+
+	public static FlexBoxLayout getFormRowLayout(Component c1, Component c2) {
+		FlexBoxLayout layout = new FlexBoxLayout();
+		layout.setFlexDirection(FlexDirection.ROW);
+		layout.add(c1, c2);
+		layout.setFlexGrow("1", c1);
+		layout.setComponentMargin(c2, Left.S);
+		layout.setAlignItems(FlexComponent.Alignment.BASELINE);
+		return layout;
 	}
 
 

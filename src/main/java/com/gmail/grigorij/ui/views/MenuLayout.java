@@ -2,7 +2,6 @@ package com.gmail.grigorij.ui.views;
 
 import com.gmail.grigorij.ui.MainLayout;
 import com.gmail.grigorij.backend.access.AccessGroups;
-import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
@@ -19,11 +18,9 @@ import com.gmail.grigorij.ui.views.navigation.reporting.Reporting;
 import com.gmail.grigorij.ui.views.navigation.transactions.Transactions;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
@@ -54,7 +51,7 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 		this.mainLayout = mainLayout;
 		setId("menu-layout");
 		addClassName(CLASS_NAME);
-		setThemeVariant(AuthenticationService.getSessionData().getUser().getThemeVariant());
+		setThemeVariant(AuthenticationService.getCurrentSessionUser().getThemeVariant());
 		setFlexDirection(FlexDirection.COLUMN);
 		setSizeFull();
 
@@ -69,14 +66,15 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 		initNaviItems();
 
 
-		if (UI.getCurrent() != null) {
-			Page page = UI.getCurrent().getPage();
-
-			if (page != null) {
-				System.out.println("execute js");
-				page.executeJavaScript("window.onbeforeunload = confirmExit; function confirmExit() { return 'Are you sure, you want to close?';}");
-			}
-		}
+		//Show notification about closing tab
+//		if (UI.getCurrent() != null) {
+//			Page page = UI.getCurrent().getPage();
+//
+//			if (page != null) {
+//				System.out.println("execute js");
+//				page.executeJavaScript("window.onbeforeunload = confirmExit; function confirmExit() { return 'Are you sure, you want to close?';}");
+//			}
+//		}
 	}
 
 	public void setThemeVariant(String themeVariant) {
@@ -120,7 +118,6 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 		NaviItem messages = new NaviItem(VaadinIcon.ENVELOPES_O, ProjectConstants.MESSAGES, false);
 		NaviItem transaction = new NaviItem(VaadinIcon.EXCHANGE, ProjectConstants.TRANSACTIONS, false);
 		NaviItem reporting = new NaviItem(VaadinIcon.CLIPBOARD_TEXT, ProjectConstants.REPORTING, false);
-		NaviItem admin = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN, false);
 
 
 		dashboard.addClickListener(e-> {
@@ -153,12 +150,35 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 		});
 		menu.addNaviItem(reporting);
 
-		if (AuthenticationService.getSessionData().getUser().getAccessGroup() == AccessGroups.ADMIN.getIntValue()) {
-			admin.addClickListener(e-> {
-				naviItemOnClick(admin);
-				viewContainer.add(new AdminMain(this));
-			});
+		if (AuthenticationService.getCurrentSessionUser().getAccessGroup() == AccessGroups.ADMIN.getIntValue()) {
+			NaviItem admin = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN, true);
 			menu.addNaviItem(admin);
+
+			admin.addClickListener(e-> {
+				admin.expandCollapse.click();
+			});
+
+			NaviItem admin_companies = new NaviItem(ProjectConstants.COMPANIES, null , false);
+			menu.addNaviItem(admin, admin_companies);
+
+			admin_companies.addClickListener(e-> {
+				adminItemOnClick(admin_companies);
+			});
+
+
+			NaviItem admin_personnel = new NaviItem(ProjectConstants.PERSONNEL, null , false);
+			menu.addNaviItem(admin, admin_personnel);
+
+			admin_personnel.addClickListener(e-> {
+				adminItemOnClick(admin_personnel);
+			});
+
+			NaviItem admin_inventory = new NaviItem(ProjectConstants.ADMIN_INVENTORY, null , false);
+			menu.addNaviItem(admin, admin_inventory);
+
+			admin_inventory.addClickListener(e-> {
+				adminItemOnClick(admin_inventory);
+			});
 		}
 
 
@@ -169,15 +189,48 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 
 	private void naviItemOnClick(NaviItem naviItem) {
 		viewContainer.removeAll();
-		appBar.setTitle(naviItem.getText());
+//		appBar.setTitle(naviItem.getText());
 		appBar.reset();
+
+		selectCorrectNaviItem(naviItem.getText(), false);
+
+		naviDrawer.close();
+	}
+
+
+	private void adminItemOnClick(NaviItem naviItem) {
+		viewContainer.removeAll();
+//		appBar.setTitle(ProjectConstants.ADMIN + " " + naviItem.getText());
+		appBar.reset();
+
+		viewContainer.add(new AdminMain(this));
+
+		selectCorrectNaviItem(naviItem.getText(), true);
+
+		naviDrawer.close();
+
+		for (Tab tab : appBar.getTabs()) {
+			if (tab.getLabel().equals(naviItem.getText())) {
+				appBar.setSelectedTab(tab);
+				break;
+			}
+		}
+	}
+
+	public void selectCorrectNaviItem(String tabName, boolean adminTab) {
+		if (adminTab) {
+			appBar.setTitle(ProjectConstants.ADMIN + " " + tabName);
+		} else {
+			appBar.setTitle(tabName);
+		}
 
 		for (NaviItem item : naviDrawer.getMenu().getNaviItems()) {
 			item.setSelected(false);
-		}
 
-		naviItem.setSelected(true);
-		naviDrawer.close();
+			if (item.getText().equals(tabName)) {
+				item.setSelected(true);
+			}
+		}
 	}
 
 

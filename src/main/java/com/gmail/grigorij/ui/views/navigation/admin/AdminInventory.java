@@ -1,9 +1,7 @@
 package com.gmail.grigorij.ui.views.navigation.admin;
 
 import com.gmail.grigorij.backend.database.facades.ToolFacade;
-import com.gmail.grigorij.backend.entities.tool.HierarchyType;
-import com.gmail.grigorij.backend.entities.tool.Tool;
-import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.*;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
@@ -22,9 +20,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -39,17 +35,16 @@ import java.util.List;
 public class AdminInventory extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-inventory";
-	final static String TAB_NAME = ProjectConstants.INVENTORY;
 
 	private AdminMain adminMain;
 	private AdminToolForm adminToolForm;
 	private AdminInventoryBulkEditor bulkEditor = null;
 	private AdminToolCategoryForm adminCategoryForm = new AdminToolCategoryForm();
-	private ToolCopyForm toolCopyForm; //used for checkboxes(tool parameters) and numbers of copy
+	private ToolCopyForm toolCopyForm; //used for checkboxes(inventory parameters) and numbers of copy
 
-	private Grid<Tool> grid;
-	private ListDataProvider<Tool> dataProvider;
-	private List<Tool> selectedTools = null;
+	private Grid<InventoryEntity> grid;
+	private ListDataProvider<InventoryEntity> dataProvider;
+	private List<InventoryEntity> selectedTools = null;
 
 	private DetailsDrawer detailsDrawer;
 	private DetailsDrawerHeader detailsDrawerHeader;
@@ -131,109 +126,26 @@ public class AdminInventory extends FlexBoxLayout {
 		dataProvider = DataProvider.ofCollection(ToolFacade.getInstance().getAllToolsOnly());
 		grid.setDataProvider(dataProvider);
 
-		grid.addColumn(Tool::getId).setHeader("ID")
+		grid.addColumn(InventoryEntity::getId).setHeader("ID")
 				.setWidth(UIUtils.COLUMN_WIDTH_XS)
 				.setFlexGrow(0);
 
-//		ComponentRenderer<Span, Tool> toolCompanyRenderer = new ComponentRenderer<>(
-//				tool -> {
-//					Span companyName = new Span("");
-//					companyName.setWidth("100%");
-//					if (tool.getCompany() != null) {
-//						companyName.setText(tool.getCompany().getName());
-//					}
-//					return companyName;
-//				});
-//		grid.addColumn(toolCompanyRenderer)
-//				.setHeader("Company")
-//				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
 		grid.addColumn(tool -> (tool.getCompany() == null) ? "" : tool.getCompany().getName())
 				.setHeader("Company")
 				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
-//		ComponentRenderer<Span, Tool> toolCategoryRenderer = new ComponentRenderer<>(
-//				tool -> {
-//					Span categoryName = new Span("");
-//					categoryName.setWidth("100%");
-//					if (tool.getParentCategory() != null) {
-//						categoryName.setText(tool.getParentCategory().getName());
-//					}
-//					return categoryName;
-//				});
-//		grid.addColumn(toolCategoryRenderer)
-//				.setHeader("Category")
-//				.setWidth(UIUtils.COLUMN_WIDTH_M);
-
 		grid.addColumn(tool -> (tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName())
 				.setHeader("Category")
 				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
-		grid.addColumn(Tool::getName).setHeader("Tool")
+		grid.addColumn(InventoryEntity::getName).setHeader("Tool")
 				.setWidth(UIUtils.COLUMN_WIDTH_XL);
-
-//		ComponentRenderer<FlexBoxLayout, Tool> toolStatusRenderer = new ComponentRenderer<>(
-//				tool -> {
-//					FlexBoxLayout layout = new FlexBoxLayout();
-//					ToolStatus status = tool.getUsageStatus();
-//					if (status != null) {
-//						layout = new CustomBadge(status.getStringValue(), status.getColor(), status.getIcon());
-//					}
-//					return layout;
-//				});
-//		grid.addColumn(toolStatusRenderer)
-//				.setHeader("Status")
-//				.setWidth(UIUtils.COLUMN_WIDTH_S)
-//				.setFlexGrow(0);
 
 		grid.addColumn(tool -> (tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getStringValue())
 				.setHeader("Status")
 				.setWidth(UIUtils.COLUMN_WIDTH_S)
 				.setFlexGrow(0);
-
-//		ComponentRenderer<Component, Tool> toolUserRenderer = new ComponentRenderer<>(
-//				tool -> {
-//					FlexBoxLayout layout  = new FlexBoxLayout();
-//					layout.setWidth("100%");
-//
-//					if (tool.getHierarchyType().equals(HierarchyType.TOOL)) {
-//						ToolStatus status = tool.getUsageStatus();
-//
-//						if (status == null) {
-//							System.err.println("Tools status is NULL");
-//							System.out.println("Tool: " + tool.toString());
-//						} else {
-//							if (status.equals(ToolStatus.IN_USE)) {
-//								Span username = new Span("");
-//								username.setWidth("100%");
-//
-//								if (tool.getUser() == null) {
-//									System.err.println("Tools User is NULL with status: " + status.getStringValue());
-//								} else {
-//									username.setText(tool.getUser().getUsername());
-//									layout.add(username);
-//								}
-//							} else if (status.equals(ToolStatus.RESERVED)) {
-//								if (tool.getUser() == null) {
-//									System.err.println("Tools User is NULL with status: " + status.getStringValue());
-//								}
-//								if (tool.getReservedByUser() == null) {
-//									System.err.println("Tools User (reserved by) is NULL with status: " + status.getStringValue());
-//								}
-//
-//								if (tool.getUser() != null && tool.getReservedByUser() != null) {
-//									ListItem item = new ListItem(tool.getUser().getUsername(), tool.getReservedByUser().getUsername());
-//									item.setHorizontalPadding(false);
-//									layout.add(item);
-//								}
-//							}
-//						}
-//					}
-//					return layout;
-//				});
-//		grid.addColumn(toolUserRenderer)
-//				.setHeader("User")
-//				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
 		grid.addColumn(tool -> (tool.getUser() == null) ? "" : tool.getUser().getUsername())
 				.setHeader("User")
@@ -261,77 +173,6 @@ public class AdminInventory extends FlexBoxLayout {
 	private void filterGrid(String searchString) {
 		dataProvider.clearFilters();
 		final String mainSearchString = searchString.trim();
-
-//		System.out.println("Main Search String: " + mainSearchString);
-//
-//		final String space = " ";
-//
-//		List<String> finalParams = new ArrayList<>();
-//
-//		//Add search parameters with double quotes: "param".
-//		if ((StringUtils.countMatches(mainSearchString, "\"") % 2) == 0) {
-//			String[] valuesInQuotes = StringUtils.substringsBetween(mainSearchString, "\"", "\"");
-//
-//			if (valuesInQuotes != null) {
-//				if (valuesInQuotes.length > 0) {
-//					finalParams.addAll(Arrays.asList(valuesInQuotes));
-//				}
-//			}
-//		}
-//
-//		String searchParamCopy = mainSearchString.replaceAll("\"", "");
-//
-//		for (String s : finalParams) {
-//			if (searchParamCopy.contains(s)) {
-//				searchParamCopy = searchParamCopy.replace(s, "");
-//			}
-//		}
-//
-////		searchParamCopy = searchParamCopy.trim();
-//
-//		if (searchParamCopy.contains(space)) {
-//			String[] searchParams = searchParamCopy.split(space);
-//
-//			for (String s : searchParams) {
-//				s = s.trim();
-//				if (s.length() > 0) {
-//					finalParams.add(s);
-//				}
-//			}
-//		}
-//
-//		System.out.println();
-//		System.out.println("Final parameters");
-//		for (String s : finalParams) {
-//			System.out.println("param: '" + s + "'");
-//		}
-//
-//
-//		dataProvider.addFilter(
-//			tool -> {
-//				boolean res = true;
-//				for (String sParam : finalParams) {
-//					res = StringUtils.containsIgnoreCase(tool.getName(), sParam) ||
-//							StringUtils.containsIgnoreCase(tool.getToolInfo(), sParam) ||
-//							StringUtils.containsIgnoreCase(tool.getManufacturer(), sParam) ||
-//							StringUtils.containsIgnoreCase(tool.getModel(), sParam) ||
-//							StringUtils.containsIgnoreCase(tool.getSnCode(), sParam) ||
-//							StringUtils.containsIgnoreCase(tool.getBarcode(), sParam) ||
-//
-//							(tool.getCompany() != null) ? StringUtils.containsIgnoreCase(tool.getCompany().getName(), sParam) : false ||
-//							(tool.getParentCategory() != null) ? StringUtils.containsIgnoreCase(tool.getParentCategory().getName(), sParam) : false ||
-//
-//							StringUtils.containsIgnoreCase(tool.getUsageStatus().getStringValue(), sParam);
-//
-//
-//					//(res) -> shows All items based on searchParams
-//					//(!res) -> shows ONE item based on searchParams
-//					if (!res)
-//						break;
-//				}
-//				return res;
-//			}
-//		);
 
 		if (mainSearchString.contains("+")) {
 			String[] searchParams = mainSearchString.split("\\+");
@@ -373,17 +214,16 @@ public class AdminInventory extends FlexBoxLayout {
 		detailsDrawer.setContent(adminToolForm);
 		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
 
-		// Original Header
 		detailsDrawerHeader = new DetailsDrawerHeader("");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
 		copyToolButton = UIUtils.createIconButton(VaadinIcon.COPY, ButtonVariant.LUMO_CONTRAST);
 		copyToolButton.addClickListener(e -> constructToolCopyDialog());
-		UIUtils.setTooltip("Create a copy of this tool", copyToolButton);
+		UIUtils.setTooltip("Create a copy of this inventory", copyToolButton);
 
 		deleteToolButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR);
 		deleteToolButton.addClickListener(e -> confirmDelete());
-		UIUtils.setTooltip("Delete this tool from Database", deleteToolButton);
+		UIUtils.setTooltip("Delete this inventory from Database", deleteToolButton);
 
 		detailsDrawerHeader.getContainer().add(copyToolButton, deleteToolButton);
 		detailsDrawerHeader.getContainer().setComponentMargin(copyToolButton, Left.AUTO);
@@ -402,7 +242,7 @@ public class AdminInventory extends FlexBoxLayout {
 		adminMain.setDetailsDrawer(detailsDrawer);
 	}
 
-	private void showToolDetails(Tool tool, String title) {
+	private void showToolDetails(InventoryEntity tool, String title) {
 		detailsDrawerHeader.setTitle(title);
 
 		deleteToolButton.setEnabled( tool != null );
@@ -420,7 +260,7 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 
-	public void constructToolCategoryDetails(Tool category) {
+	public void constructToolCategoryDetails(InventoryEntity category) {
 
 		boolean bNewCategory = (category == null);
 
@@ -430,8 +270,21 @@ public class AdminInventory extends FlexBoxLayout {
 
 		CustomDialog dialog = new CustomDialog();
 		dialog.setHeader(UIUtils.createH4Label(headerTitle));
+
+
+		adminCategoryForm.setCategory(category);
+		dialog.setContent(adminCategoryForm);
+
 		dialog.getCancelButton().addClickListener(e -> dialog.close());
+
 		dialog.setConfirmButton(UIUtils.createButton(confirmButtonText, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
+		dialog.getConfirmButton().addClickListener(e -> {
+			InventoryEntity editedCategory = adminCategoryForm.getCategory();
+			if (editedCategory != null) {
+				updateCategory(editedCategory);
+				dialog.close();
+			}
+		});
 
 		/*
 		Allow and handle category delete
@@ -440,16 +293,16 @@ public class AdminInventory extends FlexBoxLayout {
 			dialog.setDeleteButtonVisible(true);
 			dialog.getDeleteButton().addClickListener(deleteEvent -> {
 
-				ConfirmDialog confirmDialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "category", category.getName());
-				confirmDialog.closeOnCancel();
-				confirmDialog.getConfirmButton().addClickListener(confirmDeleteEvent -> {
+				ConfirmDialog confirmCategoryDeleteDialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "category", category.getName());
+				confirmCategoryDeleteDialog.closeOnCancel();
+				confirmCategoryDeleteDialog.getConfirmButton().addClickListener(confirmDeleteEvent -> {
 					try {
 						if (ToolFacade.getInstance().remove(category)) {
 							UIUtils.showNotification("Category deleted successfully", UIUtils.NotificationType.SUCCESS);
 						} else {
 							UIUtils.showNotification("Category delete failed", UIUtils.NotificationType.ERROR);
 						}
-						confirmDialog.close();
+						confirmCategoryDeleteDialog.close();
 						dialog.close();
 
 					} catch (Exception ex) {
@@ -457,29 +310,18 @@ public class AdminInventory extends FlexBoxLayout {
 						ex.printStackTrace();
 					}
 				});
-				confirmDialog.open();
+				confirmCategoryDeleteDialog.open();
 			});
 		}
 
-		adminCategoryForm.setCategory(category);
-		dialog.setContent(adminCategoryForm);
-		dialog.getConfirmButton().addClickListener(e -> {
-			Tool editedCategory = adminCategoryForm.getCategory();
-			if (editedCategory != null) {
-				updateCategory(editedCategory);
-				dialog.close();
-			}
-		});
 		dialog.open();
 	}
 
 
-	private void updateCategory(Tool editedCategory) {
+	private void updateCategory(InventoryEntity editedCategory) {
 		System.out.println("\nupdateCategory()");
 
 		if (editedCategory != null) {
-
-			System.out.println("editedCategory.getParentCategory(): " + editedCategory.getParentCategory());
 
 			if (editedCategory.getParentCategory() != null) {
 				if (editedCategory.getParentCategory().equals(ToolFacade.getInstance().getRootCategory())) {
@@ -506,11 +348,9 @@ public class AdminInventory extends FlexBoxLayout {
 	private void updateTool() {
 		System.out.println("updateTool()");
 
-		Tool editedTool = adminToolForm.getTool();
+		InventoryEntity editedTool = adminToolForm.getTool();
 
 		if (editedTool != null) {
-
-			System.out.println("editedTool.getParentCategory(): " + editedTool.getParentCategory());
 
 			if (editedTool.getParentCategory() != null) {
 				if (editedTool.getParentCategory().equals(ToolFacade.getInstance().getRootCategory())) {
@@ -520,8 +360,9 @@ public class AdminInventory extends FlexBoxLayout {
 
 			if (adminToolForm.isNew()) {
 				if (ToolFacade.getInstance().insert(editedTool)) {
+					dataProvider.getItems().add(editedTool);
+
 					UIUtils.showNotification("Tool created successfully", UIUtils.NotificationType.SUCCESS);
-					grid.select(editedTool);
 				} else {
 					UIUtils.showNotification("Tool insert failed", UIUtils.NotificationType.ERROR);
 				}
@@ -539,39 +380,12 @@ public class AdminInventory extends FlexBoxLayout {
 	private void confirmDelete() {
 		if (detailsDrawer.isOpen()) {
 
-			final Tool selectedTool = selectedTools.get(0);
+			final InventoryEntity selectedTool = selectedTools.get(0);
 
 			if (selectedTool != null) {
 
-				CustomDialog dialog = new CustomDialog();
-				dialog.setHeader(UIUtils.createH4Label("Confirm delete"));
-
-				dialog.getCancelButton().addClickListener(e -> dialog.close());
-				dialog.setConfirmButton(UIUtils.createButton("Delete", VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY));
-				dialog.getConfirmButton().setEnabled(false);
-
-				TextField confirmInputField = new TextField("Input tool name to confirm action");
-				confirmInputField.setRequired(true);
-				confirmInputField.setValueChangeMode(ValueChangeMode.EAGER);
-				confirmInputField.addValueChangeListener(e -> {
-					dialog.getConfirmButton().setEnabled(false);
-
-					if (e.getValue() != null) {
-						if (e.getValue().length() > 0) {
-							if (e.getValue().equals(selectedTool.getName())) {
-								dialog.getConfirmButton().setEnabled(true);
-							}
-						}
-					}
-				});
-
-				dialog.setContent(
-						new Span("Are you sure you want to delete this tool?"),
-						new Span("This will completely remove selected tool from Database."),
-						new HorizontalLayout(new Span("Deleting tool: "), UIUtils.createBoldText(selectedTool.getName())),
-						confirmInputField
-				);
-
+				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "selected inventory", selectedTool.getName());
+				dialog.closeOnCancel();
 				dialog.getConfirmButton().addClickListener(e -> {
 					if (ToolFacade.getInstance().remove(selectedTool)) {
 						dataProvider.getItems().remove(selectedTool);
@@ -623,9 +437,7 @@ public class AdminInventory extends FlexBoxLayout {
 
 	private void constructToolCopyDialog() {
 		CustomDialog dialog = new CustomDialog();
-		dialog.setHeader(UIUtils.createH4Label("Copy Tool Parameters"));
-		dialog.getCancelButton().addClickListener(e -> dialog.close());
-		dialog.setConfirmButton(UIUtils.createButton("Copy", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
+		dialog.setHeader(UIUtils.createH4Label("Copy Tool Information"));
 
 		toolCopyForm = new ToolCopyForm();
 		if (!toolCopyForm.setOriginalTool(selectedTools.get(0))) {
@@ -633,8 +445,12 @@ public class AdminInventory extends FlexBoxLayout {
 			return;
 		}
 		dialog.setContent(toolCopyForm);
+
+		dialog.getCancelButton().addClickListener(e -> dialog.close());
+
+		dialog.setConfirmButton(UIUtils.createButton("Copy", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
 		dialog.getConfirmButton().addClickListener(e -> {
-			Tool toolCopy = toolCopyForm.getToolCopy();
+			InventoryEntity toolCopy = toolCopyForm.getToolCopy();
 			if (toolCopy != null) {
 				dialog.close();
 				bulkEditor = new AdminInventoryBulkEditor(this, OperationType.COPY, toolCopyForm.getNumberOfCopies());
@@ -653,7 +469,7 @@ public class AdminInventory extends FlexBoxLayout {
 		dialog.open();
 	}
 
-	ListDataProvider<Tool> getDataProvider() {
+	ListDataProvider<InventoryEntity> getDataProvider() {
 		return this.dataProvider;
 	}
 }

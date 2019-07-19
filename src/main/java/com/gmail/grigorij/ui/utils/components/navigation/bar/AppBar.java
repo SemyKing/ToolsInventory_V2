@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.utils.components.navigation.bar;
 
+import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.css.size.Bottom;
 import com.gmail.grigorij.ui.utils.css.size.Top;
@@ -16,7 +17,6 @@ import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.forms.UserForm;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
-import com.gmail.grigorij.ui.views.authentication.SessionData;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Composite;
@@ -32,6 +32,8 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.theme.lumo.Lumo;
+
+import java.util.ArrayList;
 
 public class AppBar extends Composite<FlexLayout> {
 
@@ -55,6 +57,8 @@ public class AppBar extends Composite<FlexLayout> {
     public enum NaviMode {
         MENU, CONTEXTUAL
     }
+
+    private ArrayList<Tab> tabsList = new ArrayList<>();
 
     private final MenuLayout menuLayout;
 
@@ -116,7 +120,7 @@ public class AppBar extends Composite<FlexLayout> {
         userInfo.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         userInfo.setFlexDirection(FlexDirection.COLUMN);
 
-        User user = AuthenticationService.getSessionData().getUser();
+        User user = AuthenticationService.getCurrentSessionUser();
 
         ListItem item = new ListItem(user.getUsername(), user.getCompany().getName(), UIUtils.createInitials(user.getInitials()));
         item.setClassName("user-info-list-item");
@@ -134,14 +138,16 @@ public class AppBar extends Composite<FlexLayout> {
         contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.USER, UIUtils.createText("Profile")), e -> openUserInformationDialog());
         contextMenu.add(new Divider(Vertical.XS));
         contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.MOON, UIUtils.createText("Change theme")), e -> {
-            String themeVariant = AuthenticationService.getSessionData().getUser().getThemeVariant();
+
+            String themeVariant = AuthenticationService.getCurrentSessionUser().getThemeVariant();
             if (themeVariant.equals(Lumo.DARK)) {
                 themeVariant = Lumo.LIGHT;
             } else {
                 themeVariant = Lumo.DARK;
             }
             menuLayout.setThemeVariant(themeVariant);
-            AuthenticationService.getSessionData().getUser().setThemeVariant(themeVariant);
+            AuthenticationService.getCurrentSessionUser().setThemeVariant(themeVariant);
+            UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
         });
         contextMenu.add(new Divider(Vertical.XS));
         contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.EXIT_O, UIUtils.createBoldText("Log Out")), e -> AuthenticationService.signOut());
@@ -151,28 +157,28 @@ public class AppBar extends Composite<FlexLayout> {
     private void openUserInformationDialog() {
         CustomDialog dialog = new CustomDialog();
         dialog.setHeader(UIUtils.createH4Label("User Information"));
-        dialog.setConfirmButton(UIUtils.createButton("Save", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
+
+        userForm.setUser(AuthenticationService.getCurrentSessionUser());
+        dialog.setContent( userForm );
+
         dialog.getCancelButton().addClickListener(e -> dialog.close());
+
+        dialog.setConfirmButton(UIUtils.createButton("Save", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
         dialog.getConfirmButton().addClickListener(e -> {
             User editedCurrentUser = userForm.getUser();
 
             if (editedCurrentUser != null) {
-                SessionData sessionData = AuthenticationService.getSessionData();
-                sessionData.setUser(editedCurrentUser);
+                AuthenticationService.setCurrentSessionUser(editedCurrentUser);
 
-                AuthenticationService.setSessionData(sessionData);
-
-                UIUtils.showNotification("Information updated successfully", UIUtils.NotificationType.SUCCESS);
+                if (UserFacade.getInstance().update(editedCurrentUser)) {
+                    UIUtils.showNotification("Information updated successfully", UIUtils.NotificationType.SUCCESS);
+                } else {
+                    UIUtils.showNotification("Information update failed", UIUtils.NotificationType.ERROR);
+                }
                 dialog.close();
             }
         });
 
-        User currentUser = AuthenticationService.getSessionData().getUser();
-        userForm.setUser(currentUser);
-
-        dialog.setContent(
-                userForm
-        );
 
         dialog.open();
     }
@@ -273,6 +279,7 @@ public class AppBar extends Composite<FlexLayout> {
     public Tab addTab(String text) {
         Tab tab = tabs.addTab(text);
         configureTab(tab);
+        tabsList.add(tab);
         return tab;
     }
 
@@ -281,13 +288,6 @@ public class AppBar extends Composite<FlexLayout> {
         configureTab(tab);
         return tab;
     }
-
-
-//    public Tab addTab(Object classObj, String text) {
-//        Tab tab = tabs.addTab(text);
-//        configureTab(tab);
-//        return tab;
-//    }
 
     public Tab getSelectedTab() {
         return tabs.getSelectedTab();
@@ -309,6 +309,10 @@ public class AppBar extends Composite<FlexLayout> {
         tabs.addSelectedChangeListener(listener);
     }
 
+    public ArrayList<Tab> getTabs() {
+        return tabsList;
+    }
+
     public int getTabCount() {
         return tabs.getTabCount();
     }
@@ -325,6 +329,8 @@ public class AppBar extends Composite<FlexLayout> {
         setNaviMode(AppBar.NaviMode.MENU);
         removeAllActionItems();
         removeAllTabs();
+
+        tabsList.clear();
     }
 
 

@@ -1,9 +1,9 @@
 package com.gmail.grigorij.ui.views.navigation.inventory;
 
 import com.gmail.grigorij.backend.database.facades.ToolFacade;
-import com.gmail.grigorij.backend.entities.tool.HierarchyType;
-import com.gmail.grigorij.backend.entities.tool.Tool;
-import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.backend.entities.inventory.HierarchyType;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.inventory.ToolStatus;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
@@ -40,8 +40,8 @@ public class Inventory extends SplitViewFrame {
 
 	private ToolForm toolForm = new ToolForm();
 
-	private TreeGrid<Tool> grid;
-	private TreeDataProvider<Tool> dataProvider;
+	private TreeGrid<InventoryEntity> grid;
+	private TreeDataProvider<InventoryEntity> dataProvider;
 
 	private DetailsDrawer detailsDrawer;
 
@@ -53,8 +53,6 @@ public class Inventory extends SplitViewFrame {
 
 	public Inventory(MenuLayout menuLayout) {
 		this.menuLayout = menuLayout;
-
-//		setClassName(CLASS_NAME);
 
 		setViewContent(createContent());
 		setViewDetails(createDetailsDrawer());
@@ -87,14 +85,14 @@ public class Inventory extends SplitViewFrame {
 		takeToolButton = UIUtils.createButton("Take", ButtonVariant.LUMO_CONTRAST);
 		takeToolButton.addClickListener(e -> {
 			if (e != null) {
-				Tool tool = grid.asSingleSelect().getValue();
+				InventoryEntity tool = grid.asSingleSelect().getValue();
 				if (tool != null) {
 
 					if (tool.getUser() == null) {
 						takeTool(tool);
 					} else {
-						if (tool.getUser().equals(AuthenticationService.getSessionData().getUser())) {
-							UIUtils.showNotification("You already have this tool", UIUtils.NotificationType.INFO);
+						if (tool.getUser().equals(AuthenticationService.getCurrentSessionUser())) {
+							UIUtils.showNotification("You already have this inventory", UIUtils.NotificationType.INFO);
 						} else {
 							takeTool(tool);
 						}
@@ -107,14 +105,14 @@ public class Inventory extends SplitViewFrame {
 		reserveToolButton = UIUtils.createButton("Reserve", ButtonVariant.LUMO_CONTRAST);
 		reserveToolButton.addClickListener(e -> {
 			if (e != null) {
-				Tool tool = grid.asSingleSelect().getValue();
+				InventoryEntity tool = grid.asSingleSelect().getValue();
 				if (tool != null) {
 
 					if (tool.getReservedByUser() == null) {
 						reserveTool(tool);
 					} else {
-						if (tool.getReservedByUser().equals(AuthenticationService.getSessionData().getUser())) {
-							UIUtils.showNotification("You have already reserved this tool", UIUtils.NotificationType.INFO);
+						if (tool.getReservedByUser().equals(AuthenticationService.getCurrentSessionUser())) {
+							UIUtils.showNotification("You have already reserved this inventory", UIUtils.NotificationType.INFO);
 						} else {
 							reserveTool(tool);
 						}
@@ -154,8 +152,9 @@ public class Inventory extends SplitViewFrame {
 		return wrapper;
 	}
 
+
 	private Component createGrid() {
-		User currentUser = AuthenticationService.getSessionData().getUser();
+		User currentUser = AuthenticationService.getCurrentSessionUser();
 
 		if (currentUser == null) {
 			AuthenticationService.signOut();
@@ -188,10 +187,10 @@ public class Inventory extends SplitViewFrame {
 
 			grid.setDataProvider(dataProvider);
 
-			grid.addHierarchyColumn(Tool::getName).setHeader("Tools")
+			grid.addHierarchyColumn(InventoryEntity::getName).setHeader("Tools")
 					.setWidth(UIUtils.COLUMN_WIDTH_XXL);
 
-			ComponentRenderer<FlexBoxLayout, Tool> toolStatusRenderer = new ComponentRenderer<>(
+			ComponentRenderer<FlexBoxLayout, InventoryEntity> toolStatusRenderer = new ComponentRenderer<>(
 					tool -> {
 						FlexBoxLayout layout = new FlexBoxLayout();
 						ToolStatus status = tool.getUsageStatus();
@@ -205,15 +204,10 @@ public class Inventory extends SplitViewFrame {
 					.setWidth(UIUtils.COLUMN_WIDTH_S)
 					.setFlexGrow(0);
 
-			//FOR DEBUG
-//			toolsAndCategoriesInCompany.forEach(tool -> {
-//				System.out.println("----: " + tool.getLevel() + ", " + tool.getHierarchyType().toString() + ", " + tool.getName());
-//			});
-
 			grid.addItemClickListener(e -> {
 				if (e != null) {
 					if (e.getItem() != null) {
-						Tool tool = e.getItem();
+						InventoryEntity tool = e.getItem();
 						if (tool.getHierarchyType().equals(HierarchyType.CATEGORY)) {
 							if (grid.isExpanded(tool)) {
 								grid.collapse(tool);
@@ -226,11 +220,48 @@ public class Inventory extends SplitViewFrame {
 				}
 			});
 
+
+			for (InventoryEntity rootItem : dataProvider.getTreeData().getRootItems()) {
+				expandAll(rootItem);
+			}
+
 			return grid;
+
 		}
 	}
 
-	private void handleButtonsAvailability(Tool tool) {
+
+
+
+
+	private int counter = 0;
+	/*
+	RECURSIVE METHOD!
+	 */
+	private void expandAll(InventoryEntity gridItem) {
+
+//		System.out.println("expandAll " + counter);
+		counter++;
+
+		if (gridItem == null) {
+			return;
+		}
+
+		if (counter >= 10000) {
+			return;
+		}
+
+		grid.expand(gridItem);
+
+		if (gridItem.getChildren().size() > 0) {
+			for (InventoryEntity item : gridItem.getChildren()) {
+				expandAll(item);
+			}
+		}
+	}
+
+
+	private void handleButtonsAvailability(InventoryEntity tool) {
 
 		takeToolButton.setEnabled(false);
 		reserveToolButton.setEnabled(false);
@@ -256,7 +287,7 @@ public class Inventory extends SplitViewFrame {
 		}
 
 		if (tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
-			if (!tool.getUser().equals(AuthenticationService.getSessionData().getUser())) {
+			if (!tool.getUser().equals(AuthenticationService.getCurrentSessionUser())) {
 				reserveToolButton.setEnabled(true);
 			}
 		}
@@ -287,8 +318,8 @@ public class Inventory extends SplitViewFrame {
 		return detailsDrawer;
 	}
 
-	private void showDetails(Tool tool) {
-//		detailsDrawerFooter.getDelete().setEnabled( tool != null );
+	private void showDetails(InventoryEntity tool) {
+//		detailsDrawerFooter.getDelete().setEnabled( inventory != null );
 
 		if (tool != null) {
 			if (tool.getHierarchyType() != null) {
@@ -298,11 +329,11 @@ public class Inventory extends SplitViewFrame {
 					detailsDrawer.show();
 
 					UIUtils.updateFormSize(toolForm);
-//				} else if (tool.getHierarchyType().equals(HierarchyType.CATEGORY)) {
-////					if (grid.isExpanded(tool)) {
-////						grid.collapse(tool);
+//				} else if (inventory.getHierarchyType().equals(HierarchyType.CATEGORY)) {
+////					if (grid.isExpanded(inventory)) {
+////						grid.collapse(inventory);
 ////					} else {
-////						grid.expand(tool);
+////						grid.expand(inventory);
 ////					}
 ////					grid.select(null);
 //
@@ -316,7 +347,7 @@ public class Inventory extends SplitViewFrame {
 		grid.select(null);
 	}
 
-	private void takeTool(Tool tool) {
+	private void takeTool(InventoryEntity tool) {
 		System.out.println("takeTool: " + tool.getName());
 
 		if (!tool.getUsageStatus().equals(ToolStatus.FREE)) {
@@ -334,7 +365,7 @@ public class Inventory extends SplitViewFrame {
 					if (tool.getUsageStatus().equals(ToolStatus.RESERVED)) {
 						UIUtils.showNotification("Tool was reserved by another user", UIUtils.NotificationType.INFO);
 					} else {
-						tool.setReservedByUser(AuthenticationService.getSessionData().getUser());
+						tool.setReservedByUser(AuthenticationService.getCurrentSessionUser());
 						tool.setUsageStatus(ToolStatus.RESERVED);
 
 						if (ToolFacade.getInstance().update(tool)) {
@@ -349,7 +380,7 @@ public class Inventory extends SplitViewFrame {
 				confirmDialog.open();
 			}
 		} else {    // TOOL STATUS FREE
-			tool.setUser(AuthenticationService.getSessionData().getUser());
+			tool.setUser(AuthenticationService.getCurrentSessionUser());
 			tool.setUsageStatus(ToolStatus.IN_USE);
 
 			if (ToolFacade.getInstance().update(tool)) {
@@ -362,7 +393,7 @@ public class Inventory extends SplitViewFrame {
 		refreshDetails(tool);
 	}
 
-	private void reserveTool(Tool tool) {
+	private void reserveTool(InventoryEntity tool) {
 		System.out.println("reserveTool: " + tool.getName());
 
 		if (!tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
@@ -380,7 +411,7 @@ public class Inventory extends SplitViewFrame {
 					if (tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
 						UIUtils.showNotification("Tool was taken by another user", UIUtils.NotificationType.INFO);
 					} else {
-						tool.setUser(AuthenticationService.getSessionData().getUser());
+						tool.setUser(AuthenticationService.getCurrentSessionUser());
 						tool.setUsageStatus(ToolStatus.IN_USE);
 
 						if (ToolFacade.getInstance().update(tool)) {
@@ -395,7 +426,7 @@ public class Inventory extends SplitViewFrame {
 				confirmDialog.open();
 			}
 		} else {    // TOOL STATUS IN USE
-			tool.setReservedByUser(AuthenticationService.getSessionData().getUser());
+			tool.setReservedByUser(AuthenticationService.getCurrentSessionUser());
 			tool.setUsageStatus(ToolStatus.RESERVED);
 
 			if (ToolFacade.getInstance().update(tool)) {
@@ -407,24 +438,21 @@ public class Inventory extends SplitViewFrame {
 		refreshDetails(tool);
 	}
 
-	private void refreshDetails(Tool tool) {
+	private void reportTool(InventoryEntity tool) {
+		if (tool == null) {
+			System.err.println("Reporting NULL inventory");
+			return;
+		}
+
+		System.out.println("Reporting Tool: " + tool.getName());
+	}
+
+	private void refreshDetails(InventoryEntity tool) {
 		if (detailsDrawer.isOpen()) {
 			detailsDrawer.hide();
 			showDetails(tool);
 		}
 		handleButtonsAvailability(tool);
 		dataProvider.refreshAll();
-	}
-
-
-	private void reportTool(Tool tool) {
-		if (tool == null) {
-			System.err.println("Reporting NULL tool");
-			return;
-		}
-
-		System.out.println("Reporting Tool: " + tool.getName());
-
-
 	}
 }

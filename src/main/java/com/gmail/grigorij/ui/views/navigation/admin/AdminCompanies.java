@@ -3,28 +3,27 @@ package com.gmail.grigorij.ui.views.navigation.admin;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.access.EntityStatus;
-import com.gmail.grigorij.backend.entities.tool.HierarchyType;
-import com.gmail.grigorij.backend.entities.tool.Tool;
-import com.gmail.grigorij.backend.entities.tool.ToolStatus;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.utils.components.*;
+import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
+import com.gmail.grigorij.ui.utils.components.Divider;
+import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.utils.components.ListItem;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.css.size.*;
+import com.gmail.grigorij.ui.utils.css.size.Bottom;
+import com.gmail.grigorij.ui.utils.css.size.Left;
+import com.gmail.grigorij.ui.utils.css.size.Top;
+import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.utils.forms.admin.AdminCompanyForm;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -33,14 +32,12 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.EnumSet;
 import java.util.List;
 
 
 class AdminCompanies extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-companies";
-	final static String TAB_NAME = ProjectConstants.COMPANIES;
 
 	private AdminMain adminMain;
 	private AdminCompanyForm companyForm = new AdminCompanyForm();
@@ -135,11 +132,6 @@ class AdminCompanies extends FlexBoxLayout {
 				.setWidth(UIUtils.COLUMN_WIDTH_XL);
 
 
-//		grid.addColumn(new ComponentRenderer<>(this::createContactPersonInfo))
-//				.setHeader("Contact Person")
-//				.setWidth(UIUtils.COLUMN_WIDTH_XXL);
-
-
 		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted()))).setHeader("Active")
 				.setWidth(UIUtils.COLUMN_WIDTH_XS)
 				.setFlexGrow(0);
@@ -217,8 +209,9 @@ class AdminCompanies extends FlexBoxLayout {
 	private void showDetails(Company company) {
 		deleteButton.setEnabled( company != null );
 
-		if (company != null)
+		if (company != null) {
 			previousStatus = company.isDeleted();
+		}
 
 		companyForm.setCompany(company);
 		detailsDrawer.show();
@@ -237,22 +230,31 @@ class AdminCompanies extends FlexBoxLayout {
 		Company editedCompany = companyForm.getCompany();
 
 		if (editedCompany != null) {
-			if (CompanyFacade.getInstance().update(editedCompany)) {
-				if (companyForm.isNew()) {
+
+			if (companyForm.isNew()) {
+				if (CompanyFacade.getInstance().insert(editedCompany)) {
 					dataProvider.getItems().add(editedCompany);
 					dataProvider.refreshAll();
 					UIUtils.showNotification("Company created successfully", UIUtils.NotificationType.SUCCESS);
 				} else {
+					UIUtils.showNotification("Company insert failed", UIUtils.NotificationType.ERROR);
+				}
+			} else {
+				if (CompanyFacade.getInstance().update(editedCompany)) {
+					if (grid.asSingleSelect().getValue() != null) {
+						dataProvider.refreshItem(grid.asSingleSelect().getValue());
+					}
+
 					if ((!previousStatus && editedCompany.isDeleted()) || (previousStatus && !editedCompany.isDeleted())) {
 						confirmAllEmployeesInCompanyStatusChange(editedCompany);
 					}
-					dataProvider.refreshItem(grid.asSingleSelect().getValue());
-					UIUtils.showNotification("Company updated successfully", UIUtils.NotificationType.SUCCESS);
-				}
 
-				grid.select(editedCompany);
-			} else {
-				UIUtils.showNotification("Company create/edit failed", UIUtils.NotificationType.ERROR);
+					UIUtils.showNotification("Company updated successfully", UIUtils.NotificationType.SUCCESS);
+
+
+				} else {
+					UIUtils.showNotification("Company update failed", UIUtils.NotificationType.ERROR);
+				}
 			}
 		}
 	}
@@ -261,42 +263,25 @@ class AdminCompanies extends FlexBoxLayout {
 	 * Prompt to change status of all employees to company status
 	 */
 	private void confirmAllEmployeesInCompanyStatusChange(Company company) {
-		String status = "";
+		String status = (company.isDeleted()) ? ProjectConstants.INACTIVE : ProjectConstants.ACTIVE;
 
-		for (EntityStatus s : EnumSet.allOf(EntityStatus.class)) {
-			if (s.getBooleanValue() == !previousStatus) {
-				status = s.getStringValue();
-			}
-		}
-
-		CustomDialog dialog = new CustomDialog();
-		dialog.setHeader(UIUtils.createH4Label("Employees status change"));
-
-		Paragraph content = new Paragraph();
-		content.add(new Span("Would you also like to set all employees in: "));
-		content.add(UIUtils.createBoldText(company.getName()));
-		content.add(new Span(" as " + status + "?"));
-
-		dialog.setContent(content);
-
-		dialog.getCancelButton().setText("No");
-		dialog.getCancelButton().addClickListener(e -> dialog.close());
-		dialog.setConfirmButton(UIUtils.createButton("Yes", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
+		ConfirmDialog dialog = new ConfirmDialog("Would you like to set all employees in " + company.getName()+" as " + status);
+		dialog.closeOnCancel();
 		dialog.getConfirmButton().addClickListener(e -> {
 
 			List<User> employeesInSelectedCompany = UserFacade.getInstance().getUsersByCompanyId(company.getId());
 
-			boolean operationsSuccessful = true;
+			boolean error = false;
 
 			for (User user : employeesInSelectedCompany) {
-				user.setDeleted(!previousStatus);
+				user.setDeleted(company.isDeleted());
 				if (!UserFacade.getInstance().update(user)) {
 					UIUtils.showNotification("User status change failed for: " + user.getUsername(), UIUtils.NotificationType.ERROR);
-					operationsSuccessful = false;
+					error = true;
 				}
 			}
 			dialog.close();
-			if (operationsSuccessful) {
+			if (!error) {
 				UIUtils.showNotification("Users status change successful", UIUtils.NotificationType.SUCCESS);
 			}
 		});
@@ -311,7 +296,7 @@ class AdminCompanies extends FlexBoxLayout {
 			final Company selectedCompany = grid.asSingleSelect().getValue();
 			if (selectedCompany != null) {
 
-				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "company", selectedCompany.getName());
+				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "selected company", selectedCompany.getName());
 				dialog.closeOnCancel();
 				dialog.getConfirmButton().addClickListener(e -> {
 					if (CompanyFacade.getInstance().remove(selectedCompany)) {

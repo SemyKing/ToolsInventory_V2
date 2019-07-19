@@ -4,8 +4,8 @@ import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.ToolFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.tool.Tool;
-import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.inventory.ToolStatus;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.camera.CameraView;
@@ -47,11 +47,11 @@ import java.util.EnumSet;
 
 public class AdminToolForm extends FormLayout {
 
-	private Binder<Tool> binder = new Binder<>(Tool.class);
-	private Tool tool;
+	private Binder<InventoryEntity> binder = new Binder<>(InventoryEntity.class);
+	private InventoryEntity tool;
 	private boolean isNew;
 
-	private ComboBox<Tool> categoriesComboBox;
+	private ComboBox<InventoryEntity> categoriesComboBox;
 	private ComboBox<User> toolUserComboBox;
 	private ComboBox<User> toolReservedComboBox;
 
@@ -67,12 +67,7 @@ public class AdminToolForm extends FormLayout {
 		status.setWidth("25%");
 		status.setLabel("Status");
 
-		FlexBoxLayout toolNameLayout = new FlexBoxLayout();
-		toolNameLayout.setFlexDirection(FlexDirection.ROW);
-		toolNameLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		toolNameLayout.add(toolNameField, status);
-		toolNameLayout.setComponentMargin(status, Left.M);
-		toolNameLayout.setFlexGrow("1", toolNameField);
+		FlexBoxLayout toolNameLayout = UIUtils.getFormRowLayout(toolNameField, status);
 
 
 		/*
@@ -84,14 +79,7 @@ public class AdminToolForm extends FormLayout {
 		newQrCodeButton.addClickListener(e -> constructCodeScanDialog(QRCodeField));
 		UIUtils.setTooltip("Scan QR Code with camera", newQrCodeButton);
 
-		FlexBoxLayout qrCodeLayout = new FlexBoxLayout();
-		qrCodeLayout.setFlexDirection(FlexDirection.ROW);
-		qrCodeLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		qrCodeLayout.add(QRCodeField, newQrCodeButton);
-		qrCodeLayout.setComponentMargin(newQrCodeButton, Left.M);
-		qrCodeLayout.setFlexGrow("1", QRCodeField);
-		qrCodeLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
-
+		FlexBoxLayout qrCodeLayout = UIUtils.getFormRowLayout(QRCodeField, newQrCodeButton);
 
 		/*
 		BARCODE
@@ -102,13 +90,7 @@ public class AdminToolForm extends FormLayout {
 		newBarcodeButton.addClickListener(e -> constructCodeScanDialog(barCodeField));
 		UIUtils.setTooltip("Scan Barcode with camera", newQrCodeButton);
 
-		FlexBoxLayout barcodeLayout = new FlexBoxLayout();
-		barcodeLayout.setFlexDirection(FlexDirection.ROW);
-		barcodeLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		barcodeLayout.add(barCodeField, newBarcodeButton);
-		barcodeLayout.setComponentMargin(newBarcodeButton, Left.M);
-		barcodeLayout.setFlexGrow("1", barCodeField);
-		barcodeLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+		FlexBoxLayout barcodeLayout = UIUtils.getFormRowLayout(barCodeField, newBarcodeButton);
 
 
 		TextField toolInfoField = new TextField("Tool Info");
@@ -120,7 +102,7 @@ public class AdminToolForm extends FormLayout {
 		editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
 		editCategoryButton.addClickListener(e -> {
 			if (e != null) {
-				Tool selectedCategory = categoriesComboBox.getValue();
+				InventoryEntity selectedCategory = categoriesComboBox.getValue();
 				if (selectedCategory != null) {
 					adminTools.constructToolCategoryDetails(selectedCategory);
 				}
@@ -144,7 +126,7 @@ public class AdminToolForm extends FormLayout {
 		categoriesComboBox = new ComboBox<>();
 		categoriesComboBox.setItems(ToolFacade.getInstance().getEmptyList());
 		categoriesComboBox.setLabel("Category");
-		categoriesComboBox.setItemLabelGenerator(Tool::getName);
+		categoriesComboBox.setItemLabelGenerator(InventoryEntity::getName);
 		categoriesComboBox.setRequired(true);
 		categoriesComboBox.addValueChangeListener(e -> {
 			if (e != null) {
@@ -242,33 +224,33 @@ public class AdminToolForm extends FormLayout {
 
 		binder.forField(toolNameField)
 				.asRequired("Name is required")
-				.bind(Tool::getName, Tool::setName);
+				.bind(InventoryEntity::getName, InventoryEntity::setName);
 		binder.forField(status)
 				.asRequired("Status is required")
 				.withConverter(new CustomConverter.StatusConverter())
-				.bind(Tool::isDeleted, Tool::setDeleted);
+				.bind(InventoryEntity::isDeleted, InventoryEntity::setDeleted);
 		binder.forField(QRCodeField)
-				.bind(Tool::getQrCode, Tool::setQrCode);
+				.bind(InventoryEntity::getQrCode, InventoryEntity::setQrCode);
 		binder.forField(manufacturerField)
-				.bind(Tool::getManufacturer, Tool::setManufacturer);
+				.bind(InventoryEntity::getManufacturer, InventoryEntity::setManufacturer);
 		binder.forField(modelField)
-				.bind(Tool::getModel, Tool::setModel);
+				.bind(InventoryEntity::getModel, InventoryEntity::setModel);
 		binder.forField(toolInfoField)
-				.bind(Tool::getToolInfo, Tool::setToolInfo);
+				.bind(InventoryEntity::getToolInfo, InventoryEntity::setToolInfo);
 		binder.forField(snCodeField)
-				.bind(Tool::getSnCode, Tool::setSnCode);
+				.bind(InventoryEntity::getSnCode, InventoryEntity::setSnCode);
 		binder.forField(barCodeField)
-				.bind(Tool::getBarcode, Tool::setBarcode);
+				.bind(InventoryEntity::getBarcode, InventoryEntity::setBarcode);
 		binder.forField(companyComboBox)
 				.asRequired("Company is required")
-				.bind(Tool::getCompany, Tool::setCompany);
+				.bind(InventoryEntity::getCompany, InventoryEntity::setCompany);
 		binder.forField(categoriesComboBox)
 				.asRequired("Category is required")
 				.withConverter(new CustomConverter.ToolCategoryConverter())
-				.bind(Tool::getParentCategory, Tool::setParentCategory);
+				.bind(InventoryEntity::getParentCategory, InventoryEntity::setParentCategory);
 		binder.forField(toolStatusComboBox)
 				.asRequired("Status is required")
-				.bind(Tool::getUsageStatus, Tool::setUsageStatus);
+				.bind(InventoryEntity::getUsageStatus, InventoryEntity::setUsageStatus);
 
 		binder.forField(toolUserComboBox)
 				.withValidator((s, valueContext) -> {
@@ -280,7 +262,7 @@ public class AdminToolForm extends FormLayout {
 						}
 					}
 					return ValidationResult.ok();
-				}).bind(Tool::getUser, Tool::setUser);
+				}).bind(InventoryEntity::getUser, InventoryEntity::setUser);
 
 		binder.forField(toolReservedComboBox)
 				.withValidator((s, valueContext) -> {
@@ -292,21 +274,21 @@ public class AdminToolForm extends FormLayout {
 						}
 					}
 					return ValidationResult.ok();
-				}).bind(Tool::getReservedByUser, Tool::setReservedByUser);
+				}).bind(InventoryEntity::getReservedByUser, InventoryEntity::setReservedByUser);
 
 		binder.forField(priceField)
 				.withConverter(new StringToDoubleConverter("Price must be a number"))
 				.withNullRepresentation(0.00)
-				.bind(Tool::getPrice, Tool::setPrice);
+				.bind(InventoryEntity::getPrice, InventoryEntity::setPrice);
 		binder.forField(guaranteeField)
 				.withConverter(new StringToIntegerConverter("Guarantee must be a number"))
 				.withNullRepresentation(0)
-				.bind(Tool::getGuarantee_months, Tool::setGuarantee_months);
+				.bind(InventoryEntity::getGuarantee_months, InventoryEntity::setGuarantee_months);
 
 		binder.forField(boughtDateField)
 				.withConverter(new LocalDateToDateConverter())
 				.withConverter(new DateToSqlDateConverter())
-				.bind(Tool::getDateBought, Tool::setDateBought);
+				.bind(InventoryEntity::getDateBought, InventoryEntity::setDateBought);
 
 		binder.forField(nextMaintenanceDateField)
 				.withValidator((Validator<LocalDate>) (nextMaintenanceDate, valueContext) -> {
@@ -325,10 +307,10 @@ public class AdminToolForm extends FormLayout {
 				})
 				.withConverter(new LocalDateToDateConverter())
 				.withConverter(new DateToSqlDateConverter())
-				.bind(Tool::getDateNextMaintenance, Tool::setDateNextMaintenance);
+				.bind(InventoryEntity::getDateNextMaintenance, InventoryEntity::setDateNextMaintenance);
 
 		binder.forField(additionalInfo)
-				.bind(Tool::getAdditionalInfo, Tool::setAdditionalInfo);
+				.bind(InventoryEntity::getAdditionalInfo, InventoryEntity::setAdditionalInfo);
 	}
 
 
@@ -407,13 +389,13 @@ public class AdminToolForm extends FormLayout {
 	}
 
 
-	public void setTool(Tool t) {
+	public void setTool(InventoryEntity t) {
 		tool = t;
 		isNew = false;
 		binder.removeBean();
 
 		if (tool == null) {
-			tool = Tool.getEmptyTool();
+			tool = InventoryEntity.getEmptyTool();
 			isNew = true;
 		}
 
@@ -438,7 +420,7 @@ public class AdminToolForm extends FormLayout {
 		toolReservedComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
 	}
 
-	public Tool getTool() {
+	public InventoryEntity getTool() {
 		try {
 			binder.validate();
 

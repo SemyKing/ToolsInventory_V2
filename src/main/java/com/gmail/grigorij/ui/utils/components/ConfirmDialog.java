@@ -51,6 +51,7 @@ public class ConfirmDialog extends FlexBoxLayout {
 
 		footer.add(cancelButton, confirmButton);
 
+		add(header, content, footer);
 		dialog = new Dialog(this);
 	}
 

@@ -2,8 +2,8 @@ package com.gmail.grigorij.ui.views.navigation.admin;
 
 import com.gmail.grigorij.backend.database.facades.ToolFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.tool.Tool;
-import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.inventory.ToolStatus;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
@@ -23,6 +23,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AdminInventoryBulkEditor {
@@ -37,8 +38,8 @@ public class AdminInventoryBulkEditor {
 	private Label nOfCopyLabel;
 	private Label nOfCopiesLabel;
 	private CustomDialog toolBulkEditDialog;
-	private List<Tool> bulkEditTools = null;
-	private Tool bulkEditTool = null;
+	private List<InventoryEntity> bulkEditTools = null;
+	private InventoryEntity bulkEditTool = null;
 	private int currentBulkEditToolIndex = -1;
 
 	private OperationType operationType;
@@ -52,6 +53,8 @@ public class AdminInventoryBulkEditor {
 		this.numberOfTools = numberOfTools;
 
 		bulkAdminToolForm = new AdminToolBulkForm(this);
+
+		bulkEditTools = new ArrayList<>();
 
 		constructHeader();
 	}
@@ -79,9 +82,9 @@ public class AdminInventoryBulkEditor {
 
 		if (operationType.equals(OperationType.COPY)) {
 			Button addOneCopyButton = UIUtils.createIconButton(VaadinIcon.PLUS, ButtonVariant.LUMO_CONTRAST);
-			UIUtils.setTooltip("Create new copy of this tool", addOneCopyButton);
+			UIUtils.setTooltip("Create new copy of this inventory", addOneCopyButton);
 			addOneCopyButton.addClickListener(e -> {
-				Tool newToolCopy = new Tool(bulkEditTools.get(currentBulkEditToolIndex));
+				InventoryEntity newToolCopy = new InventoryEntity(bulkEditTools.get(currentBulkEditToolIndex));
 				bulkEditTools.add(newToolCopy);
 				++numberOfTools;
 				nOfCopiesLabel.setText(""+(numberOfTools));
@@ -108,7 +111,7 @@ public class AdminInventoryBulkEditor {
 					try {
 						boolean errorOccur = false;
 
-						for (Tool t : bulkEditTools) {
+						for (InventoryEntity t : bulkEditTools) {
 							if (!ToolFacade.getInstance().remove(t)) {
 								errorOccur = true;
 							}
@@ -132,7 +135,7 @@ public class AdminInventoryBulkEditor {
 			});
 		} else {
 			deleteButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR);
-			UIUtils.setTooltip("Remove this tool", deleteButton);
+			UIUtils.setTooltip("Remove this inventory", deleteButton);
 			deleteButton.addClickListener(e -> {
 
 				// If more that one item
@@ -179,7 +182,7 @@ public class AdminInventoryBulkEditor {
 		UIUtils.setTooltip("Ctrl + Arrow Left", toolsToLeftButton);
 		toolsToLeftButton.addClickListener(e -> {
 			if (currentBulkEditToolIndex > 0) {
-				Tool editedTool = bulkAdminToolForm.getTool();
+				InventoryEntity editedTool = bulkAdminToolForm.getTool();
 				if (editedTool != null) {
 					bulkEditTools.set(currentBulkEditToolIndex, editedTool);
 
@@ -198,7 +201,7 @@ public class AdminInventoryBulkEditor {
 		UIUtils.setTooltip("Ctrl + Arrow Right", toolsToRightButton);
 		toolsToRightButton.addClickListener(e -> {
 			if (currentBulkEditToolIndex < (numberOfTools-1)) {
-				Tool editedTool = bulkAdminToolForm.getTool();
+				InventoryEntity editedTool = bulkAdminToolForm.getTool();
 				if (editedTool != null) {
 					bulkEditTools.set(currentBulkEditToolIndex, editedTool);
 
@@ -222,7 +225,7 @@ public class AdminInventoryBulkEditor {
 
 		if (operationType.equals(OperationType.COPY)) {
 			for (int i = 0; i < numberOfTools; i++) {
-				Tool newTool = new Tool(bulkEditTool);
+				InventoryEntity newTool = new InventoryEntity(bulkEditTool);
 				bulkEditTools.add(newTool);
 			}
 		}
@@ -243,13 +246,13 @@ public class AdminInventoryBulkEditor {
 		toolBulkEditDialog.setConfirmButton(UIUtils.createButton("Save All", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
 		toolBulkEditDialog.getConfirmButton().addClickListener(e -> {
 
-			Tool editedTool = bulkAdminToolForm.getTool();
+			InventoryEntity editedTool = bulkAdminToolForm.getTool();
 			if (editedTool != null) {
 				bulkEditTools.set(currentBulkEditToolIndex, editedTool);
 
 				boolean errorOccur = false;
 
-				for (Tool t : bulkEditTools) {
+				for (InventoryEntity t : bulkEditTools) {
 					if (t.getParentCategory() != null) {
 						t.setLevel((t.getParentCategory().getLevel()+1));
 					}
@@ -288,7 +291,7 @@ public class AdminInventoryBulkEditor {
 	}
 
 
-	private void setToolBulkEditDialogContent(Tool tool) {
+	private void setToolBulkEditDialogContent(InventoryEntity tool) {
 		if (bulkAdminToolForm == null) {
 			this.bulkAdminToolForm = new AdminToolBulkForm(this);
 		}
@@ -320,7 +323,7 @@ public class AdminInventoryBulkEditor {
 
 	public void setBulkCompanies(Company company) {
 		try {
-			for (Tool t : bulkEditTools) {
+			for (InventoryEntity t : bulkEditTools) {
 				t.setCompany(company);
 			}
 			UIUtils.showNotification("Companies set successfully", UIUtils.NotificationType.SUCCESS);
@@ -330,9 +333,9 @@ public class AdminInventoryBulkEditor {
 		}
 	}
 
-	public void setBulkCategories(Tool category) {
+	public void setBulkCategories(InventoryEntity category) {
 		try {
-			for (Tool t : bulkEditTools) {
+			for (InventoryEntity t : bulkEditTools) {
 				if (category != null) {
 					if (category.equals(ToolFacade.getInstance().getRootCategory())) {
 						category = null; //Must be set manually
@@ -349,7 +352,7 @@ public class AdminInventoryBulkEditor {
 
 	public void setBulkUsageStatus(ToolStatus usageStatus) {
 		try {
-			for (Tool t : bulkEditTools) {
+			for (InventoryEntity t : bulkEditTools) {
 				t.setUsageStatus(usageStatus);
 			}
 			UIUtils.showNotification("Usage Status set successfully", UIUtils.NotificationType.SUCCESS);
@@ -360,11 +363,11 @@ public class AdminInventoryBulkEditor {
 	}
 
 
-	public void setBulkEditTools(List<Tool> bulkEditTools) {
+	public void setBulkEditTools(List<InventoryEntity> bulkEditTools) {
 		this.bulkEditTools = bulkEditTools;
 	}
 
-	public void setBulkEditTool(Tool bulkEditTool) {
+	public void setBulkEditTool(InventoryEntity bulkEditTool) {
 		this.bulkEditTool = bulkEditTool;
 	}
 }

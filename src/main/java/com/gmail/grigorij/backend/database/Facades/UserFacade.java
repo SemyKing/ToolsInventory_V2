@@ -1,9 +1,7 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.tool.Tool;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.utils.UIUtils;
 
 import javax.persistence.NoResultException;
 import java.util.ArrayList;

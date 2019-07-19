@@ -1,6 +1,5 @@
 package com.gmail.grigorij.ui.utils.forms;
 
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.location.Location;
 import com.gmail.grigorij.backend.entities.user.User;
@@ -8,25 +7,18 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
-import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
-import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
-import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ReadOnlyHasValue;
 import com.vaadin.flow.data.binder.ValidationException;
-
-import java.util.List;
 
 public class UserForm extends FormLayout {
 
@@ -38,8 +30,10 @@ public class UserForm extends FormLayout {
 	private PasswordField passwordField;
 
 	public UserForm() {
-		TextField username = new TextField("Username");
-		username.setReadOnly(true);
+		TextField usernameField = new TextField("Username");
+		usernameField.setReadOnly(true);
+		ReadOnlyHasValue<User> username = new ReadOnlyHasValue<>(user ->
+				usernameField.setValue(user.getUsername()));
 
 		passwordField = new PasswordField("Password");
 		passwordField.setReadOnly(true);
@@ -47,21 +41,12 @@ public class UserForm extends FormLayout {
 		Button changePasswordButton = UIUtils.createButton("Change");
 		changePasswordButton.addClickListener(e -> openPasswordChangeDialog());
 
-		FlexBoxLayout passwordLayout = new FlexBoxLayout();
-		passwordLayout.setFlexDirection(FlexDirection.ROW);
-		passwordLayout.add(passwordField, changePasswordButton);
-		passwordLayout.setFlexGrow("1", passwordField);
-		passwordLayout.setComponentMargin(changePasswordButton, Left.S);
-		passwordLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+		FlexBoxLayout passwordLayout = UIUtils.getFormRowLayout(passwordField, changePasswordButton);
 
-		List<Company> companies = CompanyFacade.getInstance().getAllCompanies();
-
-		ComboBox<Company> companyComboBox = new ComboBox<>();
-		companyComboBox.setItems(companies);
-		companyComboBox.setItemLabelGenerator(Company::getName);
-		companyComboBox.setLabel("Company");
-		companyComboBox.setReadOnly(true);
-		companyComboBox.setRequired(true);
+		TextField companyField = new TextField("Company");
+		companyField.setReadOnly(true);
+		ReadOnlyHasValue<User> company = new ReadOnlyHasValue<>(user ->
+				companyField.setValue(user.getCompany().getName()));
 
 		Label contactLabel = UIUtils.createH5Label("Personal Information");
 		Label addressLabel = UIUtils.createH5Label("Address");
@@ -74,9 +59,9 @@ public class UserForm extends FormLayout {
 		// Form layout
 //		addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		add(username);
+		add(usernameField);
 		add(passwordLayout);
-		add(companyComboBox);
+		add(companyField);
 		add(new Divider(Horizontal.NONE, Vertical.S));
 		add(contactLabel);
 		add(personForm);
@@ -87,15 +72,12 @@ public class UserForm extends FormLayout {
 		add(additionalInfo);
 
 		userBinder.forField(username)
-				.asRequired("Username is required")
-				.bind(User::getUsername, User::setUsername);
+				.bind(user -> user, null);
 		userBinder.forField(passwordField)
 				.asRequired("Password is required")
 				.bind(User::getPassword, User::setPassword);
-		userBinder.forField(companyComboBox)
-				.asRequired("Company is required")
-//				.withConverter(new CustomConverter.CompanyConverter())
-				.bind(User::getCompany, User::setCompany);
+		userBinder.forField(company)
+				.bind(user -> user, null);
 		userBinder.forField(additionalInfo)
 				.bind(User::getAdditionalInfo, User::setAdditionalInfo);
 	}
@@ -152,19 +134,11 @@ public class UserForm extends FormLayout {
 
 	private void openPasswordChangeDialog() {
 		CustomDialog dialog = new CustomDialog();
-		dialog.setHeader(UIUtils.createH4Label("Change Password"));
-		dialog.getCancelButton().addClickListener(e -> dialog.close());
-		dialog.setConfirmButton(UIUtils.createButton("Change", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
 
-		PasswordField currentPasswordField = new PasswordField("Input current password");
-		currentPasswordField.setRequired(true);
-		currentPasswordField.addValueChangeListener(e -> {
-			if (e != null) {
-				currentPasswordField.setInvalid(false);
-			}
-		});
+		dialog.setHeader(UIUtils.createH4Label("Change Password"));
 
 		PasswordField newPasswordField1 = new PasswordField("New password");
+		newPasswordField1.setMinWidth("400px");
 		newPasswordField1.setRequired(true);
 		newPasswordField1.addValueChangeListener(e -> {
 			if (e != null) {
@@ -173,6 +147,7 @@ public class UserForm extends FormLayout {
 		});
 
 		PasswordField newPasswordField2 = new PasswordField("Repeat password");
+		newPasswordField2.setMinWidth("400px");
 		newPasswordField2.setRequired(true);
 		newPasswordField2.addValueChangeListener(e -> {
 			if (e != null) {
@@ -180,24 +155,12 @@ public class UserForm extends FormLayout {
 			}
 		});
 
-		dialog.setContent(
-				currentPasswordField,
-				newPasswordField1,
-				newPasswordField2
-		);
+		dialog.setContent( newPasswordField1, newPasswordField2 );
 
+
+		dialog.getCancelButton().addClickListener(e -> dialog.close());
+		dialog.setConfirmButton(UIUtils.createButton("Change", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
 		dialog.getConfirmButton().addClickListener(e -> {
-			if (currentPasswordField.getValue().length() <= 0) {
-				currentPasswordField.setErrorMessage("Input your current password");
-				currentPasswordField.setInvalid(true);
-				return;
-			} else {
-				if (!currentPasswordField.getValue().equals(AuthenticationService.getSessionData().getUser().getPassword())) {
-					currentPasswordField.setErrorMessage("Invalid password");
-					currentPasswordField.setInvalid(true);
-					return;
-				}
-			}
 
 			if (newPasswordField1.getValue().length() <= 0) {
 				newPasswordField1.setErrorMessage("Input new password");

@@ -1,8 +1,8 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.tool.HierarchyType;
-import com.gmail.grigorij.backend.entities.tool.Tool;
+import com.gmail.grigorij.backend.entities.inventory.HierarchyType;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 
@@ -13,12 +13,12 @@ import java.util.List;
 
 public class ToolFacade {
 
-	private Tool rootCategory;
-	private List<Tool> emptyList;
+	private InventoryEntity rootCategory;
+	private List<InventoryEntity> emptyList;
 
 	private static ToolFacade mInstance;
 	private ToolFacade() {
-		rootCategory  = Tool.getEmptyTool();
+		rootCategory  = InventoryEntity.getEmptyTool();
 		rootCategory.setName(ProjectConstants.ROOT_CATEGORY);
 
 		emptyList = new ArrayList<>();
@@ -30,19 +30,19 @@ public class ToolFacade {
 		return mInstance;
 	}
 
-	public Tool getRootCategory() {
+	public InventoryEntity getRootCategory() {
 		return rootCategory;
 	}
 
-	public List<Tool> getEmptyList() {
+	public List<InventoryEntity> getEmptyList() {
 		return emptyList;
 	}
 
 
-	public List<Tool> getAll() {
-		List<Tool> tools;
+	public List<InventoryEntity> getAll() {
+		List<InventoryEntity> tools;
 		try {
-			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Tool.getAll", Tool.class)
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Tool.getAll", InventoryEntity.class)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -50,10 +50,10 @@ public class ToolFacade {
 		return tools;
 	}
 
-	private List<Tool> getAllInCompany(long companyId) {
-		List<Tool> tools;
+	public List<InventoryEntity> getAllInCompany(long companyId) {
+		List<InventoryEntity> tools;
 		try {
-			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Tool.getAllInCompany", Tool.class)
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Tool.getAllInCompany", InventoryEntity.class)
 					.setParameter("company_id_var", companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
@@ -64,47 +64,47 @@ public class ToolFacade {
 
 //	public List<Tool> getAllCategoriesList() {
 //		List<Tool> categories = new ArrayList<>(getAll());
-//		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
+//		categories.removeIf((Tool inventory) -> inventory.getHierarchyType().equals(HierarchyType.TOOL));
 //		return categories;
 //	}
 
 //	public List<Tool> getAllCategoriesWithRoot() {
 //		List<Tool> categories = new ArrayList<>(getAll());
-//		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
+//		categories.removeIf((Tool inventory) -> inventory.getHierarchyType().equals(HierarchyType.TOOL));
 //		categories.add(0, rootCategory);
 //		return categories;
 //	}
 
-	public List<Tool> getAllCategoriesInCompany(long companyId) {
-		List<Tool> categories = new ArrayList<>(getAllInCompany(companyId));
-		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
+	public List<InventoryEntity> getAllCategoriesInCompany(long companyId) {
+		List<InventoryEntity> categories = new ArrayList<>(getAllInCompany(companyId));
+		categories.removeIf((InventoryEntity tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
 		return categories;
 	}
 
-	public List<Tool> getAllCategoriesInCompanyWithRoot(long companyId) {
-		List<Tool> categories = new ArrayList<>(getAllInCompany(companyId));
-		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
+	public List<InventoryEntity> getAllCategoriesInCompanyWithRoot(long companyId) {
+		List<InventoryEntity> categories = new ArrayList<>(getAllInCompany(companyId));
+		categories.removeIf((InventoryEntity tool) -> tool.getHierarchyType().equals(HierarchyType.TOOL));
 		categories.add(0, rootCategory);
 		return categories;
 	}
 
-	public List<Tool> getAllToolsOnly() {
-		List<Tool> toolsOnly = new ArrayList<>(getAll());
-		toolsOnly.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.CATEGORY));
+	public List<InventoryEntity> getAllToolsOnly() {
+		List<InventoryEntity> toolsOnly = new ArrayList<>(getAll());
+		toolsOnly.removeIf((InventoryEntity tool) -> tool.getHierarchyType().equals(HierarchyType.CATEGORY));
 		return toolsOnly;
 	}
 
-	public List<Tool> getAllToolsInCompanyOnly(long companyId) {
-		List<Tool> categories = new ArrayList<>(getAllInCompany(companyId));
-		categories.removeIf((Tool tool) -> tool.getHierarchyType().equals(HierarchyType.CATEGORY));
+	public List<InventoryEntity> getAllToolsInCompanyOnly(long companyId) {
+		List<InventoryEntity> categories = new ArrayList<>(getAllInCompany(companyId));
+		categories.removeIf((InventoryEntity tool) -> tool.getHierarchyType().equals(HierarchyType.CATEGORY));
 		return categories;
 	}
 
-	public TreeData<Tool> getSortedToolsAndCategoriesByCompany(long companyId) {
+	public TreeData<InventoryEntity> getSortedToolsAndCategoriesByCompany(long companyId) {
 
-		TreeData<Tool> data = new TreeData<>();
-		List<Tool> toolsAndCategories = getAllInCompany(companyId);
-		toolsAndCategories.sort(Comparator.comparing(Tool::getLevel).thenComparing(Tool::getName));
+		TreeData<InventoryEntity> data = new TreeData<>();
+		List<InventoryEntity> toolsAndCategories = getAllInCompany(companyId);
+		toolsAndCategories.sort(Comparator.comparing(InventoryEntity::getLevel).thenComparing(InventoryEntity::getName));
 
 		// add root level items
 //		data.addItems(null, categories);
@@ -123,13 +123,13 @@ public class ToolFacade {
 		/*
 		Add data to grid
 		 */
-//	    toolsAndCategoriesInCompany.forEach(tool -> grid.getTreeData().addItem(tool.getParentCategory(), tool));
+//	    toolsAndCategoriesInCompany.forEach(inventory -> grid.getTreeData().addItem(inventory.getParentCategory(), inventory));
 
 		return data;
 	}
 
 
-	public boolean insert(Tool tool) {
+	public boolean insert(InventoryEntity tool) {
 		System.out.println();
 		System.out.println("Tool INSERT");
 		if (tool == null){
@@ -147,17 +147,17 @@ public class ToolFacade {
 		return true;
 	}
 
-	public boolean update(Tool tool) {
+	public boolean update(InventoryEntity tool) {
 		System.out.println();
 		System.out.println("Tool UPDATE");
 		if (tool == null) {
 			return false;
 		}
 
-		Tool toolInDatabase = null;
+		InventoryEntity toolInDatabase = null;
 
 		if (tool.getId() != null) {
-			toolInDatabase = DatabaseManager.getInstance().find(Tool.class, tool.getId());
+			toolInDatabase = DatabaseManager.getInstance().find(InventoryEntity.class, tool.getId());
 		}
 
 		try {
@@ -175,14 +175,14 @@ public class ToolFacade {
 		return true;
 	}
 
-	public boolean remove(Tool tool) {
+	public boolean remove(InventoryEntity tool) {
 		System.out.println();
 		System.out.println("Tool REMOVE");
 		if (tool == null) {
 			return false;
 		}
 
-		Tool toolInDatabase = DatabaseManager.getInstance().find(Tool.class, tool.getId());
+		InventoryEntity toolInDatabase = DatabaseManager.getInstance().find(InventoryEntity.class, tool.getId());
 
 		try {
 			if (toolInDatabase != null) {

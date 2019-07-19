@@ -96,10 +96,7 @@ public class AdminUserForm extends FormLayout {
 		Button editAccessButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
 		editAccessButton.addClickListener(e -> {
 			if (e != null) {
-//				Tool selectedCategory = categoriesComboBox.getValue();
-//				if (selectedCategory != null) {
-//					adminTools.constructToolCategoryDetails(selectedCategory);
-//				}
+
 			}
 		});
 		UIUtils.setTooltip("Edit this user's selected access", editAccessButton);
@@ -113,7 +110,7 @@ public class AdminUserForm extends FormLayout {
 		accessLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
 
 		//Only Admin can change AccessGroup
-		if (AuthenticationService.getSessionData().getUser().getAccessGroup() != AccessGroups.ADMIN.getIntValue()) {
+		if (AuthenticationService.getCurrentSessionUser().getAccessGroup() != AccessGroups.ADMIN.getIntValue()) {
 			accessComboBox.setEnabled(false);
 		}
 
@@ -160,7 +157,6 @@ public class AdminUserForm extends FormLayout {
 				.bind(User::getPassword, User::setPassword);
 		userBinder.forField(companyComboBox)
 				.asRequired("Company is required")
-//				.withConverter(new CustomConverter.CompanyConverter())
 				.bind(User::getCompany, User::setCompany);
 		userBinder.forField(accessComboBox)
 				.asRequired("Access Group is required")
