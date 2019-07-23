@@ -1,7 +1,8 @@
 package com.gmail.grigorij.utils;
 
-public interface OperationStatus {
+import com.gmail.grigorij.ui.utils.UIUtils.NotificationType;
 
-	void onSuccess(String msg);
-	void onFail(String msg);
+public interface OperationStatus {
+	void onSuccess(String msg, NotificationType type);
+	void onFail(String msg, NotificationType type);
 }

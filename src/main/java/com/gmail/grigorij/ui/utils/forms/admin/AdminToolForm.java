@@ -1,7 +1,7 @@
 package com.gmail.grigorij.ui.utils.forms.admin;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.ToolFacade;
+import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
@@ -15,9 +15,8 @@ import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
-import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
-import com.gmail.grigorij.ui.views.navigation.admin.AdminInventory;
+import com.gmail.grigorij.ui.views.navigation.admin.inventory.AdminInventory;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.converters.CustomConverter;
@@ -44,6 +43,8 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.List;
+
 
 public class AdminToolForm extends FormLayout {
 
@@ -55,7 +56,6 @@ public class AdminToolForm extends FormLayout {
 	private ComboBox<User> toolUserComboBox;
 	private ComboBox<User> toolReservedComboBox;
 
-	private Button editCategoryButton;
 	private TextField QRCodeField, barCodeField;
 
 
@@ -68,7 +68,6 @@ public class AdminToolForm extends FormLayout {
 		status.setLabel("Status");
 
 		FlexBoxLayout toolNameLayout = UIUtils.getFormRowLayout(toolNameField, status);
-
 
 		/*
 		QR CODE
@@ -99,16 +98,6 @@ public class AdminToolForm extends FormLayout {
 		TextField snCodeField = new TextField("SN");
 
 
-		editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
-		editCategoryButton.addClickListener(e -> {
-			if (e != null) {
-				InventoryEntity selectedCategory = categoriesComboBox.getValue();
-				if (selectedCategory != null) {
-					adminTools.constructToolCategoryDetails(selectedCategory);
-				}
-			}
-		});
-		UIUtils.setTooltip("Edit selected category", editCategoryButton);
 
 		ComboBox<Company> companyComboBox = new ComboBox<>();
 		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
@@ -124,25 +113,25 @@ public class AdminToolForm extends FormLayout {
 		});
 
 		categoriesComboBox = new ComboBox<>();
-		categoriesComboBox.setItems(ToolFacade.getInstance().getEmptyList());
+		categoriesComboBox.setItems();
 		categoriesComboBox.setLabel("Category");
 		categoriesComboBox.setItemLabelGenerator(InventoryEntity::getName);
 		categoriesComboBox.setRequired(true);
-		categoriesComboBox.addValueChangeListener(e -> {
+
+		Button editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
+		editCategoryButton.addClickListener(e -> {
 			if (e != null) {
-				if (e.getValue() != null) {
-					editCategoryButton.setEnabled(!e.getValue().equals(ToolFacade.getInstance().getRootCategory()));
+				InventoryEntity selectedCategory = categoriesComboBox.getValue();
+				if (selectedCategory != null) {
+					if (!selectedCategory.equals(InventoryFacade.getInstance().getRootCategory())) {
+						adminTools.constructToolCategoryDetails(selectedCategory);
+					}
 				}
 			}
 		});
+		UIUtils.setTooltip("Edit selected category", editCategoryButton);
 
-		FlexBoxLayout categoryLayout = new FlexBoxLayout();
-		categoryLayout.setWidth("100%");
-		categoryLayout.setFlexDirection(FlexDirection.ROW);
-		categoryLayout.add(categoriesComboBox, editCategoryButton);
-		categoryLayout.setComponentMargin(editCategoryButton, Left.S);
-		categoryLayout.setFlexGrow("1", categoriesComboBox);
-		categoryLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+		FlexBoxLayout categoryLayout = UIUtils.getFormRowLayout(categoriesComboBox, editCategoryButton);
 
 
 		ComboBox<ToolStatus> toolStatusComboBox = new ComboBox<>();
@@ -246,7 +235,7 @@ public class AdminToolForm extends FormLayout {
 				.bind(InventoryEntity::getCompany, InventoryEntity::setCompany);
 		binder.forField(categoriesComboBox)
 				.asRequired("Category is required")
-				.withConverter(new CustomConverter.ToolCategoryConverter())
+//				.withConverter(new CustomConverter.ToolCategoryConverter())
 				.bind(InventoryEntity::getParentCategory, InventoryEntity::setParentCategory);
 		binder.forField(toolStatusComboBox)
 				.asRequired("Status is required")
@@ -363,10 +352,10 @@ public class AdminToolForm extends FormLayout {
 
 		cameraView.onFinished(new OperationStatus() {
 			@Override
-			public void onSuccess(String msg) {
+			public void onSuccess(String msg, UIUtils.NotificationType type) {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
-						UIUtils.showNotification("Code scanned successfully", UIUtils.NotificationType.SUCCESS);
+						UIUtils.showNotification("Code scanned successfully", type, 2000);
 
 						codeField.setValue(msg);
 						cameraView.stop();
@@ -377,7 +366,7 @@ public class AdminToolForm extends FormLayout {
 			}
 
 			@Override
-			public void onFail(String msg) {
+			public void onFail(String msg, UIUtils.NotificationType type) {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
 						UIUtils.showNotification(msg, UIUtils.NotificationType.INFO, 2000);
@@ -407,17 +396,15 @@ public class AdminToolForm extends FormLayout {
 	}
 
 	private void updateComboBoxData(Company company) {
-		if (company.getId() <= 0) {
-			System.err.println("Company ID is <= 0, company name: " + company.getName());
-			return;
-		}
-		categoriesComboBox.setItems(ToolFacade.getInstance().getAllCategoriesInCompanyWithRoot(company.getId()));
-		if (categoriesComboBox.getValue() != null) {
-			editCategoryButton.setEnabled(!categoriesComboBox.getValue().equals(ToolFacade.getInstance().getRootCategory()));
-		}
+		if (company != null) {
+			List<InventoryEntity> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
+			categories.add(0, InventoryFacade.getInstance().getRootCategory());
 
-		toolUserComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
-		toolReservedComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
+			categoriesComboBox.setItems(categories);
+
+			toolUserComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
+			toolReservedComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
+		}
 	}
 
 	public InventoryEntity getTool() {

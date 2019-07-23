@@ -1,7 +1,7 @@
 package com.gmail.grigorij.ui.views.navigation.inventory;
 
-import com.gmail.grigorij.backend.database.facades.ToolFacade;
-import com.gmail.grigorij.backend.entities.inventory.HierarchyType;
+import com.gmail.grigorij.backend.database.facades.InventoryFacade;
+import com.gmail.grigorij.backend.entities.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.backend.entities.inventory.ToolStatus;
 import com.gmail.grigorij.backend.entities.user.User;
@@ -16,7 +16,7 @@ import com.gmail.grigorij.ui.utils.components.frames.SplitViewFrame;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Top;
-import com.gmail.grigorij.ui.utils.forms.ToolForm;
+import com.gmail.grigorij.ui.utils.forms.readonly.ReadOnlyToolForm;
 import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -38,7 +38,7 @@ public class Inventory extends SplitViewFrame {
 
 	private static final String CLASS_NAME = "inventory";
 
-	private ToolForm toolForm = new ToolForm();
+	private ReadOnlyToolForm toolForm = new ReadOnlyToolForm();
 
 	private TreeGrid<InventoryEntity> grid;
 	private TreeDataProvider<InventoryEntity> dataProvider;
@@ -105,19 +105,19 @@ public class Inventory extends SplitViewFrame {
 		reserveToolButton = UIUtils.createButton("Reserve", ButtonVariant.LUMO_CONTRAST);
 		reserveToolButton.addClickListener(e -> {
 			if (e != null) {
-				InventoryEntity tool = grid.asSingleSelect().getValue();
-				if (tool != null) {
-
-					if (tool.getReservedByUser() == null) {
-						reserveTool(tool);
-					} else {
-						if (tool.getReservedByUser().equals(AuthenticationService.getCurrentSessionUser())) {
-							UIUtils.showNotification("You have already reserved this inventory", UIUtils.NotificationType.INFO);
-						} else {
-							reserveTool(tool);
-						}
-					}
-				}
+//				InventoryEntity tool = grid.asSingleSelect().getValue();
+//				if (tool != null) {
+//
+//					if (tool.getReservedByUser() == null) {
+//						reserveTool(tool);
+//					} else {
+//						if (tool.getReservedByUser().equals(AuthenticationService.getCurrentSessionUser())) {
+//							UIUtils.showNotification("You have already reserved this inventory", UIUtils.NotificationType.INFO);
+//						} else {
+//							reserveTool(tool);
+//						}
+//					}
+//				}
 			}
 		});
 		reserveToolButton.setEnabled(false);
@@ -126,7 +126,7 @@ public class Inventory extends SplitViewFrame {
 		reportToolButton.addClickListener(e -> {
 			if (e != null) {
 				if (grid.asSingleSelect().getValue() != null) {
-					reportTool(grid.asSingleSelect().getValue());
+//					reportTool(grid.asSingleSelect().getValue());
 				}
 			}
 		});
@@ -160,7 +160,8 @@ public class Inventory extends SplitViewFrame {
 			AuthenticationService.signOut();
 			UIUtils.showNotification("Current user is NULL", UIUtils.NotificationType.ERROR);
 		} else {
-			dataProvider = new TreeDataProvider<>(ToolFacade.getInstance().getSortedToolsAndCategoriesByCompany(currentUser.getCompany().getId()));
+//			dataProvider = new TreeDataProvider<>(ToolFacade.getInstance().getSortedToolsAndCategoriesByCompany(currentUser.getCompany().getId()));
+			dataProvider = new TreeDataProvider<>(InventoryFacade.getInstance().getTreeDataInCompany(currentUser.getCompany().getId()));
 		}
 
 		if (dataProvider == null) {
@@ -208,7 +209,7 @@ public class Inventory extends SplitViewFrame {
 				if (e != null) {
 					if (e.getItem() != null) {
 						InventoryEntity tool = e.getItem();
-						if (tool.getHierarchyType().equals(HierarchyType.CATEGORY)) {
+						if (tool.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
 							if (grid.isExpanded(tool)) {
 								grid.collapse(tool);
 							} else {
@@ -221,9 +222,9 @@ public class Inventory extends SplitViewFrame {
 			});
 
 
-			for (InventoryEntity rootItem : dataProvider.getTreeData().getRootItems()) {
-				expandAll(rootItem);
-			}
+//			for (InventoryEntity rootItem : dataProvider.getTreeData().getRootItems()) {
+//				expandAll(rootItem);
+//			}
 
 			return grid;
 
@@ -234,31 +235,31 @@ public class Inventory extends SplitViewFrame {
 
 
 
-	private int counter = 0;
-	/*
-	RECURSIVE METHOD!
-	 */
-	private void expandAll(InventoryEntity gridItem) {
-
-//		System.out.println("expandAll " + counter);
-		counter++;
-
-		if (gridItem == null) {
-			return;
-		}
-
-		if (counter >= 10000) {
-			return;
-		}
-
-		grid.expand(gridItem);
-
-		if (gridItem.getChildren().size() > 0) {
-			for (InventoryEntity item : gridItem.getChildren()) {
-				expandAll(item);
-			}
-		}
-	}
+//	private int counter = 0;
+//	/*
+//	RECURSIVE METHOD!
+//	 */
+//	private void expandAll(InventoryEntity gridItem) {
+//
+////		System.out.println("expandAll " + counter);
+//		counter++;
+//
+//		if (gridItem == null) {
+//			return;
+//		}
+//
+//		if (counter >= 10000) {
+//			return;
+//		}
+//
+//		grid.expand(gridItem);
+//
+//		if (gridItem.getChildren().size() > 0) {
+//			for (InventoryEntity item : gridItem.getChildren()) {
+//				expandAll(item);
+//			}
+//		}
+//	}
 
 
 	private void handleButtonsAvailability(InventoryEntity tool) {
@@ -270,7 +271,7 @@ public class Inventory extends SplitViewFrame {
 		if (tool == null) {
 			return;
 		}
-		if (tool.getHierarchyType().equals(HierarchyType.CATEGORY)) {
+		if (tool.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
 			return;
 		}
 
@@ -322,14 +323,14 @@ public class Inventory extends SplitViewFrame {
 //		detailsDrawerFooter.getDelete().setEnabled( inventory != null );
 
 		if (tool != null) {
-			if (tool.getHierarchyType() != null) {
-				if (tool.getHierarchyType().equals(HierarchyType.TOOL)) {
+			if (tool.getInventoryHierarchyType() != null) {
+				if (tool.getInventoryHierarchyType().equals(InventoryHierarchyType.TOOL)) {
 
 					toolForm.setTool(tool);
 					detailsDrawer.show();
 
 					UIUtils.updateFormSize(toolForm);
-//				} else if (inventory.getHierarchyType().equals(HierarchyType.CATEGORY)) {
+//				} else if (inventory.getInventoryHierarchyType().equals(HierarchyType.CATEGORY)) {
 ////					if (grid.isExpanded(inventory)) {
 ////						grid.collapse(inventory);
 ////					} else {
@@ -368,7 +369,7 @@ public class Inventory extends SplitViewFrame {
 						tool.setReservedByUser(AuthenticationService.getCurrentSessionUser());
 						tool.setUsageStatus(ToolStatus.RESERVED);
 
-						if (ToolFacade.getInstance().update(tool)) {
+						if (InventoryFacade.getInstance().update(tool)) {
 							UIUtils.showNotification("Tool reserved successfully", UIUtils.NotificationType.SUCCESS);
 						} else {
 							UIUtils.showNotification("Tool reserve failed", UIUtils.NotificationType.ERROR);
@@ -383,7 +384,7 @@ public class Inventory extends SplitViewFrame {
 			tool.setUser(AuthenticationService.getCurrentSessionUser());
 			tool.setUsageStatus(ToolStatus.IN_USE);
 
-			if (ToolFacade.getInstance().update(tool)) {
+			if (InventoryFacade.getInstance().update(tool)) {
 				UIUtils.showNotification("Tool taken successfully", UIUtils.NotificationType.SUCCESS);
 			} else {
 				UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
@@ -414,7 +415,7 @@ public class Inventory extends SplitViewFrame {
 						tool.setUser(AuthenticationService.getCurrentSessionUser());
 						tool.setUsageStatus(ToolStatus.IN_USE);
 
-						if (ToolFacade.getInstance().update(tool)) {
+						if (InventoryFacade.getInstance().update(tool)) {
 							UIUtils.showNotification("Tool taken successfully", UIUtils.NotificationType.SUCCESS);
 						} else {
 							UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
@@ -429,7 +430,7 @@ public class Inventory extends SplitViewFrame {
 			tool.setReservedByUser(AuthenticationService.getCurrentSessionUser());
 			tool.setUsageStatus(ToolStatus.RESERVED);
 
-			if (ToolFacade.getInstance().update(tool)) {
+			if (InventoryFacade.getInstance().update(tool)) {
 				UIUtils.showNotification("Tool reserved successfully", UIUtils.NotificationType.SUCCESS);
 			} else {
 				UIUtils.showNotification("Tool reserve failed", UIUtils.NotificationType.ERROR);

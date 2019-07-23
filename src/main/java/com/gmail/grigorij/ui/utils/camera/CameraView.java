@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.utils.camera;
 
+import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.camera.AbstractCameraView;
 import com.google.zxing.*;
@@ -36,12 +37,12 @@ public class CameraView extends AbstractCameraView {
 							String response = decodeCodeInImage(file);
 
 							if (response == null) {
-								status.onFail("Code not found in the image");
+								status.onFail("Code not found in the image", UIUtils.NotificationType.INFO);
 							} else {
 								if (response.length() <= 0) {
-									status.onFail("Code not found in the image");
+									status.onFail("Code not found in the image", UIUtils.NotificationType.INFO);
 								} else {
-									status.onSuccess(response);
+									status.onSuccess(response, UIUtils.NotificationType.SUCCESS);
 								}
 							}
 						} catch (IOException ex) {

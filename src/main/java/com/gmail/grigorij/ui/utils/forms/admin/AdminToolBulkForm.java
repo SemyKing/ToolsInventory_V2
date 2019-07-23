@@ -1,7 +1,7 @@
 package com.gmail.grigorij.ui.utils.forms.admin;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.ToolFacade;
+import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
@@ -15,10 +15,9 @@ import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
-import com.gmail.grigorij.ui.views.navigation.admin.AdminInventoryBulkEditor;
+import com.gmail.grigorij.ui.views.navigation.admin.inventory.AdminInventoryBulkEditor;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -42,6 +41,7 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 
 import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.List;
 
 public class AdminToolBulkForm extends FormLayout {
 
@@ -123,7 +123,7 @@ public class AdminToolBulkForm extends FormLayout {
 
 		//--------------CATEGORY
 		categoriesComboBox = new ComboBox<>();
-		categoriesComboBox.setItems(ToolFacade.getInstance().getEmptyList());
+		categoriesComboBox.setItems();
 		categoriesComboBox.setLabel("Category");
 		categoriesComboBox.setItemLabelGenerator(InventoryEntity::getName);
 		categoriesComboBox.setRequired(true);
@@ -249,7 +249,7 @@ public class AdminToolBulkForm extends FormLayout {
 				.bind(InventoryEntity::getCompany, InventoryEntity::setCompany);
 		binder.forField(categoriesComboBox)
 				.asRequired("Category is required")
-				.withConverter(new CustomConverter.ToolCategoryConverter())
+//				.withConverter(new CustomConverter.ToolCategoryConverter())
 				.bind(InventoryEntity::getParentCategory, InventoryEntity::setParentCategory);
 		binder.forField(toolStatusComboBox)
 				.asRequired("Status is required")
@@ -324,13 +324,15 @@ public class AdminToolBulkForm extends FormLayout {
 	}
 
 	private void updateComboBoxData(Company company) {
-		if (company.getId() <= 0) {
-			System.err.println("Company ID is <= 0, company name: " + company.getName());
-			return;
+		if (company != null) {
+			List<InventoryEntity> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
+			categories.add(0, InventoryFacade.getInstance().getRootCategory());
+
+			categoriesComboBox.setItems(categories);
+
+			toolUserComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
+			toolReservedComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
 		}
-		categoriesComboBox.setItems(ToolFacade.getInstance().getAllCategoriesInCompanyWithRoot(company.getId()));
-		toolUserComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
-		toolReservedComboBox.setItems(UserFacade.getInstance().getUsersByCompanyId(company.getId()));
 	}
 
 	public InventoryEntity getTool() {
@@ -398,10 +400,10 @@ public class AdminToolBulkForm extends FormLayout {
 
 		cameraView.onFinished(new OperationStatus() {
 			@Override
-			public void onSuccess(String msg) {
+			public void onSuccess(String msg, UIUtils.NotificationType type) {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
-						UIUtils.showNotification("Code scanned successfully", UIUtils.NotificationType.SUCCESS);
+						UIUtils.showNotification("Code scanned successfully", type, 2000);
 
 						codeField.setValue(msg);
 						cameraView.stop();
@@ -412,7 +414,7 @@ public class AdminToolBulkForm extends FormLayout {
 			}
 
 			@Override
-			public void onFail(String msg) {
+			public void onFail(String msg, UIUtils.NotificationType type) {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
 						UIUtils.showNotification(msg, UIUtils.NotificationType.INFO, 2000);

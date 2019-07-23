@@ -24,6 +24,7 @@ public final class ProjectConstants {
 	public static final String COMPANIES = "Companies";
 	public static final String PERSONNEL = "Personnel";
 	public static final String ADMIN_INVENTORY = "Inventory "; //defined
+	public static final String ADMIN_TRANSACTIONS = "Transactions ";
 
 	//EntityStatus
 	public static final String ACTIVE = "Active";
@@ -35,6 +36,7 @@ public final class ProjectConstants {
 	public static final String COL_2_MIN_WIDTH = "520px";
 
 	public static final String ROOT_CATEGORY = "**Root Category**";
+
 
 
 }

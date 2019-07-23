@@ -44,12 +44,12 @@ class PasswordRecovery {
 			if (binder.isValid()) {
 				constructRecoveryEmail(emailField.getValue());
 				dialog.close();
-				operationStatus.onSuccess("Password recovery dialog closed from button");
+				operationStatus.onSuccess("Password recovery dialog closed from button", null);
 			}
 		});
 
 		dialog.addDetachListener((DetachEvent event) -> {
-			operationStatus.onSuccess("Password recovery dialog closed from detach event");
+			operationStatus.onSuccess("Password recovery dialog closed from detach event", null);
 		});
 		dialog.open();
 	}

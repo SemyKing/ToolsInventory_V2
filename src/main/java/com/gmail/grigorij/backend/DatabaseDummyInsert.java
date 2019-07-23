@@ -1,10 +1,7 @@
 package com.gmail.grigorij.backend;
 
 import com.gmail.grigorij.backend.access.AccessGroups;
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.ToolFacade;
-import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.location.Location;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
@@ -36,6 +33,7 @@ public class DatabaseDummyInsert {
 
 	private List<User> users;
 	private List<Company> companies, companiesFromDB;
+
 	private List<InventoryEntity> tools;
 
 	private User transactionUser;
@@ -168,7 +166,7 @@ public class DatabaseDummyInsert {
 					c.setParentCategory(p);
 					c.setCompany(company);
 
-					p.addTool(c);
+					p.addChild(c);
 
 					for (int k = 0; k < toolsPerCategory; k++) {
 						InventoryEntity cc = new InventoryEntity();
@@ -207,8 +205,6 @@ public class DatabaseDummyInsert {
 						}
 
 
-
-
 						cc.setCompany(company);
 						cc.setName("Tool " + toolCounter + " (P: " + categoryCounter  +", SP: "+ subCategoryCounter+ ")");
 						cc.setManufacturer(RandomStringUtils.randomAlphabetic(5));
@@ -225,7 +221,7 @@ public class DatabaseDummyInsert {
 
 						cc.setParentCategory(c);
 
-						c.addTool(cc);
+						c.addChild(cc);
 
 						toolCounter++;
 					}
@@ -301,14 +297,14 @@ public class DatabaseDummyInsert {
 	}
 
 	private void insertTools() {
-		for (InventoryEntity tool : tools) {
-			ToolFacade.getInstance().insert(tool);
+		for (InventoryEntity ie : tools) {
+			InventoryFacade.getInstance().insert(ie);
 
 
 			Transaction transaction = new Transaction();
 			transaction.setWhoDid(transactionUser);
 			transaction.setTransactionOperation(TransactionOperation.ADD);
-			transaction.setTool(tool); // <--TransactionTarget is set automatically TOOL/CATEGORY
+			transaction.setInventoryEntity(ie); // <--TransactionTarget is set automatically TOOL/CATEGORY
 
 			TransactionFacade.getInstance().insert(transaction);
 		}

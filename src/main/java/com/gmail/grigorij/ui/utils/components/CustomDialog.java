@@ -95,7 +95,10 @@ public class CustomDialog extends Div {
 	public void setCancelButton(Button cancelButton) {
 		footer.remove(this.cancelButton);
 		this.cancelButton = cancelButton;
-		footer.add(cancelButton);
+
+		if (cancelButton != null) {
+			footer.add(cancelButton);
+		}
 	}
 
 	public Button getConfirmButton() {
@@ -104,7 +107,10 @@ public class CustomDialog extends Div {
 	public void setConfirmButton(Button confirmButton) {
 		footer.remove(this.confirmButton);
 		this.confirmButton = confirmButton;
-		footer.add(confirmButton);
+
+		if (confirmButton != null) {
+			footer.add(confirmButton);
+		}
 	}
 
 	public void setCloseOnEsc(boolean b) {
@@ -120,7 +126,6 @@ public class CustomDialog extends Div {
 	}
 
 	public void setDeleteButtonVisible(boolean b) {
-
 		if (!deleteButtonAdded) {
 			footer.addComponentAsFirst(deleteButton);
 			deleteButtonAdded = true;

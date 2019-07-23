@@ -179,6 +179,13 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 			admin_inventory.addClickListener(e-> {
 				adminItemOnClick(admin_inventory);
 			});
+
+			NaviItem admin_transactions = new NaviItem(ProjectConstants.ADMIN_TRANSACTIONS, null , false);
+			menu.addNaviItem(admin, admin_transactions);
+
+			admin_transactions.addClickListener(e-> {
+				adminItemOnClick(admin_transactions);
+			});
 		}
 
 

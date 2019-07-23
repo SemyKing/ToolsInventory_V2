@@ -1,5 +1,6 @@
 package com.gmail.grigorij;
 
+import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -49,13 +50,15 @@ public class ApplicationServletContextListener implements ServletContextListener
 //				for (final UI ui : VaadinSession.getCurrent().getUIs()) {
 //					if (ui != null) {
 //						System.out.println("----------SET PushMode.DISABLED");
-//						ui.access(() -> ui.getPushConfiguration().setPushMode(PushMode.DISABLED));
+//
+//						ui.access(() -> {
+//							UIUtils.showNotification("SERVER IS RESTARTING", UIUtils.NotificationType.INFO);
+//							ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+//						});
 //					}
 //				}
 //			});
 //		}
-//
-//
 //
 //		if (UI.getCurrent() != null) {
 //			UI.getCurrent().access(() -> {
@@ -71,7 +74,6 @@ public class ApplicationServletContextListener implements ServletContextListener
 //				}
 //			});
 //		}
-
 
 		System.out.println("----------THE SERVER IS STOPPED----------");
 	}

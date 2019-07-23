@@ -84,7 +84,8 @@ public class ConfirmDialog extends FlexBoxLayout {
 			layout.setFlexWrap(FlexWrap.WRAP);
 
 			Paragraph p = new Paragraph();
-			p.add(new Span("Are you sure you want to delete " + entity + "? This operation will completely remove " + entity + " from Database."));
+			p.add(new Span("Are you sure you want to delete " + entity + "?"));
+			p.add(new Span("This operation will completely remove " + entity + " from Database."));
 //			layout.add(new Label("Entities that have reference to this entity, will throw: "), UIUtils.createBoldText("NullPointerException"));
 //			p.add(layout);
 			p.add(new HorizontalLayout(new Span("Confirmation text :"), targetBold));

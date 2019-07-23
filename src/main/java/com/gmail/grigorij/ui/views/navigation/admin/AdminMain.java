@@ -7,6 +7,10 @@ import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
 import com.gmail.grigorij.ui.utils.components.frames.SplitViewFrame;
+import com.gmail.grigorij.ui.views.navigation.admin.companies.AdminCompanies;
+import com.gmail.grigorij.ui.views.navigation.admin.inventory.AdminInventory;
+import com.gmail.grigorij.ui.views.navigation.admin.personnel.AdminPersonnel;
+import com.gmail.grigorij.ui.views.navigation.admin.transactions.AdminTransactions;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
@@ -44,6 +48,7 @@ public class AdminMain extends SplitViewFrame {
 		appBar.addTab(ProjectConstants.COMPANIES);
 		appBar.addTab(ProjectConstants.PERSONNEL);
 		appBar.addTab(ProjectConstants.ADMIN_INVENTORY);
+		appBar.addTab(ProjectConstants.ADMIN_TRANSACTIONS);
 
 		appBar.addTabSelectionListener(e -> {
 			if (detailsDrawer != null)
@@ -73,6 +78,10 @@ public class AdminMain extends SplitViewFrame {
 				this.content.add(new AdminInventory(this));
 				return;
 			}
+			if (appBar.getSelectedTab().getLabel().equals(ProjectConstants.ADMIN_TRANSACTIONS)) {
+				this.content.add(new AdminTransactions(this));
+				return;
+			}
 
 
 			//...
@@ -85,7 +94,7 @@ public class AdminMain extends SplitViewFrame {
 		return content;
 	}
 
-	void setDetailsDrawer(DetailsDrawer detailsDrawer) {
+	public void setDetailsDrawer(DetailsDrawer detailsDrawer) {
 		this.detailsDrawer = detailsDrawer;
 		setViewDetails(detailsDrawer);
 	}

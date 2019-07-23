@@ -11,7 +11,7 @@ import java.util.*;
 
 
 /**
- * Tool entity class works both as Category and Tool
+ * Entity class works both as Category and Tool
  *
  * Grid element only accepts one object type
  *
@@ -19,17 +19,37 @@ import java.util.*;
  * @see com.gmail.grigorij.ui.views.navigation.inventory.Inventory
  *
  *
- * if {@link #children} is empty or {@link #hierarchyType} is HierarchyType.TOOL, entity is a inventory else it is a Category
+ * {@link #inventoryHierarchyType} defines if entity is a Category or a Tool
  *
  */
 
 @Entity
-@Table(name = "tools")
+@Table(name = "inventory_entities")
 @NamedQueries({
-		@NamedQuery(name="Tool.getAll",
-				query="SELECT inventory FROM Tool inventory"),
-		@NamedQuery(name="Tool.getAllInCompany",
-				query="SELECT inventory FROM Tool inventory WHERE inventory.company IS NOT NULL and inventory.company.id = :company_id_var")
+
+		@NamedQuery(name="getAll",
+				query="SELECT ie FROM InventoryEntity ie"),
+
+		@NamedQuery(name="getAllByHierarchyType",
+				query="SELECT ie FROM InventoryEntity ie WHERE" +
+						" ie.inventoryHierarchyType = :type_var"),
+
+		@NamedQuery(name="getAllInCompany",
+				query="SELECT ie FROM InventoryEntity ie WHERE" +
+						" ie.company IS NOT NULL AND" +
+						" ie.company.id = :company_id_var"),
+
+		@NamedQuery(name="getAllCategoriesInCompany",
+				query="SELECT ie FROM InventoryEntity ie WHERE " +
+						"ie.company IS NOT NULL AND" +
+						" ie.company.id = :company_id_var and" +
+						" ie.inventoryHierarchyType = :type_var"),
+
+		@NamedQuery(name="getAllToolsInCompany",
+				query="SELECT ie FROM InventoryEntity ie WHERE" +
+						" ie.company IS NOT NULL AND" +
+						" ie.company.id = :company_id_var AND" +
+						" ie.inventoryHierarchyType = :type_var")
 })
 public class InventoryEntity extends EntityPojo {
 
@@ -50,10 +70,10 @@ public class InventoryEntity extends EntityPojo {
 	private Integer level = 1;
 
 	/*
-	Allows to easily identify if Tool is a inventory or category
+	Allows to easily identify if Entity is a tool or a category
 	 */
 	@Enumerated(EnumType.STRING)
-	private HierarchyType hierarchyType = HierarchyType.TOOL;
+	private InventoryHierarchyType inventoryHierarchyType = InventoryHierarchyType.TOOL;
 
 
 	@Column(name = "name")
@@ -116,7 +136,9 @@ public class InventoryEntity extends EntityPojo {
 	@Embedded
 	private Location currentLocation;
 
+
 	//TODO: Last known GeoLocation
+
 
 
 	public InventoryEntity() {}
@@ -156,13 +178,13 @@ public class InventoryEntity extends EntityPojo {
 				}
 			}
 		}
-		this.hierarchyType = HierarchyType.CATEGORY;
+		this.inventoryHierarchyType = InventoryHierarchyType.CATEGORY;
 		this.children = children;
 	}
-	public void addTool(InventoryEntity tool) {
-		tool.setLevel((this.level+1));
-		this.hierarchyType = HierarchyType.CATEGORY;
-		this.children.add(tool);
+	public void addChild(InventoryEntity ie) {
+		ie.setLevel((this.level+1));
+		this.inventoryHierarchyType = InventoryHierarchyType.CATEGORY;
+		this.children.add(ie);
 	}
 
 	public String getName() {
@@ -270,11 +292,11 @@ public class InventoryEntity extends EntityPojo {
 		this.level = level;
 	}
 
-	public HierarchyType getHierarchyType() {
-		return hierarchyType;
+	public InventoryHierarchyType getInventoryHierarchyType() {
+		return inventoryHierarchyType;
 	}
-	public void setHierarchyType(HierarchyType hierarchyType) {
-		this.hierarchyType = hierarchyType;
+	public void setInventoryHierarchyType(InventoryHierarchyType inventoryHierarchyType) {
+		this.inventoryHierarchyType = inventoryHierarchyType;
 	}
 
 	public boolean hasChildren() {
@@ -304,7 +326,6 @@ public class InventoryEntity extends EntityPojo {
 	public String getSerialNumber() {
 		return serialNumber;
 	}
-
 	public void setSerialNumber(String serialNumber) {
 		this.serialNumber = serialNumber;
 	}
@@ -312,7 +333,6 @@ public class InventoryEntity extends EntityPojo {
 	public String getRfCode() {
 		return rfCode;
 	}
-
 	public void setRfCode(String rfCode) {
 		this.rfCode = rfCode;
 	}
@@ -320,7 +340,6 @@ public class InventoryEntity extends EntityPojo {
 	public User getUser() {
 		return user;
 	}
-
 	public void setUser(User user) {
 		this.user = user;
 	}
@@ -328,7 +347,6 @@ public class InventoryEntity extends EntityPojo {
 	public User getReservedByUser() {
 		return reservedByUser;
 	}
-
 	public void setReservedByUser(User reservedByUser) {
 		this.reservedByUser = reservedByUser;
 	}
@@ -336,7 +354,6 @@ public class InventoryEntity extends EntityPojo {
 	public Company getCompany() {
 		return company;
 	}
-
 	public void setCompany(Company company) {
 		this.company = company;
 	}
@@ -344,7 +361,6 @@ public class InventoryEntity extends EntityPojo {
 	public String getQrCode() {
 		return qrCode;
 	}
-
 	public void setQrCode(String qrCode) {
 		this.qrCode = qrCode;
 	}
@@ -355,7 +371,7 @@ public class InventoryEntity extends EntityPojo {
 //		StringBuilder sb = new StringBuilder();
 //		sb.append("\nName: ").append(this.name);
 //		sb.append("\nCompany: ").append(this.company.getName());
-//		sb.append("\nHierarchyType ").append(this.hierarchyType.toString());
+//		sb.append("\nHierarchyType ").append(this.inventoryHierarchyType.toString());
 //
 //		if (this.parentCategory != null) {
 //			sb.append("\nParent Info: ").append(this.parentCategory);

@@ -3,6 +3,7 @@ package com.gmail.grigorij.ui.utils.css.size;
 public enum Top implements Size {
 
     AUTO("auto", null),
+    NONE("0", null),
 
     XS("var(--lumo-space-xs)", "spacing-t-xs"),
     S("var(--lumo-space-s)", "spacing-t-s"),

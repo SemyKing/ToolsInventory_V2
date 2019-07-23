@@ -1,7 +1,7 @@
 package com.gmail.grigorij.utils.converters;
 
 import com.gmail.grigorij.backend.access.AccessGroups;
-import com.gmail.grigorij.backend.database.facades.ToolFacade;
+import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.data.binder.Result;
@@ -53,7 +53,7 @@ public class CustomConverter {
 		@Override
 		public Result<InventoryEntity> convertToModel(InventoryEntity category, ValueContext valueContext) {
 			try {
-				if (category == null || category.equals(ToolFacade.getInstance().getRootCategory())) {
+				if (category == null || category.equals(InventoryFacade.getInstance().getRootCategory())) {
 					return Result.ok(null);
 				} else {
 					return Result.ok(category);
@@ -66,7 +66,7 @@ public class CustomConverter {
 		@Override
 		public InventoryEntity convertToPresentation(InventoryEntity toolParent, ValueContext valueContext) {
 			if (toolParent == null) {
-				return ToolFacade.getInstance().getRootCategory();
+				return InventoryFacade.getInstance().getRootCategory();
 			} else {
 				return toolParent;
 			}

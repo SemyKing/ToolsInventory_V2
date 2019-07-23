@@ -1,6 +1,7 @@
 package com.gmail.grigorij.ui;
 
 import com.gmail.grigorij.backend.DatabaseDummyInsert;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
@@ -72,6 +73,9 @@ public class MainLayout extends Div {
 		System.out.println("Authentication...");
 		if (AuthenticationService.isAuthenticated()) {
 			System.out.println("User is authenticated -> show menu");
+
+			TransactionFacade.getInstance().insertLoginTransaction("Log In via Remember Me");
+
 			showMainMenuLayout();
 		} else {
 			System.out.println("User is not authenticated -> show login");
@@ -84,14 +88,12 @@ public class MainLayout extends Div {
 
 		add(new LoginView(new OperationStatus() {
 			@Override
-			public void onSuccess(String msg) {
-				System.out.println(msg);
-
+			public void onSuccess(String msg, UIUtils.NotificationType type) {
 				showMainMenuLayout();
 			}
 
 			@Override
-			public void onFail(String msg) {
+			public void onFail(String msg, UIUtils.NotificationType type) {
 				System.out.println(msg);
 			}
 		}));
@@ -101,13 +103,6 @@ public class MainLayout extends Div {
 		this.removeAll();
 
 		add(new MenuLayout(this));
-
-//		addDetachListener(closeEvent -> {
-//			ConfirmDialog dialog = new ConfirmDialog("Are you sure you want to Exit?");
-//			dialog.getConfirmButton().addClickListener(confirmEvent -> {
-//				removeAll();
-//			});
-//		});
 	}
 
 	public void setThemeVariant(String themeVariant) {

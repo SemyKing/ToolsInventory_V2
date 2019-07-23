@@ -38,6 +38,7 @@ public class UIUtils {
 	 */
 	private static final ThreadLocal<DecimalFormat> decimalFormat = ThreadLocal
 			.withInitial(() -> new DecimalFormat("#,00"));
+
 	private static final ThreadLocal<DateTimeFormatter> dateFormat = ThreadLocal
 			.withInitial(() -> DateTimeFormatter.ofPattern("dd.MM.YYYY"));
 
@@ -186,6 +187,31 @@ public class UIUtils {
 	public static TextField createSmallTextField() {
 		TextField textField = new TextField();
 		textField.addThemeVariants(TextFieldVariant.LUMO_SMALL);
+		return textField;
+	}
+
+	public static TextField getTextFieldTopS(String labelText, String placeholder, String width, Component prefix, Component suffix, boolean readOnly) {
+		TextField textField = new TextField(labelText);
+
+		if (placeholder.length() > 0) {
+			textField.setPlaceholder(placeholder);
+		}
+
+		if (width.length() > 0) {
+			textField.setWidth(width);
+		}
+
+		if (prefix != null) {
+			textField.setPrefixComponent(prefix);
+		}
+
+		if (suffix != null) {
+			textField.setSuffixComponent(suffix);
+		}
+
+		textField.setReadOnly(readOnly);
+		textField.getStyle().set("padding-top", "var(--lumo-space-s)");
+
 		return textField;
 	}
 

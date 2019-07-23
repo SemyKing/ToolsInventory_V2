@@ -85,7 +85,6 @@ public class User extends Person {
 		User user = new User();
 		user.setUsername("");
 		user.setPassword("");
-//		user.setCompanyId(-1);
 		user.setCompany(null);
 		user.setDeleted(false);
 		user.setFirstName("");
