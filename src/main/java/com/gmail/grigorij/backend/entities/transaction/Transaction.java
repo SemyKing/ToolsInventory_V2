@@ -5,7 +5,6 @@ import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -25,10 +24,10 @@ import java.util.Date;
 public class Transaction extends EntityPojo {
 
 	@Enumerated( EnumType.STRING )
-	private TransactionOperation transactionOperation;
+	private OperationType transactionOperation;
 
 	@Enumerated( EnumType.STRING )
-	private TransactionTarget transactionTarget;
+	private OperationTarget transactionTarget;
 
 	@Temporal( TemporalType.TIMESTAMP )
 	private Date date;
@@ -56,11 +55,11 @@ public class Transaction extends EntityPojo {
 
 
 
-	public TransactionOperation getTransactionOperation() {
+	public OperationType getTransactionOperation() {
 		return transactionOperation;
 	}
 
-	public void setTransactionOperation(TransactionOperation transactionOperation) {
+	public void setTransactionOperation(OperationType transactionOperation) {
 		this.transactionOperation = transactionOperation;
 
 		if (this.transactionOperation != null) {
@@ -70,11 +69,11 @@ public class Transaction extends EntityPojo {
 		}
 	}
 
-	public TransactionTarget getTransactionTarget() {
+	public OperationTarget getTransactionTarget() {
 		return transactionTarget;
 	}
 
-	public void setTransactionTarget(TransactionTarget transactionTarget) {
+	public void setTransactionTarget(OperationTarget transactionTarget) {
 		this.transactionTarget = transactionTarget;
 
 		if (this.transactionTarget != null) {
@@ -132,9 +131,9 @@ public class Transaction extends EntityPojo {
 			System.err.println("NULL HierarchyType of InventoryEntity: " + inventoryEntity.getName() + " in Transaction");
 		} else {
 			if (inventoryEntity.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
-				this.setTransactionTarget(TransactionTarget.CATEGORY);
+				this.setTransactionTarget(OperationTarget.CATEGORY);
 			} else if (inventoryEntity.getInventoryHierarchyType().equals(InventoryHierarchyType.TOOL)) {
-				this.setTransactionTarget(TransactionTarget.TOOL);
+				this.setTransactionTarget(OperationTarget.TOOL);
 			} else {
 				this.setTransactionTarget(null);
 			}

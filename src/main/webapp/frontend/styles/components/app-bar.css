@@ -45,7 +45,8 @@
     margin-bottom: 3px;
     margin-top: 3px;
 
-    background-color: var(--lumo-shade-10pct);
+    background-color: var(--lumo-tint-10pct);
+    box-shadow: var(--lumo-box-shadow-m);
 }
 
 .app-bar__user-info:hover {

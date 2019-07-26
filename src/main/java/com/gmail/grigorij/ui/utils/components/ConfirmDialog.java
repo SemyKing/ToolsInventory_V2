@@ -1,6 +1,8 @@
 package com.gmail.grigorij.ui.utils.components;
 
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.Display;
+import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.FlexWrap;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.vaadin.flow.component.button.Button;
@@ -36,14 +38,14 @@ public class ConfirmDialog extends FlexBoxLayout {
 
 		header = new FlexBoxLayout();
 		header.addClassName(CLASS_NAME  + "__header");
-		header.add(UIUtils.createH4Label("Confirm action"));
+		header.add(UIUtils.createH3Label("Confirm action"));
 
 		content = new FlexBoxLayout();
 		content.addClassName(CLASS_NAME  + "__content");
 		content.add(new Span(message));
 
-		cancelButton = UIUtils.createButton("No", ButtonVariant.LUMO_TERTIARY);
-		confirmButton = UIUtils.createButton("Yes", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
+		cancelButton = UIUtils.createSmallButton("No", ButtonVariant.LUMO_TERTIARY);
+		confirmButton = UIUtils.createSmallButton("Yes", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
 
 		footer = new FlexBoxLayout();
 		footer.addClassName(CLASS_NAME  + "__footer");
@@ -64,39 +66,49 @@ public class ConfirmDialog extends FlexBoxLayout {
 		content = new FlexBoxLayout();
 		content.addClassName(CLASS_NAME  + "__content");
 
-		cancelButton = UIUtils.createButton("Cancel", ButtonVariant.LUMO_TERTIARY);
-		confirmButton = UIUtils.createButton("Confirm", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
+		cancelButton = UIUtils.createSmallButton("Cancel", ButtonVariant.LUMO_TERTIARY);
+		confirmButton = UIUtils.createSmallButton("Confirm", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
 
 		footer = new FlexBoxLayout();
 		footer.addClassName(CLASS_NAME  + "__footer");
 		footer.setPadding(Horizontal.M);
 		footer.add(cancelButton, confirmButton);
 
-		Span targetBold = UIUtils.createBoldText(comparisonTarget);
+		Span targetBold = UIUtils.createBoldText("DELETE "+comparisonTarget);
 
 		/*
 		DELETE DIALOG WITH CONFIRM INPUT FIELD
 		 */
 		if (type.equals(Type.DELETE)) {
-			header.add(UIUtils.createH4Label("Confirm Delete"));
+			header.add(UIUtils.createH3Label("Confirm Delete"));
 
 			FlexBoxLayout layout = new FlexBoxLayout();
 			layout.setFlexWrap(FlexWrap.WRAP);
 
-			Paragraph p = new Paragraph();
-			p.add(new Span("Are you sure you want to delete " + entity + "?"));
-			p.add(new Span("This operation will completely remove " + entity + " from Database."));
-//			layout.add(new Label("Entities that have reference to this entity, will throw: "), UIUtils.createBoldText("NullPointerException"));
-//			p.add(layout);
-			p.add(new HorizontalLayout(new Span("Confirmation text :"), targetBold));
+			FlexBoxLayout contentLayout = new FlexBoxLayout();
+			contentLayout.setDisplay(Display.FLEX);
+			contentLayout.setFlexDirection(FlexDirection.COLUMN);
 
-			content.add(p);
+			contentLayout.add(new Span("Are you sure you want to delete" + entity + "?"));
+			contentLayout.add(new Span("This operation will completely remove" + entity + "from Database."));
+			contentLayout.add(new Span(""));
+			contentLayout.add(new HorizontalLayout(new Span("Confirmation text :"), targetBold));
+
+
+//			Paragraph p = new Paragraph();
+//			p.add(new Span("Are you sure you want to delete " + entity + "?"));
+//			p.add(new Span("This operation will completely remove " + entity + " from Database."));
+////			layout.add(new Label("Entities that have reference to this entity, will throw: "), UIUtils.createBoldText("NullPointerException"));
+////			p.add(layout);
+//			p.add(new HorizontalLayout(new Span("Confirmation text :"), targetBold));
+
+			content.add(contentLayout);
 
 			this.confirmButton.setEnabled(false);
 
 			TextField confirmInputField = new TextField("Input confirmation text to proceed");
 			confirmInputField.setRequired(true);
-			confirmInputField.setValueChangeMode(ValueChangeMode.EAGER);
+			confirmInputField.setValueChangeMode(ValueChangeMode.LAZY);
 			confirmInputField.addValueChangeListener(e -> {
 				this.confirmButton.setEnabled(false);
 

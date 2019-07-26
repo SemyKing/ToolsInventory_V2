@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.utils.forms.readonly;
 
-import com.gmail.grigorij.backend.entities.location.Location;
+import com.gmail.grigorij.backend.entities.embeddable.Location;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
@@ -17,42 +17,50 @@ public class ReadOnlyLocationForm extends FormLayout {
 
 	public ReadOnlyLocationForm() {
 
-		TextField locationNameField = UIUtils.getTextFieldTopS("Name", "",  "", null, null, true);
+		TextField locationNameField = new TextField("Name");
+		locationNameField.setReadOnly(true);
 		ReadOnlyHasValue<Location> locationName = new ReadOnlyHasValue<>(location -> {
 			locationNameField.setValue( location.getName() );
 		});
 
-		TextField addressLine1Field = UIUtils.getTextFieldTopS("Address 1", "",   "", null, null, true);
+		TextField addressLine1Field = new TextField("Address");
+		addressLine1Field.setReadOnly(true);
 		ReadOnlyHasValue<Location> addressLine1 = new ReadOnlyHasValue<>(location -> {
 			addressLine1Field.setValue( location.getAddressLine1() );
 		});
 
-		TextField addressLine2Field = UIUtils.getTextFieldTopS("Address 2", "Optional",   "", null, null, true);
+		TextField addressLine2Field = new TextField("", "Optional");
+		addressLine1.setReadOnly(true);
 		ReadOnlyHasValue<Location> addressLine2 = new ReadOnlyHasValue<>(location -> {
 			addressLine2Field.setValue( location.getAddressLine2() );
 		});
 
-		TextField postcodeField = UIUtils.getTextFieldTopS("Postcode", "",   "", null, null, true);
-		ReadOnlyHasValue<Location> postcode = new ReadOnlyHasValue<>(location -> {
-			postcodeField.setValue( location.getPostcode() );
-		});
-
-		TextField cityField = UIUtils.getTextFieldTopS("City", "",   "", null, null, true);
+		TextField cityField = new TextField("City");
+		cityField.setReadOnly(true);
 		ReadOnlyHasValue<Location> city = new ReadOnlyHasValue<>(location -> {
 			cityField.setValue( location.getCity() );
 		});
 
-		TextField countryField = UIUtils.getTextFieldTopS("Country Code", "",   "", null, null, true);
+		TextField postcodeField = new TextField("Postcode");
+		postcodeField.setReadOnly(true);
+		postcodeField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		ReadOnlyHasValue<Location> postcode = new ReadOnlyHasValue<>(location -> {
+			postcodeField.setValue( location.getPostcode() );
+		});
+
+		TextField countryField = new TextField("Country");
+		countryField.setReadOnly(true);
+		countryField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
 		ReadOnlyHasValue<Location> country = new ReadOnlyHasValue<>(location -> {
 			countryField.setValue( location.getCountry() );
 		});
 
-		//CITY & COUNTRY
-		FlexBoxLayout cityCountryLayout = UIUtils.getFormRowLayout(cityField, countryField);
+		//POSTCODE & COUNTRY
+		FlexBoxLayout postcodeCountryLayout = UIUtils.getFormRowLayout(postcodeField, countryField, true);
 
 		UIUtils.setColSpan(2, locationNameField);
 
-		addClassNames(LumoStyles.Padding.Bottom.M, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
+		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
@@ -61,7 +69,7 @@ public class ReadOnlyLocationForm extends FormLayout {
 		add(addressLine1Field);
 		add(addressLine2Field);
 		add(postcodeField);
-		add(cityCountryLayout);
+		add(postcodeCountryLayout);
 
 		binder.forField(locationName)
 				.bind(location -> location, null);

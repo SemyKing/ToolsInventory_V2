@@ -24,6 +24,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.value.ValueChangeMode;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -70,7 +71,7 @@ public class AdminTransactions extends FlexBoxLayout {
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Transactions");
-//		searchField.setValueChangeMode(ValueChangeMode.EAGER);
+		searchField.setValueChangeMode(ValueChangeMode.LAZY);
 //		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
 		header.add(searchField);
@@ -183,6 +184,7 @@ public class AdminTransactions extends FlexBoxLayout {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
 		detailsDrawer.setContent(transactionsForm);
+		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Header
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Transaction Details");

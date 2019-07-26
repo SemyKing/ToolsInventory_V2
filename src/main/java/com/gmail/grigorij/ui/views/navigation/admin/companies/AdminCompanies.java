@@ -8,17 +8,13 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.components.ListItem;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.css.size.Bottom;
-import com.gmail.grigorij.ui.utils.css.size.Left;
-import com.gmail.grigorij.ui.utils.css.size.Top;
-import com.gmail.grigorij.ui.utils.css.size.Vertical;
-import com.gmail.grigorij.ui.utils.forms.admin.AdminCompanyForm;
+import com.gmail.grigorij.ui.utils.css.size.*;
+import com.gmail.grigorij.ui.utils.forms.editable.EditableCompanyForm;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
@@ -41,7 +37,7 @@ public class AdminCompanies extends FlexBoxLayout {
 	private static final String CLASS_NAME = "admin-companies";
 
 	private final AdminMain adminMain;
-	private AdminCompanyForm companyForm = new AdminCompanyForm();
+	private EditableCompanyForm companyForm = new EditableCompanyForm();
 
 	private Grid<Company> grid;
 	private ListDataProvider<Company> dataProvider;
@@ -66,13 +62,15 @@ public class AdminCompanies extends FlexBoxLayout {
 		FlexBoxLayout header = new FlexBoxLayout();
 		header.setClassName(CLASS_NAME + "__header");
 		header.setMargin(Top.S);
+		header.setAlignItems(Alignment.BASELINE);
 
 		TextField searchField = new TextField();
 		searchField.setWidth("100%");
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Companies");
-		searchField.setValueChangeMode(ValueChangeMode.EAGER);
+//		searchField.setValueChangeMode(ValueChangeMode.EAGER);
+		searchField.setValueChangeMode(ValueChangeMode.LAZY);
 		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
 		header.add(searchField);
@@ -80,19 +78,31 @@ public class AdminCompanies extends FlexBoxLayout {
 		FlexBoxLayout optionsContextMenuButton = adminMain.constructOptionsButton();
 		header.add(optionsContextMenuButton);
 
+
+//		MenuBar menuBar = new MenuBar();
+//		MenuItem optionsMenuItem = menuBar.addItem(optionsContextMenuButton);
+//
+//		SubMenu optionsSubMenu = optionsMenuItem.getSubMenu();
+//		optionsSubMenu.addItem("Add Company", addCompanyEvent -> {});
+//		optionsSubMenu.addItem("Import", importEvent -> {});
+//		optionsSubMenu.addItem("Export", exportEvent -> {});
+//
+//		header.add(menuBar);
+
+
 		ContextMenu contextMenu = new ContextMenu(optionsContextMenuButton);
 		contextMenu.setOpenOnClick(true);
 
-		contextMenu.add(new Divider(Bottom.XS));
+		contextMenu.add(new Divider(1, Bottom.XS));
 		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.OFFICE, UIUtils.createText("Add Company")), e -> {
 			grid.select(null);
 			showDetails(null);
 		});
-		contextMenu.add(new Divider(Vertical.XS));
+		contextMenu.add(new Divider(1, Vertical.XS));
 		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.INSERT, UIUtils.createText("Import")), e -> importCompanies());
-		contextMenu.add(new Divider(Vertical.XS));
+		contextMenu.add(new Divider(1, Vertical.XS));
 		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.EXTERNAL_LINK, UIUtils.createText("Export")), e -> exportCompanies());
-		contextMenu.add(new Divider(Top.XS));
+		contextMenu.add(new Divider(1, Top.XS));
 
 		add(header);
 	}
@@ -113,26 +123,12 @@ public class AdminCompanies extends FlexBoxLayout {
 		dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getAllCompanies());
 		grid.setDataProvider(dataProvider);
 
-//		grid.addColumn(Company::getId).setHeader("ID")
-//				.setWidth(UIUtils.COLUMN_WIDTH_XS)
-//				.setFlexGrow(0);
-
 		grid.addColumn(Company::getName).setHeader("Company Name")
 				.setWidth(UIUtils.COLUMN_WIDTH_L);
 
-
-		ComponentRenderer<ListItem, Company> contactPersonRenderer = new ComponentRenderer<>(
-				company -> {
-					ListItem item = new ListItem(UIUtils.createInitials(company.getInitials()),
-							company.getFirstName() + " " + company.getLastName(), company.getEmail());
-					item.setHorizontalPadding(false);
-					item.setWidth("100%");
-					return item;
-				});
-		grid.addColumn(contactPersonRenderer)
+		grid.addColumn(company -> (company.getContactPerson() == null) ? "" : company.getContactPerson().getFullName())
 				.setHeader("Contact Person")
-				.setWidth(UIUtils.COLUMN_WIDTH_XL);
-
+				.setWidth(UIUtils.COLUMN_WIDTH_L);
 
 		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted()))).setHeader("Active")
 				.setWidth(UIUtils.COLUMN_WIDTH_XS)
@@ -154,9 +150,9 @@ public class AdminCompanies extends FlexBoxLayout {
 						for (String sParam : searchParams) {
 							res =  StringUtils.containsIgnoreCase(company.getName(), sParam) ||
 									StringUtils.containsIgnoreCase(company.getVat(), sParam) ||
-									StringUtils.containsIgnoreCase(company.getFirstName(), sParam) ||
-									StringUtils.containsIgnoreCase(company.getLastName(), sParam) ||
-									StringUtils.containsIgnoreCase(company.getEmail(), sParam);
+									StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getFirstName(), sParam) ||
+									StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getLastName(), sParam) ||
+									StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getEmail(), sParam);
 
 							//(res) -> shows All items based on searchParams
 							//(!res) -> shows ONE item based on searchParams
@@ -170,9 +166,9 @@ public class AdminCompanies extends FlexBoxLayout {
 			dataProvider.addFilter(
 					company -> StringUtils.containsIgnoreCase(company.getName(), mainSearchString)  ||
 							StringUtils.containsIgnoreCase(company.getVat(), mainSearchString) ||
-							StringUtils.containsIgnoreCase(company.getFirstName(), mainSearchString)  ||
-							StringUtils.containsIgnoreCase(company.getLastName(), mainSearchString)  ||
-							StringUtils.containsIgnoreCase(company.getEmail(), mainSearchString)
+							StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getFirstName(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getLastName(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getEmail(), mainSearchString)
 			);
 		}
 	}
@@ -181,6 +177,7 @@ public class AdminCompanies extends FlexBoxLayout {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
 		detailsDrawer.setContent(companyForm);
+		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Header
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Company Details");
@@ -252,8 +249,6 @@ public class AdminCompanies extends FlexBoxLayout {
 					}
 
 					UIUtils.showNotification("Company updated successfully", UIUtils.NotificationType.SUCCESS);
-
-
 				} else {
 					UIUtils.showNotification("Company update failed", UIUtils.NotificationType.ERROR);
 				}
@@ -271,7 +266,7 @@ public class AdminCompanies extends FlexBoxLayout {
 		dialog.closeOnCancel();
 		dialog.getConfirmButton().addClickListener(e -> {
 
-			List<User> employeesInSelectedCompany = UserFacade.getInstance().getUsersByCompanyId(company.getId());
+			List<User> employeesInSelectedCompany = UserFacade.getInstance().getUsersInCompany(company.getId());
 
 			boolean error = false;
 

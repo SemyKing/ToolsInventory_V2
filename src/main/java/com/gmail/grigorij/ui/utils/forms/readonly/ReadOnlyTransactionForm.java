@@ -1,17 +1,19 @@
 package com.gmail.grigorij.ui.utils.forms.readonly;
 
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.transaction.TransactionOperation;
-import com.gmail.grigorij.backend.entities.transaction.TransactionTarget;
+import com.gmail.grigorij.backend.entities.transaction.OperationType;
+import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
+import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.utils.forms.UserForm;
-import com.gmail.grigorij.ui.utils.forms.admin.AdminCompanyForm;
-import com.gmail.grigorij.ui.utils.forms.admin.ToolCategoryForm;
+import com.gmail.grigorij.ui.utils.css.size.Horizontal;
+import com.gmail.grigorij.ui.utils.css.size.Vertical;
+import com.gmail.grigorij.ui.utils.forms.editable.EditableCompanyForm;
+import com.gmail.grigorij.ui.utils.forms.editable.EditableCategoryForm;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -40,11 +42,12 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 		setDisplay(Display.FLEX);
 		setFlexDirection(FlexDirection.COLUMN);
 
-		TextField fullNameField = getTextField("Description", "");
-		ReadOnlyHasValue<Transaction> fullName = new ReadOnlyHasValue<>(transaction ->
-				fullNameField.setValue(transaction.getFullName()));
+		TextField fullNameField = new TextField("Description");
+		fullNameField.setReadOnly(true);
+		ReadOnlyHasValue<Transaction> fullName = new ReadOnlyHasValue<>(transaction -> fullNameField.setValue(transaction.getFullName()));
 
-		TextField fullDateField = getTextField("Date & Time", "");
+		TextField fullDateField = new TextField("Date & Time");
+		fullDateField.setReadOnly(true);
 		ReadOnlyHasValue<Transaction> fullDate = new ReadOnlyHasValue<>(transaction -> {
 			String tr_date;
 			try {
@@ -56,19 +59,21 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 			fullDateField.setValue(tr_date);
 		});
 
-		TextField whoDidField = getTextField("Who Did", "");
+		TextField whoDidField = new TextField("Who Did");
+		whoDidField.setReadOnly(true);
 		ReadOnlyHasValue<Transaction> whoDid = new ReadOnlyHasValue<>(transaction -> {
 			whoDidField.setValue( (transaction.getWhoDid() == null) ? "" : transaction.getWhoDid().getUsername() );
 		});
 
-		TextField additionalInfoField = getTextField("Additional Info", "");
+		TextField additionalInfoField = new TextField("Additional Info");
+		additionalInfoField.setReadOnly(true);
 		ReadOnlyHasValue<Transaction> additionalInfo = new ReadOnlyHasValue<>(transaction -> {
 			additionalInfoField.setValue( transaction.getAdditionalInfo() );
 		});
 
 		UIUtils.setColSpan(2, fullNameField, additionalInfoField);
 
-		staticForm.addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
+		staticForm.addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
 		staticForm.setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
@@ -88,19 +93,8 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 				.bind(transaction -> transaction, null);
 
 		add(staticForm);
+		add(new Divider(2, Horizontal.NONE, Vertical.S));
 	}
-
-	private TextField getTextField(String text, String width) {
-		TextField textField = new TextField(text);
-		if (width.length() > 0) {
-			textField.setWidth(width);
-		}
-		textField.setReadOnly(true);
-		textField.getStyle().set("padding-top", "var(--lumo-space-s)");
-
-		return textField;
-	}
-
 
 	public void setTransaction(Transaction t) {
 		this.transaction = t;
@@ -108,7 +102,11 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 		constructDynamicForm();
 
 		UIUtils.updateFormSize(staticForm);
-		UIUtils.updateFormSize(dynamicForm);
+
+		if (dynamicForm != null) {
+			UIUtils.updateFormSize(dynamicForm);
+		}
+
 
 		try {
 			binder.removeBean();
@@ -127,15 +125,15 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 			remove(dynamicForm);
 		}
 
-		if (transaction.getTransactionOperation().equals(TransactionOperation.LOGIN)) {
+		if (transaction.getTransactionOperation().equals(OperationType.LOGIN)) {
 			return;
 		}
-		if (transaction.getTransactionOperation().equals(TransactionOperation.LOGOUT)) {
+		if (transaction.getTransactionOperation().equals(OperationType.LOGOUT)) {
 			return;
 		}
 
 		dynamicForm = new FormLayout();
-		dynamicForm.addClassNames(LumoStyles.Padding.Horizontal.M);
+		dynamicForm.addClassNames(LumoStyles.Padding.Bottom.S);
 		dynamicForm.setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
@@ -143,62 +141,66 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 		Button showDetailsButton = UIUtils.createButton("Show Details", ButtonVariant.LUMO_CONTRAST);
 
 
-		if (transaction.getTransactionTarget().equals(TransactionTarget.USER)) {
+		if (transaction.getTransactionTarget().equals(OperationTarget.USER)) {
 
-			TextField targetUser = getTextField("User", "");
+			TextField targetUserField = new TextField("User");
+			targetUserField.setReadOnly(true);
 			ReadOnlyHasValue<Transaction> t_user = new ReadOnlyHasValue<>(transaction -> {
-				targetUser.setValue( (transaction.getDestinationUser() == null) ? "" : transaction.getDestinationUser().getUsername() );
+				targetUserField.setValue( (transaction.getDestinationUser() == null) ? "" : transaction.getDestinationUser().getUsername() );
 			});
 
 			showDetailsButton.addClickListener(e -> {
-				UserForm form = new UserForm();
+				ReadOnlyUserForm form = new ReadOnlyUserForm();
 				form.setUser(transaction.getDestinationUser());
 
 				constructTargetDetailsDialog(form);
 			});
 
-			finalizeForm(t_user, targetUser, showDetailsButton);
+			finalizeForm(t_user, targetUserField, showDetailsButton);
 
 
-		} else if (transaction.getTransactionTarget().equals(TransactionTarget.COMPANY)) {
+		} else if (transaction.getTransactionTarget().equals(OperationTarget.COMPANY)) {
 
-			TextField company = getTextField("Company", "");
+			TextField companyField = new TextField("Company");
+			companyField.setReadOnly(true);
 			ReadOnlyHasValue<Transaction> t_company = new ReadOnlyHasValue<>(transaction -> {
-				company.setValue( (transaction.getCompany() == null) ? "" : transaction.getCompany().getName() );
+				companyField.setValue( (transaction.getCompany() == null) ? "" : transaction.getCompany().getName() );
 			});
 
 			showDetailsButton.addClickListener(e -> {
-				AdminCompanyForm form = new AdminCompanyForm();
+				ReadOnlyCompanyForm form = new ReadOnlyCompanyForm();
 				form.setCompany(transaction.getCompany());
 
 				constructTargetDetailsDialog(form);
 			});
 
-			finalizeForm(t_company, company, showDetailsButton);
+			finalizeForm(t_company, companyField, showDetailsButton);
 
 
-		} else if (transaction.getTransactionTarget().equals(TransactionTarget.CATEGORY)) {
+		} else if (transaction.getTransactionTarget().equals(OperationTarget.CATEGORY)) {
 
-			TextField category = getTextField("Category", "");
+			TextField categoryField = new TextField("Category");
+			categoryField.setReadOnly(true);
 			ReadOnlyHasValue<Transaction> t_category = new ReadOnlyHasValue<>(transaction -> {
-				category.setValue( (transaction.getInventoryEntity() == null) ? "" : transaction.getInventoryEntity().getName() );
+				categoryField.setValue((transaction.getInventoryEntity() == null) ? "" : transaction.getInventoryEntity().getName());
 			});
 
 			showDetailsButton.addClickListener(e -> {
-				ToolCategoryForm form = new ToolCategoryForm();
+				ReadOnlyCategoryForm form = new ReadOnlyCategoryForm();
 				form.setCategory(transaction.getInventoryEntity());
 
 				constructTargetDetailsDialog(form);
 			});
 
-			finalizeForm(t_category, category, showDetailsButton);
+			finalizeForm(t_category, categoryField, showDetailsButton);
 
 
-		} else if (transaction.getTransactionTarget().equals(TransactionTarget.TOOL)) {
+		} else if (transaction.getTransactionTarget().equals(OperationTarget.TOOL)) {
 
-			TextField tool = getTextField("Tool", "");
+			TextField toolField = new TextField("Tool");
+			toolField.setReadOnly(true);
 			ReadOnlyHasValue<Transaction> t_tool = new ReadOnlyHasValue<>(transaction -> {
-				tool.setValue( (transaction.getInventoryEntity() == null) ? "" : transaction.getInventoryEntity().getName() );
+				toolField.setValue( (transaction.getInventoryEntity() == null) ? "" : transaction.getInventoryEntity().getName() );
 			});
 
 			showDetailsButton.addClickListener(e -> {
@@ -208,7 +210,7 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 				constructTargetDetailsDialog(form);
 			});
 
-			finalizeForm(t_tool, tool, showDetailsButton);
+			finalizeForm(t_tool, toolField, showDetailsButton);
 
 
 		}
@@ -217,8 +219,10 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 	}
 
 	private void finalizeForm(ReadOnlyHasValue<Transaction> readOnlyField, TextField field, Button button) {
-		FlexBoxLayout targetLayout = UIUtils.getFormRowLayout(field, button);
+		FlexBoxLayout targetLayout = UIUtils.getFormRowLayout(field, button, false);
 		UIUtils.setColSpan(2, targetLayout);
+
+		dynamicForm.add(UIUtils.createH4Label("Target"));
 		dynamicForm.add(targetLayout);
 
 		binder.forField(readOnlyField)
@@ -228,7 +232,7 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 	private void constructTargetDetailsDialog(Component content) {
 		CustomDialog dialog = new CustomDialog();
 
-		dialog.setHeader(UIUtils.createH4Label("Target Details"));
+		dialog.setHeader(UIUtils.createH3Label("Target Details"));
 		dialog.setContent(content);
 		dialog.getCancelButton().addClickListener(closeEvent -> dialog.close());
 		dialog.setConfirmButton(null);

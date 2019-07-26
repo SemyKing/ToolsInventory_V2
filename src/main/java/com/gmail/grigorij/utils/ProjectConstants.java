@@ -31,8 +31,7 @@ public final class ProjectConstants {
 	public static final String INACTIVE = "Inactive";
 
 	public static final String FORM_LAYOUT_LARGE_ATTR = "large";
-//	public static final String FORM_HALF_WIDTH = "calc(48% - 0rem)";
-	public static final String FORM_HALF_WIDTH = "48%";
+	public static final String FORM_HALF_WIDTH = "47%";
 	public static final String COL_2_MIN_WIDTH = "520px";
 
 	public static final String ROOT_CATEGORY = "**Root Category**";

@@ -2,14 +2,13 @@ package com.gmail.grigorij.ui;
 
 import com.gmail.grigorij.backend.DatabaseDummyInsert;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
-import com.gmail.grigorij.ui.views.MenuLayout;
+import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
+import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.ui.views.authentication.LoginView;
-import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.OperationStatus;
+import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;

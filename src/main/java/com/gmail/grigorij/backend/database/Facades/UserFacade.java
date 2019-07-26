@@ -22,13 +22,23 @@ public class UserFacade {
 		return mInstance;
 	}
 
+	public List<User> getAllUsers() {
+		List<User> users;
+		try {
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllUsers", User.class)
+					.getResultList();
+		} catch (NoResultException nre) {
+			users = null;
+		}
+		return users;
+	}
 
 	public User findUserInDatabase(String username, String password) {
 		User user;
 		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.findUserInDatabase")
-					.setParameter("username", username)
-					.setParameter("password", password)
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("findUserInDatabase", User.class)
+					.setParameter("username_var", username)
+					.setParameter("password_var", password)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
@@ -36,12 +46,11 @@ public class UserFacade {
 		return user;
 	}
 
-
 	public User getUserByUsername(String username) {
 		User user;
 		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUserByUsername")
-					.setParameter("username", username)
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByUsername")
+					.setParameter("username_var", username)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
@@ -52,8 +61,8 @@ public class UserFacade {
 	public User getUserById(Long id) {
 		User user;
 		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUserById")
-					.setParameter("id", id)
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserById")
+					.setParameter("id_var", id)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
@@ -61,23 +70,10 @@ public class UserFacade {
 		return user;
 	}
 
-
-	public List<User> getAllUsers() {
+	public List<User> getUsersInCompany(long companyId) {
 		List<User> users;
 		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getAllUsers", User.class)
-					.getResultList();
-		} catch (NoResultException nre) {
-			users = null;
-		}
-		return users;
-	}
-
-
-	public List<User> getUsersByCompanyId(long companyId) {
-		List<User> users;
-		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUsersByCompanyId", User.class)
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUsersInCompany", User.class)
 					.setParameter("id_var", companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
@@ -85,6 +81,7 @@ public class UserFacade {
 		}
 		return users;
 	}
+
 
 
 	public boolean insert(User user) {
@@ -102,7 +99,6 @@ public class UserFacade {
 		System.out.println("User INSERT successful");
 		return true;
 	}
-
 
 	public boolean update(User user) {
 		System.out.println("User UPDATE");
@@ -131,7 +127,6 @@ public class UserFacade {
 		return true;
 	}
 
-
 	public boolean remove(User user) {
 		System.out.println("User REMOVE");
 		if (user == null)
@@ -151,9 +146,5 @@ public class UserFacade {
 		}
 		System.out.println("User REMOVE successful");
 		return true;
-	}
-
-	public List<User> getEmptyList() {
-		return emptyList;
 	}
 }

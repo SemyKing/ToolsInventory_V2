@@ -2,6 +2,7 @@ package com.gmail.grigorij.ui.views;
 
 import com.gmail.grigorij.ui.MainLayout;
 import com.gmail.grigorij.backend.access.AccessGroups;
+import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
@@ -16,19 +17,23 @@ import com.gmail.grigorij.ui.views.navigation.inventory.Inventory;
 import com.gmail.grigorij.ui.views.navigation.messages.Messages;
 import com.gmail.grigorij.ui.views.navigation.reporting.Reporting;
 import com.gmail.grigorij.ui.views.navigation.transactions.Transactions;
+import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.ProjectConstants;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
+import com.vaadin.flow.shared.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class MenuLayout extends FlexBoxLayout implements PageConfigurator, RouterLayout {
+public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 
 	private static final Logger log = LoggerFactory.getLogger(MenuLayout.class);
 	private static final String CLASS_NAME = "main-menu";
@@ -162,7 +167,7 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 			menu.addNaviItem(admin, admin_companies);
 
 			admin_companies.addClickListener(e-> {
-				adminItemOnClick(admin_companies);
+				adminNaviItemOnClick(admin_companies);
 			});
 
 
@@ -170,21 +175,21 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 			menu.addNaviItem(admin, admin_personnel);
 
 			admin_personnel.addClickListener(e-> {
-				adminItemOnClick(admin_personnel);
+				adminNaviItemOnClick(admin_personnel);
 			});
 
 			NaviItem admin_inventory = new NaviItem(ProjectConstants.ADMIN_INVENTORY, null , false);
 			menu.addNaviItem(admin, admin_inventory);
 
 			admin_inventory.addClickListener(e-> {
-				adminItemOnClick(admin_inventory);
+				adminNaviItemOnClick(admin_inventory);
 			});
 
 			NaviItem admin_transactions = new NaviItem(ProjectConstants.ADMIN_TRANSACTIONS, null , false);
 			menu.addNaviItem(admin, admin_transactions);
 
 			admin_transactions.addClickListener(e-> {
-				adminItemOnClick(admin_transactions);
+				adminNaviItemOnClick(admin_transactions);
 			});
 		}
 
@@ -196,7 +201,6 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 
 	private void naviItemOnClick(NaviItem naviItem) {
 		viewContainer.removeAll();
-//		appBar.setTitle(naviItem.getText());
 		appBar.reset();
 
 		selectCorrectNaviItem(naviItem.getText(), false);
@@ -204,10 +208,8 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 		naviDrawer.close();
 	}
 
-
-	private void adminItemOnClick(NaviItem naviItem) {
+	private void adminNaviItemOnClick(NaviItem naviItem) {
 		viewContainer.removeAll();
-//		appBar.setTitle(ProjectConstants.ADMIN + " " + naviItem.getText());
 		appBar.reset();
 
 		viewContainer.add(new AdminMain(this));
@@ -297,11 +299,31 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator, Route
 		return appBar;
 	}
 
-
 	@Override
 	public void configurePage(InitialPageSettings settings) {
 		settings.addMetaTag("apple-mobile-web-app-capable", "yes");
 		settings.addMetaTag("apple-mobile-web-app-status-bar-style", "black");
 		settings.addFavIcon("icon", "frontend/styles/favicons/favicon.ico", "256x256");
+	}
+
+
+
+	private Registration broadcasterRegistration;
+
+	@Override
+	protected void onAttach(AttachEvent attachEvent) {
+		UI ui = attachEvent.getUI();
+		broadcasterRegistration = Broadcaster.register(newMessage -> {
+			ui.access(() -> UIUtils.showNotification("ATTENTION: " + newMessage, UIUtils.NotificationType.INFO));
+			ui.getSession().lock();
+			ui.push();
+			ui.getSession().unlock();
+		});
+	}
+
+	@Override
+	protected void onDetach(DetachEvent detachEvent) {
+		broadcasterRegistration.remove();
+		broadcasterRegistration = null;
 	}
 }

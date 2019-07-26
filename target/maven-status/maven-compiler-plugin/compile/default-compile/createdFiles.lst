@@ -11,7 +11,6 @@ com\gmail\grigorij\ui\utils\css\size\Left.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing$Left.class
 com\gmail\grigorij\ui\utils\components\frames\SplitViewFrame$Position.class
 com\gmail\grigorij\ui\utils\components\Token.class
-com\gmail\grigorij\ui\utils\forms\PersonForm.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Color$Contrast.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Horizontal.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing.class
@@ -36,7 +35,6 @@ com\gmail\grigorij\ui\utils\css\LumoStyles$Color.class
 com\gmail\grigorij\ui\utils\components\navigation\bar\AppBar.class
 com\gmail\grigorij\ui\utils\css\FontWeight.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing$Bottom.class
-com\gmail\grigorij\ui\utils\forms\admin\AdminToolForm.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Responsive$Horizontal.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Size.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Right.class
@@ -57,9 +55,7 @@ com\gmail\grigorij\utils\camera\HasDataReceiver.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$FontFamily.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$FontWeight.class
 com\gmail\grigorij\ui\MainLayout$1.class
-com\gmail\grigorij\backend\entities\user\Person.class
 com\gmail\grigorij\ui\utils\components\navigation\bar\AppBar$NaviMode.class
-com\gmail\grigorij\ui\utils\forms\admin\AdminUserForm.class
 com\gmail\grigorij\ui\utils\css\TextAlign.class
 com\gmail\grigorij\ui\views\navigation\transactions\Transactions.class
 com\gmail\grigorij\backend\entities\company\Company.class
@@ -77,7 +73,6 @@ com\gmail\grigorij\utils\validators\CustomValidator.class
 com\gmail\grigorij\ui\utils\UIUtils$NotificationType.class
 com\gmail\grigorij\ui\utils\components\navigation\drawer\NaviItem.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Space.class
-com\gmail\grigorij\ui\utils\forms\LocationForm.class
 com\gmail\grigorij\utils\camera\FinishedEvent.class
 com\gmail\grigorij\ui\utils\css\size\Uniform.class
 com\gmail\grigorij\utils\camera\DataReceiver.class
@@ -86,18 +81,15 @@ com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Horizontal.class
 com\gmail\grigorij\ui\utils\css\WhiteSpace.class
 com\gmail\grigorij\ui\utils\components\detailsdrawer\DetailsDrawerFooter.class
 com\gmail\grigorij\ui\utils\css\BoxShadowBorders.class
-com\gmail\grigorij\ui\utils\forms\admin\AdminCompanyForm.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Right.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Responsive$Horizontal.class
 com\gmail\grigorij\backend\entities\transaction\Transaction.class
-com\gmail\grigorij\backend\entities\transaction\TransactionOperation.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Uniform.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Color$Success.class
 com\gmail\grigorij\ui\views\authentication\AuthenticationService.class
 com\gmail\grigorij\backend\database\DatabaseManager.class
 com\gmail\grigorij\ui\utils\css\FlexDirection.class
 com\gmail\grigorij\ui\utils\css\size\Bottom.class
-com\gmail\grigorij\backend\entities\transaction\TransactionTarget.class
 com\gmail\grigorij\ui\utils\components\ConfirmDialog$Type.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Heading.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Tall.class
@@ -113,7 +105,6 @@ com\gmail\grigorij\ui\utils\css\LumoStyles$Margin.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Wide.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Responsive$Vertical.class
 com\gmail\grigorij\ui\utils\camera\CameraView.class
-com\gmail\grigorij\ui\utils\forms\ToolForm.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Responsive.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing$Uniform.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Wide.class
@@ -136,17 +127,13 @@ com\gmail\grigorij\ui\utils\components\CustomDialog.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Bottom.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Tall.class
 com\gmail\grigorij\ui\utils\css\FontSize.class
-com\gmail\grigorij\ui\utils\forms\admin\AdminToolBulkForm.class
 com\gmail\grigorij\utils\converters\CustomConverter$StatusConverter.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Color$Primary.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Vertical.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Top.class
 com\gmail\grigorij\ui\views\authentication\PasswordRecovery.class
-com\gmail\grigorij\backend\entities\location\Location.class
-com\gmail\grigorij\ui\utils\forms\ToolCopyForm.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing$Tall.class
 com\gmail\grigorij\ui\utils\css\size\Vertical.class
-com\gmail\grigorij\ui\utils\forms\UserForm.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Left.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Responsive.class
 com\gmail\grigorij\ui\utils\components\navigation\drawer\NaviMenu.class
@@ -154,7 +141,6 @@ com\gmail\grigorij\ui\utils\components\CustomBadge.class
 com\gmail\grigorij\utils\converters\CustomConverter.class
 com\gmail\grigorij\ApplicationServletContextListener.class
 com\gmail\grigorij\ui\utils\components\CustomBadge$BadgeColor.class
-com\gmail\grigorij\ui\utils\forms\admin\AdminToolForm$1.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Top.class
 com\gmail\grigorij\ui\utils\components\navigation\drawer\BrandExpression.class
 com\gmail\grigorij\ui\utils\UIUtils.class

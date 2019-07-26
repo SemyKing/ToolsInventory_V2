@@ -14,8 +14,7 @@ import java.io.IOException;
 
 public class CameraView extends AbstractCameraView {
 
-	public CameraView() {
-	}
+	public CameraView() {}
 
 	public void showPreview() {
 		getCamera().showPreview();

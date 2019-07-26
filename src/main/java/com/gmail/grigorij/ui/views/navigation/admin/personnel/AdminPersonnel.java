@@ -6,17 +6,13 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.components.ListItem;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.css.size.Bottom;
-import com.gmail.grigorij.ui.utils.css.size.Left;
-import com.gmail.grigorij.ui.utils.css.size.Top;
-import com.gmail.grigorij.ui.utils.css.size.Vertical;
-import com.gmail.grigorij.ui.utils.forms.admin.AdminUserForm;
+import com.gmail.grigorij.ui.utils.css.size.*;
+import com.gmail.grigorij.ui.utils.forms.editable.EditableUserForm;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
@@ -34,20 +30,13 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 
 public class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
 
 	private final AdminMain adminMain;
-	private AdminUserForm userForm = new AdminUserForm();
+	private EditableUserForm userForm = new EditableUserForm();
 
 	private Grid<User> grid;
 	private ListDataProvider<User> dataProvider;
@@ -72,13 +61,15 @@ public class AdminPersonnel extends FlexBoxLayout {
 		FlexBoxLayout header = new FlexBoxLayout();
 		header.setClassName(CLASS_NAME + "__header");
 		header.setMargin(Top.S);
+		header.setAlignItems(Alignment.BASELINE);
 
 		TextField searchField = new TextField();
 		searchField.setWidth("100%");
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Personnel");
-		searchField.setValueChangeMode(ValueChangeMode.EAGER);
+//		searchField.setValueChangeMode(ValueChangeMode.EAGER);
+		searchField.setValueChangeMode(ValueChangeMode.LAZY);
 		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
 		header.add(searchField);
@@ -89,16 +80,16 @@ public class AdminPersonnel extends FlexBoxLayout {
 		ContextMenu contextMenu = new ContextMenu(optionsContextMenuButton);
 		contextMenu.setOpenOnClick(true);
 
-		contextMenu.add(new Divider(Bottom.XS));
+		contextMenu.add(new Divider(1, Bottom.XS));
 		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.USER_CARD, UIUtils.createText("Add User")), e -> {
 			grid.select(null);
 			showDetails(null);
 		});
-		contextMenu.add(new Divider(Vertical.XS));
+		contextMenu.add(new Divider(1, Vertical.XS));
 		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.INSERT, UIUtils.createText("Import")), e -> importOnClick());
-		contextMenu.add(new Divider(Vertical.XS));
+		contextMenu.add(new Divider(1, Vertical.XS));
 		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.EXTERNAL_LINK, UIUtils.createText("Export")), e -> exportOnClick());
-		contextMenu.add(new Divider(Top.XS));
+		contextMenu.add(new Divider(1, Top.XS));
 
 		add(header);
 	}
@@ -131,21 +122,9 @@ public class AdminPersonnel extends FlexBoxLayout {
 				.setHeader("Company")
 				.setWidth(UIUtils.COLUMN_WIDTH_L);
 
-		ComponentRenderer<ListItem, User> personalInfoRenderer = new ComponentRenderer<>(
-				user -> {
-					ListItem item = new ListItem(UIUtils.createInitials(user.getInitials()),
-							user.getFirstName() + " " + user.getLastName(), user.getEmail());
-					item.setHorizontalPadding(false);
-					item.setWidth("100%");
-					return item;
-				});
-		grid.addColumn(personalInfoRenderer)
-				.setHeader("Personal Info")
-				.setWidth(UIUtils.COLUMN_WIDTH_XL);
-
-//		grid.addColumn(new ComponentRenderer<>(this::createGridUserInfo)).setHeader("Person")
-//				.setWidth(UIUtils.COLUMN_WIDTH_XXL);
-
+		grid.addColumn(user -> (user.getPerson() == null) ? "" : user.getPerson().getFullName())
+				.setHeader("Person")
+				.setWidth(UIUtils.COLUMN_WIDTH_L);
 
 		grid.addColumn(new ComponentRenderer<>(selectedUser -> UIUtils.createActiveGridIcon(selectedUser.isDeleted()))).setHeader("Active")
 				.setWidth(UIUtils.COLUMN_WIDTH_XS)
@@ -166,9 +145,9 @@ public class AdminPersonnel extends FlexBoxLayout {
 						boolean res = true;
 						for (String sParam : searchParams) {
 							res =  StringUtils.containsIgnoreCase(user.getUsername(), sParam) ||
-									StringUtils.containsIgnoreCase(user.getFirstName(), sParam) ||
-									StringUtils.containsIgnoreCase(user.getLastName(), sParam) ||
-									StringUtils.containsIgnoreCase(user.getEmail(), sParam) ||
+									StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getFirstName(), sParam) ||
+									StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getLastName(), sParam) ||
+									StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getEmail(), sParam) ||
 									StringUtils.containsIgnoreCase((user.getCompany() == null) ? "" : user.getCompany().getName(), sParam);
 
 							//(res) -> shows All items based on searchParams
@@ -182,9 +161,9 @@ public class AdminPersonnel extends FlexBoxLayout {
 		} else {
 			dataProvider.addFilter(
 					user -> StringUtils.containsIgnoreCase(user.getUsername(), searchParam)  ||
-							StringUtils.containsIgnoreCase(user.getFirstName(), searchParam) ||
-							StringUtils.containsIgnoreCase(user.getLastName(), searchParam)  ||
-							StringUtils.containsIgnoreCase(user.getEmail(), searchParam) ||
+							StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getFirstName(), searchParam) ||
+							StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getLastName(), searchParam)  ||
+							StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getEmail(), searchParam) ||
 							StringUtils.containsIgnoreCase((user.getCompany() == null) ? "" : user.getCompany().getName(), searchParam)
 			);
 		}
@@ -195,6 +174,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
 		detailsDrawer.setContent(userForm);
+		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Header
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("User Details");

@@ -2,31 +2,41 @@ package com.gmail.grigorij.backend.entities.transaction;
 
 public class TransactionName {
 
-	public static String getTransactionFullName(TransactionOperation operation, TransactionTarget target) {
+	public static String getTransactionFullName(OperationType operation, OperationTarget target) {
 		String name = "";
-		String hasHave = (target.equals(TransactionTarget.ACCESS_RIGHTS)) ? "have" : "has";
+		String hasHave = (target.equals(OperationTarget.ACCESS_RIGHTS)) ? "have" : "has";
 
-		if (operation.equals(TransactionOperation.ADD)) {
+		if (operation.equals(OperationType.ADD)) {
 			return target.getStringValue() + " " + hasHave + " been added";
 		}
 
-		if (operation.equals(TransactionOperation.EDIT)) {
+		if (operation.equals(OperationType.EDIT)) {
 			return target.getStringValue() + " " + hasHave + " been edited";
 		}
 
-		if (operation.equals(TransactionOperation.UPDATE)) {
+		if (operation.equals(OperationType.UPDATE)) {
 			return target.getStringValue() + " " + hasHave + " been updated";
 		}
 
-		if (operation.equals(TransactionOperation.DELETE)) {
+		if (operation.equals(OperationType.DELETE)) {
 			return target.getStringValue() + " " + hasHave + " been deleted";
 		}
 
-		if (operation.equals(TransactionOperation.LOGIN)) {
+
+		if (operation.equals(OperationType.START)) {
+			return target.getStringValue() + " " + hasHave + " been started";
+		}
+
+		if (operation.equals(OperationType.STOP)) {
+			return target.getStringValue() + " " + hasHave + " been stopped";
+		}
+
+
+		if (operation.equals(OperationType.LOGIN)) {
 			return target.getStringValue() + " Logged In";
 		}
 
-		if (operation.equals(TransactionOperation.LOGOUT)) {
+		if (operation.equals(OperationType.LOGOUT)) {
 			return target.getStringValue() + " Logged Out";
 		}
 
@@ -34,12 +44,12 @@ public class TransactionName {
 		return name;
 	}
 
-	public static String getTransactionShortName(TransactionOperation operation, TransactionTarget target) {
-		if (operation.equals(TransactionOperation.LOGIN)) {
+	public static String getTransactionShortName(OperationType operation, OperationTarget target) {
+		if (operation.equals(OperationType.LOGIN)) {
 			return operation.getStringValue();
 		}
 
-		if (operation.equals(TransactionOperation.LOGOUT)) {
+		if (operation.equals(OperationType.LOGOUT)) {
 			return operation.getStringValue();
 		}
 

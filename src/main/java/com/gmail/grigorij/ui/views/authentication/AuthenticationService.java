@@ -1,6 +1,10 @@
 package com.gmail.grigorij.ui.views.authentication;
 
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
+import com.gmail.grigorij.backend.entities.transaction.OperationType;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.UI;
@@ -69,14 +73,33 @@ public class AuthenticationService {
         }
     }
 
+    public static void signOut() {
+        Optional<Cookie> cookie = getRememberMeCookie();
+        if (cookie.isPresent()) {
+            String id = cookie.get().getValue();
+            rememberedUsers.remove(id);
+            deleteRememberMeCookie();
+        }
+
+        Transaction logOutTransaction = new Transaction();
+        logOutTransaction.setTransactionTarget(OperationTarget.USER);
+        logOutTransaction.setTransactionOperation(OperationType.LOGOUT);
+        logOutTransaction.setWhoDid(AuthenticationService.getCurrentSessionUser());
+
+        TransactionFacade.getInstance().insert(logOutTransaction);
+
+        getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
+        UI.getCurrent().getSession().close();
+        UI.getCurrent().getPage().reload();
+    }
+
+
     private static boolean constructSessionData(com.gmail.grigorij.backend.entities.user.User user, String username) {
-        System.out.println("constructSessionData()--");
         System.out.println();
 
-        if (user == null)
+        if (user == null) {
             user = UserFacade.getInstance().getUserByUsername(username);
-
-//        Company company;
+        }
 
         if (user == null) {
             System.out.println("login fail, user not found (NULL)");
@@ -96,28 +119,8 @@ public class AuthenticationService {
         }
 
         setCurrentSessionUser(user);
-        System.out.println("--constructSessionData() successful");
         return true;
     }
-
-
-
-    public static void signOut() {
-        Optional<Cookie> cookie = getRememberMeCookie();
-        if (cookie.isPresent()) {
-            String id = cookie.get().getValue();
-            rememberedUsers.remove(id);
-            deleteRememberMeCookie();
-        }
-
-        getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
-        getCurrent().getSession().invalidate();
-
-        UI.getCurrent().getPage().reload();
-
-        System.out.println("--signOut() successful");
-    }
-
 
     private static boolean loginRememberedUser() {
         Optional<Cookie> rememberMeCookie = getRememberMeCookie();

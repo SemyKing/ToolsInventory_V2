@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.views.authentication;
 
-import com.gmail.grigorij.backend.entities.user.Person;
+import com.gmail.grigorij.backend.entities.embeddable.Person;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.OperationStatus;
@@ -32,13 +32,12 @@ class PasswordRecovery {
 				.bind(Person::getEmail, Person::setEmail);
 
 		CustomDialog dialog = new CustomDialog();
-		dialog.setHeader(UIUtils.createH2Label("Password recovery"));
+		dialog.setHeader(UIUtils.createH3Label("Password recovery"));
 		dialog.setContent(new Span("Enter your email to reset your password"), emailField);
 
 		dialog.getCancelButton().addClickListener(e -> dialog.close());
 
-		Button send = UIUtils.createButton("Send", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
-		dialog.setConfirmButton(send);
+		dialog.getConfirmButton().setText("Send");
 		dialog.getConfirmButton().addClickListener(e -> {
 			binder.validate();
 			if (binder.isValid()) {

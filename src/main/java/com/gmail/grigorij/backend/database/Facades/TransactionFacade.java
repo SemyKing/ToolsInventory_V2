@@ -1,10 +1,9 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
-import com.gmail.grigorij.backend.entities.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.transaction.TransactionOperation;
+import com.gmail.grigorij.backend.entities.transaction.OperationType;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 
 import javax.persistence.NoResultException;
@@ -52,8 +51,8 @@ public class TransactionFacade {
 
 
 	private List<Transaction> getSortedList(List<Transaction> list, LocalDate start, LocalDate end) {
-		final Date startDate = Date.valueOf(start);
-		final Date endDate = Date.valueOf(end);
+		final Date startDate = Date.valueOf(start.minusDays(1));
+		final Date endDate = Date.valueOf(end.plusDays(1));
 
 		list.removeIf((Transaction transaction) -> transaction.getDate().before(startDate));
 		list.removeIf((Transaction transaction) -> transaction.getDate().after(endDate));
@@ -68,16 +67,6 @@ public class TransactionFacade {
 		List<Transaction> transactions = getAllTransactions();
 
 		return getSortedList(transactions, start, end);
-
-//		final Date startDate = Date.valueOf(start);
-//		final Date endDate = Date.valueOf(end);
-//
-//		transactions.removeIf((Transaction transaction) -> transaction.getDate().before(startDate));
-//		transactions.removeIf((Transaction transaction) -> transaction.getDate().after(endDate));
-//
-//		transactions.sort(Comparator.comparing(Transaction::getDate));
-//
-//		return transactions;
 	}
 
 
@@ -85,23 +74,14 @@ public class TransactionFacade {
 		List<Transaction> transactions = getAllTransactionsInCompany(companyId);
 
 		return getSortedList(transactions, start, end);
-
-//		final Date startDate = Date.valueOf(start);
-//		final Date endDate = Date.valueOf(end);
-//
-//		transactions.removeIf((Transaction transaction) -> transaction.getDate().before(startDate));
-//		transactions.removeIf((Transaction transaction) -> transaction.getDate().after(endDate));
-//
-//		transactions.sort(Comparator.comparing(Transaction::getDate));
-//
-//		return transactions;
 	}
 
 
 	public boolean insertLoginTransaction(String additionalInfo) {
 		Transaction tr = new Transaction();
 		tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-		tr.setTransactionOperation(TransactionOperation.LOGIN);
+		tr.setTransactionOperation(OperationType.LOGIN);
+		tr.setTransactionTarget(OperationTarget.USER);
 
 		if (additionalInfo.length() > 0) {
 			tr.setAdditionalInfo(additionalInfo);

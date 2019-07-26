@@ -21,148 +21,163 @@ public class ReadOnlyToolForm extends FormLayout {
 	private Binder<InventoryEntity> binder = new Binder<>(InventoryEntity.class);
 
 	public ReadOnlyToolForm() {
-		TextField toolName = getTextField("Name", "", "");
-		ReadOnlyHasValue<InventoryEntity> name = new ReadOnlyHasValue<>(tool ->
-				toolName.setValue(tool.getName()));
 
-		TextField toolManufacturer = getTextField("Manufacturer", "", "");
-		ReadOnlyHasValue<InventoryEntity> manufacturer = new ReadOnlyHasValue<>(tool ->
-				toolManufacturer.setValue(tool.getManufacturer()));
+		TextField nameField = new TextField("Name");
+		nameField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> name = new ReadOnlyHasValue<>(tool -> nameField.setValue( tool.getName() ));
 
-		TextField toolModel = getTextField("Model", "", "");
-		ReadOnlyHasValue<InventoryEntity> model = new ReadOnlyHasValue<>(tool ->
-				toolModel.setValue(tool.getModel()));
+		TextField qrField = new TextField("QR Code");
+		qrField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> qr = new ReadOnlyHasValue<>(tool -> qrField.setValue( tool.getQrCode() ));
 
-		TextField toolInfo = getTextField("Tool Info", "", "");
-		toolInfo.setReadOnly(true);
-		ReadOnlyHasValue<InventoryEntity> info = new ReadOnlyHasValue<>(tool ->
-				toolInfo.setValue(tool.getToolInfo()));
+		TextField barcodeField = new TextField("Barcode");
+		barcodeField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> barcode = new ReadOnlyHasValue<>(tool -> barcodeField.setValue( tool.getBarcode() ));
 
-		TextField toolSN = getTextField("SN", "", "");
-		ReadOnlyHasValue<InventoryEntity> sn = new ReadOnlyHasValue<>(tool ->
-				toolSN.setValue(tool.getSnCode()));
+		TextField snField = new TextField("SN");
+		snField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> sn = new ReadOnlyHasValue<>(tool -> snField.setValue(tool.getSnCode()));
 
-		TextField toolBarcode = getTextField("Barcode", "", "");
-		ReadOnlyHasValue<InventoryEntity> barcode = new ReadOnlyHasValue<>(tool ->
-				toolBarcode.setValue(tool.getBarcode()));
+		TextField toolInfoField = new TextField("Tool Info");
+		toolInfoField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> toolInfo = new ReadOnlyHasValue<>(tool -> toolInfoField.setValue( tool.getToolInfo() ));
 
-		TextField toolCategory = getTextField("Category", "", "");
-		ReadOnlyHasValue<InventoryEntity> category = new ReadOnlyHasValue<>(tool ->
-				toolCategory.setValue( tool.getParentCategory()==null ? "" : tool.getParentCategory().getName() )
-		);
+		TextField manufacturerField = new TextField("Manufacturer");
+		manufacturerField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> manufacturer = new ReadOnlyHasValue<>(tool -> manufacturerField.setValue( tool.getManufacturer() ));
 
-		TextField toolUsageStatus = getTextField("Status", "", "");
-		ReadOnlyHasValue<InventoryEntity> usageStatus = new ReadOnlyHasValue<>(tool ->
-				toolUsageStatus.setValue(tool.getUsageStatus().getStringValue()));
+		TextField modelField = new TextField("Model");
+		modelField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> model = new ReadOnlyHasValue<>(tool -> modelField.setValue( tool.getModel() ));
 
-		TextField toolUser = getTextField("In Use By", "", "");
-		ReadOnlyHasValue<InventoryEntity> user = new ReadOnlyHasValue<>(tool ->
-				toolUser.setValue( tool.getUser() == null ? "" : tool.getUser().getUsername()));
+		TextField companyField = new TextField("Model");
+		companyField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> company = new ReadOnlyHasValue<>(tool -> {
+			companyField.setValue((tool.getCompany() == null) ? "" : tool.getCompany().getName());
+		});
 
-		TextField toolReservedByUser = getTextField("Reserved By", "", "");
-		ReadOnlyHasValue<InventoryEntity> reservedByUser = new ReadOnlyHasValue<>(tool ->
-				toolReservedByUser.setValue( tool.getReservedByUser() == null ? "" : tool.getReservedByUser().getUsername()));
+		TextField categoryField = new TextField("Category");
+		categoryField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> category = new ReadOnlyHasValue<>(tool -> {
+			categoryField.setValue((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName());
+		});
 
-		TextField toolBoughtDate = getTextField("Bought", ProjectConstants.FORM_HALF_WIDTH, "");
-		ReadOnlyHasValue<InventoryEntity> boughtDate = new ReadOnlyHasValue<>(tool ->
-				toolBoughtDate.setValue( tool.getDateBought() == null ? "" : DateConverter.DateToString(tool.getDateBought())));
+		TextField usageStatusField = new TextField("Status");
+		usageStatusField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> usageStatus = new ReadOnlyHasValue<>(tool -> {
+			usageStatusField.setValue(tool.getUsageStatus().getStringValue());
+		});
 
-		TextField toolNextMaintenanceDate = getTextField("Next Maintenance", ProjectConstants.FORM_HALF_WIDTH, "");
-		ReadOnlyHasValue<InventoryEntity> nextMaintenanceDate = new ReadOnlyHasValue<>(tool ->
-				toolNextMaintenanceDate.setValue( tool.getDateBought() == null ? "" : DateConverter.DateToString(tool.getDateNextMaintenance())));
+		TextField inUseByField = new TextField("In Use By");
+		inUseByField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> inUseBy = new ReadOnlyHasValue<>(tool -> {
+			inUseByField.setValue((tool.getUser() == null) ? "" : tool.getUser().getUsername());
+		});
 
-		FlexBoxLayout datesLayout = new FlexBoxLayout();
-		datesLayout.setFlexDirection(FlexDirection.ROW);
-		datesLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		datesLayout.add(toolBoughtDate, toolNextMaintenanceDate);
+		TextField reservedByField = new TextField("Reserved By");
+		reservedByField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> reservedBy = new ReadOnlyHasValue<>(tool -> {
+			reservedByField.setValue((tool.getReservedByUser() == null) ? "" : tool.getReservedByUser().getUsername());
+		});
 
-		TextField toolPrice = getTextField("Price", ProjectConstants.FORM_HALF_WIDTH, "€");
-		ReadOnlyHasValue<InventoryEntity> price = new ReadOnlyHasValue<>(tool ->
-				toolPrice.setValue( tool.getPrice() == null ? "" : String.valueOf(tool.getPrice())));
+		TextField dateBoughtField = new TextField("Bought");
+		dateBoughtField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		dateBoughtField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> dateBought = new ReadOnlyHasValue<>(tool -> {
+			dateBoughtField.setValue(tool.getDateBought() == null ? "" : DateConverter.DateToString(tool.getDateBought()));
+		});
 
-		TextField toolGuarantee = getTextField("Guarantee", ProjectConstants.FORM_HALF_WIDTH, "Months");
-		ReadOnlyHasValue<InventoryEntity> guarantee = new ReadOnlyHasValue<>(tool ->
-				toolGuarantee.setValue( tool.getGuarantee_months() == null ? "" : String.valueOf(tool.getGuarantee_months())));
+		TextField dateNextMaintenanceField = new TextField("Next Maintenance");
+		dateNextMaintenanceField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		dateNextMaintenanceField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> dateNextMaintenance = new ReadOnlyHasValue<>(tool -> {
+			dateNextMaintenanceField.setValue((tool.getDateBought() == null) ? "" : DateConverter.DateToString(tool.getDateNextMaintenance()));
+		});
 
-		FlexBoxLayout priceAndGuaranteeLayout = new FlexBoxLayout();
-		priceAndGuaranteeLayout.setFlexDirection(FlexDirection.ROW);
-		priceAndGuaranteeLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		priceAndGuaranteeLayout.add(toolPrice, toolGuarantee);
+		//DATE BOUGHT & DATE NEXT MAINTENANCE
+		FlexBoxLayout datesLayout = UIUtils.getFormRowLayout(dateBoughtField, dateNextMaintenanceField, true);
 
-		TextField toolAdditionalInfo = getTextField("Additional Info", "", "");
-		ReadOnlyHasValue<InventoryEntity> additionalInfo = new ReadOnlyHasValue<>(tool ->
-				toolAdditionalInfo.setValue(tool.getAdditionalInfo()));
+		TextField priceField = new TextField("Price");
+		priceField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		priceField.setSuffixComponent(new Span("€"));
+		priceField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> price = new ReadOnlyHasValue<>(tool -> {
+			priceField.setValue((tool.getPrice() == null) ? "" : String.valueOf(tool.getPrice()));
+		});
 
-		Divider divider = new Divider(Horizontal.NONE, Vertical.S);
-		Divider divider2 = new Divider(Horizontal.NONE, Vertical.S);
+		TextField guaranteeField = new TextField("Guarantee");
+		guaranteeField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		guaranteeField.setSuffixComponent(new Span("Months"));
+		guaranteeField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> guarantee = new ReadOnlyHasValue<>(tool ->{
+			guaranteeField.setValue((tool.getGuarantee_months() == null) ? "" : String.valueOf(tool.getGuarantee_months()));
+		});
 
-		UIUtils.setColSpan(2, divider, divider2, toolAdditionalInfo);
+		//PRICE & GUARANTEE
+		FlexBoxLayout priceAndGuaranteeLayout = UIUtils.getFormRowLayout(priceField, guaranteeField, true);
 
-		addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.S);
+		TextField additionalInfoField = new TextField("Additional Info");
+		additionalInfoField.setReadOnly(true);
+		ReadOnlyHasValue<InventoryEntity> additionalInfo = new ReadOnlyHasValue<>(tool -> additionalInfoField.setValue(tool.getAdditionalInfo()));
+
+
+		UIUtils.setColSpan(2, nameField, usageStatusField, additionalInfoField);
+
+		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		add(toolName);
-		add(toolManufacturer);
-		add(toolModel);
-		add(toolInfo);
-		add(toolSN);
-		add(toolBarcode);
-		add(divider);
-		add(toolCategory);
-		add(toolUsageStatus);
-		add(toolUser);
-		add(toolReservedByUser);
-		add(divider2);
+		add(nameField);
+		add(qrField);
+		add(barcodeField);
+		add(snField);
+		add(toolInfoField);
+		add(manufacturerField);
+		add(modelField);
+		add(new Divider(2, Horizontal.NONE, Vertical.S));
+		add(companyField);
+		add(categoryField);
+		add(usageStatusField);
+		add(inUseByField);
+		add(reservedByField);
+		add(new Divider(2, Horizontal.NONE, Vertical.S));
 		add(datesLayout);
 		add(priceAndGuaranteeLayout);
-		add(toolAdditionalInfo);
+		add(additionalInfoField);
 
 
 		binder.forField(name)
+				.bind(tool -> tool, null);
+		binder.forField(qr)
+				.bind(tool -> tool, null);
+		binder.forField(barcode)
+				.bind(tool -> tool, null);
+		binder.forField(sn)
+				.bind(tool -> tool, null);
+		binder.forField(toolInfo)
 				.bind(tool -> tool, null);
 		binder.forField(manufacturer)
 				.bind(tool -> tool, null);
 		binder.forField(model)
 				.bind(tool -> tool, null);
-		binder.forField(info)
-				.bind(tool -> tool, null);
-		binder.forField(sn)
-				.bind(tool -> tool, null);
-		binder.forField(barcode)
-				.bind(tool -> tool, null);
 		binder.forField(category)
 				.bind(tool -> tool, null);
-		binder.forField(user)
+		binder.forField(inUseBy)
 				.bind(tool -> tool, null);
 		binder.forField(usageStatus)
 				.bind(tool -> tool, null);
-		binder.forField(reservedByUser)
+		binder.forField(reservedBy)
 				.bind(tool -> tool, null);
 		binder.forField(price)
 				.bind(tool -> tool, null);
 		binder.forField(guarantee)
 				.bind(tool -> tool, null);
-		binder.forField(boughtDate)
+		binder.forField(dateBought)
 				.bind(tool -> tool, null);
-		binder.forField(nextMaintenanceDate)
+		binder.forField(dateNextMaintenance)
 				.bind(tool -> tool, null);
 		binder.forField(additionalInfo)
 				.bind(tool -> tool, null);
-	}
-
-	private TextField getTextField(String text, String width, String suffix) {
-		TextField textField = new TextField(text);
-		if (width.length() > 0) {
-			textField.setWidth(width);
-		}
-		if (suffix.length() > 0) {
-			textField.setSuffixComponent(new Span(suffix));
-		}
-		textField.setReadOnly(true);
-		textField.getStyle().set("padding-top", "var(--lumo-space-s)");
-
-		return textField;
 	}
 
 	public void setTool(InventoryEntity tool) {

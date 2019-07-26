@@ -1,10 +1,14 @@
 package com.gmail.grigorij.ui.utils.components.navigation.bar;
 
+import com.github.appreciated.papermenubutton.PaperMenuButton;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.size.Bottom;
+import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
+import com.gmail.grigorij.ui.utils.forms.editable.EditableUserForm;
 import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
@@ -15,7 +19,6 @@ import com.gmail.grigorij.ui.utils.components.navigation.bar.tab.NaviTab;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.tab.NaviTabs;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.utils.forms.UserForm;
 import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -46,12 +49,12 @@ public class AppBar extends Composite<FlexLayout> {
 
     private H4 title;
     private FlexBoxLayout actionItems;
-    private FlexBoxLayout userInfo;
+
+    private PaperMenuButton userInfo;
+//    private FlexBoxLayout userInfo;
 
     private FlexBoxLayout tabContainer;
     private NaviTabs tabs;
-
-    private UserForm userForm;
 
 
     public enum NaviMode {
@@ -60,14 +63,13 @@ public class AppBar extends Composite<FlexLayout> {
 
     private ArrayList<Tab> tabsList = new ArrayList<>();
 
+
     private final MenuLayout menuLayout;
 
     public AppBar(MenuLayout menuLayout, String title, NaviTab... tabs) {
         this.menuLayout = menuLayout;
 
         getContent().setClassName(CLASS_NAME);
-
-        userForm = new UserForm();
 
         initMenuIcon();
         initContextIcon();
@@ -100,7 +102,6 @@ public class AppBar extends Composite<FlexLayout> {
         UIUtils.setAriaLabel("Menu", menuIcon);
     }
 
-
     private void initContextIcon() {
         contextIcon = UIUtils.createTertiaryInlineButton(VaadinIcon.ARROW_LEFT);
         contextIcon.removeThemeVariants(ButtonVariant.LUMO_ICON);
@@ -115,62 +116,89 @@ public class AppBar extends Composite<FlexLayout> {
     }
 
     private void initUserInfo() {
-        userInfo = new FlexBoxLayout();
-        userInfo.addClassNames(CLASS_NAME + "__user-info");
-        userInfo.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        userInfo.setFlexDirection(FlexDirection.COLUMN);
+        FlexBoxLayout userInfoLayout = new FlexBoxLayout();
+        userInfoLayout.addClassNames(CLASS_NAME + "__user-info");
+        userInfoLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        userInfoLayout.setFlexDirection(FlexDirection.COLUMN);
 
         User user = AuthenticationService.getCurrentSessionUser();
 
-        ListItem item = new ListItem(user.getUsername(), user.getCompany().getName(), UIUtils.createInitials(user.getInitials()));
+        ListItem item = new ListItem(user.getUsername(), user.getCompany().getName(), UIUtils.createInitials(user.getPerson().getInitials()));
         item.setClassName("user-info-list-item");
         item.getContent().setClassName("user-list-item__content");
         item.getSuffix().setClassName("user-list-item__suffix");
 
         item.setHorizontalPadding(false);
-        userInfo.add(item);
+        userInfoLayout.add(item);
 
 
-        ContextMenu contextMenu = new ContextMenu(userInfo);
-        contextMenu.setOpenOnClick(true);
+        //POPUP VIEW
+        FlexBoxLayout popupWrapper = new FlexBoxLayout();
+        popupWrapper.setFlexDirection(FlexDirection.COLUMN);
+        popupWrapper.setDisplay(Display.FLEX);
+        popupWrapper.setPadding(Horizontal.S);
+        popupWrapper.setBackgroundColor("var(--lumo-base-color)");
 
-        contextMenu.add(new Divider(Bottom.XS));
-        contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.USER, UIUtils.createText("Profile")), e -> openUserInformationDialog());
-        contextMenu.add(new Divider(Vertical.XS));
-        contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.MOON, UIUtils.createText("Change theme")), e -> {
+
+        Button profileButton = UIUtils.createIconButton("Profile", VaadinIcon.USER, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+        profileButton.addClickListener(e -> {
+            userInfo.close();
+            openUserInformationDialog();
+        });
+        popupWrapper.add(profileButton);
+        popupWrapper.setComponentMargin(profileButton, Vertical.NONE);
+        profileButton.addClassName("button-align-left");
+
+        popupWrapper.add(new Divider(1, Vertical.XS));
+
+        Button changeThemeButton = UIUtils.createIconButton("Change theme", VaadinIcon.MOON, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+        changeThemeButton.addClickListener(e -> {
+            userInfo.close();
 
             String themeVariant = AuthenticationService.getCurrentSessionUser().getThemeVariant();
-            if (themeVariant.equals(Lumo.DARK)) {
-                themeVariant = Lumo.LIGHT;
-            } else {
-                themeVariant = Lumo.DARK;
-            }
+
+            themeVariant = (themeVariant.equals(Lumo.DARK)) ? Lumo.LIGHT : Lumo.DARK;
             menuLayout.setThemeVariant(themeVariant);
+
             AuthenticationService.getCurrentSessionUser().setThemeVariant(themeVariant);
             UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
         });
-        contextMenu.add(new Divider(Vertical.XS));
-        contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.EXIT_O, UIUtils.createBoldText("Log Out")), e -> AuthenticationService.signOut());
-        contextMenu.add(new Divider(Top.XS));
+        popupWrapper.add(changeThemeButton);
+        popupWrapper.setComponentMargin(changeThemeButton, Vertical.NONE);
+        changeThemeButton.addClassName("button-align-left");
+
+        popupWrapper.add(new Divider(1, Vertical.XS));
+
+        Button logOutButton = UIUtils.createIconButton("Log Out", VaadinIcon.EXIT_O, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+        logOutButton.addClickListener(e -> {
+            AuthenticationService.signOut();
+        });
+        popupWrapper.add(logOutButton);
+        popupWrapper.setComponentMargin(logOutButton, Vertical.NONE);
+        logOutButton.addClassName("button-align-left");
+
+        userInfo = new PaperMenuButton(userInfoLayout, popupWrapper);
+        userInfo.setVerticalOffset(50);
     }
 
     private void openUserInformationDialog() {
         CustomDialog dialog = new CustomDialog();
-        dialog.setHeader(UIUtils.createH4Label("User Information"));
+        dialog.setHeader(UIUtils.createH3Label("Profile"));
 
-        userForm.setUser(AuthenticationService.getCurrentSessionUser());
-        dialog.setContent( userForm );
+        EditableUserForm form = new EditableUserForm();
+        form.setUser(AuthenticationService.getCurrentSessionUser());
+
+        dialog.setContent( form );
 
         dialog.getCancelButton().addClickListener(e -> dialog.close());
 
-        dialog.setConfirmButton(UIUtils.createButton("Save", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_TERTIARY));
+        dialog.getConfirmButton().setText("Save");
         dialog.getConfirmButton().addClickListener(e -> {
-            User editedCurrentUser = userForm.getUser();
+            User editedCurrentUser = form.getUser();
 
             if (editedCurrentUser != null) {
-                AuthenticationService.setCurrentSessionUser(editedCurrentUser);
-
                 if (UserFacade.getInstance().update(editedCurrentUser)) {
+                    AuthenticationService.setCurrentSessionUser(editedCurrentUser);
                     UIUtils.showNotification("Information updated successfully", UIUtils.NotificationType.SUCCESS);
                 } else {
                     UIUtils.showNotification("Information update failed", UIUtils.NotificationType.ERROR);
@@ -193,6 +221,9 @@ public class AppBar extends Composite<FlexLayout> {
         container = new FlexBoxLayout(menuIcon, contextIcon, this.title, actionItems, userInfo);
         container.addClassName(CLASS_NAME + "__container");
         container.setAlignItems(FlexComponent.Alignment.CENTER);
+
+        container.setComponentPadding(userInfo, Vertical.NONE);
+
         getContent().add(container);
     }
 

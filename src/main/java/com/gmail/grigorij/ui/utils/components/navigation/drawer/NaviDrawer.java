@@ -36,7 +36,11 @@ public class NaviDrawer extends Composite<Div> implements AfterNavigationObserve
 	protected void onAttach(AttachEvent attachEvent) {
 		super.onAttach(attachEvent);
 		UI ui = attachEvent.getUI();
-		ui.getPage().executeJavaScript("window.addSwipeAway($0,$1,$2,$3)",
+//		ui.getPage().executeJavaScript("window.addSwipeAway($0,$1,$2,$3)",
+//				mainContent.getElement(), this, "onSwipeAway", scrim.getElement());
+
+
+		ui.getPage().executeJs("window.addSwipeAway($0,$1,$2,$3)",
 				mainContent.getElement(), this, "onSwipeAway", scrim.getElement());
 	}
 
@@ -107,7 +111,11 @@ public class NaviDrawer extends Composite<Div> implements AfterNavigationObserve
 			railButton.getElement().setAttribute("aria-label", "Expand menu");
 
 			if (getUI().isPresent()) {
-				getUI().get().getPage().executeJavaScript(
+//				getUI().get().getPage().executeJavaScript(
+//						"var originalStyle = getComputedStyle($0).pointerEvents;" //
+//								+ "$0.style.pointerEvents='none';" //
+//								+ "setTimeout(function() {$0.style.pointerEvents=originalStyle;}, 170);", getElement());
+				getUI().get().getPage().executeJs(
 						"var originalStyle = getComputedStyle($0).pointerEvents;" //
 								+ "$0.style.pointerEvents='none';" //
 								+ "setTimeout(function() {$0.style.pointerEvents=originalStyle;}, 170);", getElement());
@@ -137,7 +145,12 @@ public class NaviDrawer extends Composite<Div> implements AfterNavigationObserve
 		// It should be gone after 240ms
 		// This will make sure it disappears even when the browser fails.
 		if (getUI().isPresent()) {
-			getUI().get().getPage().executeJavaScript(
+//			getUI().get().getPage().executeJavaScript(
+//					"var originalStyle = getComputedStyle($0).transitionProperty;" //
+//							+   "setTimeout(function() {$0.style.transitionProperty='padding'; " +
+//							"requestAnimationFrame(function() {$0.style.transitionProperty=originalStyle})}, 250);",
+//					mainContent.getElement());
+			getUI().get().getPage().executeJs(
 					"var originalStyle = getComputedStyle($0).transitionProperty;" //
 							+   "setTimeout(function() {$0.style.transitionProperty='padding'; " +
 							"requestAnimationFrame(function() {$0.style.transitionProperty=originalStyle})}, 250);",

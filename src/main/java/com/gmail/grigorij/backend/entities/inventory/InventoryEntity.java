@@ -2,7 +2,7 @@ package com.gmail.grigorij.backend.entities.inventory;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.location.Location;
+import com.gmail.grigorij.backend.entities.embeddable.Location;
 import com.gmail.grigorij.backend.entities.user.User;
 
 import javax.persistence.*;
@@ -40,8 +40,8 @@ import java.util.*;
 						" ie.company.id = :company_id_var"),
 
 		@NamedQuery(name="getAllCategoriesInCompany",
-				query="SELECT ie FROM InventoryEntity ie WHERE " +
-						"ie.company IS NOT NULL AND" +
+				query="SELECT ie FROM InventoryEntity ie WHERE" +
+						" ie.company IS NOT NULL AND" +
 						" ie.company.id = :company_id_var and" +
 						" ie.inventoryHierarchyType = :type_var"),
 
@@ -77,40 +77,40 @@ public class InventoryEntity extends EntityPojo {
 
 
 	@Column(name = "name")
-	private String name;
+	private String name = "";
 
 	@Column(name = "qr_code")
-	private String qrCode;
+	private String qrCode = "";
 
 	@Column(name = "serial_number")
-	private String serialNumber;
+	private String serialNumber = "";
 
 	@Column(name = "sn_code")
-	private String snCode;
+	private String snCode = "";
 
 	@Column(name = "rf_code")
-	private String rfCode;
+	private String rfCode = "";
 
 	@Column(name = "barcode")
-	private String barcode;
+	private String barcode = "";
 
 	@Column(name = "manufacturer")
-	private String manufacturer;
+	private String manufacturer = "";
 
 	@Column(name = "model")
-	private String model;
+	private String model = "";
 
 	@Column(name = "tool_info")
-	private String toolInfo;
+	private String toolInfo = "";
 
 	@Enumerated(EnumType.STRING)
 	private ToolStatus usageStatus = null;
 
-	@Column(name = "bPersonal")
-	private boolean bPersonal;
+	@Column(name = "personal")
+	private boolean personal = false;
 
 	@Column(name = "owner")
-	private String owner;
+	private String owner = "";
 
 	@OneToOne
 	private Company company = null;
@@ -128,10 +128,10 @@ public class InventoryEntity extends EntityPojo {
 	private Date dateNextMaintenance;
 
 	@Column(name = "price")
-	private Double price;
+	private Double price = 0.00;
 
 	@Column(name = "guarantee_months")
-	private Integer guarantee_months;
+	private Integer guarantee_months = 0;
 
 	@Embedded
 	private Location currentLocation;
@@ -222,11 +222,11 @@ public class InventoryEntity extends EntityPojo {
 		this.usageStatus = usageStatus;
 	}
 
-	public boolean isbPersonal() {
-		return bPersonal;
+	public boolean isPersonal() {
+		return personal;
 	}
-	public void setbPersonal(boolean bPersonal) {
-		this.bPersonal = bPersonal;
+	public void setPersonal(boolean personal) {
+		this.personal = personal;
 	}
 
 	public String getOwner() {
@@ -308,7 +308,6 @@ public class InventoryEntity extends EntityPojo {
 		InventoryEntity t = new InventoryEntity();
 		t.setName("");
 		t.setParentCategory(null);
-//		t.setCompany(null);
 		t.setManufacturer("");
 		t.setModel("");
 		t.setToolInfo("");

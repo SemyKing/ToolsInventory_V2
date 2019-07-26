@@ -20,42 +20,29 @@ import java.util.Map;
 @HtmlImport("custom-components/camera-element.html")
 public class Camera extends Component {
 
-	public Camera(Map<String,Object> previewOptions, Map<String,Object> recordingOptions, DataReceiver receiver) {
-		setReceiver(receiver);
-		setOptions(previewOptions, recordingOptions);
-	}
+	Camera() {}
 
-	public Camera() {
+//	private JsonValue toJson(Map<String,Object> map, JsonFactory factory) {
+//		JsonObject obj = factory.createObject();
+//		for(Map.Entry<String,Object> entry: map.entrySet()) {
+//			if(entry.getValue() instanceof Boolean) {
+//				obj.put(entry.getKey(), factory.create((Boolean)entry.getValue()));
+//			} else if(entry.getValue() instanceof Double) {
+//				obj.put(entry.getKey(), factory.create((Double)entry.getValue()));
+//			} else if(entry.getValue() instanceof Integer) {
+//				obj.put(entry.getKey(), factory.create((Integer)entry.getValue()));
+//			} else if(entry.getValue() instanceof String) {
+//				obj.put(entry.getKey(), factory.create((String)entry.getValue()));
+//			} else if(entry.getValue() instanceof Map) {
+//				obj.put(entry.getKey(), toJson((Map<String,Object>)entry.getValue(), factory));
+//			} else {
+//				throw new IllegalArgumentException("Unsopported argument in options");
+//			}
+//		}
+//		return obj;
+//	}
 
-	}
-
-	public void setOptions(Map<String,Object> previewOptions, Map<String,Object> recordingOptions) {
-		JsonFactory factory = new JreJsonFactory();
-		getElement().setPropertyJson("previewOptions", toJson(previewOptions, factory));
-		getElement().setPropertyJson("recordingOptions", toJson(recordingOptions, factory));
-	}
-
-	private JsonValue toJson(Map<String,Object> map, JsonFactory factory) {
-		JsonObject obj = factory.createObject();
-		for(Map.Entry<String,Object> entry: map.entrySet()) {
-			if(entry.getValue() instanceof Boolean) {
-				obj.put(entry.getKey(), factory.create((Boolean)entry.getValue()));
-			} else if(entry.getValue() instanceof Double) {
-				obj.put(entry.getKey(), factory.create((Double)entry.getValue()));
-			} else if(entry.getValue() instanceof Integer) {
-				obj.put(entry.getKey(), factory.create((Integer)entry.getValue()));
-			} else if(entry.getValue() instanceof String) {
-				obj.put(entry.getKey(), factory.create((String)entry.getValue()));
-			} else if(entry.getValue() instanceof Map) {
-				obj.put(entry.getKey(), toJson((Map<String,Object>)entry.getValue(), factory));
-			} else {
-				throw new IllegalArgumentException("Unsopported argument in options");
-			}
-		}
-		return obj;
-	}
-
-	public void setReceiver(DataReceiver receiver) {
+	void setReceiver(DataReceiver receiver) {
 		getElement().setAttribute("target", new StreamReceiver(
 				getElement().getNode(), "camera", new CameraStreamVariable(receiver)));
 	}
@@ -64,32 +51,19 @@ public class Camera extends Component {
 		fireEvent(new FinishedEvent(this, true, mime));
 	}
 
-	public void startRecording() {
-		getElement().callFunction("startRecording");
-	}
-
-	public void stopRecording() {
-		getElement().callFunction("stopRecording");
-	}
-
 	public void stopCamera() {
-		getElement().callFunction("stopCamera");
+//		getElement().callFunction("stopCamera");
+		getElement().callJsFunction("stopCamera");
 	}
 
 	public void takePicture() {
-		getElement().callFunction("takePicture");
+//		getElement().callFunction("takePicture");
+		getElement().callJsFunction("takePicture");
 	}
 
 	public void showPreview() {
-		getElement().callFunction("showPreview");
-	}
-
-	public void showPicture() {
-		getElement().callFunction("showPicture");
-	}
-
-	public void showRecording() {
-		getElement().callFunction("showRecording");
+//		getElement().callFunction("showPreview");
+		getElement().callJsFunction("showPreview");
 	}
 
 	public Registration addFinishedListener(ComponentEventListener<FinishedEvent> listener) {
@@ -102,7 +76,7 @@ public class Camera extends Component {
 		String mime;
 		DataReceiver receiver;
 
-		public CameraStreamVariable(DataReceiver receiver) {
+		CameraStreamVariable(DataReceiver receiver) {
 			this.receiver = receiver;
 		}
 
@@ -130,7 +104,6 @@ public class Camera extends Component {
 		@Override
 		public void streamingFinished(StreamingEndEvent arg0) {
 			fireFinishedEvent(mime);
-
 		}
 
 		@Override

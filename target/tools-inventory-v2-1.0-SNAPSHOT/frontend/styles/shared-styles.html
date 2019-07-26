@@ -99,13 +99,14 @@
       text-overflow: ellipsis;
     }
 
-    vaadin-text-field {
-      align-self: auto;
-    }
-
     .app-header-outer,
     .app-footer-outer {
       z-index: 3;
+    }
+
+    .custom-vaadin-small-button {
+    	margin: 0;
+    	font-size: medium;
     }
 
 	vaadin-notification-card {
@@ -127,7 +128,6 @@
 	.notification-text-container {
 		flex-grow: 1;
         text-align: center;
-        color: var(--lumo-header-text-color);
         font-weight: bold;
 	}
 
@@ -136,7 +136,7 @@
 		margin-top: 0px;
 		margin-bottom: 0px;
 	}
-  </style>
+	</style>
 </custom-style>
 
 <dom-module id="notification-theme" theme-for="vaadin-notification-card">

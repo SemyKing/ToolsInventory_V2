@@ -9,7 +9,7 @@ public class AbstractCameraView extends Div implements HasDataReceiver {
 	private Camera camera;
 	private File latest;
 
-	public AbstractCameraView() {
+	protected AbstractCameraView() {
 		setSizeFull();
 
 		camera = new Camera();
@@ -18,7 +18,7 @@ public class AbstractCameraView extends Div implements HasDataReceiver {
 		add(camera);
 	}
 
-	public Camera getCamera() {
+	protected Camera getCamera() {
 		return camera;
 	}
 

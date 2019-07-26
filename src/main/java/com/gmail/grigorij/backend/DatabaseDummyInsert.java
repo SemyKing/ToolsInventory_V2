@@ -3,12 +3,13 @@ package com.gmail.grigorij.backend;
 import com.gmail.grigorij.backend.access.AccessGroups;
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.location.Location;
+import com.gmail.grigorij.backend.entities.embeddable.Location;
+import com.gmail.grigorij.backend.entities.embeddable.Person;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.backend.entities.inventory.ToolStatus;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.transaction.TransactionOperation;
-import com.gmail.grigorij.backend.entities.transaction.TransactionTarget;
+import com.gmail.grigorij.backend.entities.transaction.OperationType;
+import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -72,10 +73,12 @@ public class DatabaseDummyInsert {
 				String rf = RandomStringUtils.randomAlphabetic(1);
 				String rl = RandomStringUtils.randomAlphabetic(1);
 
-				user.setFirstName(rf + "UserFirstName");
-				user.setLastName(rl + "UserLastName");
-				user.setPhoneNumber("046" + compInd + "." + userInd);
-				user.setEmail(rf+rl +  "@mail.com");
+				Person p = new Person();
+
+				p.setFirstName(rf + "UserFirstName");
+				p.setLastName(rl + "UserLastName");
+				p.setPhoneNumber("046" + compInd + "." + userInd);
+				p.setEmail(rf+rl +  "@mail.com");
 
 				Location location = new Location();
 				location.setAddressLine1("Street Name" + compInd + "." + userInd);
@@ -84,6 +87,7 @@ public class DatabaseDummyInsert {
 				location.setPostcode("Postcode" + compInd + "." + userInd);
 
 				user.setAddress(location);
+				user.setPerson(p);
 
 				users.add(user);
 			}
@@ -98,9 +102,11 @@ public class DatabaseDummyInsert {
 		aCompany.setVat("012345ABCD");
 		aCompany.setDeleted(false);
 
-		aCompany.setFirstName(RandomStringUtils.randomAlphabetic(1) + "PersonFirstName ");
-		aCompany.setLastName(RandomStringUtils.randomAlphabetic(1) + "PersonLastName ");
-		aCompany.setEmail(RandomStringUtils.randomAlphabetic(1)+RandomStringUtils.randomAlphabetic(1) +  "@mail.com");
+		Person cp = new Person();
+
+		cp.setFirstName(RandomStringUtils.randomAlphabetic(1) + "PersonFirstName ");
+		cp.setLastName(RandomStringUtils.randomAlphabetic(1) + "PersonLastName ");
+		cp.setEmail(RandomStringUtils.randomAlphabetic(1)+RandomStringUtils.randomAlphabetic(1) +  "@mail.com");
 
 		Location companyLocation = new Location();
 		companyLocation.setName("Main Office");
@@ -110,6 +116,7 @@ public class DatabaseDummyInsert {
 		companyLocation.setPostcode("01530");
 
 		aCompany.setAddress(companyLocation);
+		aCompany.setContactPerson(cp);
 		aCompany.setAdditionalInfo("ADMINISTRATION COMPANY FOR ADMINS ONLY");
 
 		companies.add(aCompany);
@@ -122,10 +129,13 @@ public class DatabaseDummyInsert {
 
 			String rf = RandomStringUtils.randomAlphabetic(1);
 			String rl = RandomStringUtils.randomAlphabetic(1);
-			company.setFirstName(rf + "PersonFirstName" + i);
-			company.setLastName(rl + "PersonLastName" + i);
-			company.setEmail(rf+rl +  "@mail.com");
 
+			Person p = new Person();
+			p.setFirstName(rf + "PersonFirstName" + i);
+			p.setLastName(rl + "PersonLastName" + i);
+			p.setEmail(rf+rl +  "@mail.com");
+
+			company.setContactPerson(p);
 
 			for (int j = 0; j < 3; j++) {
 				Location location = new Location();
@@ -152,7 +162,7 @@ public class DatabaseDummyInsert {
 		for (int comp = 0; comp < (companiesFromDB.size()); comp++) {
 
 			Company company = companiesFromDB.get(comp);
-			List<User> companyUsers = UserFacade.getInstance().getUsersByCompanyId(company.getId());
+			List<User> companyUsers = UserFacade.getInstance().getUsersInCompany(company.getId());
 			System.out.println("USERS IN COMPANY: " + companyUsers.size());
 
 			for (int i = 0; i < toolCategoriesCount; i++) {
@@ -244,8 +254,8 @@ public class DatabaseDummyInsert {
 
 			Transaction transaction = new Transaction();
 			transaction.setWhoDid(transactionUser);
-			transaction.setTransactionOperation(TransactionOperation.ADD);
-			transaction.setTransactionTarget(TransactionTarget.COMPANY);
+			transaction.setTransactionOperation(OperationType.ADD);
+			transaction.setTransactionTarget(OperationTarget.COMPANY);
 			transaction.setCompany(company);
 
 			TransactionFacade.getInstance().insert(transaction);
@@ -269,14 +279,16 @@ public class DatabaseDummyInsert {
 		admin.setCompany(administration);
 		admin.setAccessGroup(AccessGroups.ADMIN.getIntValue());
 		admin.setDeleted(false);
-
-		admin.setFirstName("Grigorij");
-		admin.setLastName("Semykin");
-		admin.setPhoneNumber("046123456");
-		admin.setEmail("gs@mail.com");
-
 		admin.setThemeVariant(LumoStyles.LIGHT);
 		admin.setAdditionalInfo("ABCDEFG");
+
+		Person adminP = new Person();
+		adminP.setFirstName("Grigorij");
+		adminP.setLastName("Semykin");
+		adminP.setPhoneNumber("046123456");
+		adminP.setEmail("gs@mail.com");
+
+		admin.setPerson(adminP);
 
 		UserFacade.getInstance().insert(admin);
 		transactionUser = UserFacade.getInstance().getUserByUsername(admin.getUsername());
@@ -288,8 +300,8 @@ public class DatabaseDummyInsert {
 
 			Transaction transaction = new Transaction();
 			transaction.setWhoDid(transactionUser);
-			transaction.setTransactionOperation(TransactionOperation.ADD);
-			transaction.setTransactionTarget(TransactionTarget.USER);
+			transaction.setTransactionOperation(OperationType.ADD);
+			transaction.setTransactionTarget(OperationTarget.USER);
 			transaction.setDestinationUser(user);
 
 			TransactionFacade.getInstance().insert(transaction);
@@ -303,7 +315,7 @@ public class DatabaseDummyInsert {
 
 			Transaction transaction = new Transaction();
 			transaction.setWhoDid(transactionUser);
-			transaction.setTransactionOperation(TransactionOperation.ADD);
+			transaction.setTransactionOperation(OperationType.ADD);
 			transaction.setInventoryEntity(ie); // <--TransactionTarget is set automatically TOOL/CATEGORY
 
 			TransactionFacade.getInstance().insert(transaction);
