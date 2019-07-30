@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.views.navigation.admin.personnel;
 
+import com.github.appreciated.papermenubutton.PaperMenuButton;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -62,6 +63,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 		header.setClassName(CLASS_NAME + "__header");
 		header.setMargin(Top.S);
 		header.setAlignItems(Alignment.BASELINE);
+		header.setWidthFull();
 
 		TextField searchField = new TextField();
 		searchField.setWidth("100%");
@@ -73,23 +75,65 @@ public class AdminPersonnel extends FlexBoxLayout {
 		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
 		header.add(searchField);
+		header.setComponentMargin(searchField, Right.S);
 
-		FlexBoxLayout optionsContextMenuButton = adminMain.constructOptionsButton();
-		header.add(optionsContextMenuButton);
 
-		ContextMenu contextMenu = new ContextMenu(optionsContextMenuButton);
-		contextMenu.setOpenOnClick(true);
 
-		contextMenu.add(new Divider(1, Bottom.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.USER_CARD, UIUtils.createText("Add User")), e -> {
+		Button actionsButton = UIUtils.createIconButton("Options", VaadinIcon.MENU, ButtonVariant.LUMO_CONTRAST);
+		actionsButton.addClassName("hiding-text-button");
+
+		FlexBoxLayout popupWrapper = new FlexBoxLayout();
+
+		PaperMenuButton inventoryPaperMenuButton = new PaperMenuButton(actionsButton, popupWrapper);
+		inventoryPaperMenuButton.setVerticalOffset(40);
+		inventoryPaperMenuButton.setHorizontalOffset(-100);
+
+
+		//POPUP VIEW
+		popupWrapper.setFlexDirection(FlexDirection.COLUMN);
+		popupWrapper.setDisplay(Display.FLEX);
+		popupWrapper.setPadding(Horizontal.S);
+		popupWrapper.setBackgroundColor("var(--lumo-base-color)");
+
+
+		Button newToolButton = UIUtils.createIconButton("New User", VaadinIcon.USER_CARD, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		newToolButton.addClassName("button-align-left");
+		newToolButton.addClickListener(e -> {
+			inventoryPaperMenuButton.close();
 			grid.select(null);
 			showDetails(null);
 		});
-		contextMenu.add(new Divider(1, Vertical.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.INSERT, UIUtils.createText("Import")), e -> importOnClick());
-		contextMenu.add(new Divider(1, Vertical.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.EXTERNAL_LINK, UIUtils.createText("Export")), e -> exportOnClick());
-		contextMenu.add(new Divider(1, Top.XS));
+
+		popupWrapper.add(newToolButton);
+		popupWrapper.setComponentMargin(newToolButton, Vertical.NONE);
+
+		popupWrapper.add(new Divider(1, Vertical.XS));
+
+		Button changeThemeButton = UIUtils.createIconButton("Import", VaadinIcon.SIGN_IN, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		changeThemeButton.addClassName("button-align-left");
+		changeThemeButton.addClickListener(e -> {
+			inventoryPaperMenuButton.close();
+			importOnClick();
+		});
+
+		popupWrapper.add(changeThemeButton);
+		popupWrapper.setComponentMargin(changeThemeButton, Vertical.NONE);
+
+		popupWrapper.add(new Divider(1, Vertical.XS));
+
+		Button logOutButton = UIUtils.createIconButton("Export", VaadinIcon.SIGN_OUT, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		logOutButton.addClassName("button-align-left");
+		logOutButton.addClickListener(e -> {
+			inventoryPaperMenuButton.close();
+			exportOnClick();
+		});
+
+		popupWrapper.add(logOutButton);
+		popupWrapper.setComponentMargin(logOutButton, Vertical.NONE);
+
+		header.add(inventoryPaperMenuButton);
+		header.setComponentPadding(inventoryPaperMenuButton, Horizontal.NONE);
+		header.setComponentPadding(inventoryPaperMenuButton, Vertical.NONE);
 
 		add(header);
 	}

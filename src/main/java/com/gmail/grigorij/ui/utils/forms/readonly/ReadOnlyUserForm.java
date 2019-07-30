@@ -21,6 +21,12 @@ public class ReadOnlyUserForm extends FormLayout {
 			usernameField.setValue(user.getUsername());
 		});
 
+		TextField statusField = new TextField("Status");
+		usernameField.setReadOnly(true);
+		ReadOnlyHasValue<User> status = new ReadOnlyHasValue<>(user -> {
+			statusField.setValue((user.isDeleted()) ? ProjectConstants.INACTIVE : ProjectConstants.ACTIVE);
+		});
+
 		TextField companyField = new TextField("Company");
 		companyField.setReadOnly(true);
 		ReadOnlyHasValue<User> company = new ReadOnlyHasValue<>(user -> {
@@ -39,6 +45,8 @@ public class ReadOnlyUserForm extends FormLayout {
 		binder.forField(username)
 				.bind(user -> user, null);
 		binder.forField(company)
+				.bind(user -> user, null);
+		binder.forField(status)
 				.bind(user -> user, null);
 	}
 

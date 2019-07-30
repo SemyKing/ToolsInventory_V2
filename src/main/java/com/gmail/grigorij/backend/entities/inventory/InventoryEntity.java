@@ -22,7 +22,6 @@ import java.util.*;
  * {@link #inventoryHierarchyType} defines if entity is a Category or a Tool
  *
  */
-
 @Entity
 @Table(name = "inventory_entities")
 @NamedQueries({
@@ -49,7 +48,11 @@ import java.util.*;
 				query="SELECT ie FROM InventoryEntity ie WHERE" +
 						" ie.company IS NOT NULL AND" +
 						" ie.company.id = :company_id_var AND" +
-						" ie.inventoryHierarchyType = :type_var")
+						" ie.inventoryHierarchyType = :type_var"),
+
+		@NamedQuery(name="getToolById",
+				query="SELECT ie FROM InventoryEntity ie WHERE" +
+						" ie.id = :id_var")
 })
 public class InventoryEntity extends EntityPojo {
 
@@ -103,14 +106,21 @@ public class InventoryEntity extends EntityPojo {
 	@Column(name = "tool_info")
 	private String toolInfo = "";
 
-	@Enumerated(EnumType.STRING)
-	private ToolStatus usageStatus = null;
-
 	@Column(name = "personal")
 	private boolean personal = false;
 
 	@Column(name = "owner")
 	private String owner = "";
+
+	@Column(name = "report_title")
+	private String reportTitle = "";
+
+	@Column(name = "report_message")
+	private String reportMessage = "";
+
+
+	@Enumerated(EnumType.STRING)
+	private ToolStatus usageStatus = null;
 
 	@OneToOne
 	private Company company = null;
@@ -120,6 +130,7 @@ public class InventoryEntity extends EntityPojo {
 
 	@OneToOne
 	private User reservedByUser = null;
+
 
 	@Column(name = "date_bought")
 	private Date dateBought;

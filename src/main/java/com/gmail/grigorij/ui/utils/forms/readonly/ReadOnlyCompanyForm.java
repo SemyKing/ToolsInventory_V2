@@ -50,11 +50,12 @@ public class ReadOnlyCompanyForm extends FormLayout {
 		//CONTACT PERSON FORM
 
 		TextField additionalInfoField = new TextField("Additional Info");
+		additionalInfoField.setReadOnly(true);
 		ReadOnlyHasValue<Company> additionalInfo = new ReadOnlyHasValue<>(company -> {
 			additionalInfoField.setValue( company.getAdditionalInfo() );
 		});
 
-//		UIUtils.setColSpan(2, locationForm, personForm);
+		UIUtils.setColSpan(2, locationForm, personForm, additionalInfoField);
 
 		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(

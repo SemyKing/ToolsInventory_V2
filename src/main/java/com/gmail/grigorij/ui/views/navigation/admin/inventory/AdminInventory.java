@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.views.navigation.admin.inventory;
 
+import com.github.appreciated.papermenubutton.PaperMenuButton;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
@@ -46,6 +47,7 @@ public class AdminInventory extends FlexBoxLayout {
 	private final AdminMain adminMain;
 
 	private EditableToolForm editableToolForm = new EditableToolForm(this);
+	private EditableToolForm bulkEditableToolForm = new EditableToolForm(this);
 	private EditableCategoryForm editableCategoryForm = new EditableCategoryForm();
 	private ToolCopyForm toolCopyForm = new ToolCopyForm();
 
@@ -80,6 +82,7 @@ public class AdminInventory extends FlexBoxLayout {
 		header.setClassName(CLASS_NAME + "__header");
 		header.setMargin(Top.S);
 		header.setAlignItems(Alignment.BASELINE);
+		header.setWidthFull();
 
 		editToolButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
 		editToolButton.setMinWidth("52px"); //looks better
@@ -97,30 +100,77 @@ public class AdminInventory extends FlexBoxLayout {
 		searchField.setValueChangeMode(ValueChangeMode.LAZY);
 		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
-		header.setComponentMargin(searchField, Left.S);
 		header.add(searchField);
+		header.setComponentMargin(searchField, Horizontal.S);
 
-		FlexBoxLayout optionsContextMenuButton = adminMain.constructOptionsButton();
-		header.add(optionsContextMenuButton);
 
-		ContextMenu contextMenu = new ContextMenu(optionsContextMenuButton);
-		contextMenu.setOpenOnClick(true);
+		Button actionsButton = UIUtils.createIconButton("Options", VaadinIcon.MENU, ButtonVariant.LUMO_CONTRAST);
+		actionsButton.addClassName("hiding-text-button");
 
-		contextMenu.add(new Divider(0, Bottom.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.TOOLS, UIUtils.createText("Add Tool")), e -> {
+		FlexBoxLayout popupWrapper = new FlexBoxLayout();
+
+		PaperMenuButton inventoryPaperMenuButton = new PaperMenuButton(actionsButton, popupWrapper);
+		inventoryPaperMenuButton.setVerticalOffset(40);
+		inventoryPaperMenuButton.setHorizontalOffset(-130);
+
+		//POPUP VIEW
+		popupWrapper.setFlexDirection(FlexDirection.COLUMN);
+		popupWrapper.setDisplay(Display.FLEX);
+		popupWrapper.setPadding(Horizontal.S);
+		popupWrapper.setBackgroundColor("var(--lumo-base-color)");
+
+
+		Button newToolButton = UIUtils.createIconButton("New Tool", VaadinIcon.TOOLS, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		newToolButton.addClassName("button-align-left");
+		newToolButton.addClickListener(e -> {
+			inventoryPaperMenuButton.close();
 			grid.select(null);
 			showToolDetails(null, "New Tool");
 		});
-		contextMenu.add(new Divider(0, Vertical.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.FILE_TREE, UIUtils.createText("Add Category")), e -> {
+
+		popupWrapper.add(newToolButton);
+		popupWrapper.setComponentMargin(newToolButton, Vertical.NONE);
+
+		popupWrapper.add(new Divider(1, Vertical.XS));
+
+		Button newCategoryButton = UIUtils.createIconButton("New Category", VaadinIcon.FILE_TREE, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		newCategoryButton.addClassName("button-align-left");
+		newCategoryButton.addClickListener(e -> {
+			inventoryPaperMenuButton.close();
 			grid.select(null);
 			constructCategoryDialog(null);
 		});
-		contextMenu.add(new Divider(0, Vertical.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.INSERT, UIUtils.createText("Import")), e -> importTools());
-		contextMenu.add(new Divider(0, Vertical.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.EXTERNAL_LINK, UIUtils.createText("Export")), e -> exportTools());
-		contextMenu.add(new Divider(0, Top.XS));
+
+		popupWrapper.add(newCategoryButton);
+		popupWrapper.setComponentMargin(newCategoryButton, Vertical.NONE);
+
+		popupWrapper.add(new Divider(1, Vertical.XS));
+
+		Button changeThemeButton = UIUtils.createIconButton("Import", VaadinIcon.SIGN_IN, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		changeThemeButton.addClassName("button-align-left");
+		changeThemeButton.addClickListener(e -> {
+			inventoryPaperMenuButton.close();
+			importTools();
+		});
+
+		popupWrapper.add(changeThemeButton);
+		popupWrapper.setComponentMargin(changeThemeButton, Vertical.NONE);
+
+		popupWrapper.add(new Divider(1, Vertical.XS));
+
+		Button logOutButton = UIUtils.createIconButton("Export", VaadinIcon.SIGN_OUT, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		logOutButton.addClassName("button-align-left");
+		logOutButton.addClickListener(e -> {
+			inventoryPaperMenuButton.close();
+			exportTools();
+		});
+
+		popupWrapper.add(logOutButton);
+		popupWrapper.setComponentMargin(logOutButton, Vertical.NONE);
+
+		header.add(inventoryPaperMenuButton);
+		header.setComponentPadding(inventoryPaperMenuButton, Horizontal.NONE);
+		header.setComponentPadding(inventoryPaperMenuButton, Vertical.NONE);
 
 		add(header);
 	}
@@ -131,23 +181,25 @@ public class AdminInventory extends FlexBoxLayout {
 		grid.setClassName("grid-view");
 		grid.setSizeFull();
 
+
 		dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllByHierarchyType(InventoryHierarchyType.TOOL));
 		grid.setDataProvider(dataProvider);
 
-		grid.addColumn(tool -> (tool.getCompany() == null) ? "" : tool.getCompany().getName())
-				.setHeader("Company")
-				.setWidth(UIUtils.COLUMN_WIDTH_M);
+
+		grid.addColumn(InventoryEntity::getName).setHeader("Tool")
+				.setWidth(UIUtils.COLUMN_WIDTH_XL);
 
 		grid.addColumn(tool -> (tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName())
 				.setHeader("Category")
 				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
-		grid.addColumn(InventoryEntity::getName).setHeader("Tool")
-				.setWidth(UIUtils.COLUMN_WIDTH_XL);
+		grid.addColumn(tool -> (tool.getCompany() == null) ? "" : tool.getCompany().getName())
+				.setHeader("Company")
+				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
 		grid.addColumn(tool -> (tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getStringValue())
 				.setHeader("Status")
-				.setWidth(UIUtils.COLUMN_WIDTH_S)
+				.setWidth(UIUtils.COLUMN_WIDTH_XS)
 				.setFlexGrow(0);
 
 		grid.addColumn(tool -> (tool.getUser() == null) ? "" : tool.getUser().getUsername())
@@ -503,11 +555,8 @@ public class AdminInventory extends FlexBoxLayout {
 
 	private void constructBulkEditDialog(OperationType operationType, InventoryEntity toolToCopy, int numberOfTools) {
 
-
 		if (operationType.equals(OperationType.EDIT)) {
 			bulkTools = new ArrayList<>(selectedTools);
-
-//			bulkTools = selectedTools;
 
 		} else if (operationType.equals(OperationType.COPY)) {
 			bulkTools = new ArrayList<>();
@@ -522,7 +571,7 @@ public class AdminInventory extends FlexBoxLayout {
 			return;
 		}
 
-		editableToolForm.setBulkEditMode(true);
+		bulkEditableToolForm.setBulkEditMode(true);
 
 		bulkEditDialog = new CustomDialog();
 		bulkEditDialog.setCloseOnOutsideClick(false);
@@ -700,7 +749,10 @@ public class AdminInventory extends FlexBoxLayout {
 			});
 			confirmDialog.open();
 		});
+
 		bulkDialogHeader.add(deleteAllToolsButton);
+		bulkDialogHeader.setComponentMargin(deleteAllToolsButton, Right.S);
+
 
 		deleteAllToolsButton.setEnabled((operationType.equals(OperationType.EDIT)));
 
@@ -711,7 +763,7 @@ public class AdminInventory extends FlexBoxLayout {
 		toolsToLeftButton.addClickListener(e -> {
 			if (currentBulkEditToolIndex > 0) {
 
-				InventoryEntity editedTool = editableToolForm.getTool();
+				InventoryEntity editedTool = bulkEditableToolForm.getTool();
 				if (editedTool != null) {
 					bulkTools.set(currentBulkEditToolIndex, editedTool);
 
@@ -730,7 +782,7 @@ public class AdminInventory extends FlexBoxLayout {
 		toolsToRightButton.addClickListener(e -> {
 			if (currentBulkEditToolIndex < (numberOfTools-1)) {
 
-				InventoryEntity editedTool = editableToolForm.getTool();
+				InventoryEntity editedTool = bulkEditableToolForm.getTool();
 				if (editedTool != null) {
 					bulkTools.set(currentBulkEditToolIndex, editedTool);
 
@@ -749,8 +801,8 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 	private void setToolBulkEditDialogContent(InventoryEntity tool) {
-		editableToolForm.setTool(tool);
-		bulkEditDialog.setContent(editableToolForm);
+		bulkEditableToolForm.setTool(tool);
+		bulkEditDialog.setContent(bulkEditableToolForm);
 	}
 
 

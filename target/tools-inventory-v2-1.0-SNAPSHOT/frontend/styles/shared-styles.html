@@ -3,21 +3,17 @@
 <link rel="import" href="../bower_components/vaadin-lumo-styles/style.html">
 <link rel="import" href="../bower_components/vaadin-lumo-styles/typography.html">
 
-<link rel="stylesheet" href="lumo-border-radius.css">
-<link rel="stylesheet" href="lumo-icon-size.css">
-<link rel="stylesheet" href="lumo-margin.css">
-<link rel="stylesheet" href="lumo-padding.css">
-<link rel="stylesheet" href="lumo-shadow.css">
-<link rel="stylesheet" href="lumo-spacing.css">
-<link rel="stylesheet" href="lumo-typography.css">
+<link rel="stylesheet" href="lumo/lumo-border-radius.css">
+<link rel="stylesheet" href="lumo/lumo-icon-size.css">
+<link rel="stylesheet" href="lumo/lumo-margin.css">
+<link rel="stylesheet" href="lumo/lumo-padding.css">
+<link rel="stylesheet" href="lumo/lumo-shadow.css">
+<link rel="stylesheet" href="lumo/lumo-spacing.css">
+<link rel="stylesheet" href="lumo/lumo-typography.css">
 
-<link rel="stylesheet" href="components/account-switcher.css">
 <link rel="stylesheet" href="components/app-bar.css">
 <link rel="stylesheet" href="components/brand-expression.css">
-<link rel="import"     href="components/charts.html">
-<link rel="import"     href="components/context-menu.html">
 <link rel="stylesheet" href="components/details-drawer.css">
-<link rel="import"     href="components/floating-action-button.html">
 <link rel="stylesheet" href="components/initials.css">
 <link rel="stylesheet" href="components/list-item.css">
 <link rel="stylesheet" href="components/navi-drawer.css">
@@ -35,7 +31,8 @@
 <link rel="stylesheet" href="views/dashboard.css">
 <link rel="stylesheet" href="views/admin.css">
 <link rel="stylesheet" href="views/inventory.css">
-<link rel="stylesheet" href="views/report-details.css">
+<link rel="stylesheet" href="views/reporting.css">
+<link rel="stylesheet" href="views/password-recovery.css">
 
 <custom-style>
 	<style include="lumo-badge">
@@ -56,7 +53,6 @@
       --transition-duration-l: 320ms;
     }
 
-    /* Responsive sizing and spacing */
     @media (max-width: 479px) {
       :root {
         --lumo-space-r-m: var(--lumo-space-s);
@@ -95,9 +91,6 @@
       width: 100%;
     }
 
-    vaadin-grid-cell-content {
-      text-overflow: ellipsis;
-    }
 
     .app-header-outer,
     .app-footer-outer {
@@ -106,6 +99,8 @@
 
     .custom-vaadin-small-button {
     	margin: 0;
+    	margin-top: var(--lumo-space-xs);
+    	margin-bottom: var(--lumo-space-xs);
     	font-size: medium;
     }
 
@@ -123,7 +118,6 @@
 	flow-component-renderer > div {
 		min-width: 100%;
 	}
-
 
 	.notification-text-container {
 		flex-grow: 1;
@@ -164,5 +158,35 @@
 				overflow: hidden;
 			}
 		</style>
+	</template>
+</dom-module>
+
+<dom-module theme-for="vaadin-button" id="button-align-left">
+	<template>
+		<style>
+            :host(.button-align-left) > .vaadin-button-container {
+             	justify-content: normal !important;
+            }
+
+            :host(.button-align-left) [part="label"]{
+             	margin-left: 10px;
+            }
+         </style>
+	</template>
+</dom-module>
+
+<dom-module theme-for="vaadin-button" id="hiding-text-button">
+	<template>
+		<style>
+			@media (max-width: 1024px) {
+				:host(.hiding-text-button) {
+					min-width: 0 !important;
+					padding-right: 5px !important;
+				}
+				:host(.hiding-text-button) [part="label"] {
+					display: none !important;
+				}
+			}
+         </style>
 	</template>
 </dom-module>

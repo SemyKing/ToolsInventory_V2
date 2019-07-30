@@ -58,6 +58,21 @@ public class UserFacade {
 		return user;
 	}
 
+	public User getUserByEmail(String email) {
+		User user;
+		try {
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByEmail")
+					.setParameter("email_var", email)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			user = null;
+		}
+		return user;
+	}
+
+
+
+
 	public User getUserById(Long id) {
 		User user;
 		try {

@@ -3,7 +3,7 @@ package com.gmail.grigorij.ui.views;
 import com.gmail.grigorij.ui.MainLayout;
 import com.gmail.grigorij.backend.access.AccessGroups;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
 import com.gmail.grigorij.ui.utils.components.navigation.drawer.NaviDrawer;

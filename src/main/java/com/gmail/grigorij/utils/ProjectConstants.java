@@ -36,6 +36,10 @@ public final class ProjectConstants {
 
 	public static final String ROOT_CATEGORY = "**Root Category**";
 
+	//RecoveryLink
+	public static final Integer RECOVERY_TOKEN_LENGTH = 32;
+	public static final Integer PASSWORD_MIN_LENGTH = 6;
+
 
 
 }

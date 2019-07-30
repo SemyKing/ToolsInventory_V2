@@ -5,7 +5,7 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.views.MenuLayout;
-import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.ui.views.authentication.LoginView;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
  *  PWA iconPath: cannot be .svg -> causes lots of NullPointerExceptions
  *
  */
-//@Push
 @Push(PushMode.MANUAL)
 @Route("")
 @HtmlImport("frontend://styles/shared-styles.html")

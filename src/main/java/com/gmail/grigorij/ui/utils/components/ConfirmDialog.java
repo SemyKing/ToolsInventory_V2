@@ -5,6 +5,7 @@ import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.FlexWrap;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
+import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -42,6 +43,7 @@ public class ConfirmDialog extends FlexBoxLayout {
 
 		content = new FlexBoxLayout();
 		content.addClassName(CLASS_NAME  + "__content");
+		content.setPadding(Top.S);
 		content.add(new Span(message));
 
 		cancelButton = UIUtils.createSmallButton("No", ButtonVariant.LUMO_TERTIARY);
@@ -74,7 +76,7 @@ public class ConfirmDialog extends FlexBoxLayout {
 		footer.setPadding(Horizontal.M);
 		footer.add(cancelButton, confirmButton);
 
-		Span targetBold = UIUtils.createBoldText("DELETE "+comparisonTarget);
+		Span targetBold = UIUtils.createBoldText(comparisonTarget);
 
 		/*
 		DELETE DIALOG WITH CONFIRM INPUT FIELD

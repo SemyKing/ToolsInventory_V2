@@ -5,7 +5,6 @@ C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\utils\camera\AbstractCameraView.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\navigation\dashboard\Dashboard.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\css\FlexDirection.java
-C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\authentication\PasswordRecovery.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\navigation\admin\transactions\AdminTransactions.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\css\size\Bottom.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\forms\editable\EditableCategoryForm.java
@@ -15,10 +14,10 @@ C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\css\size\Uniform.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\navigation\inventory\Inventory.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\utils\camera\DataReceiver.java
-C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\utils\validators\CustomValidator.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\navigation\admin\inventory\AdminInventory.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\backend\database\facades\CompanyFacade.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\MainLayout.java
+C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\utils\AuthenticationService.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\forms\editable\EditableToolForm.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\components\navigation\drawer\BrandExpression.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\navigation\messages\Messages.java
@@ -46,7 +45,9 @@ C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\backend\entities\transaction\Transaction.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\css\size\Top.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\backend\entities\embeddable\Location.java
+C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\authentication\passwordrecovery\ForgotPasswordView.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\SessionServlet.java
+C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\authentication\passwordrecovery\PasswordResetView.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ApplicationServletContextListener.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\css\Position.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\css\TextColor.java
@@ -64,8 +65,6 @@ C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\utils\Broadcaster.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\components\navigation\drawer\NaviMenu.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\utils\TranslationProvider.java
-C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\components\DataSeriesItemWithRadius.java
-C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\authentication\AuthenticationService.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\backend\entities\inventory\InventoryEntity.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\css\size\Wide.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\components\frames\ViewFrame.java
@@ -75,6 +74,7 @@ C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\components\ConfirmDialog.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\forms\readonly\ReadOnlyCategoryForm.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\navigation\admin\personnel\AdminPersonnel.java
+C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\backend\entities\recoverylink\RecoveryLink.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\camera\CameraView.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\css\FlexWrap.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\utils\converters\CustomConverter.java
@@ -108,6 +108,6 @@ C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\forms\editable\EditableUserForm.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\utils\camera\Camera.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\navigation\reporting\Reporting.java
-C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\components\Token.java
+C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\backend\database\facades\RecoveryLinkFacade.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\views\MenuLayout.java
 C:\Users\SemyKing\Documents\Java Projects Development\ToolsInventory_V2\src\main\java\com\gmail\grigorij\ui\utils\forms\editable\EditablePersonForm.java

@@ -4,9 +4,7 @@ import com.github.appreciated.papermenubutton.PaperMenuButton;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.css.Display;
-import com.gmail.grigorij.ui.utils.css.size.Bottom;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
-import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.utils.forms.editable.EditableUserForm;
 import com.gmail.grigorij.ui.views.MenuLayout;
@@ -19,13 +17,12 @@ import com.gmail.grigorij.ui.utils.components.navigation.bar.tab.NaviTab;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.tab.NaviTabs;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -51,7 +48,6 @@ public class AppBar extends Composite<FlexLayout> {
     private FlexBoxLayout actionItems;
 
     private PaperMenuButton userInfo;
-//    private FlexBoxLayout userInfo;
 
     private FlexBoxLayout tabContainer;
     private NaviTabs tabs;
@@ -127,7 +123,6 @@ public class AppBar extends Composite<FlexLayout> {
         item.setClassName("user-info-list-item");
         item.getContent().setClassName("user-list-item__content");
         item.getSuffix().setClassName("user-list-item__suffix");
-
         item.setHorizontalPadding(false);
         userInfoLayout.add(item);
 
@@ -141,17 +136,19 @@ public class AppBar extends Composite<FlexLayout> {
 
 
         Button profileButton = UIUtils.createIconButton("Profile", VaadinIcon.USER, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+        profileButton.addClassName("button-align-left");
         profileButton.addClickListener(e -> {
             userInfo.close();
             openUserInformationDialog();
         });
+
         popupWrapper.add(profileButton);
         popupWrapper.setComponentMargin(profileButton, Vertical.NONE);
-        profileButton.addClassName("button-align-left");
 
         popupWrapper.add(new Divider(1, Vertical.XS));
 
         Button changeThemeButton = UIUtils.createIconButton("Change theme", VaadinIcon.MOON, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+        changeThemeButton.addClassName("button-align-left");
         changeThemeButton.addClickListener(e -> {
             userInfo.close();
 
@@ -163,19 +160,20 @@ public class AppBar extends Composite<FlexLayout> {
             AuthenticationService.getCurrentSessionUser().setThemeVariant(themeVariant);
             UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
         });
+
         popupWrapper.add(changeThemeButton);
         popupWrapper.setComponentMargin(changeThemeButton, Vertical.NONE);
-        changeThemeButton.addClassName("button-align-left");
 
         popupWrapper.add(new Divider(1, Vertical.XS));
 
         Button logOutButton = UIUtils.createIconButton("Log Out", VaadinIcon.EXIT_O, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+        logOutButton.addClassName("button-align-left");
         logOutButton.addClickListener(e -> {
             AuthenticationService.signOut();
         });
+
         popupWrapper.add(logOutButton);
         popupWrapper.setComponentMargin(logOutButton, Vertical.NONE);
-        logOutButton.addClassName("button-align-left");
 
         userInfo = new PaperMenuButton(userInfoLayout, popupWrapper);
         userInfo.setVerticalOffset(50);
@@ -218,11 +216,12 @@ public class AppBar extends Composite<FlexLayout> {
     }
 
     private void initContainer() {
-        container = new FlexBoxLayout(menuIcon, contextIcon, this.title, actionItems, userInfo);
+        container = new FlexBoxLayout(menuIcon, contextIcon, title, actionItems, userInfo);
         container.addClassName(CLASS_NAME + "__container");
         container.setAlignItems(FlexComponent.Alignment.CENTER);
 
         container.setComponentPadding(userInfo, Vertical.NONE);
+        container.setComponentPadding(userInfo, Horizontal.NONE);
 
         getContent().add(container);
     }
@@ -283,12 +282,6 @@ public class AppBar extends Composite<FlexLayout> {
         updateActionItemsVisibility();
         return component;
     }
-
-//    public Button addActionItem(VaadinIcon icon) {
-//        Button button = UIUtils.createButton(icon, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-//        addActionItem(button);
-//        return button;
-//    }
 
     public void removeAllActionItems() {
         actionItems.removeAll();

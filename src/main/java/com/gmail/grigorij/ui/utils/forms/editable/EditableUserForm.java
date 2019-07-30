@@ -12,7 +12,7 @@ import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.button.Button;
@@ -57,6 +57,7 @@ public class EditableUserForm extends FormLayout {
 
 		TextField usernameField = new TextField("Username");
 		usernameField.setRequired(true);
+		usernameField.setPrefixComponent(VaadinIcon.USER.create());
 
 		Select<String> status = null;
 		if (currentUser.getAccessGroup() == AccessGroups.ADMIN.getIntValue()) {
@@ -71,6 +72,7 @@ public class EditableUserForm extends FormLayout {
 
 		PasswordField passwordField = new PasswordField("Password");
 		passwordField.setRequired(true);
+		passwordField.setPrefixComponent(VaadinIcon.PASSWORD.create());
 
 
 		ComboBox<AccessGroups> accessComboBox = new ComboBox<>();
