@@ -1,0 +1,22 @@
+/* Inventory */
+
+/*Wrapper*/
+.inventory__wrapper {
+    height: 100%;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+
+@media (max-width: 1024px) {
+	.inventory__header {
+		flex-direction: column !important;
+	}
+
+	.inventory__header-buttons {
+        justify-content: center;
+    }
+    .inventory__header-buttons > vaadin-button {
+        flex-grow: 1;
+    }
+}
