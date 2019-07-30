@@ -35,14 +35,6 @@ public class CustomBadge extends FlexBoxLayout {
 		}
 	}
 
-	public CustomBadge(String text) {
-		this(text, BadgeColor.GREY);
-	}
-
-	public CustomBadge(String text, BadgeColor badgeColor) {
-		this(text, badgeColor, null);
-	}
-
 	public CustomBadge(String text, BadgeColor badgeColor, VaadinIcon icon) {
 		this.setSizeFull();
 		this.setPadding(Horizontal.S);
@@ -63,8 +55,6 @@ public class CustomBadge extends FlexBoxLayout {
 			this.text.getStyle().set("font-weight", "bold");
 			this.add(this.text);
 		}
-
-//		add(this);
 	}
 
 	public CustomBadge getBadge() {

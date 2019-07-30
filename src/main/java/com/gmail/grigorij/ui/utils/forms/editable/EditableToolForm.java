@@ -71,6 +71,7 @@ public class EditableToolForm extends FormLayout {
 
 
 	public EditableToolForm(AdminInventory adminInventory) {
+
 		TextField nameField = new TextField("Name");
 		nameField.setRequired(true);
 
@@ -97,6 +98,7 @@ public class EditableToolForm extends FormLayout {
 		QR CODE
 		 */
 		qrCodeField = new TextField("QR Code");
+		qrCodeField.setPrefixComponent(VaadinIcon.QRCODE.create());
 
 		Button scanQrCodeButton = UIUtils.createIconButton(VaadinIcon.CAMERA, ButtonVariant.LUMO_CONTRAST);
 		scanQrCodeButton.addClickListener(e -> constructCodeScanDialog(qrCodeField));
@@ -110,6 +112,7 @@ public class EditableToolForm extends FormLayout {
 		BARCODE
 		 */
 		barCodeField = new TextField("Barcode");
+		barCodeField.setPrefixComponent(VaadinIcon.BARCODE.create());
 
 		Button scanBarcodeButton = UIUtils.createIconButton(VaadinIcon.CAMERA, ButtonVariant.LUMO_CONTRAST);
 		scanBarcodeButton.addClickListener(e -> constructCodeScanDialog(barCodeField));

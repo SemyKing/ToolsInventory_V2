@@ -10,6 +10,7 @@ import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
+import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.ui.utils.css.size.Top;
@@ -65,6 +66,7 @@ public class AdminTransactions extends FlexBoxLayout {
 		header.setClassName(CLASS_NAME + "__header");
 		header.setMargin(Top.S);
 		header.setAlignItems(Alignment.BASELINE);
+		header.setWidthFull();
 
 		TextField searchField = new TextField();
 		searchField.setWidth("100%");
@@ -77,9 +79,9 @@ public class AdminTransactions extends FlexBoxLayout {
 		header.add(searchField);
 
 		FlexBoxLayout datesLayout = new FlexBoxLayout();
+		datesLayout.addClassName(CLASS_NAME + "__dates");
 		datesLayout.setAlignItems(Alignment.BASELINE);
 		datesLayout.setMargin(Left.S);
-		datesLayout.setSpacing(Right.S);
 
 		LocalDate now = LocalDate.now();
 
@@ -89,17 +91,23 @@ public class AdminTransactions extends FlexBoxLayout {
 		dateStartField.setLocale(new Locale("fi"));
 		dateStartField.setValue(now.minusMonths(1).withDayOfMonth(1));
 
+		datesLayout.add(dateStartField);
+
+
 		dateEndField = new DatePicker();
 		dateEndField.setLabel("End Date");
 		dateEndField.setPlaceholder("End Date");
 		dateEndField.setLocale(new Locale("fi"));
 		dateEndField.setValue(now);
-//		dateEndField.setValue(now.withDayOfMonth(now.lengthOfMonth()));
+
+		datesLayout.add(dateEndField);
+		datesLayout.setComponentMargin(dateEndField, Horizontal.S);
 
 		Button applyDates = UIUtils.createButton("Apply", ButtonVariant.LUMO_CONTRAST);
 		applyDates.addClickListener(e -> getTransactionsInRange());
 
-		datesLayout.add(dateStartField, dateEndField, applyDates);
+		datesLayout.add(applyDates);
+
 
 		header.add(datesLayout);
 

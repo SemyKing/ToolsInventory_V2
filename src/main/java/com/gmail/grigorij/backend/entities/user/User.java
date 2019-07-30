@@ -38,7 +38,13 @@ import java.util.Set;
 		@NamedQuery(
 				name="getUserById",
 				query="SELECT user FROM User user WHERE" +
-						" user.id = :id_var")
+						" user.id = :id_var"),
+
+		@NamedQuery(
+				name="getUserByEmail",
+				query="SELECT user FROM User user WHERE" +
+						" user.person IS NOT NULL AND" +
+						" user.person.email = :email_var")
 })
 public class User extends EntityPojo {
 

@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.views.navigation.admin.companies;
 
+import com.github.appreciated.papermenubutton.PaperMenuButton;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
@@ -19,7 +20,6 @@ import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
@@ -63,46 +63,74 @@ public class AdminCompanies extends FlexBoxLayout {
 		header.setClassName(CLASS_NAME + "__header");
 		header.setMargin(Top.S);
 		header.setAlignItems(Alignment.BASELINE);
+		header.setWidthFull();
 
 		TextField searchField = new TextField();
 		searchField.setWidth("100%");
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Companies");
-//		searchField.setValueChangeMode(ValueChangeMode.EAGER);
 		searchField.setValueChangeMode(ValueChangeMode.LAZY);
 		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
 		header.add(searchField);
-
-		FlexBoxLayout optionsContextMenuButton = adminMain.constructOptionsButton();
-		header.add(optionsContextMenuButton);
+		header.setComponentMargin(searchField, Right.S);
 
 
-//		MenuBar menuBar = new MenuBar();
-//		MenuItem optionsMenuItem = menuBar.addItem(optionsContextMenuButton);
-//
-//		SubMenu optionsSubMenu = optionsMenuItem.getSubMenu();
-//		optionsSubMenu.addItem("Add Company", addCompanyEvent -> {});
-//		optionsSubMenu.addItem("Import", importEvent -> {});
-//		optionsSubMenu.addItem("Export", exportEvent -> {});
-//
-//		header.add(menuBar);
+		Button actionsButton = UIUtils.createIconButton("Options", VaadinIcon.MENU, ButtonVariant.LUMO_CONTRAST);
+		actionsButton.addClassName("hiding-text-button");
+
+		FlexBoxLayout popupWrapper = new FlexBoxLayout();
+
+		PaperMenuButton companiesPaperMenuButton = new PaperMenuButton(actionsButton, popupWrapper);
+		companiesPaperMenuButton.setVerticalOffset(40);
+		companiesPaperMenuButton.setHorizontalOffset(-130);
+
+		//POPUP VIEW
+		popupWrapper.setFlexDirection(FlexDirection.COLUMN);
+		popupWrapper.setDisplay(Display.FLEX);
+		popupWrapper.setPadding(Horizontal.S);
+		popupWrapper.setBackgroundColor("var(--lumo-base-color)");
 
 
-		ContextMenu contextMenu = new ContextMenu(optionsContextMenuButton);
-		contextMenu.setOpenOnClick(true);
-
-		contextMenu.add(new Divider(1, Bottom.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.OFFICE, UIUtils.createText("Add Company")), e -> {
+		Button newCompanyButton = UIUtils.createIconButton("New Company", VaadinIcon.OFFICE, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		newCompanyButton.addClassName("button-align-left");
+		newCompanyButton.addClickListener(e -> {
+			companiesPaperMenuButton.close();
 			grid.select(null);
 			showDetails(null);
 		});
-		contextMenu.add(new Divider(1, Vertical.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.INSERT, UIUtils.createText("Import")), e -> importCompanies());
-		contextMenu.add(new Divider(1, Vertical.XS));
-		contextMenu.addItem(UIUtils.createTextIcon(VaadinIcon.EXTERNAL_LINK, UIUtils.createText("Export")), e -> exportCompanies());
-		contextMenu.add(new Divider(1, Top.XS));
+
+		popupWrapper.add(newCompanyButton);
+		popupWrapper.setComponentMargin(newCompanyButton, Vertical.NONE);
+
+		popupWrapper.add(new Divider(1, Vertical.XS));
+
+		Button importCompaniesButton = UIUtils.createIconButton("Import", VaadinIcon.SIGN_IN, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		importCompaniesButton.addClassName("button-align-left");
+		importCompaniesButton.addClickListener(e -> {
+			companiesPaperMenuButton.close();
+			importCompanies();
+		});
+
+		popupWrapper.add(importCompaniesButton);
+		popupWrapper.setComponentMargin(importCompaniesButton, Vertical.NONE);
+
+		popupWrapper.add(new Divider(1, Vertical.XS));
+
+		Button exportCompaniesButton = UIUtils.createIconButton("Export", VaadinIcon.SIGN_OUT, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		exportCompaniesButton.addClassName("button-align-left");
+		exportCompaniesButton.addClickListener(e -> {
+			companiesPaperMenuButton.close();
+			exportCompanies();
+		});
+
+		popupWrapper.add(exportCompaniesButton);
+		popupWrapper.setComponentMargin(exportCompaniesButton, Vertical.NONE);
+
+		header.add(companiesPaperMenuButton);
+		header.setComponentPadding(companiesPaperMenuButton, Horizontal.NONE);
+		header.setComponentPadding(companiesPaperMenuButton, Vertical.NONE);
 
 		add(header);
 	}

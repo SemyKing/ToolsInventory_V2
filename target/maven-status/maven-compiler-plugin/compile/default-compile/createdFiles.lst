@@ -1,4 +1,3 @@
-com\gmail\grigorij\utils\validators\CustomValidator$PhoneNumberValidator.class
 com\gmail\grigorij\utils\converters\DateConverter.class
 com\gmail\grigorij\backend\database\facades\UserFacade.class
 com\gmail\grigorij\backend\DatabaseDummyInsert.class
@@ -10,7 +9,6 @@ com\gmail\grigorij\ui\utils\css\size\Top.class
 com\gmail\grigorij\ui\utils\css\size\Left.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing$Left.class
 com\gmail\grigorij\ui\utils\components\frames\SplitViewFrame$Position.class
-com\gmail\grigorij\ui\utils\components\Token.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Color$Contrast.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Horizontal.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing.class
@@ -64,12 +62,10 @@ com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Left.class
 com\gmail\grigorij\ui\utils\css\BorderRadius.class
 com\gmail\grigorij\ui\utils\css\LumoStyles.class
 com\gmail\grigorij\ui\utils\css\TextColor.class
-com\gmail\grigorij\ui\utils\components\DataSeriesItemWithRadius.class
 com\gmail\grigorij\utils\TranslationProvider$1.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing$Vertical.class
 com\gmail\grigorij\backend\database\facades\CompanyFacade.class
 com\gmail\grigorij\ui\utils\css\Position.class
-com\gmail\grigorij\utils\validators\CustomValidator.class
 com\gmail\grigorij\ui\utils\UIUtils$NotificationType.class
 com\gmail\grigorij\ui\utils\components\navigation\drawer\NaviItem.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Space.class
@@ -86,7 +82,6 @@ com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Responsive$Horizontal.class
 com\gmail\grigorij\backend\entities\transaction\Transaction.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Uniform.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Color$Success.class
-com\gmail\grigorij\ui\views\authentication\AuthenticationService.class
 com\gmail\grigorij\backend\database\DatabaseManager.class
 com\gmail\grigorij\ui\utils\css\FlexDirection.class
 com\gmail\grigorij\ui\utils\css\size\Bottom.class
@@ -131,7 +126,6 @@ com\gmail\grigorij\utils\converters\CustomConverter$StatusConverter.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Color$Primary.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Vertical.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Top.class
-com\gmail\grigorij\ui\views\authentication\PasswordRecovery.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing$Tall.class
 com\gmail\grigorij\ui\utils\css\size\Vertical.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Left.class

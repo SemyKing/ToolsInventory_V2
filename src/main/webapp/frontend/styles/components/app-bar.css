@@ -30,11 +30,6 @@
   margin-right: var(--lumo-space-s);
 }
 
-/* Search */
-.app-bar vaadin-text-field {
-  padding: 0;
-}
-
 
 /* User info */
 .app-bar__user-info {
@@ -53,9 +48,6 @@
     background-color: var(--lumo-contrast-20pct);
 }
 
-.user-info-list-item {
-
-}
 .user-info-list-item .user-list-item__content {
     flex-direction: column;
     display: flex;

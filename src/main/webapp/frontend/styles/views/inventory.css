@@ -3,9 +3,6 @@
 /*Wrapper*/
 .inventory__wrapper {
     height: 100%;
-    width: 100%
-    display: flex;
-    flex-direction: column;
     margin-left: 5px;
     margin-right: 5px;
 }
@@ -13,6 +10,13 @@
 
 @media (max-width: 1024px) {
 	.inventory__header {
-		flex-direction: column;
+		flex-direction: column !important;
 	}
+
+	.inventory__header-buttons {
+        justify-content: center;
+    }
+    .inventory__header-buttons > vaadin-button {
+        flex-grow: 1;
+    }
 }

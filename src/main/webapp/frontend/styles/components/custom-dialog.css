@@ -7,8 +7,7 @@
 
 @media(max-width: 719px) {
     .custom-dialog {
-        width: 95vw !important;
-        max-width: 100% !important;
+        min-width: 95vw !important;
     }
 }
 

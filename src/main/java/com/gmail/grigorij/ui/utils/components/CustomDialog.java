@@ -3,24 +3,15 @@ package com.gmail.grigorij.ui.utils.components;
 
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.Display;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Right;
-import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.theme.lumo.Lumo;
 
 
 public class CustomDialog extends Div {

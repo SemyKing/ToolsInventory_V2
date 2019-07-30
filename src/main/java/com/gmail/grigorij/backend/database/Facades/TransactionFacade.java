@@ -4,7 +4,7 @@ import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.transaction.OperationType;
-import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
+import com.gmail.grigorij.utils.AuthenticationService;
 
 import javax.persistence.NoResultException;
 import java.sql.Date;
@@ -51,7 +51,8 @@ public class TransactionFacade {
 
 
 	private List<Transaction> getSortedList(List<Transaction> list, LocalDate start, LocalDate end) {
-		final Date startDate = Date.valueOf(start.minusDays(1));
+
+		final Date startDate = Date.valueOf(start);
 		final Date endDate = Date.valueOf(end.plusDays(1));
 
 		list.removeIf((Transaction transaction) -> transaction.getDate().before(startDate));
@@ -77,20 +78,17 @@ public class TransactionFacade {
 	}
 
 
-	public boolean insertLoginTransaction(String additionalInfo) {
+	public void insertLoginTransaction(String additionalInfo) {
 		Transaction tr = new Transaction();
 		tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 		tr.setTransactionOperation(OperationType.LOGIN);
 		tr.setTransactionTarget(OperationTarget.USER);
+		tr.setAdditionalInfo(additionalInfo);
 
-		if (additionalInfo.length() > 0) {
-			tr.setAdditionalInfo(additionalInfo);
+		if (!insert(tr)) {
+			System.out.println("Login Transaction INSERT Error");
 		}
-
-		return insert(tr);
 	}
-
-
 
 
 
@@ -118,8 +116,8 @@ public class TransactionFacade {
 
 		Transaction transactionInDatabase = null;
 
-		if (transactionInDatabase.getId() != null) {
-			transactionInDatabase = DatabaseManager.getInstance().find(Transaction.class, transactionInDatabase.getId());
+		if (transaction.getId() != null) {
+			transactionInDatabase = DatabaseManager.getInstance().find(Transaction.class, transaction.getId());
 		}
 
 		System.out.println("transactionInDatabase: " + transactionInDatabase);

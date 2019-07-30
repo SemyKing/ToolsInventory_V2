@@ -1,7 +1,6 @@
 package com.gmail.grigorij.ui.views.authentication;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.Display;
@@ -9,6 +8,8 @@ import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
+import com.gmail.grigorij.ui.views.authentication.passwordrecovery.ForgotPasswordView;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.vaadin.flow.component.Key;
@@ -19,14 +20,11 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.PageTitle;
-import javafx.scene.layout.Border;
 
 /**
  * Log In UI.
@@ -169,7 +167,7 @@ public class LoginView extends Div {
 			registration.remove();
 
 			//open password recovery dialog
-			new PasswordRecovery(new OperationStatus() {
+			new ForgotPasswordView(new OperationStatus() {
 				@Override //Window closed -> reattach ENTER key listener for sign in button
 				public void onSuccess(String msg, UIUtils.NotificationType type) {
 					registration = loginButton.addClickShortcut(Key.ENTER);
@@ -191,9 +189,7 @@ public class LoginView extends Div {
 
 		if (AuthenticationService.signIn(username, password, rememberMe)) {
 
-			if (!TransactionFacade.getInstance().insertLoginTransaction("")) {
-				System.out.println("Login Transaction INSERT Error");
-			}
+			TransactionFacade.getInstance().insertLoginTransaction("");
 
 			operationStatus.onSuccess("Login successful", null);
 		} else {

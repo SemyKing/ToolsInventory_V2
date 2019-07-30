@@ -16,11 +16,17 @@
 }
 
 
-/* Horizontal */
+/* Horizontal*/
 .spacing-h-xs > *:not(:last-child) {
   margin-left: var(--lumo-space-xs);
   margin-right: var(--lumo-space-xs);
 }
+
+/*.spacing-h-xs {
+  margin-left: var(--lumo-space-xs);
+  margin-right: var(--lumo-space-xs);
+}*/
+
 .spacing-h-s > *:not(:last-child) {
   margin-left: var(--lumo-space-s);
   margin-right: var(--lumo-space-s);

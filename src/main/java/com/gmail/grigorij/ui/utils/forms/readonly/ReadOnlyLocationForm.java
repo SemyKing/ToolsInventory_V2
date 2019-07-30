@@ -30,7 +30,7 @@ public class ReadOnlyLocationForm extends FormLayout {
 		});
 
 		TextField addressLine2Field = new TextField("", "Optional");
-		addressLine1.setReadOnly(true);
+		addressLine2Field.setReadOnly(true);
 		ReadOnlyHasValue<Location> addressLine2 = new ReadOnlyHasValue<>(location -> {
 			addressLine2Field.setValue( location.getAddressLine2() );
 		});

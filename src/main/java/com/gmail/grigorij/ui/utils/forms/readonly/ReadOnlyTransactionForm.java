@@ -123,6 +123,7 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 	private void constructDynamicForm() {
 		if (dynamicForm != null) {
 			remove(dynamicForm);
+			dynamicForm = null;
 		}
 
 		if (transaction.getTransactionOperation().equals(OperationType.LOGIN)) {
