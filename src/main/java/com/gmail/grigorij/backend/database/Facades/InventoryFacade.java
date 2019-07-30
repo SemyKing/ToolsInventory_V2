@@ -102,6 +102,18 @@ public class InventoryFacade {
 		return treeData;
 	}
 
+	public InventoryEntity getToolById(Long id) {
+		InventoryEntity tool;
+		try {
+			tool = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getToolById", InventoryEntity.class)
+					.setParameter("id_var", id)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			tool = null;
+		}
+		return tool;
+	}
+
 	public boolean insert(InventoryEntity ie) {
 		System.out.println();
 		System.out.println("DB, InventoryEntity INSERT");
