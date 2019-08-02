@@ -1,6 +1,8 @@
 package com.gmail.grigorij.ui.utils.components.navigation.bar;
 
+import com.github.appreciated.papermenubutton.HorizontalAlignment;
 import com.github.appreciated.papermenubutton.PaperMenuButton;
+import com.github.appreciated.papermenubutton.VerticalAlignment;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.css.Display;
@@ -176,7 +178,9 @@ public class AppBar extends Composite<FlexLayout> {
         popupWrapper.setComponentMargin(logOutButton, Vertical.NONE);
 
         userInfo = new PaperMenuButton(userInfoLayout, popupWrapper);
-        userInfo.setVerticalOffset(50);
+        userInfo.setHorizontalAlignment(HorizontalAlignment.RIGHT);
+        userInfo.setVerticalAlignment(VerticalAlignment.TOP);
+        userInfo.setVerticalOffset(45);
     }
 
     private void openUserInformationDialog() {

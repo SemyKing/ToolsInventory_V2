@@ -52,7 +52,11 @@ import java.util.*;
 
 		@NamedQuery(name="getToolById",
 				query="SELECT ie FROM InventoryEntity ie WHERE" +
-						" ie.id = :id_var")
+						" ie.id = :id_var"),
+
+		@NamedQuery(name="getToolByCode",
+				query="SELECT ie FROM InventoryEntity ie WHERE" +
+						" ie.qrCode = :code_var OR ie.barcode = :code_var")
 })
 public class InventoryEntity extends EntityPojo {
 

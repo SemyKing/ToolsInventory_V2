@@ -359,7 +359,6 @@ public class UIUtils {
 	}
 
 
-
 	/* === NUMBERS === */
 
 	public static String formatAmount(Double amount) {
@@ -405,18 +404,11 @@ public class UIUtils {
 		return i;
 	}
 
-
 	public static Icon createErrorIcon(VaadinIcon icon) {
 		Icon i = new Icon(icon);
 		setTextColor(TextColor.ERROR, i);
 		return i;
 	}
-
-//	public static Icon createSmallIcon(VaadinIcon icon) {
-//		Icon i = new Icon(icon);
-//		i.addClassName(IconSize.S.getClassName());
-//		return i;
-//	}
 
 
 	/* === NOTIFICATIONS === */

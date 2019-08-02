@@ -10,6 +10,7 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 import javax.servlet.http.Cookie;
 
@@ -22,7 +23,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
- *  Handle User authentication
+ * Handle User authentication
  */
 public class AuthenticationService {
 
@@ -86,6 +87,8 @@ public class AuthenticationService {
 
         TransactionFacade.getInstance().insert(logOutTransaction);
 
+        userSessions.remove(AuthenticationService.getCurrentSessionUser());
+
         getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
         UI.getCurrent().getSession().close();
         UI.getCurrent().getPage().reload();
@@ -117,6 +120,9 @@ public class AuthenticationService {
         }
 
         setCurrentSessionUser(user);
+
+        userSessions.put(user, VaadinSession.getCurrent());
+
         return true;
     }
 
@@ -168,10 +174,18 @@ public class AuthenticationService {
     }
 
     private static VaadinRequest getCurrentRequest() {
-		VaadinRequest request = VaadinService.getCurrentRequest();
-		if (request == null) {
-			throw new IllegalStateException("No request bound to current thread.");
-		}
-		return request;
-	}
+        VaadinRequest request = VaadinService.getCurrentRequest();
+        if (request == null) {
+            throw new IllegalStateException("No request bound to current thread.");
+        }
+        return request;
+    }
+
+
+
+    private static HashMap<User, VaadinSession> userSessions = new HashMap<>();
+
+    public static VaadinSession getUserSession(User user) {
+        return userSessions.get(user);
+    }
 }

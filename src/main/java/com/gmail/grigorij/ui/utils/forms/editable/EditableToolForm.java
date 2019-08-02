@@ -431,16 +431,20 @@ public class EditableToolForm extends FormLayout {
 						codeField.setValue(msg);
 						cameraView.stop();
 						cameraActive = false;
+
+						UI.getCurrent().push();
 					});
-					UI.getCurrent().push();
+
 				}
 			}
 
 			@Override
 			public void onFail(String msg, UIUtils.NotificationType type) {
 				if (UI.getCurrent() != null) {
-					UI.getCurrent().access(() -> UIUtils.showNotification(msg, UIUtils.NotificationType.INFO, 2000));
-					UI.getCurrent().push();
+					UI.getCurrent().access(() -> {
+						UIUtils.showNotification(msg, UIUtils.NotificationType.INFO, 2000);
+						UI.getCurrent().push();
+					});
 				}
 			}
 		});

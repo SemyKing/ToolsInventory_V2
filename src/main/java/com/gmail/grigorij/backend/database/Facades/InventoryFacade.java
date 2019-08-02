@@ -87,21 +87,6 @@ public class InventoryFacade {
 	}
 
 
-	public TreeData<InventoryEntity> getTreeDataInCompany(long companyId) {
-		List<InventoryEntity> toolsAndCategories = getAllInCompany(companyId);
-
-		//List must be sorted -> Parent must be added before child
-		toolsAndCategories.sort(Comparator.comparing(InventoryEntity::getLevel));
-
-		TreeData<InventoryEntity> treeData = new TreeData<>();
-
-		toolsAndCategories.forEach(item -> {
-			treeData.addItem(item.getParentCategory(), item);
-		});
-
-		return treeData;
-	}
-
 	public InventoryEntity getToolById(Long id) {
 		InventoryEntity tool;
 		try {
@@ -113,6 +98,52 @@ public class InventoryFacade {
 		}
 		return tool;
 	}
+
+
+	public InventoryEntity getToolByCode(String code) {
+		InventoryEntity tool;
+		try {
+			tool = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getToolByCode", InventoryEntity.class)
+					.setParameter("code_var", code)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			tool = null;
+		}
+		return tool;
+	}
+
+
+
+	private TreeData<InventoryEntity> treeData;
+
+	public TreeData<InventoryEntity> getTreeDataInCompany(long companyId) {
+		List<InventoryEntity> toolsAndCategories = getAllInCompany(companyId);
+
+		//List must be sorted -> Parent must be added before child
+		toolsAndCategories.sort(Comparator.comparing(InventoryEntity::getLevel));
+
+		treeData = new TreeData<>();
+
+		toolsAndCategories.forEach(item -> {
+			treeData.addItem(item.getParentCategory(), item);
+		});
+
+
+		return treeData;
+	}
+
+	private void refreshTreeData(long companyId) {
+		List<InventoryEntity> toolsAndCategories = getAllInCompany(companyId);
+		toolsAndCategories.sort(Comparator.comparing(InventoryEntity::getLevel));
+
+		treeData.clear();
+
+		toolsAndCategories.forEach(item -> {
+			treeData.addItem(item.getParentCategory(), item);
+		});
+	}
+
+
 
 	public boolean insert(InventoryEntity ie) {
 		System.out.println();
@@ -150,6 +181,8 @@ public class InventoryFacade {
 				return insert(ie);
 			} else {
 				DatabaseManager.getInstance().update(ie);
+
+//				refreshTreeData(ie.getCompany().getId());
 			}
 		} catch (Exception e) {
 			System.out.println("DB, InventoryEntity UPDATE fail");

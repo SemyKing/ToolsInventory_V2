@@ -1,6 +1,8 @@
 package com.gmail.grigorij.ui.views.navigation.admin.companies;
 
+import com.github.appreciated.papermenubutton.HorizontalAlignment;
 import com.github.appreciated.papermenubutton.PaperMenuButton;
+import com.github.appreciated.papermenubutton.VerticalAlignment;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
@@ -83,8 +85,9 @@ public class AdminCompanies extends FlexBoxLayout {
 		FlexBoxLayout popupWrapper = new FlexBoxLayout();
 
 		PaperMenuButton companiesPaperMenuButton = new PaperMenuButton(actionsButton, popupWrapper);
-		companiesPaperMenuButton.setVerticalOffset(40);
-		companiesPaperMenuButton.setHorizontalOffset(-130);
+		companiesPaperMenuButton.setHorizontalAlignment(HorizontalAlignment.RIGHT);
+		companiesPaperMenuButton.setVerticalAlignment(VerticalAlignment.TOP);
+		companiesPaperMenuButton.setVerticalOffset(32);
 
 		//POPUP VIEW
 		popupWrapper.setFlexDirection(FlexDirection.COLUMN);
@@ -321,7 +324,7 @@ public class AdminCompanies extends FlexBoxLayout {
 			final Company selectedCompany = grid.asSingleSelect().getValue();
 			if (selectedCompany != null) {
 
-				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "selected company", selectedCompany.getName());
+				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, " selected company ", selectedCompany.getName());
 				dialog.closeOnCancel();
 				dialog.getConfirmButton().addClickListener(e -> {
 					if (CompanyFacade.getInstance().remove(selectedCompany)) {

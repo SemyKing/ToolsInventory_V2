@@ -1,6 +1,8 @@
 package com.gmail.grigorij.ui.views.navigation.admin.personnel;
 
+import com.github.appreciated.papermenubutton.HorizontalAlignment;
 import com.github.appreciated.papermenubutton.PaperMenuButton;
+import com.github.appreciated.papermenubutton.VerticalAlignment;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -84,9 +86,10 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 		FlexBoxLayout popupWrapper = new FlexBoxLayout();
 
-		PaperMenuButton inventoryPaperMenuButton = new PaperMenuButton(actionsButton, popupWrapper);
-		inventoryPaperMenuButton.setVerticalOffset(40);
-		inventoryPaperMenuButton.setHorizontalOffset(-100);
+		PaperMenuButton personnelPaperMenuButton = new PaperMenuButton(actionsButton, popupWrapper);
+		personnelPaperMenuButton.setHorizontalAlignment(HorizontalAlignment.RIGHT);
+		personnelPaperMenuButton.setVerticalAlignment(VerticalAlignment.TOP);
+		personnelPaperMenuButton.setVerticalOffset(32);
 
 
 		//POPUP VIEW
@@ -99,7 +102,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 		Button newToolButton = UIUtils.createIconButton("New User", VaadinIcon.USER_CARD, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
 		newToolButton.addClassName("button-align-left");
 		newToolButton.addClickListener(e -> {
-			inventoryPaperMenuButton.close();
+			personnelPaperMenuButton.close();
 			grid.select(null);
 			showDetails(null);
 		});
@@ -112,7 +115,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 		Button changeThemeButton = UIUtils.createIconButton("Import", VaadinIcon.SIGN_IN, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
 		changeThemeButton.addClassName("button-align-left");
 		changeThemeButton.addClickListener(e -> {
-			inventoryPaperMenuButton.close();
+			personnelPaperMenuButton.close();
 			importOnClick();
 		});
 
@@ -124,16 +127,16 @@ public class AdminPersonnel extends FlexBoxLayout {
 		Button logOutButton = UIUtils.createIconButton("Export", VaadinIcon.SIGN_OUT, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
 		logOutButton.addClassName("button-align-left");
 		logOutButton.addClickListener(e -> {
-			inventoryPaperMenuButton.close();
+			personnelPaperMenuButton.close();
 			exportOnClick();
 		});
 
 		popupWrapper.add(logOutButton);
 		popupWrapper.setComponentMargin(logOutButton, Vertical.NONE);
 
-		header.add(inventoryPaperMenuButton);
-		header.setComponentPadding(inventoryPaperMenuButton, Horizontal.NONE);
-		header.setComponentPadding(inventoryPaperMenuButton, Vertical.NONE);
+		header.add(personnelPaperMenuButton);
+		header.setComponentPadding(personnelPaperMenuButton, Horizontal.NONE);
+		header.setComponentPadding(personnelPaperMenuButton, Vertical.NONE);
 
 		add(header);
 	}

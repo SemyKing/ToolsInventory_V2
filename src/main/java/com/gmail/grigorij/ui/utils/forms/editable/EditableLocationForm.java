@@ -14,6 +14,7 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 
+
 public class EditableLocationForm extends FormLayout {
 
 	private Binder<Location> binder = new Binder<>(Location.class);
