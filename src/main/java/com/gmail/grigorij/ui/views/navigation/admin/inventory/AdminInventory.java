@@ -1,6 +1,8 @@
 package com.gmail.grigorij.ui.views.navigation.admin.inventory;
 
+import com.github.appreciated.papermenubutton.HorizontalAlignment;
 import com.github.appreciated.papermenubutton.PaperMenuButton;
+import com.github.appreciated.papermenubutton.VerticalAlignment;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
@@ -51,8 +53,6 @@ public class AdminInventory extends FlexBoxLayout {
 	private EditableCategoryForm editableCategoryForm = new EditableCategoryForm();
 	private ToolCopyForm toolCopyForm = new ToolCopyForm();
 
-//	private AdminInventoryBulkEditor bulkEditor = null;
-
 	private Grid<InventoryEntity> grid;
 	private ListDataProvider<InventoryEntity> dataProvider;
 	private List<InventoryEntity> selectedTools = null;
@@ -96,13 +96,11 @@ public class AdminInventory extends FlexBoxLayout {
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Tools");
-//		searchField.setValueChangeMode(ValueChangeMode.EAGER);
 		searchField.setValueChangeMode(ValueChangeMode.LAZY);
 		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
 		header.add(searchField);
 		header.setComponentMargin(searchField, Horizontal.S);
-
 
 		Button actionsButton = UIUtils.createIconButton("Options", VaadinIcon.MENU, ButtonVariant.LUMO_CONTRAST);
 		actionsButton.addClassName("hiding-text-button");
@@ -110,8 +108,9 @@ public class AdminInventory extends FlexBoxLayout {
 		FlexBoxLayout popupWrapper = new FlexBoxLayout();
 
 		PaperMenuButton inventoryPaperMenuButton = new PaperMenuButton(actionsButton, popupWrapper);
-		inventoryPaperMenuButton.setVerticalOffset(40);
-		inventoryPaperMenuButton.setHorizontalOffset(-130);
+		inventoryPaperMenuButton.setHorizontalAlignment(HorizontalAlignment.RIGHT);
+		inventoryPaperMenuButton.setVerticalAlignment(VerticalAlignment.TOP);
+		inventoryPaperMenuButton.setVerticalOffset(32);
 
 		//POPUP VIEW
 		popupWrapper.setFlexDirection(FlexDirection.COLUMN);
@@ -146,27 +145,27 @@ public class AdminInventory extends FlexBoxLayout {
 
 		popupWrapper.add(new Divider(1, Vertical.XS));
 
-		Button changeThemeButton = UIUtils.createIconButton("Import", VaadinIcon.SIGN_IN, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
-		changeThemeButton.addClassName("button-align-left");
-		changeThemeButton.addClickListener(e -> {
+		Button importButton = UIUtils.createIconButton("Import", VaadinIcon.SIGN_IN, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		importButton.addClassName("button-align-left");
+		importButton.addClickListener(e -> {
 			inventoryPaperMenuButton.close();
 			importTools();
 		});
 
-		popupWrapper.add(changeThemeButton);
-		popupWrapper.setComponentMargin(changeThemeButton, Vertical.NONE);
+		popupWrapper.add(importButton);
+		popupWrapper.setComponentMargin(importButton, Vertical.NONE);
 
 		popupWrapper.add(new Divider(1, Vertical.XS));
 
-		Button logOutButton = UIUtils.createIconButton("Export", VaadinIcon.SIGN_OUT, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
-		logOutButton.addClassName("button-align-left");
-		logOutButton.addClickListener(e -> {
+		Button exportButton = UIUtils.createIconButton("Export", VaadinIcon.SIGN_OUT, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY);
+		exportButton.addClassName("button-align-left");
+		exportButton.addClickListener(e -> {
 			inventoryPaperMenuButton.close();
 			exportTools();
 		});
 
-		popupWrapper.add(logOutButton);
-		popupWrapper.setComponentMargin(logOutButton, Vertical.NONE);
+		popupWrapper.add(exportButton);
+		popupWrapper.setComponentMargin(exportButton, Vertical.NONE);
 
 		header.add(inventoryPaperMenuButton);
 		header.setComponentPadding(inventoryPaperMenuButton, Horizontal.NONE);
@@ -199,7 +198,7 @@ public class AdminInventory extends FlexBoxLayout {
 
 		grid.addColumn(tool -> (tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getStringValue())
 				.setHeader("Status")
-				.setWidth(UIUtils.COLUMN_WIDTH_XS)
+				.setWidth(UIUtils.COLUMN_WIDTH_M)
 				.setFlexGrow(0);
 
 		grid.addColumn(tool -> (tool.getUser() == null) ? "" : tool.getUser().getUsername())

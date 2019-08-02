@@ -1,14 +1,19 @@
 package com.gmail.grigorij.ui.views.navigation.inventory;
 
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
+import com.gmail.grigorij.backend.database.facades.MessageFacade;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.entities.inventory.ToolStatus;
-import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.entities.message.Message;
+import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
+import com.gmail.grigorij.backend.entities.transaction.OperationType;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.camera.CameraView;
 import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
-import com.gmail.grigorij.ui.utils.components.CustomBadge;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
@@ -21,23 +26,23 @@ import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.ui.utils.forms.readonly.ReadOnlyToolForm;
-import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.Broadcaster;
+import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 
 import java.util.ArrayList;
@@ -56,21 +61,16 @@ public class Inventory extends SplitViewFrame {
 
 	private DetailsDrawer detailsDrawer;
 
-	private final MenuLayout menuLayout;
-
-	private Button detailsToolButton;
 	private Button takeToolButton;
 	private Button reserveToolButton;
 	private Button reportToolButton;
 
-	public Inventory(MenuLayout menuLayout) {
-		this.menuLayout = menuLayout;
-
+	public Inventory() {
 		setViewContent(createContent());
 		setViewDetails(createDetailsDrawer());
 	}
 
-	private Component createContent() {
+	private FlexBoxLayout createContent() {
 		FlexBoxLayout wrapper = new FlexBoxLayout();
 		wrapper.setClassName(CLASS_NAME + "__wrapper");
 		wrapper.setFlexDirection(FlexDirection.COLUMN);
@@ -83,13 +83,13 @@ public class Inventory extends SplitViewFrame {
 		header.setMargin(Top.S);
 
 		TextField searchField = new TextField();
-		searchField.setWidth("100%");
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Tools");
 
 		header.add(searchField);
 		header.setComponentMargin(searchField, Right.S);
+		header.setFlexGrow(1, searchField);
 
 		FlexBoxLayout buttons = new FlexBoxLayout();
 		buttons.setClassName(CLASS_NAME + "__header-buttons");
@@ -97,81 +97,15 @@ public class Inventory extends SplitViewFrame {
 		Button showMyToolsButton = UIUtils.createButton("My Tools", VaadinIcon.TOOLS, ButtonVariant.LUMO_CONTRAST);
 		showMyToolsButton.addClickListener(e -> constructMyToolsDialog());
 
-		buttons.add(showMyToolsButton);
+		header.add(showMyToolsButton);
 
-		detailsToolButton = UIUtils.createButton("Details", VaadinIcon.INFO_CIRCLE, ButtonVariant.LUMO_CONTRAST);
-		detailsToolButton.setEnabled(false);
-		detailsToolButton.addClickListener(e -> {
-			if (e != null) {
-				InventoryEntity tool = grid.asSingleSelect().getValue();
-				if (tool != null) {
-					showDetails(tool);
-				}
-			}
-		});
+		Button scanToolButton = UIUtils.createButton("Scan", VaadinIcon.QRCODE, ButtonVariant.LUMO_CONTRAST);
+		scanToolButton.addClickListener(e -> constructScanToolDialog());
 
-		buttons.add(detailsToolButton);
-		buttons.setComponentMargin(detailsToolButton, Left.S);
-
-		takeToolButton = UIUtils.createButton("Take", VaadinIcon.HAND, ButtonVariant.LUMO_CONTRAST);
-		takeToolButton.addClickListener(e -> {
-			if (e != null) {
-				InventoryEntity tool = grid.asSingleSelect().getValue();
-				if (tool != null) {
-					if (tool.getUser() == null) {
-						takeTool(tool);
-					} else {
-						if (tool.getUser().equals(AuthenticationService.getCurrentSessionUser())) {
-							UIUtils.showNotification("You already have this inventory", UIUtils.NotificationType.INFO);
-						} else {
-							takeTool(tool);
-						}
-					}
-				}
-			}
-		});
-		takeToolButton.setEnabled(false);
-		buttons.add(takeToolButton);
-		buttons.setComponentMargin(takeToolButton, Left.S);
-
-		reserveToolButton = UIUtils.createButton("Reserve", VaadinIcon.CALENDAR_CLOCK, ButtonVariant.LUMO_CONTRAST);
-		reserveToolButton.addClickListener(e -> {
-			if (e != null) {
-				InventoryEntity tool = grid.asSingleSelect().getValue();
-				if (tool != null) {
-
-					if (tool.getReservedByUser() == null) {
-						reserveTool(tool);
-					} else {
-						if (tool.getReservedByUser().equals(AuthenticationService.getCurrentSessionUser())) {
-							UIUtils.showNotification("You have already reserved this inventory", UIUtils.NotificationType.INFO);
-						} else {
-							reserveTool(tool);
-						}
-					}
-				}
-			}
-		});
-		reserveToolButton.setEnabled(false);
-		buttons.add(reserveToolButton);
-		buttons.setComponentMargin(reserveToolButton, Left.S);
-
-		reportToolButton = UIUtils.createButton("Report", VaadinIcon.EXCLAMATION, ButtonVariant.LUMO_ERROR);
-		reportToolButton.addClickListener(e -> {
-			if (e != null) {
-				if (grid.asSingleSelect().getValue() != null) {
-					reportTool(grid.asSingleSelect().getValue());
-				}
-			}
-		});
-		reportToolButton.setEnabled(false);
-		buttons.add(reportToolButton);
-		buttons.setComponentMargin(reportToolButton, Left.S);
-
-		header.add(buttons);
+		header.add(scanToolButton);
+		header.setComponentMargin(scanToolButton, Left.S);
 
 		wrapper.add(header);
-
 
 
 		FlexBoxLayout content = new FlexBoxLayout();
@@ -186,24 +120,91 @@ public class Inventory extends SplitViewFrame {
 		return wrapper;
 	}
 
+	private boolean cameraActive;
+
+	private void constructScanToolDialog() {
+		CustomDialog dialog = new CustomDialog();
+		dialog.setCloseOnEsc(false);
+		dialog.setCloseOnOutsideClick(false);
+
+		dialog.setHeader(UIUtils.createH3Label("Scan Code"));
+
+		CameraView cameraView = new CameraView();
+		cameraView.addClickListener(imageClickEvent -> {
+			if (cameraActive) {
+				cameraView.takePicture();
+			} else {
+				cameraView.showPreview();
+				cameraActive = true;
+			}
+		});
+
+		dialog.setContent(cameraView);
+
+		dialog.setCancelButton(null);
+
+		dialog.getConfirmButton().setText("Close");
+		dialog.getConfirmButton().addClickListener(e -> {
+			cameraView.stop();
+			dialog.close();
+		});
+
+		dialog.open();
+
+		UIUtils.showNotification("Click on Image to take a picture", UIUtils.NotificationType.INFO);
+
+		cameraView.showPreview();
+		cameraActive = true;
+
+
+		cameraView.onFinished(new OperationStatus() {
+			@Override
+			public void onSuccess(String msg, UIUtils.NotificationType type) {
+				if (UI.getCurrent() != null) {
+					UI.getCurrent().access(() -> {
+						UIUtils.showNotification("Code scanned, searching for tool...", type);
+
+						cameraView.stop();
+						cameraActive = false;
+
+						UI.getCurrent().push();
+
+						InventoryEntity tool = getToolFromDataBaseByCode(msg);
+						if (tool == null) {
+							UIUtils.showNotification("Tool not found", UIUtils.NotificationType.INFO);
+						} else {
+							UIUtils.showNotification("Tool found", UIUtils.NotificationType.SUCCESS);
+
+							handleButtonsAvailability(tool);
+							showDetails(tool);
+						}
+
+						dialog.close();
+						UI.getCurrent().push();
+					});
+				}
+			}
+
+			@Override
+			public void onFail(String msg, UIUtils.NotificationType type) {
+				if (UI.getCurrent() != null) {
+					UI.getCurrent().access(() -> {
+						UIUtils.showNotification(msg, UIUtils.NotificationType.INFO, 2000);
+						UI.getCurrent().push();
+					});
+				}
+			}
+		});
+	}
+
+
 	private Component createGrid() {
-		User currentUser = AuthenticationService.getCurrentSessionUser();
+		dataProvider = new TreeDataProvider<>(InventoryFacade.getInstance().getTreeDataInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
 
-		if (currentUser == null) {
-			UIUtils.showNotification("Current user is NULL", UIUtils.NotificationType.ERROR);
-			AuthenticationService.signOut();
-		} else {
-			dataProvider = new TreeDataProvider<>(InventoryFacade.getInstance().getTreeDataInCompany(currentUser.getCompany().getId()));
-		}
-
-		if (dataProvider == null) {
+		if (dataProvider.getTreeData().getRootItems().size() <= 0) {
 			UIUtils.showNotification("No tools found in your company", UIUtils.NotificationType.INFO);
 			return new Span("No tools found in your company");
 		} else {
-			if (dataProvider.getTreeData().getRootItems().size() <= 0) {
-				UIUtils.showNotification("No tools found in your company", UIUtils.NotificationType.INFO);
-				return new Span("No tools found in your company");
-			}
 
 			grid = new TreeGrid<>();
 			grid.setSizeFull();
@@ -221,7 +222,7 @@ public class Inventory extends SplitViewFrame {
 						}
 						grid.select(null);
 					} else {
-//						showDetails(ie);
+						showDetails(ie);
 						handleButtonsAvailability(ie);
 					}
 				} else {
@@ -232,19 +233,23 @@ public class Inventory extends SplitViewFrame {
 
 			grid.setDataProvider(dataProvider);
 
-			ComponentRenderer<FlexBoxLayout, InventoryEntity> toolStatusRenderer = new ComponentRenderer<>(
-					tool -> {
-						FlexBoxLayout layout = new FlexBoxLayout();
-						ToolStatus status = tool.getUsageStatus();
-						if (status != null) {
-							layout = new CustomBadge(status.getStringValue(), status.getColor(), status.getIcon());
-						}
-						return layout;
-					});
-			grid.addColumn(toolStatusRenderer)
+			grid.addColumn(ie -> (ie.getInventoryHierarchyType().equals(InventoryHierarchyType.TOOL) ? ie.getUsageStatus().getStringValue() : ""))
 					.setHeader("Status")
 					.setWidth(UIUtils.COLUMN_WIDTH_S)
 					.setFlexGrow(0);
+//			ComponentRenderer<FlexBoxLayout, InventoryEntity> toolStatusRenderer = new ComponentRenderer<>(
+//					tool -> {
+//						FlexBoxLayout layout = new FlexBoxLayout();
+//						ToolStatus status = tool.getUsageStatus();
+//						if (status != null) {
+//							layout = new CustomBadge(status.getStringValue(), status.getColor(), status.getIcon());
+//						}
+//						return layout;
+//					});
+//			grid.addColumn(toolStatusRenderer)
+//					.setHeader("Status")
+//					.setWidth(UIUtils.COLUMN_WIDTH_S)
+//					.setFlexGrow(0);
 
 			grid.addHierarchyColumn(InventoryEntity::getName).setHeader("Tools")
 					.setWidth(UIUtils.COLUMN_WIDTH_XXL);
@@ -257,8 +262,6 @@ public class Inventory extends SplitViewFrame {
 
 		}
 	}
-
-
 
 
 //	private int counter = 0;
@@ -310,10 +313,6 @@ public class Inventory extends SplitViewFrame {
 				.setHeader("Tool Name")
 				.setAutoWidth(true);
 
-		myToolsGrid.addColumn(tool -> (tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getStringValue())
-				.setHeader("Status")
-				.setAutoWidth(true);
-
 		myToolsGrid.setSelectionMode(Grid.SelectionMode.MULTI);
 
 		myToolsGrid.addSelectionListener(event -> {
@@ -335,29 +334,80 @@ public class Inventory extends SplitViewFrame {
 			dialog.close();
 		});
 
-		dialog.getConfirmButton().setText("Return");
+		dialog.getConfirmButton().setText("Return Selected");
 		dialog.getConfirmButton().addClickListener(returnToolEvent -> {
-			System.out.println("SELECTED: " + mySelectedTools.size() + " TOOLS");
+
+			if (mySelectedTools == null) {
+				UIUtils.showNotification("Select Tools to return", UIUtils.NotificationType.INFO);
+				return;
+			}
 
 			if (mySelectedTools.size() <= 0) {
 				UIUtils.showNotification("Select Tools to return", UIUtils.NotificationType.INFO);
 			} else {
-				if (mySelectedTools.size() == 1) {
-					System.out.println("1 tool to return");
 
+				boolean toolError = false;
+
+				for (InventoryEntity t : mySelectedTools) {
+
+					InventoryEntity tool = getToolFromDataBase(t, false);
+
+					if (tool == null) {
+						return;
+					}
+
+					if (tool.getReservedByUser() != null) {
+						tool.setUsageStatus(ToolStatus.RESERVED);
+
+
+						Message message = new Message();
+						message.setMessageText("The tool you have reserved is " + ToolStatus.FREE.getStringValue());
+						message.setRecipient(tool.getReservedByUser());
+						message.setTool(tool);
+
+						MessageFacade.getInstance().insert(message);
+
+						Broadcaster.broadcastToUser(tool.getReservedByUser().getId(), "The tool you have reserved is " + ToolStatus.FREE.getStringValue() +", check your Messages");
+					} else {
+						tool.setUsageStatus(ToolStatus.FREE);
+					}
+
+					if (!InventoryFacade.getInstance().update(tool)) {
+						toolError = true;
+					} else {
+						AuthenticationService.getCurrentSessionUser().removeToolInUse(tool);
+
+						UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
+
+
+						Transaction tr = new Transaction();
+						tr.setTransactionTarget(OperationTarget.TOOL_STATUS);
+						tr.setTransactionOperation(OperationType.CHANGE);
+						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+						tr.setInventoryEntity(tool);
+						tr.setAdditionalInfo("User returned tool, new status:" + tool.getUsageStatus().getStringValue());
+
+						TransactionFacade.getInstance().insert(tr);
+					}
+				}
+
+				if (mySelectedTools.size() == 1) {
+					if (!toolError) {
+						UIUtils.showNotification("Tool returned", UIUtils.NotificationType.SUCCESS);
+					}
 
 				} else {
-					System.out.println("multiple tool to return");
-
-
+					if (!toolError) {
+						UIUtils.showNotification("Tools returned", UIUtils.NotificationType.SUCCESS);
+					}
 				}
+
+				dialog.close();
 			}
 		});
 
 		dialog.open();
-
 	}
-
 
 
 
@@ -378,10 +428,69 @@ public class Inventory extends SplitViewFrame {
 		// Footer
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.removeButton(detailsDrawerFooter.getSave());
+		detailsDrawerFooter.removeButton(detailsDrawerFooter.getCancel());
+
 		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
+		detailsDrawerFooter.getContent().add(createDetailsFooter());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 
 		return detailsDrawer;
+	}
+
+	private FlexBoxLayout createDetailsFooter() {
+		FlexBoxLayout footer = new FlexBoxLayout();
+		footer.setClassName(CLASS_NAME + "__footer");
+		footer.setWidthFull();
+		footer.setFlexDirection(FlexDirection.ROW);
+		footer.setMargin(Horizontal.S);
+
+
+		reportToolButton = UIUtils.createButton("Report", VaadinIcon.EXCLAMATION, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
+		reportToolButton.addClickListener(e -> {
+			if (grid.asSingleSelect().getValue() != null) {
+				reportTool(grid.asSingleSelect().getValue());
+			}
+		});
+		reportToolButton.setEnabled(false);
+		footer.add(reportToolButton);
+		footer.setFlexGrow(1, reportToolButton);
+
+
+		reserveToolButton = UIUtils.createButton("Reserve", VaadinIcon.CALENDAR_CLOCK, ButtonVariant.LUMO_CONTRAST);
+		reserveToolButton.addClickListener(e -> {
+			InventoryEntity tool = grid.asSingleSelect().getValue();
+			if (tool != null) {
+				reserveTool(tool);
+			}
+		});
+		reserveToolButton.setEnabled(false);
+		footer.add(reserveToolButton);
+		footer.setComponentMargin(reserveToolButton, Left.S);
+		footer.setFlexGrow(1, reserveToolButton);
+
+
+		takeToolButton = UIUtils.createButton("Take", VaadinIcon.HAND, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+		takeToolButton.addClickListener(e -> {
+			InventoryEntity tool = grid.asSingleSelect().getValue();
+			if (tool != null) {
+				takeTool(tool);
+			}
+		});
+		takeToolButton.setEnabled(false);
+		footer.add(takeToolButton);
+		footer.setComponentMargin(takeToolButton, Left.S);
+		footer.setFlexGrow(1, takeToolButton);
+
+
+		Button closeDetailsButton = UIUtils.createButton("Close",  ButtonVariant.LUMO_PRIMARY);
+		closeDetailsButton.addClickListener(e -> {
+			closeDetails();
+		});
+		footer.add(closeDetailsButton);
+		footer.setComponentMargin(closeDetailsButton, Left.S);
+		footer.setFlexGrow(1, closeDetailsButton);
+
+		return footer;
 	}
 
 	private void showDetails(InventoryEntity tool) {
@@ -402,8 +511,9 @@ public class Inventory extends SplitViewFrame {
 		if (detailsDrawer.isOpen()) {
 			detailsDrawer.hide();
 			showDetails(tool);
+			handleButtonsAvailability(tool);
 		}
-		handleButtonsAvailability(tool);
+
 		dataProvider.refreshAll();
 	}
 
@@ -414,29 +524,10 @@ public class Inventory extends SplitViewFrame {
 
 
 	private void handleButtonsAvailability(InventoryEntity tool) {
-
 		takeToolButton.setEnabled(false);
 		reserveToolButton.setEnabled(false);
-		reportToolButton.setEnabled(false);
-		detailsToolButton.setEnabled(false);
 
 		if (tool == null) {
-			return;
-		}
-		if (tool.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
-			return;
-		}
-
-		reportToolButton.setEnabled(true);
-		detailsToolButton.setEnabled(true);
-
-		if (tool.getUsageStatus().equals(ToolStatus.LOST)) {
-			return;
-		}
-		if (tool.getUsageStatus().equals(ToolStatus.BROKEN)) {
-			return;
-		}
-		if (tool.getUsageStatus().equals(ToolStatus.RESERVED)) {
 			return;
 		}
 
@@ -454,7 +545,8 @@ public class Inventory extends SplitViewFrame {
 	private void takeTool(InventoryEntity t) {
 		System.out.println("takeTool: " + t.getName());
 
-		InventoryEntity tool = getToolFromDB(t, true);
+		//'tool' is same object as 't', only with latest information from database
+		InventoryEntity tool = getToolFromDataBase(t, true);
 
 		if (tool == null) {
 			return;
@@ -462,16 +554,23 @@ public class Inventory extends SplitViewFrame {
 
 		// TAKE TOOL IF IT IS FREE
 		if (tool.getUsageStatus().equals(ToolStatus.FREE)) {
-			tool.setUser(AuthenticationService.getCurrentSessionUser());
-			tool.setUsageStatus(ToolStatus.IN_USE);
+			t.setUser(AuthenticationService.getCurrentSessionUser());
+			t.setUsageStatus(ToolStatus.IN_USE);
 
-			if (InventoryFacade.getInstance().update(tool)) {
+			if (InventoryFacade.getInstance().update(t)) {
 
-				AuthenticationService.getCurrentSessionUser().addToolInUse(tool);
+				AuthenticationService.getCurrentSessionUser().addToolInUse(t);
 
-				if (!UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser())) {
-					System.err.println("User UPDATE Error");
-				}
+				UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
+
+				Transaction tr = new Transaction();
+				tr.setTransactionTarget(OperationTarget.TOOL_STATUS);
+				tr.setTransactionOperation(OperationType.CHANGE);
+				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+				tr.setInventoryEntity(t);
+				tr.setAdditionalInfo("User took the tool.\nStatus change from: " + ToolStatus.FREE.getStringValue() + " to: " + ToolStatus.IN_USE.getStringValue());
+
+				TransactionFacade.getInstance().insert(tr);
 
 				UIUtils.showNotification("Tool taken successfully", UIUtils.NotificationType.SUCCESS);
 			} else {
@@ -481,113 +580,138 @@ public class Inventory extends SplitViewFrame {
 		// TOOL NOT FREE
 		} else {
 			if (tool.getUsageStatus().equals(ToolStatus.RESERVED)) {
-				UIUtils.showNotification("Tool is currently in use and was reserved by another user", UIUtils.NotificationType.INFO);
-				refreshDetails(tool);
+				UIUtils.showNotification("Tool is reserved", UIUtils.NotificationType.INFO);
+				refreshDetails(t);
 				return;
 			}
+			if (tool.getUsageStatus().equals(ToolStatus.IN_USE_AND_RESERVED)) {
+				UIUtils.showNotification("Tool is currently in use and was reserved", UIUtils.NotificationType.INFO);
+				refreshDetails(t);
+				return;
+			}
+
+
 			if (tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
 
-				ConfirmDialog confirmDialog = new ConfirmDialog("Tool was taken by another user. Would you like to reserve it?");
+				ConfirmDialog confirmDialog = new ConfirmDialog("Tool is currently in use. Would you like to reserve it?");
 				confirmDialog.closeOnCancel();
 				confirmDialog.getConfirmButton().addClickListener(e -> {
+					t.setReservedByUser(AuthenticationService.getCurrentSessionUser());
+					t.setUsageStatus(ToolStatus.IN_USE_AND_RESERVED);
 
-					if (tool.getUsageStatus().equals(ToolStatus.RESERVED)) {
-						UIUtils.showNotification("Tool was reserved by another user", UIUtils.NotificationType.INFO);
+					if (InventoryFacade.getInstance().update(t)) {
+
+						AuthenticationService.getCurrentSessionUser().addToolReserved(t);
+
+						UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
+
+						Transaction tr = new Transaction();
+						tr.setTransactionTarget(OperationTarget.TOOL_STATUS);
+						tr.setTransactionOperation(OperationType.CHANGE);
+						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+						tr.setInventoryEntity(t);
+						tr.setAdditionalInfo("Status change from: " + ToolStatus.IN_USE.getStringValue() + " to: " + ToolStatus.IN_USE_AND_RESERVED.getStringValue());
+
+						TransactionFacade.getInstance().insert(tr);
+
+						UIUtils.showNotification("Tool reserved successfully", UIUtils.NotificationType.SUCCESS);
 					} else {
-						tool.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-						tool.setUsageStatus(ToolStatus.RESERVED);
-
-						if (InventoryFacade.getInstance().update(tool)) {
-
-							AuthenticationService.getCurrentSessionUser().addToolReserved(tool);
-
-							if (!UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser())) {
-								System.err.println("User UPDATE Error");
-							}
-
-							UIUtils.showNotification("Tool reserved successfully", UIUtils.NotificationType.SUCCESS);
-						} else {
-							UIUtils.showNotification("Tool reserve failed", UIUtils.NotificationType.ERROR);
-						}
+						UIUtils.showNotification("Tool reserve failed", UIUtils.NotificationType.ERROR);
 					}
-					refreshDetails(tool);
+					refreshDetails(t);
 					confirmDialog.close();
 				});
 				confirmDialog.open();
 			}
 		}
 
-		refreshDetails(tool);
+		refreshDetails(t);
 	}
 
 	private void reserveTool(InventoryEntity t) {
 		System.out.println("reserveTool: " + t.getName());
 
-		InventoryEntity tool = getToolFromDB(t, true);
+		InventoryEntity tool = getToolFromDataBase(t, true);
 
 		if (tool == null) {
 			return;
 		}
 
-		// ALREADY RESERVED
 		if (tool.getUsageStatus().equals(ToolStatus.RESERVED)) {
-			UIUtils.showNotification("Tool was reserved by another user", UIUtils.NotificationType.INFO);
-			refreshDetails(tool);
+			UIUtils.showNotification("Tool is reserved by another user", UIUtils.NotificationType.INFO);
+			refreshDetails(t);
 			return;
+		}
+		if (tool.getUsageStatus().equals(ToolStatus.IN_USE_AND_RESERVED)) {
+			UIUtils.showNotification("Tool is currently in use and is reserved", UIUtils.NotificationType.INFO);
+			refreshDetails(t);
+			return;
+		}
 
 		// FREE OR IN USE
-		} else {
-			if (tool.getUsageStatus().equals(ToolStatus.FREE)) {
-				tool.setUser(AuthenticationService.getCurrentSessionUser());
-				tool.setUsageStatus(ToolStatus.IN_USE);
+		if (tool.getUsageStatus().equals(ToolStatus.FREE)) {
+			t.setUser(AuthenticationService.getCurrentSessionUser());
+			t.setUsageStatus(ToolStatus.IN_USE);
 
-				if (InventoryFacade.getInstance().update(tool)) {
+			if (InventoryFacade.getInstance().update(t)) {
 
-					AuthenticationService.getCurrentSessionUser().addToolInUse(tool);
+				AuthenticationService.getCurrentSessionUser().addToolInUse(t);
 
-					if (!UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser())) {
-						System.err.println("User UPDATE Error");
-					}
+				UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
 
-					UIUtils.showNotification("Tool taken successfully (it was " + ToolStatus.FREE.getStringValue() +")", UIUtils.NotificationType.SUCCESS);
-				} else {
-					UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
-				}
-				return;
+				Transaction tr = new Transaction();
+				tr.setTransactionTarget(OperationTarget.TOOL_STATUS);
+				tr.setTransactionOperation(OperationType.CHANGE);
+				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+				tr.setInventoryEntity(t);
+				tr.setAdditionalInfo("User took the tool.\nStatus change from: " + ToolStatus.FREE.getStringValue() + " to: " + ToolStatus.IN_USE.getStringValue());
+
+				TransactionFacade.getInstance().insert(tr);
+
+				UIUtils.showNotification("Tool taken successfully (it was " + ToolStatus.FREE.getStringValue() +")", UIUtils.NotificationType.SUCCESS);
+			} else {
+				UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
 			}
+			return;
+		}
 
-			if (tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
-				tool.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-				tool.setUsageStatus(ToolStatus.RESERVED);
+		if (tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
+			t.setReservedByUser(AuthenticationService.getCurrentSessionUser());
+			t.setUsageStatus(ToolStatus.IN_USE_AND_RESERVED);
 
-				if (InventoryFacade.getInstance().update(tool)) {
+			if (InventoryFacade.getInstance().update(t)) {
 
-					AuthenticationService.getCurrentSessionUser().addToolReserved(tool);
+				AuthenticationService.getCurrentSessionUser().addToolReserved(t);
 
-					if (!UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser())) {
-						System.err.println("User UPDATE Error");
-					}
+				UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
 
-					UIUtils.showNotification("Tool reserved successfully", UIUtils.NotificationType.SUCCESS);
-				} else {
-					UIUtils.showNotification("Tool reserve failed", UIUtils.NotificationType.ERROR);
-				}
+				Transaction tr = new Transaction();
+				tr.setTransactionTarget(OperationTarget.TOOL_STATUS);
+				tr.setTransactionOperation(OperationType.CHANGE);
+				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+				tr.setInventoryEntity(t);
+				tr.setAdditionalInfo("User reserved the tool.\nStatus change from: " + ToolStatus.IN_USE.getStringValue() + " to: " + ToolStatus.IN_USE_AND_RESERVED.getStringValue());
+
+				TransactionFacade.getInstance().insert(tr);
+
+				UIUtils.showNotification("Tool reserved successfully", UIUtils.NotificationType.SUCCESS);
+			} else {
+				UIUtils.showNotification("Tool reserve failed", UIUtils.NotificationType.ERROR);
 			}
 		}
 
-		refreshDetails(tool);
+		refreshDetails(t);
 	}
 
 	private void reportTool(InventoryEntity t) {
 		System.out.println("Reporting Tool: " + t.getName());
 
-		InventoryEntity tool = getToolFromDB(t, false);
+		InventoryEntity tool = getToolFromDataBase(t, false);
 
 
 	}
 
-
-	private InventoryEntity getToolFromDB(InventoryEntity t, boolean checkStatus) {
+	private InventoryEntity getToolFromDataBase(InventoryEntity t, boolean checkStatus) {
 
 		//GET TOOL FROM DATABASE FOR LATEST STATUS
 		InventoryEntity tool = InventoryFacade.getInstance().getToolById(t.getId());
@@ -610,5 +734,11 @@ public class Inventory extends SplitViewFrame {
 		}
 
 		return tool;
+	}
+
+
+	//TODO: LIMIT SEARCH IN USERS COMPANY
+	private InventoryEntity getToolFromDataBaseByCode(String code) {
+		return InventoryFacade.getInstance().getToolByCode(code);
 	}
 }

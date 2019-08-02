@@ -98,6 +98,8 @@ public class CustomDialog extends Div {
 		}
 	}
 
+
+
 	public Button getConfirmButton() {
 		return confirmButton;
 	}
@@ -123,5 +125,9 @@ public class CustomDialog extends Div {
 
 	public void close() {
 		dialog.close();
+	}
+
+	public void closeOnCancel() {
+		this.cancelButton.addClickListener(e -> close());
 	}
 }

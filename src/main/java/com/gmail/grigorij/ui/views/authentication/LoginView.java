@@ -143,7 +143,8 @@ public class LoginView extends Div {
 
 
 		Binder<User> binder = new Binder<>(User.class);
-		binder.setBean(User.getEmptyUser());
+		binder.setBean(new User());
+//		binder.setBean(User.getEmptyUser());
 
 		binder.forField(usernameField)
 				.asRequired("Username is required")

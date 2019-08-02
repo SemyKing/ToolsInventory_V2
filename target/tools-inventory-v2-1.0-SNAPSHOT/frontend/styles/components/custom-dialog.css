@@ -7,7 +7,7 @@
 
 @media(max-width: 719px) {
     .custom-dialog {
-        min-width: 100vw !important;
+        min-width: 95vw !important;
     }
 }
 
@@ -41,6 +41,7 @@
     overflow: auto;
     flex-direction: column;
 
+	padding-top: var(--lumo-space-s);
     padding-left: var(--lumo-space-m);
     padding-right: var(--lumo-space-m);
     padding-bottom: var(--lumo-space-s);

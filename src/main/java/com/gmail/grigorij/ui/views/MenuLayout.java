@@ -133,7 +133,7 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 
 		inventory.addClickListener(e-> {
 			naviItemOnClick(inventory);
-			viewContainer.add(new Inventory(this));
+			viewContainer.add(new Inventory());
 		});
 		menu.addNaviItem(inventory);
 
@@ -313,8 +313,8 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 	@Override
 	protected void onAttach(AttachEvent attachEvent) {
 		UI ui = attachEvent.getUI();
-		broadcasterRegistration = Broadcaster.register(newMessage -> {
-			ui.access(() -> UIUtils.showNotification("ATTENTION: " + newMessage, UIUtils.NotificationType.INFO));
+		broadcasterRegistration = Broadcaster.registerUser(AuthenticationService.getCurrentSessionUser().getId(), newMessage -> {
+			ui.access(() -> UIUtils.showNotification(newMessage, UIUtils.NotificationType.INFO, 0));
 			ui.getSession().lock();
 			ui.push();
 			ui.getSession().unlock();

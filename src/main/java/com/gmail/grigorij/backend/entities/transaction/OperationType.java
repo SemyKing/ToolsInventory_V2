@@ -3,6 +3,7 @@ package com.gmail.grigorij.backend.entities.transaction;
 public enum OperationType {
 	ADD("Add"),
 	EDIT("Edit"),
+	CHANGE("Change"),
 	COPY("Copy"),
 	UPDATE("Update"),
 	DELETE("Delete"),

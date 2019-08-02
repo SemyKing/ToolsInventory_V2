@@ -142,7 +142,7 @@ public class AdminTransactions extends FlexBoxLayout {
 			}
 		})
 				.setHeader("Date")
-				.setWidth(UIUtils.COLUMN_WIDTH_M)
+				.setWidth(UIUtils.COLUMN_WIDTH_L)
 				.setFlexGrow(0);
 
 		grid.addColumn(Transaction::getShortName)

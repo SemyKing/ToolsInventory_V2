@@ -27,7 +27,7 @@ public class DatabaseDummyInsert {
 	private int companiesCount = 3; //excluding 1st company: ADMINISTRATION
 	private int usersPerCompany = 10;
 
-	private int toolsCount = 10;
+	private int toolsCount = 100;
 	private int toolCategoriesCount = 5;
 	private int subCategories = 3;
 	private int toolsPerCategory = toolsCount / toolCategoriesCount;
@@ -75,8 +75,8 @@ public class DatabaseDummyInsert {
 
 				Person p = new Person();
 
-				p.setFirstName(rf + "UserFirstName");
-				p.setLastName(rl + "UserLastName");
+				p.setFirstName(rf + "_FirstName");
+				p.setLastName(rl + "_LastName");
 				p.setPhoneNumber("046" + compInd + "." + userInd);
 				p.setEmail(rf+rl +  "@mail.com");
 
@@ -181,38 +181,38 @@ public class DatabaseDummyInsert {
 					for (int k = 0; k < toolsPerCategory; k++) {
 						InventoryEntity cc = new InventoryEntity();
 
-						int random = (int )(Math.random() * 5);
-						ToolStatus status = ToolStatus.IN_USE;
+//						int random = (int )(Math.random() * 5);
+//						ToolStatus status = ToolStatus.IN_USE;
+//
+//						if (random == 0) {
+//							status = ToolStatus.FREE;
+//						} else if (random == 1) {
+//							status = ToolStatus.IN_USE;
+//						} else if (random == 2) {
+//							status = ToolStatus.LOST;
+//						} else if (random == 3) {
+//							status = ToolStatus.RESERVED;
+//						} else if (random == 4) {
+//							status = ToolStatus.BROKEN;
+//						}
 
-						if (random == 0) {
-							status = ToolStatus.FREE;
-						} else if (random == 1) {
-							status = ToolStatus.IN_USE;
-						} else if (random == 2) {
-							status = ToolStatus.LOST;
-						} else if (random == 3) {
-							status = ToolStatus.RESERVED;
-						} else if (random == 4) {
-							status = ToolStatus.BROKEN;
-						}
+						cc.setUsageStatus(ToolStatus.FREE);
 
-						cc.setUsageStatus(status);
-
-						if (status.equals(ToolStatus.IN_USE)) {
-							int randomUserIndex = (int )(Math.random() * (companyUsers.size()));
-							User user = companyUsers.get(randomUserIndex);
-							cc.setUser(user);
-						}
-
-						if (status.equals(ToolStatus.RESERVED)) {
-							int randomUserIndex1 = (int )(Math.random() * (companyUsers.size()));
-							int randomUserIndex2 = (int )(Math.random() * (companyUsers.size()));
-							User user1 = companyUsers.get(randomUserIndex1);
-							User user2 = companyUsers.get(randomUserIndex2);
-
-							cc.setReservedByUser(user1);
-							cc.setUser(user2);
-						}
+//						if (status.equals(ToolStatus.IN_USE)) {
+//							int randomUserIndex = (int )(Math.random() * (companyUsers.size()));
+//							User user = companyUsers.get(randomUserIndex);
+//							cc.setUser(user);
+//						}
+//
+//						if (status.equals(ToolStatus.RESERVED)) {
+//							int randomUserIndex1 = (int )(Math.random() * (companyUsers.size()));
+//							int randomUserIndex2 = (int )(Math.random() * (companyUsers.size()));
+//							User user1 = companyUsers.get(randomUserIndex1);
+//							User user2 = companyUsers.get(randomUserIndex2);
+//
+//							cc.setReservedByUser(user1);
+//							cc.setUser(user2);
+//						}
 
 
 						cc.setCompany(company);
@@ -280,7 +280,7 @@ public class DatabaseDummyInsert {
 		admin.setAccessGroup(AccessGroups.ADMIN.getIntValue());
 		admin.setDeleted(false);
 		admin.setThemeVariant(LumoStyles.LIGHT);
-		admin.setAdditionalInfo("ABCDEFG");
+		admin.setAdditionalInfo("AdminMan");
 
 		Person adminP = new Person();
 		adminP.setFirstName("Grigorij");

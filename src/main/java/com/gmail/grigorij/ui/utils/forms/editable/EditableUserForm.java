@@ -172,7 +172,8 @@ public class EditableUserForm extends FormLayout {
 
 		user = u;
 		if (user == null) {
-			user = User.getEmptyUser();
+//			user = User.getEmptyUser();
+			user = new User();
 			isNew = true;
 		}
 

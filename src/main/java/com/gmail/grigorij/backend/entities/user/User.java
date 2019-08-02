@@ -6,6 +6,7 @@ import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.embeddable.Location;
 import com.gmail.grigorij.backend.entities.embeddable.Person;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.message.Message;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import javax.persistence.*;
@@ -81,6 +82,10 @@ public class User extends EntityPojo {
 	@JoinColumn(name = "reservedbyuser_id")
 	private Set<InventoryEntity> toolsReserved = new HashSet<>();
 
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "recipient_id")
+	private Set<Message> messages = new HashSet<>();
+
 
 
 	public User() {
@@ -145,17 +150,25 @@ public class User extends EntityPojo {
 		this.person = person;
 	}
 
-
-	public static User getEmptyUser() {
-		User user = new User();
-		user.setUsername("");
-		user.setPassword("");
-		user.setCompany(null);
-		user.setDeleted(false);
-		user.setThemeVariant(Lumo.LIGHT);
-
-		return user;
+	public String getFullName() {
+		if (this.person == null) {
+			return "";
+		} else {
+			return this.person.getFirstName() + " " + this.person.getLastName();
+		}
 	}
+
+
+//	public static User getEmptyUser() {
+//		User user = new User();
+//		user.setUsername("");
+//		user.setPassword("");
+//		user.setCompany(null);
+//		user.setDeleted(false);
+//		user.setThemeVariant(Lumo.LIGHT);
+//
+//		return user;
+//	}
 
 	public Set<InventoryEntity> getToolsInUse() {
 		return toolsInUse;
@@ -182,4 +195,19 @@ public class User extends EntityPojo {
 	public void removeToolReserved(InventoryEntity tool) {
 		this.toolsReserved.remove(tool);
 	}
+
+	public Set<Message> getMessages() {
+		return messages;
+	}
+	public void setMessages(Set<Message> messages) {
+		this.messages = messages;
+	}
+	public void addMessage(Message message) {
+		this.messages.add(message);
+	}
+	public void removeMessage(Message message) {
+		this.messages.remove(message);
+	}
+
+
 }

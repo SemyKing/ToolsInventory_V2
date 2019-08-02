@@ -9,14 +9,4 @@
 
 
 @media (max-width: 1024px) {
-	.inventory__header {
-		flex-direction: column !important;
-	}
-
-	.inventory__header-buttons {
-        justify-content: center;
-    }
-    .inventory__header-buttons > vaadin-button {
-        flex-grow: 1;
-    }
 }

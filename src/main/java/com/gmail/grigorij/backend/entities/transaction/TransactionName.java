@@ -14,6 +14,10 @@ public class TransactionName {
 			return target.getStringValue() + " " + hasHave + " been edited";
 		}
 
+		if (operation.equals(OperationType.CHANGE)) {
+			return target.getStringValue() + " " + hasHave + " been changed";
+		}
+
 		if (operation.equals(OperationType.UPDATE)) {
 			return target.getStringValue() + " " + hasHave + " been updated";
 		}
