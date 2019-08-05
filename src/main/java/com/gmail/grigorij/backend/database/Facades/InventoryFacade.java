@@ -2,7 +2,7 @@ package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
-import com.gmail.grigorij.backend.entities.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.enums.InventoryHierarchyType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;

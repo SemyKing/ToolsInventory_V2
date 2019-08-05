@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.access;
+package com.gmail.grigorij.backend.entities.access;
 
 public enum AccessGroups {
 

@@ -3,6 +3,7 @@ package com.gmail.grigorij.backend.entities.message;
 import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.MessageType;
 
 import javax.persistence.*;
 import java.util.Date;

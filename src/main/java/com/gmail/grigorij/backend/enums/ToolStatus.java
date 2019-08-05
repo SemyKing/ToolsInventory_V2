@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.entities.inventory;
+package com.gmail.grigorij.backend.enums;
 
 import com.gmail.grigorij.ui.utils.components.CustomBadge.BadgeColor;
 import com.vaadin.flow.component.icon.VaadinIcon;

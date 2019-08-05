@@ -2,9 +2,11 @@ package com.gmail.grigorij.backend.entities.transaction;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.enums.InventoryHierarchyType;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.OperationTarget;
+import com.gmail.grigorij.backend.enums.OperationType;
 
 import javax.persistence.*;
 import java.util.Date;
