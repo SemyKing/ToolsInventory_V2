@@ -1,15 +1,15 @@
 package com.gmail.grigorij.backend;
 
-import com.gmail.grigorij.backend.access.AccessGroups;
+import com.gmail.grigorij.backend.entities.access.AccessGroups;
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.embeddable.Location;
 import com.gmail.grigorij.backend.entities.embeddable.Person;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
-import com.gmail.grigorij.backend.entities.inventory.ToolStatus;
+import com.gmail.grigorij.backend.enums.ToolStatus;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.transaction.OperationType;
-import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
+import com.gmail.grigorij.backend.enums.OperationType;
+import com.gmail.grigorij.backend.enums.OperationTarget;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;

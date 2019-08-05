@@ -1,7 +1,7 @@
 package com.gmail.grigorij.ui.views;
 
 import com.gmail.grigorij.ui.MainLayout;
-import com.gmail.grigorij.backend.access.AccessGroups;
+import com.gmail.grigorij.backend.entities.access.AccessGroups;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
@@ -303,7 +303,7 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 	public void configurePage(InitialPageSettings settings) {
 		settings.addMetaTag("apple-mobile-web-app-capable", "yes");
 		settings.addMetaTag("apple-mobile-web-app-status-bar-style", "black");
-		settings.addFavIcon("icon", "frontend/styles/favicons/favicon.ico", "256x256");
+		settings.addFavIcon("icon", "images/favicons/favicon.ico", "256x256");
 	}
 
 

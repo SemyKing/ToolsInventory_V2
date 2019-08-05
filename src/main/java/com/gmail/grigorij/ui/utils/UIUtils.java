@@ -414,8 +414,8 @@ public class UIUtils {
 	/* === NOTIFICATIONS === */
 
 	public enum NotificationType {
-		INFO (      "var(--lumo-primary-color-50pct)",5000),
-		SUCCESS (   "var(--lumo-success-color)",5000),
+		INFO (      "var(--lumo-primary-color-80pct)",5000),
+		SUCCESS (   "var(--lumo-success-color-80pct)",5000),
 		WARNING(    "hsl(22, 96%, 47%)",        5000),
 		ERROR (     "var(--lumo-error-color)",  0);
 

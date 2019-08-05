@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.entities.transaction;
+package com.gmail.grigorij.backend.enums;
 
 public enum OperationType {
 	ADD("Add"),
@@ -7,9 +7,6 @@ public enum OperationType {
 	COPY("Copy"),
 	UPDATE("Update"),
 	DELETE("Delete"),
-
-	START("Start"),
-	STOP("Stop"),
 
 	LOGIN("Log In"),
 	LOGOUT("Log Out");

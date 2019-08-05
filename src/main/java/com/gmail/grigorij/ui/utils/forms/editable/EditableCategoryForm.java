@@ -4,7 +4,7 @@ import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
-import com.gmail.grigorij.backend.entities.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.enums.InventoryHierarchyType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.utils.ProjectConstants;

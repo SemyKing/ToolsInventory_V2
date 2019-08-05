@@ -1,9 +1,9 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
+import com.gmail.grigorij.backend.enums.OperationTarget;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.transaction.OperationType;
+import com.gmail.grigorij.backend.enums.OperationType;
 import com.gmail.grigorij.utils.AuthenticationService;
 
 import javax.persistence.NoResultException;

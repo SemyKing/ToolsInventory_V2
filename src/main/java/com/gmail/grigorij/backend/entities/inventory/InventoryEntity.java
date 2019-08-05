@@ -4,6 +4,8 @@ import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.embeddable.Location;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.InventoryHierarchyType;
+import com.gmail.grigorij.backend.enums.ToolStatus;
 
 import javax.persistence.*;
 import java.sql.Date;

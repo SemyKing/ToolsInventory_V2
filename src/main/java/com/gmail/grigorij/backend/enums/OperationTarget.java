@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.entities.transaction;
+package com.gmail.grigorij.backend.enums;
 
 public enum OperationTarget {
 	USER("User"),
@@ -7,8 +7,7 @@ public enum OperationTarget {
 	CATEGORY("Category"),
 	TOOL("Tool"),
 	TOOL_STATUS("Tool Status"),
-	ACCESS_RIGHTS("Access Rights"),
-	SERVER("Server");
+	ACCESS_RIGHTS("Access Rights");
 
 	private String name;
 

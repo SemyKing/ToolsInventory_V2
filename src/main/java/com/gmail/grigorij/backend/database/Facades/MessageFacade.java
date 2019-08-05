@@ -2,16 +2,6 @@ package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.message.Message;
-import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
-import com.gmail.grigorij.backend.entities.transaction.OperationType;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.utils.AuthenticationService;
-
-import javax.persistence.NoResultException;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
 
 
 public class MessageFacade {

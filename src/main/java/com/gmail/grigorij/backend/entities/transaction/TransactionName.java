@@ -1,5 +1,8 @@
 package com.gmail.grigorij.backend.entities.transaction;
 
+import com.gmail.grigorij.backend.enums.OperationTarget;
+import com.gmail.grigorij.backend.enums.OperationType;
+
 public class TransactionName {
 
 	public static String getTransactionFullName(OperationType operation, OperationTarget target) {
@@ -24,15 +27,6 @@ public class TransactionName {
 
 		if (operation.equals(OperationType.DELETE)) {
 			return target.getStringValue() + " " + hasHave + " been deleted";
-		}
-
-
-		if (operation.equals(OperationType.START)) {
-			return target.getStringValue() + " " + hasHave + " been started";
-		}
-
-		if (operation.equals(OperationType.STOP)) {
-			return target.getStringValue() + " " + hasHave + " been stopped";
 		}
 
 

@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.entities.inventory;
+package com.gmail.grigorij.backend.enums;
 
 public enum InventoryHierarchyType {
 	CATEGORY,

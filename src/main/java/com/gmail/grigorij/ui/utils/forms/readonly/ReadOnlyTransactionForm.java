@@ -1,8 +1,8 @@
 package com.gmail.grigorij.ui.utils.forms.readonly;
 
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.transaction.OperationType;
-import com.gmail.grigorij.backend.entities.transaction.OperationTarget;
+import com.gmail.grigorij.backend.enums.OperationType;
+import com.gmail.grigorij.backend.enums.OperationTarget;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
@@ -12,8 +12,6 @@ import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
-import com.gmail.grigorij.ui.utils.forms.editable.EditableCompanyForm;
-import com.gmail.grigorij.ui.utils.forms.editable.EditableCategoryForm;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
