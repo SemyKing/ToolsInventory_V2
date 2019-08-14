@@ -1,11 +1,8 @@
-package com.gmail.grigorij.backend.enums;
+package com.gmail.grigorij.backend.enums.transactions;
 
-public enum OperationType {
+public enum TransactionType {
 	ADD("Add"),
 	EDIT("Edit"),
-	CHANGE("Change"),
-	COPY("Copy"),
-	UPDATE("Update"),
 	DELETE("Delete"),
 
 	LOGIN("Log In"),
@@ -13,7 +10,7 @@ public enum OperationType {
 
 	private String name;
 
-	OperationType(String name) {
+	TransactionType(String name) {
 		this.name = name;
 	}
 

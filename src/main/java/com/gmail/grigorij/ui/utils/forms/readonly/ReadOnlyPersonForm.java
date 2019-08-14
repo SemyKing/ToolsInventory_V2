@@ -1,7 +1,6 @@
 package com.gmail.grigorij.ui.utils.forms.readonly;
 
-import com.gmail.grigorij.backend.entities.embeddable.Person;
-import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.formlayout.FormLayout;

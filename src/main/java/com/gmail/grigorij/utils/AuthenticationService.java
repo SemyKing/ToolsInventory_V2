@@ -2,8 +2,8 @@ package com.gmail.grigorij.utils;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.enums.OperationTarget;
-import com.gmail.grigorij.backend.enums.OperationType;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -81,8 +81,8 @@ public class AuthenticationService {
         }
 
         Transaction logOutTransaction = new Transaction();
-        logOutTransaction.setTransactionTarget(OperationTarget.USER);
-        logOutTransaction.setTransactionOperation(OperationType.LOGOUT);
+        logOutTransaction.setTransactionTarget(TransactionTarget.USER);
+        logOutTransaction.setTransactionOperation(TransactionType.LOGOUT);
         logOutTransaction.setWhoDid(AuthenticationService.getCurrentSessionUser());
 
         TransactionFacade.getInstance().insert(logOutTransaction);

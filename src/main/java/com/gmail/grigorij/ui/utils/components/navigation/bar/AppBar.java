@@ -121,7 +121,7 @@ public class AppBar extends Composite<FlexLayout> {
 
         User user = AuthenticationService.getCurrentSessionUser();
 
-        ListItem item = new ListItem(user.getUsername(), user.getCompany().getName(), UIUtils.createInitials(user.getPerson().getInitials()));
+        ListItem item = new ListItem(user.getUsername(), user.getCompany().getName(), UIUtils.createInitials(user.getInitials()));
         item.setClassName("user-info-list-item");
         item.getContent().setClassName("user-list-item__content");
         item.getSuffix().setClassName("user-list-item__suffix");
@@ -188,7 +188,7 @@ public class AppBar extends Composite<FlexLayout> {
         dialog.setHeader(UIUtils.createH3Label("Profile"));
 
         EditableUserForm form = new EditableUserForm();
-        form.setUser(AuthenticationService.getCurrentSessionUser());
+        form.setTargetUser(AuthenticationService.getCurrentSessionUser());
 
         dialog.setContent( form );
 
@@ -196,7 +196,7 @@ public class AppBar extends Composite<FlexLayout> {
 
         dialog.getConfirmButton().setText("Save");
         dialog.getConfirmButton().addClickListener(e -> {
-            User editedCurrentUser = form.getUser();
+            User editedCurrentUser = form.getTargetUser();
 
             if (editedCurrentUser != null) {
                 if (UserFacade.getInstance().update(editedCurrentUser)) {

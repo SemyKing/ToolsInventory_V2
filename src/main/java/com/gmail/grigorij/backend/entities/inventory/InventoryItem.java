@@ -1,11 +1,11 @@
 package com.gmail.grigorij.backend.entities.inventory;
 
+import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.embeddable.Location;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.InventoryHierarchyType;
-import com.gmail.grigorij.backend.enums.ToolStatus;
+import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
 
 import javax.persistence.*;
 import java.sql.Date;
@@ -13,7 +13,7 @@ import java.util.*;
 
 
 /**
- * Entity class works both as Category and Tool
+ * Entity works both as Category and Tool
  *
  * Grid element only accepts one object type
  *
@@ -29,48 +29,48 @@ import java.util.*;
 @NamedQueries({
 
 		@NamedQuery(name="getAll",
-				query="SELECT ie FROM InventoryEntity ie"),
+				query="SELECT ie FROM InventoryItem ie"),
 
 		@NamedQuery(name="getAllByHierarchyType",
-				query="SELECT ie FROM InventoryEntity ie WHERE" +
+				query="SELECT ie FROM InventoryItem ie WHERE" +
 						" ie.inventoryHierarchyType = :type_var"),
 
 		@NamedQuery(name="getAllInCompany",
-				query="SELECT ie FROM InventoryEntity ie WHERE" +
+				query="SELECT ie FROM InventoryItem ie WHERE" +
 						" ie.company IS NOT NULL AND" +
 						" ie.company.id = :company_id_var"),
 
 		@NamedQuery(name="getAllCategoriesInCompany",
-				query="SELECT ie FROM InventoryEntity ie WHERE" +
+				query="SELECT ie FROM InventoryItem ie WHERE" +
 						" ie.company IS NOT NULL AND" +
 						" ie.company.id = :company_id_var and" +
 						" ie.inventoryHierarchyType = :type_var"),
 
 		@NamedQuery(name="getAllToolsInCompany",
-				query="SELECT ie FROM InventoryEntity ie WHERE" +
+				query="SELECT ie FROM InventoryItem ie WHERE" +
 						" ie.company IS NOT NULL AND" +
 						" ie.company.id = :company_id_var AND" +
 						" ie.inventoryHierarchyType = :type_var"),
 
 		@NamedQuery(name="getToolById",
-				query="SELECT ie FROM InventoryEntity ie WHERE" +
+				query="SELECT ie FROM InventoryItem ie WHERE" +
 						" ie.id = :id_var"),
 
 		@NamedQuery(name="getToolByCode",
-				query="SELECT ie FROM InventoryEntity ie WHERE" +
+				query="SELECT ie FROM InventoryItem ie WHERE" +
 						" ie.qrCode = :code_var OR ie.barcode = :code_var")
 })
-public class InventoryEntity extends EntityPojo {
+public class InventoryItem extends EntityPojo {
 
 	/*
 	NULL parentCategory is root category
 	 */
 	@ManyToOne(cascade={CascadeType.REFRESH})
 	@JoinColumn(name="parent_id")
-	private InventoryEntity parentCategory;
+	private InventoryItem parentCategory;
 
 	@OneToMany(mappedBy = "parentCategory", cascade={CascadeType.ALL}, orphanRemoval = true, fetch = FetchType.LAZY)
-	private Set<InventoryEntity> children = new HashSet<>();
+	private Set<InventoryItem> children = new HashSet<>();
 
 	/*
 	Allows to keep track of item position in tree hierarchy and sort list -> Parent must be added before child
@@ -81,7 +81,7 @@ public class InventoryEntity extends EntityPojo {
 	/*
 	Allows to easily identify if Entity is a tool or a category
 	 */
-	@Enumerated(EnumType.STRING)
+	@Enumerated( EnumType.STRING )
 	private InventoryHierarchyType inventoryHierarchyType = InventoryHierarchyType.TOOL;
 
 
@@ -124,19 +124,17 @@ public class InventoryEntity extends EntityPojo {
 	@Column(name = "report_message")
 	private String reportMessage = "";
 
-
 	@Enumerated(EnumType.STRING)
-	private ToolStatus usageStatus = null;
+	private ToolStatus usageStatus;
 
 	@OneToOne
-	private Company company = null;
+	private Company company;
 
 	@OneToOne
-	private User user = null;
+	private User user;
 
 	@OneToOne
-	private User reservedByUser = null;
-
+	private User reservedByUser;
 
 	@Column(name = "date_bought")
 	private Date dateBought;
@@ -157,10 +155,9 @@ public class InventoryEntity extends EntityPojo {
 	//TODO: Last known GeoLocation
 
 
+	public InventoryItem() {}
 
-	public InventoryEntity() {}
-
-	public InventoryEntity(InventoryEntity tool) {
+	public InventoryItem(InventoryItem tool) {
 		this.setName(tool.getName());
 		this.setManufacturer(tool.getManufacturer());
 		this.setModel(tool.getModel());
@@ -177,20 +174,20 @@ public class InventoryEntity extends EntityPojo {
 		this.setAdditionalInfo(tool.getAdditionalInfo());
 	}
 
-	public InventoryEntity getParentCategory() {
+	public InventoryItem getParentCategory() {
 		return parentCategory;
 	}
-	public void setParentCategory(InventoryEntity parentCategory) {
+	public void setParentCategory(InventoryItem parentCategory) {
 		this.parentCategory = parentCategory;
 	}
 
-	public Set<InventoryEntity> getChildren() {
+	public Set<InventoryItem> getChildren() {
 		return children;
 	}
-	public void setChildren(Set<InventoryEntity> children) {
+	public void setChildren(Set<InventoryItem> children) {
 		if (children != null) {
 			if (children.size() > 0) {
-				for (InventoryEntity child : children) {
+				for (InventoryItem child : children) {
 					child.setLevel((this.level+1));
 				}
 			}
@@ -198,7 +195,7 @@ public class InventoryEntity extends EntityPojo {
 		this.inventoryHierarchyType = InventoryHierarchyType.CATEGORY;
 		this.children = children;
 	}
-	public void addChild(InventoryEntity ie) {
+	public void addChild(InventoryItem ie) {
 		ie.setLevel((this.level+1));
 		this.inventoryHierarchyType = InventoryHierarchyType.CATEGORY;
 		this.children.add(ie);
@@ -305,7 +302,7 @@ public class InventoryEntity extends EntityPojo {
 	public Integer getLevel() {
 		return level;
 	}
-	public void setLevel(Integer level) {
+	private void setLevel(Integer level) {
 		this.level = level;
 	}
 
@@ -314,29 +311,6 @@ public class InventoryEntity extends EntityPojo {
 	}
 	public void setInventoryHierarchyType(InventoryHierarchyType inventoryHierarchyType) {
 		this.inventoryHierarchyType = inventoryHierarchyType;
-	}
-
-	public boolean hasChildren() {
-		return (this.getChildren().size() > 0);
-	}
-
-
-	public static InventoryEntity getEmptyTool() {
-		InventoryEntity t = new InventoryEntity();
-		t.setName("");
-		t.setParentCategory(null);
-		t.setManufacturer("");
-		t.setModel("");
-		t.setToolInfo("");
-		t.setOwner("");
-		t.setSnCode("");
-		t.setBarcode("");
-		t.setDateBought(null);
-		t.setDateNextMaintenance(null);
-		t.setPrice(null);
-		t.setGuarantee_months(null);
-
-		return t;
 	}
 
 	public String getSerialNumber() {

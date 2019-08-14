@@ -3,7 +3,6 @@ com\gmail\grigorij\backend\DatabaseDummyInsert.class
 com\gmail\grigorij\backend\database\facades\TransactionFacade.class
 com\gmail\grigorij\ui\utils\css\size\Left.class
 com\gmail\grigorij\ui\utils\components\detailsdrawer\DetailsDrawer$Position.class
-com\gmail\grigorij\utils\converters\CustomConverter$ToolCategoryConverter.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing$Wide.class
 com\gmail\grigorij\utils\camera\AbstractCameraView.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Color$Error.class
@@ -50,9 +49,7 @@ com\gmail\grigorij\utils\OperationStatus.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Responsive$Vertical.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Wide.class
 com\gmail\grigorij\ui\utils\css\AlignSelf.class
-com\gmail\grigorij\backend\access\AccessGroups.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Responsive$Vertical.class
-com\gmail\grigorij\utils\converters\CustomConverter$AccessGroupsConverter.class
 com\gmail\grigorij\ui\utils\components\frames\SplitViewFrame.class
 com\gmail\grigorij\ui\utils\css\FlexWrap.class
 com\gmail\grigorij\SessionServlet.class
@@ -60,7 +57,6 @@ com\gmail\grigorij\ui\utils\css\size\Tall.class
 com\gmail\grigorij\ui\utils\css\size\Size.class
 com\gmail\grigorij\ui\views\navigation\reporting\Reporting.class
 com\gmail\grigorij\ui\utils\css\FontSize.class
-com\gmail\grigorij\utils\converters\CustomConverter$StatusConverter.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Top.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Left.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Padding$Responsive.class
@@ -138,5 +134,4 @@ com\gmail\grigorij\ui\utils\css\LumoStyles$Spacing$Tall.class
 com\gmail\grigorij\ui\utils\css\size\Vertical.class
 com\gmail\grigorij\ui\utils\components\navigation\drawer\NaviMenu.class
 com\gmail\grigorij\ui\utils\components\CustomBadge.class
-com\gmail\grigorij\utils\converters\CustomConverter.class
 com\gmail\grigorij\ui\utils\css\LumoStyles$Margin$Top.class

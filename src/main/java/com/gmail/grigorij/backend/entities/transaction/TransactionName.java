@@ -1,53 +1,33 @@
 package com.gmail.grigorij.backend.entities.transaction;
 
-import com.gmail.grigorij.backend.enums.OperationTarget;
-import com.gmail.grigorij.backend.enums.OperationType;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+
+//TODO: TEMPORARY SOLUTION
 
 public class TransactionName {
 
-	public static String getTransactionFullName(OperationType operation, OperationTarget target) {
-		String name = "";
-		String hasHave = (target.equals(OperationTarget.ACCESS_RIGHTS)) ? "have" : "has";
+	public static String getTransactionFullName(TransactionType operation, TransactionTarget target) {
+		String ed = "ed";
+		String hasHave = (target.equals(TransactionTarget.USER_ACCESS_RIGHTS)) ? "have been" : "has been";
 
-		if (operation.equals(OperationType.ADD)) {
-			return target.getStringValue() + " " + hasHave + " been added";
-		}
-
-		if (operation.equals(OperationType.EDIT)) {
-			return target.getStringValue() + " " + hasHave + " been edited";
-		}
-
-		if (operation.equals(OperationType.CHANGE)) {
-			return target.getStringValue() + " " + hasHave + " been changed";
-		}
-
-		if (operation.equals(OperationType.UPDATE)) {
-			return target.getStringValue() + " " + hasHave + " been updated";
-		}
-
-		if (operation.equals(OperationType.DELETE)) {
-			return target.getStringValue() + " " + hasHave + " been deleted";
-		}
-
-
-		if (operation.equals(OperationType.LOGIN)) {
+		if (operation.equals(TransactionType.LOGIN)) {
 			return target.getStringValue() + " Logged In";
 		}
 
-		if (operation.equals(OperationType.LOGOUT)) {
+		if (operation.equals(TransactionType.LOGOUT)) {
 			return target.getStringValue() + " Logged Out";
 		}
 
-
-		return name;
+		return target.getStringValue() + " " + hasHave + operation.getStringValue().toLowerCase() + ed;
 	}
 
-	public static String getTransactionShortName(OperationType operation, OperationTarget target) {
-		if (operation.equals(OperationType.LOGIN)) {
+	public static String getTransactionShortName(TransactionType operation, TransactionTarget target) {
+		if (operation.equals(TransactionType.LOGIN)) {
 			return operation.getStringValue();
 		}
 
-		if (operation.equals(OperationType.LOGOUT)) {
+		if (operation.equals(TransactionType.LOGOUT)) {
 			return operation.getStringValue();
 		}
 

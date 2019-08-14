@@ -1,7 +1,10 @@
 package com.gmail.grigorij.ui.views.authentication;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
@@ -190,7 +193,12 @@ public class LoginView extends Div {
 
 		if (AuthenticationService.signIn(username, password, rememberMe)) {
 
-			TransactionFacade.getInstance().insertLoginTransaction("");
+			Transaction tr = new Transaction();
+			tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+			tr.setTransactionOperation(TransactionType.LOGIN);
+			tr.setTransactionTarget(TransactionTarget.USER);
+
+			TransactionFacade.getInstance().insert(tr);
 
 			operationStatus.onSuccess("Login successful", null);
 		} else {

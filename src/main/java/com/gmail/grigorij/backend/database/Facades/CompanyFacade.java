@@ -19,35 +19,22 @@ public class CompanyFacade {
 		return mInstance;
 	}
 
-
-
-	private List<Company> companiesList = new ArrayList<>();
-
-	private void populateCompaniesList() {
-		if (companiesList.size() <= 0) {
-			try {
-				companiesList = DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.getAllCompanies", Company.class)
-						.getResultList();
-			} catch (NoResultException nre) {
-				nre.printStackTrace();
-			}
+	public List<Company> getAllCompanies() {
+		List<Company> companies;
+		try {
+			companies = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllCompanies", Company.class)
+					.getResultList();
+		} catch (NoResultException nre) {
+			companies = null;
 		}
+		return companies;
 	}
 
-
-	public Company findCompanyById(long id) {
-		populateCompaniesList();
-
-		for (Company company : companiesList) {
-			if (company.getId() == id) {
-				return company;
-			}
-		}
-
+	public Company getCompanyById(long companyId) {
 		Company company;
 		try {
-			company = (Company) DatabaseManager.getInstance().createEntityManager().createNamedQuery("Company.findCompanyById")
-					.setParameter("company_id", id)
+			company = (Company) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getCompanyById")
+					.setParameter("company_id", companyId)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			company = null;
@@ -56,109 +43,71 @@ public class CompanyFacade {
 	}
 
 
-	public List<Company> getAllCompanies() {
-		populateCompaniesList();
-		return new ArrayList<>(companiesList);
-	}
-
-
 	public boolean insert(Company company) {
-		System.out.println();
-		System.out.println("CompanyFacade -> insert");
-
-		if (company == null)
-			return false;
-
-		try {
-			DatabaseManager.getInstance().insert(company);
-			companiesList.add(company);
-		} catch (Exception e) {
-			System.out.println("Company INSERT fail");
-			e.printStackTrace();
+		if (company == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> INSERT NULL COMPANY");
 			return false;
 		}
 
-		System.out.println("Company INSERT successful");
+		try {
+			DatabaseManager.getInstance().insert(company);
+		} catch (Exception e) {
+			System.err.println(this.getClass().getSimpleName() + " -> COMPANY INSERT FAIL");
+			e.printStackTrace();
+			return false;
+		}
 		return true;
 	}
 
 	public boolean update(Company company) {
-		System.out.println();
-		System.out.println("CompanyFacade -> update");
-
-		if (company == null)
+		if (company == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> UPDATE NULL COMPANY");
 			return false;
-
-		Company companyInDatabase = null;
-		int companyIndex = -1;
-
-		if (company.getId() != null) {
-//			companyInDatabase = DatabaseManager.getInstance().find(Company.class, company.getId());
-
-			for (int i = 0; i < companiesList.size(); i++) {
-				if (companiesList.get(i).getId().equals(company.getId())) {
-					companyInDatabase = companiesList.get(i);
-					companyIndex = i;
-					break;
-				}
-			}
 		}
 
-		System.out.println("companyInDatabase: " + companyInDatabase);
+		Company companyInDatabase = null;
 
+		if (company.getId() != null) {
+			companyInDatabase = DatabaseManager.getInstance().find(Company.class, company.getId());
+		}
 		try {
 			if (companyInDatabase == null) {
 				return insert(company);
 			} else {
 				DatabaseManager.getInstance().update(company);
-				companiesList.set(companyIndex, company);
 			}
 		} catch (Exception e) {
-			System.out.println("Company UPDATE fail");
+			System.err.println(this.getClass().getSimpleName() + " -> COMPANY UPDATE FAIL");
 			e.printStackTrace();
 			return false;
 		}
-
-		System.out.println("Company UPDATE successful");
 		return true;
 	}
 
 	public boolean remove(Company company) {
-		System.out.println();
-		System.out.println("CompanyFacade -> remove");
-
-		if (company == null)
+		if (company == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL COMPANY");
 			return false;
-
-		int companyIndex = -1;
-		Company companyInDatabase = null;
-
-		for (int i = 0; i < companiesList.size(); i++) {
-			if (companiesList.get(i).getId().equals(company.getId())) {
-				companyInDatabase = companiesList.get(i);
-				companyIndex = i;
-				break;
-			}
 		}
 
-//		Company companyInDatabase = DatabaseManager.getInstance().find(Company.class, company.getId());
-		System.out.println("companyInDatabase: " + companyInDatabase);
+		Company companyInDatabase = null;
+
+		if (company.getId() != null) {
+			companyInDatabase = DatabaseManager.getInstance().find(Company.class, company.getId());
+		}
 
 		try {
 			if (companyInDatabase != null) {
 				DatabaseManager.getInstance().remove(company);
-				companiesList.remove(companyIndex);
 			} else {
-				System.out.println("Company not found: " + company);
+				System.err.println(this.getClass().getSimpleName() + " -> COMPANY: '" + company.getName() + "'NOT FOUND IN DATABASE");
 				return false;
 			}
 		} catch (Exception e) {
-			System.out.println("Company REMOVE fail");
+			System.out.println(this.getClass().getSimpleName() + " -> COMPANY REMOVE FAIL");
 			e.printStackTrace();
 			return false;
 		}
-
-		System.out.println("Company REMOVE successful");
 		return true;
 	}
 }

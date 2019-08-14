@@ -3,8 +3,12 @@ package com.gmail.grigorij.ui.views.navigation.admin.personnel;
 import com.github.appreciated.papermenubutton.HorizontalAlignment;
 import com.github.appreciated.papermenubutton.PaperMenuButton;
 import com.github.appreciated.papermenubutton.VerticalAlignment;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
@@ -17,13 +21,14 @@ import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.*;
 import com.gmail.grigorij.ui.utils.forms.editable.EditableUserForm;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
@@ -72,13 +77,11 @@ public class AdminPersonnel extends FlexBoxLayout {
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Personnel");
-//		searchField.setValueChangeMode(ValueChangeMode.EAGER);
 		searchField.setValueChangeMode(ValueChangeMode.LAZY);
 		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
 		header.add(searchField);
 		header.setComponentMargin(searchField, Right.S);
-
 
 
 		Button actionsButton = UIUtils.createIconButton("Options", VaadinIcon.MENU, ButtonVariant.LUMO_CONTRAST);
@@ -157,25 +160,17 @@ public class AdminPersonnel extends FlexBoxLayout {
 		dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getAllUsers());
 		grid.setDataProvider(dataProvider);
 
-		grid.addColumn(User::getId).setHeader("ID")
-				.setWidth(UIUtils.COLUMN_WIDTH_XS)
-				.setFlexGrow(0);
-
-		grid.addColumn(User::getUsername)
-				.setHeader("Username")
-				.setWidth(UIUtils.COLUMN_WIDTH_L);
+		grid.addColumn(user -> (user.getPerson() == null) ? "" : user.getPerson().getFullName())
+				.setHeader("Employee")
+				.setAutoWidth(true);
 
 		grid.addColumn(user -> (user.getCompany() == null) ? "" : user.getCompany().getName())
 				.setHeader("Company")
-				.setWidth(UIUtils.COLUMN_WIDTH_L);
+				.setAutoWidth(true);
 
-		grid.addColumn(user -> (user.getPerson() == null) ? "" : user.getPerson().getFullName())
-				.setHeader("Person")
-				.setWidth(UIUtils.COLUMN_WIDTH_L);
-
-		grid.addColumn(new ComponentRenderer<>(selectedUser -> UIUtils.createActiveGridIcon(selectedUser.isDeleted()))).setHeader("Active")
-				.setWidth(UIUtils.COLUMN_WIDTH_XS)
-				.setFlexGrow(0);
+		grid.addColumn(new ComponentRenderer<>(selectedUser -> UIUtils.createActiveGridIcon(selectedUser.isDeleted())))
+				.setHeader("Active")
+				.setAutoWidth(true);
 
 		add(grid);
 	}
@@ -217,6 +212,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 	}
 
+
 	private void createDetailsDrawer() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
@@ -227,12 +223,11 @@ public class AdminPersonnel extends FlexBoxLayout {
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("User Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
-		deleteButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR);
-		deleteButton.addClickListener(e -> confirmDelete());
-		UIUtils.setTooltip("Delete this user from Database", deleteButton);
+//		Select<String> userStatusSelector = new Select<>(ProjectConstants.ACTIVE, ProjectConstants.INACTIVE);
+//		userForm.setUserStatusSelector(userStatusSelector);
 
-		detailsDrawerHeader.add(deleteButton);
-		detailsDrawerHeader.getContainer().setComponentMargin(deleteButton, Left.AUTO);
+//		detailsDrawerHeader.add(userStatusSelector);
+//		detailsDrawerHeader.getContainer().setComponentMargin(userStatusSelector, Left.AUTO);
 
 		detailsDrawer.setHeader(detailsDrawerHeader);
 		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
@@ -247,8 +242,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 	}
 
 	private void showDetails(User user) {
-		deleteButton.setEnabled( user != null );
-		userForm.setUser(user);
+		userForm.setTargetUser(user);
 		detailsDrawer.show();
 
 		UIUtils.updateFormSize(userForm);
@@ -262,7 +256,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 	private void updateUser() {
 		System.out.println("updateUser()");
 
-		User editedUser = userForm.getUser();
+		User editedUser = userForm.getTargetUser();
 
 		if (editedUser != null) {
 
@@ -271,6 +265,13 @@ public class AdminPersonnel extends FlexBoxLayout {
 					dataProvider.getItems().add(editedUser);
 					dataProvider.refreshAll();
 					UIUtils.showNotification("User created successfully", UIUtils.NotificationType.SUCCESS);
+
+					Transaction tr = new Transaction();
+					tr.setTransactionOperation(TransactionType.ADD);
+					tr.setTransactionTarget(TransactionTarget.USER);
+					tr.setDestinationUser(editedUser);
+					tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+					TransactionFacade.getInstance().insert(tr);
 				} else {
 					UIUtils.showNotification("User insert failed", UIUtils.NotificationType.ERROR);
 				}
@@ -281,6 +282,13 @@ public class AdminPersonnel extends FlexBoxLayout {
 					}
 
 					UIUtils.showNotification("User updated successfully", UIUtils.NotificationType.SUCCESS);
+
+					Transaction tr = new Transaction();
+					tr.setTransactionOperation(TransactionType.EDIT);
+					tr.setTransactionTarget(TransactionTarget.USER);
+					tr.setDestinationUser(editedUser);
+					tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+					TransactionFacade.getInstance().insert(tr);
 				} else {
 					UIUtils.showNotification("User update failed", UIUtils.NotificationType.ERROR);
 				}
@@ -299,7 +307,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 			final User selectedUser =  grid.asSingleSelect().getValue();
 			if (selectedUser != null) {
 
-				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "selected user", selectedUser.getUsername());
+				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, " selected user ", selectedUser.getUsername());
 				dialog.closeOnCancel();
 				dialog.getConfirmButton().addClickListener(e -> {
 					if (UserFacade.getInstance().remove(selectedUser)) {
@@ -307,6 +315,14 @@ public class AdminPersonnel extends FlexBoxLayout {
 						dataProvider.refreshAll();
 						closeDetails();
 						UIUtils.showNotification("User deleted successfully", UIUtils.NotificationType.SUCCESS);
+
+						Transaction tr = new Transaction();
+						tr.setTransactionOperation(TransactionType.DELETE);
+						tr.setTransactionTarget(TransactionTarget.USER);
+						tr.setDestinationUser(selectedUser);
+						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+						tr.setAdditionalInfo("Completely remove from database");
+						TransactionFacade.getInstance().insert(tr);
 					} else {
 						UIUtils.showNotification("User delete failed", UIUtils.NotificationType.ERROR);
 					}

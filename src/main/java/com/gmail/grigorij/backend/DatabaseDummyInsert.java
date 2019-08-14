@@ -1,16 +1,17 @@
 package com.gmail.grigorij.backend;
 
-import com.gmail.grigorij.backend.entities.access.AccessGroups;
+import com.gmail.grigorij.backend.enums.permissions.AccessGroup;
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.embeddable.Location;
-import com.gmail.grigorij.backend.entities.embeddable.Person;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
-import com.gmail.grigorij.backend.enums.ToolStatus;
+import com.gmail.grigorij.backend.embeddable.Location;
+import com.gmail.grigorij.backend.embeddable.Person;
+import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.enums.OperationType;
-import com.gmail.grigorij.backend.enums.OperationTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.permissions.Permission;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -27,15 +28,14 @@ public class DatabaseDummyInsert {
 	private int companiesCount = 3; //excluding 1st company: ADMINISTRATION
 	private int usersPerCompany = 10;
 
-	private int toolsCount = 100;
+	private int toolsCount = 10;
 	private int toolCategoriesCount = 5;
-	private int subCategories = 3;
+	private int subCategories = 2;
 	private int toolsPerCategory = toolsCount / toolCategoriesCount;
 
 	private List<User> users;
 	private List<Company> companies, companiesFromDB;
-
-	private List<InventoryEntity> tools;
+	private List<InventoryItem> tools;
 
 	private User transactionUser;
 
@@ -65,10 +65,11 @@ public class DatabaseDummyInsert {
 
 				User user = new User();
 				user.setUsername("u" + compInd + "." + userInd);
-				user.setPassword("p" + compInd + "." + userInd);
+				user.setPassword("111111");
 				user.setCompany(company);
-				user.setAccessGroup(AccessGroups.EMPLOYEE.getIntValue());
-				user.setDeleted(false);
+				user.setAccessGroup(AccessGroup.COMPANY_ADMIN);
+				user.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.NO, Permission.YES));
+
 
 				String rf = RandomStringUtils.randomAlphabetic(1);
 				String rl = RandomStringUtils.randomAlphabetic(1);
@@ -81,6 +82,7 @@ public class DatabaseDummyInsert {
 				p.setEmail(rf+rl +  "@mail.com");
 
 				Location location = new Location();
+				location.setName("Location Name" + compInd + "." + userInd);
 				location.setAddressLine1("Street Name" + compInd + "." + userInd);
 				location.setCountry("Country Name" + compInd + "." + userInd);
 				location.setCity("City Name" + compInd + "." + userInd);
@@ -99,13 +101,13 @@ public class DatabaseDummyInsert {
 	private void generateCompanies() {
 		Company aCompany = new Company();
 		aCompany.setName(ADMINISTRATION_COMPANY_NAME);
-		aCompany.setVat("012345ABCD");
+		aCompany.setVat("012345");
 		aCompany.setDeleted(false);
 
 		Person cp = new Person();
 
-		cp.setFirstName(RandomStringUtils.randomAlphabetic(1) + "PersonFirstName ");
-		cp.setLastName(RandomStringUtils.randomAlphabetic(1) + "PersonLastName ");
+		cp.setFirstName(RandomStringUtils.randomAlphabetic(1) + "_FirstName ");
+		cp.setLastName(RandomStringUtils.randomAlphabetic(1) + "_LastName ");
 		cp.setEmail(RandomStringUtils.randomAlphabetic(1)+RandomStringUtils.randomAlphabetic(1) +  "@mail.com");
 
 		Location companyLocation = new Location();
@@ -163,15 +165,14 @@ public class DatabaseDummyInsert {
 
 			Company company = companiesFromDB.get(comp);
 			List<User> companyUsers = UserFacade.getInstance().getUsersInCompany(company.getId());
-			System.out.println("USERS IN COMPANY: " + companyUsers.size());
 
 			for (int i = 0; i < toolCategoriesCount; i++) {
-				InventoryEntity p = new InventoryEntity();
+				InventoryItem p = new InventoryItem();
 				p.setName("Category " + categoryCounter);
 				p.setCompany(company);
 
 				for (int j = 0; j < subCategories; j++) {
-					InventoryEntity c = new InventoryEntity();
+					InventoryItem c = new InventoryItem();
 					c.setName("Sub Category " + subCategoryCounter + " (P: " + categoryCounter  +")");
 					c.setParentCategory(p);
 					c.setCompany(company);
@@ -179,7 +180,7 @@ public class DatabaseDummyInsert {
 					p.addChild(c);
 
 					for (int k = 0; k < toolsPerCategory; k++) {
-						InventoryEntity cc = new InventoryEntity();
+						InventoryItem cc = new InventoryItem();
 
 //						int random = (int )(Math.random() * 5);
 //						ToolStatus status = ToolStatus.IN_USE;
@@ -251,11 +252,10 @@ public class DatabaseDummyInsert {
 		for (Company company : companies) {
 			CompanyFacade.getInstance().insert(company);
 
-
 			Transaction transaction = new Transaction();
 			transaction.setWhoDid(transactionUser);
-			transaction.setTransactionOperation(OperationType.ADD);
-			transaction.setTransactionTarget(OperationTarget.COMPANY);
+			transaction.setTransactionOperation(TransactionType.ADD);
+			transaction.setTransactionTarget(TransactionTarget.COMPANY);
 			transaction.setCompany(company);
 
 			TransactionFacade.getInstance().insert(transaction);
@@ -277,10 +277,11 @@ public class DatabaseDummyInsert {
 		admin.setUsername("u");
 		admin.setPassword("p");
 		admin.setCompany(administration);
-		admin.setAccessGroup(AccessGroups.ADMIN.getIntValue());
-		admin.setDeleted(false);
 		admin.setThemeVariant(LumoStyles.LIGHT);
-		admin.setAdditionalInfo("AdminMan");
+		admin.setAdditionalInfo("System Administrator");
+
+		admin.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.YES, Permission.YES));
+		admin.setAccessGroup(AccessGroup.SYSTEM_ADMIN);
 
 		Person adminP = new Person();
 		adminP.setFirstName("Grigorij");
@@ -300,8 +301,8 @@ public class DatabaseDummyInsert {
 
 			Transaction transaction = new Transaction();
 			transaction.setWhoDid(transactionUser);
-			transaction.setTransactionOperation(OperationType.ADD);
-			transaction.setTransactionTarget(OperationTarget.USER);
+			transaction.setTransactionOperation(TransactionType.ADD);
+			transaction.setTransactionTarget(TransactionTarget.USER);
 			transaction.setDestinationUser(user);
 
 			TransactionFacade.getInstance().insert(transaction);
@@ -309,13 +310,14 @@ public class DatabaseDummyInsert {
 	}
 
 	private void insertTools() {
-		for (InventoryEntity ie : tools) {
+		for (InventoryItem ie : tools) {
 			InventoryFacade.getInstance().insert(ie);
 
 
 			Transaction transaction = new Transaction();
 			transaction.setWhoDid(transactionUser);
-			transaction.setTransactionOperation(OperationType.ADD);
+			transaction.setTransactionOperation(TransactionType.ADD);
+			transaction.setTransactionTarget(TransactionTarget.CATEGORY);
 			transaction.setInventoryEntity(ie); // <--TransactionTarget is set automatically TOOL/CATEGORY
 
 			TransactionFacade.getInstance().insert(transaction);

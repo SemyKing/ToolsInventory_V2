@@ -2,8 +2,8 @@ package com.gmail.grigorij.ui.utils.forms.editable;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.embeddable.Location;
-import com.gmail.grigorij.backend.entities.embeddable.Person;
+import com.gmail.grigorij.backend.embeddable.Location;
+import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -13,7 +13,6 @@ import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -25,6 +24,7 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.converter.StringToBooleanConverter;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 
@@ -108,7 +108,8 @@ public class EditableCompanyForm extends FormLayout {
 				.bind(Company::getVat, Company::setVat);
 		binder.forField(status)
 				.asRequired("Select one")
-				.withConverter(new CustomConverter.StatusConverter())
+//				.withConverter(new CustomConverter.StatusConverter())
+				.withConverter(new StringToBooleanConverter("Error", ProjectConstants.INACTIVE, ProjectConstants.ACTIVE))
 				.bind(Company::isDeleted, Company::setDeleted);
 		binder.forField(additionalInfo)
 				.bind(Company::getAdditionalInfo, Company::setAdditionalInfo);

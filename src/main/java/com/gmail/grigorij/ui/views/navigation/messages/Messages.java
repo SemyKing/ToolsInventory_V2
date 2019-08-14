@@ -4,12 +4,12 @@ import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
-import com.gmail.grigorij.backend.enums.ToolStatus;
+import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
 import com.gmail.grigorij.backend.entities.message.Message;
 import com.gmail.grigorij.backend.enums.MessageType;
-import com.gmail.grigorij.backend.enums.OperationTarget;
-import com.gmail.grigorij.backend.enums.OperationType;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -54,7 +54,6 @@ public class Messages extends ViewFrame {
 	}
 
 	private FlexBoxLayout createContent() {
-
 		messages = new ArrayList<>(AuthenticationService.getCurrentSessionUser().getMessages());
 
 		contentLayout = new FlexBoxLayout();
@@ -128,7 +127,7 @@ public class Messages extends ViewFrame {
 		if (message.getMessageType().equals(MessageType.TOOL_FREE)) {
 			Button takeToolButton = UIUtils.createButton("Take Tool", VaadinIcon.HAND, ButtonVariant.LUMO_SUCCESS);
 			takeToolButton.addClickListener(e -> {
-				takeTool(message.getTool());
+				takeTool(message.getToolId());
 
 				dismissMessage(message, messageWrapper);
 			});
@@ -140,6 +139,12 @@ public class Messages extends ViewFrame {
 		return messageWrapper;
 	}
 
+
+
+
+	/*
+		MESSAGE ACTIONS
+	 */
 	private void dismissMessage(Message message, FlexBoxLayout messageWrapper) {
 		MessageFacade.getInstance().remove(message);
 
@@ -150,22 +155,24 @@ public class Messages extends ViewFrame {
 		System.out.println("REPLY");
 	}
 
-	private void takeTool(InventoryEntity tool) {
+	private void takeTool(Long toolId) {
+		InventoryItem tool = InventoryFacade.getInstance().getToolById(toolId);
+
 		tool.setUser(AuthenticationService.getCurrentSessionUser());
 		tool.setUsageStatus(ToolStatus.IN_USE);
 
 		if (InventoryFacade.getInstance().update(tool)) {
 
-			AuthenticationService.getCurrentSessionUser().addToolInUse(tool);
+			AuthenticationService.getCurrentSessionUser().addToolInUse(toolId);
 
 			UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
 
 			Transaction tr = new Transaction();
-			tr.setTransactionTarget(OperationTarget.TOOL_STATUS);
-			tr.setTransactionOperation(OperationType.CHANGE);
+			tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
+			tr.setTransactionOperation(TransactionType.EDIT);
 			tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 			tr.setInventoryEntity(tool);
-			tr.setAdditionalInfo("User took the tool.\nStatus change from: " + ToolStatus.FREE.getStringValue() + " to: " + ToolStatus.IN_USE.getStringValue());
+			tr.setAdditionalInfo("User took the tool.\nTool Status changed from: " + ToolStatus.FREE.getStringValue() + " to: " + ToolStatus.IN_USE.getStringValue());
 
 			TransactionFacade.getInstance().insert(tr);
 

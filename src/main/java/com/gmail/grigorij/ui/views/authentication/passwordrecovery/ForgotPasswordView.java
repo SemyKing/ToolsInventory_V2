@@ -1,17 +1,19 @@
 package com.gmail.grigorij.ui.views.authentication.passwordrecovery;
 
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.embeddable.Person;
+import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.recoverylink.RecoveryLink;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.data.binder.Binder;
@@ -81,6 +83,13 @@ public class ForgotPasswordView {
 		link.setEmail(emailAddress);
 
 		RecoveryLinkFacade.getInstance().insert(link);
+
+		Transaction tr = new Transaction();
+		tr.setTransactionOperation(TransactionType.EDIT);
+		tr.setTransactionTarget(TransactionTarget.USER);
+		tr.setWhoDid(user);
+		tr.setAdditionalInfo("User has requested password reset link.");
+		TransactionFacade.getInstance().insert(tr);
 
 		UIUtils.showNotification("/reset-password/" + link.getToken(), UIUtils.NotificationType.ERROR);
 	}

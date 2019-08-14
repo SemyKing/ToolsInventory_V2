@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.utils.forms.editable;
 
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.Divider;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
@@ -15,7 +15,7 @@ import com.vaadin.flow.component.textfield.NumberField;
 
 public class ToolCopyForm extends FormLayout {
 
-	private InventoryEntity originalTool;
+	private InventoryItem originalTool;
 
 	private NumberField numberOfCopiesField;
 	private Checkbox name;
@@ -127,7 +127,7 @@ public class ToolCopyForm extends FormLayout {
 	}
 
 
-	public boolean setOriginalTool(InventoryEntity originalTool) {
+	public boolean setOriginalTool(InventoryItem originalTool) {
 		if (originalTool == null) {
 			System.err.println("Tool copy, original inventory cannot be NULL");
 			return false;
@@ -136,7 +136,7 @@ public class ToolCopyForm extends FormLayout {
 		return true;
 	}
 
-	public InventoryEntity getToolCopy() {
+	public InventoryItem getToolCopy() {
 		if (numberOfCopiesField.isInvalid()) {
 			return null;
 		}
@@ -145,7 +145,7 @@ public class ToolCopyForm extends FormLayout {
 			this.numberOfCopies = numberOfCopiesField.getValue().intValue();
 		}
 
-		InventoryEntity tool = InventoryEntity.getEmptyTool();
+		InventoryItem tool = new InventoryItem();
 
 		if (name.getValue()) {
 			tool.setName(originalTool.getName());

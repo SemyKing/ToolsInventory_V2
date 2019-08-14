@@ -1,10 +1,7 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.enums.OperationTarget;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.enums.OperationType;
-import com.gmail.grigorij.utils.AuthenticationService;
 
 import javax.persistence.NoResultException;
 import java.sql.Date;
@@ -78,49 +75,34 @@ public class TransactionFacade {
 	}
 
 
-	public void insertLoginTransaction(String additionalInfo) {
-		Transaction tr = new Transaction();
-		tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-		tr.setTransactionOperation(OperationType.LOGIN);
-		tr.setTransactionTarget(OperationTarget.USER);
-		tr.setAdditionalInfo(additionalInfo);
-
-		if (!insert(tr)) {
-			System.out.println("Login Transaction INSERT Error");
-		}
-	}
-
-
 
 	public boolean insert(Transaction transaction) {
-		System.out.println("Transaction INSERT");
-		if (transaction == null)
+		if (transaction == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> INSERT NULL TRANSACTION");
 			return false;
+		}
 
 		try {
 			DatabaseManager.getInstance().insert(transaction);
 		} catch (Exception e) {
-			System.out.println("Transaction INSERT fail");
+			System.err.println(this.getClass().getSimpleName() + " -> TRANSACTION INSERT FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("Transaction INSERT successful");
 		return true;
 	}
 
-
 	public boolean update(Transaction transaction) {
-		System.out.println("Transaction UPDATE");
-		if (transaction == null)
+		if (transaction == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> UPDATE NULL TRANSACTION");
 			return false;
+		}
 
 		Transaction transactionInDatabase = null;
 
 		if (transaction.getId() != null) {
 			transactionInDatabase = DatabaseManager.getInstance().find(Transaction.class, transaction.getId());
 		}
-
-		System.out.println("transactionInDatabase: " + transactionInDatabase);
 
 		try {
 			if (transactionInDatabase == null) {
@@ -129,33 +111,34 @@ public class TransactionFacade {
 				DatabaseManager.getInstance().update(transaction);
 			}
 		} catch (Exception e) {
-			System.out.println("Transaction UPDATE fail");
+			System.err.println(this.getClass().getSimpleName() + " -> TRANSACTION UPDATE FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("Transaction UPDATE successful");
 		return true;
 	}
 
-
 	public boolean remove(Transaction transaction) {
-		System.out.println("Transaction REMOVE");
-		if (transaction == null)
+		if (transaction == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL TRANSACTION");
 			return false;
+		}
 
-		Transaction transactionInDatabase = DatabaseManager.getInstance().find(Transaction.class, transaction.getId());
-		System.out.println("transactionInDatabase: " + transactionInDatabase);
+		Transaction transactionInDatabase = null;
+
+		if (transaction.getId() != null) {
+			transactionInDatabase = DatabaseManager.getInstance().find(Transaction.class, transaction.getId());
+		}
 
 		try {
 			if (transactionInDatabase != null) {
 				DatabaseManager.getInstance().remove(transaction);
 			}
 		} catch (Exception e) {
-			System.out.println("Transaction REMOVE fail");
+			System.err.println(this.getClass().getSimpleName() + " -> TRANSACTION REMOVE FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("Transaction REMOVE successful");
 		return true;
 	}
 }
