@@ -1,21 +1,24 @@
 package com.gmail.grigorij.ui;
 
 import com.gmail.grigorij.backend.DatabaseDummyInsert;
-import com.gmail.grigorij.ui.views.MenuLayout;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.views.authentication.AuthenticationService;
-import com.gmail.grigorij.ui.views.authentication.LoginView;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.utils.ProjectConstants;
+import com.gmail.grigorij.ui.utils.css.LumoStyles;
+import com.gmail.grigorij.ui.views.MenuLayout;
+import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.ui.views.authentication.LoginView;
 import com.gmail.grigorij.utils.OperationStatus;
+import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.lumo.Lumo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +31,7 @@ import org.slf4j.LoggerFactory;
  *  PWA iconPath: cannot be .svg -> causes lots of NullPointerExceptions
  *
  */
-//@Push
+@Push(PushMode.MANUAL)
 @Route("")
 @HtmlImport("frontend://styles/shared-styles.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
@@ -44,6 +47,8 @@ public class MainLayout extends Div {
 		//TODO:REMOVE AT PRODUCTION
 		DatabaseDummyInsert dbDummy = new DatabaseDummyInsert();
 		dbDummy.generateAndInsert();
+		System.out.println("DatabaseDummyInsert done");
+
 
 		if (UI.getCurrent() != null) {
 			UI.getCurrent().getElement().setAttribute(LumoStyles.THEME, Lumo.DARK);
@@ -66,6 +71,9 @@ public class MainLayout extends Div {
 		System.out.println("Authentication...");
 		if (AuthenticationService.isAuthenticated()) {
 			System.out.println("User is authenticated -> show menu");
+
+			TransactionFacade.getInstance().insertLoginTransaction("Log In via Remember Me");
+
 			showMainMenuLayout();
 		} else {
 			System.out.println("User is not authenticated -> show login");
@@ -78,14 +86,12 @@ public class MainLayout extends Div {
 
 		add(new LoginView(new OperationStatus() {
 			@Override
-			public void onSuccess(String msg) {
-				System.out.println(msg);
-
+			public void onSuccess(String msg, UIUtils.NotificationType type) {
 				showMainMenuLayout();
 			}
 
 			@Override
-			public void onFail(String msg) {
+			public void onFail(String msg, UIUtils.NotificationType type) {
 				System.out.println(msg);
 			}
 		}));

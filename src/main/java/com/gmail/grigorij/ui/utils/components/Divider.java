@@ -7,7 +7,7 @@ import com.vaadin.flow.component.html.Div;
 
 public class Divider extends FlexBoxLayout {
 
-    public Divider(Size... sizes) {
+    public Divider(int colSpan, Size... sizes) {
 
         for (Size size : sizes) {
             for (String attribute : size.getPaddingAttributes()) {
@@ -19,13 +19,21 @@ public class Divider extends FlexBoxLayout {
         getElement().getStyle().set("pointer-events", "none");
         setHeight(height);
         setWidth("100%");
-//        setComponentPadding(Horizontal.NONE, Vertical.S);
         setAlignItems(Alignment.CENTER);
 
         Div d = new Div();
         d.setHeight(height);
         d.setWidth("100%");
         UIUtils.setBackgroundColor(LumoStyles.Color.Contrast._20, d);
+
+//        if (colSpan > 0) {
+//            UIUtils.setColSpan(colSpan, d);
+//        }
+
+        if (colSpan > 0) {
+            UIUtils.setColSpan(colSpan, this);
+        }
+
         add(d);
     }
 }

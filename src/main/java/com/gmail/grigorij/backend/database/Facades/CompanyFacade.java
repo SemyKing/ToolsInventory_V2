@@ -82,7 +82,6 @@ public class CompanyFacade {
 		return true;
 	}
 
-
 	public boolean update(Company company) {
 		System.out.println();
 		System.out.println("CompanyFacade -> update");

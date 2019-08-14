@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.utils.components.detailsdrawer;
 
+import com.gmail.grigorij.ui.utils.css.size.Size;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasSize;
@@ -45,6 +46,16 @@ public class DetailsDrawer extends Composite<FlexLayout> implements HasStyle, Ha
 
     public FlexBoxLayout getHeader() {
         return this.header;
+    }
+
+    public void setContentPadding(Size...sizes) {
+        if (this.content != null) {
+            for (Size size : sizes) {
+                for (String attribute : size.getPaddingAttributes()) {
+                    content.getElement().getStyle().set(attribute, size.getVariable());
+                }
+            }
+        }
     }
 
     public void setContent(Component... components) {

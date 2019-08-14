@@ -2,6 +2,7 @@ package com.gmail.grigorij.ui.utils;
 
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.*;
+import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -24,8 +25,6 @@ import java.time.format.DateTimeFormatter;
 
 public class UIUtils {
 
-	public static final String IMG_PATH = "images/";
-
 	public static final String COLUMN_WIDTH_XS = "80px";
 	public static final String COLUMN_WIDTH_S = "120px";
 	public static final String COLUMN_WIDTH_M = "160px";
@@ -33,16 +32,19 @@ public class UIUtils {
 	public static final String COLUMN_WIDTH_XL = "240px";
 	public static final String COLUMN_WIDTH_XXL = "280px";
 
-	private static final String BUTTON_CLASS = "custom_button";
+	public static final String CUSTOM_SMALL_BUTTON = "custom-vaadin-small-button";
 
 	/**
 	 * Thread-unsafe formatters.
 	 */
 	private static final ThreadLocal<DecimalFormat> decimalFormat = ThreadLocal
 			.withInitial(() -> new DecimalFormat("#,00"));
+
 	private static final ThreadLocal<DateTimeFormatter> dateFormat = ThreadLocal
 			.withInitial(() -> DateTimeFormatter.ofPattern("dd.MM.YYYY"));
 
+
+	/* ==== FORMS ==== */
 
 	/**
 	 * Apply correct column span to FormLayout
@@ -50,9 +52,41 @@ public class UIUtils {
 	 * If element is hidden before custom column span is set, automatic column span is 1.
 	 */
 	public static void updateFormSize(FormLayout formLayout) {
-		if (UI.getCurrent() != null) {
-			UI.getCurrent().getPage().executeJavaScript("$0.notifyResize()", formLayout.getElement());
+		if (formLayout != null) {
+			if (formLayout.getElement() != null) {
+				if (UI.getCurrent() != null) {
+					UI.getCurrent().getPage().executeJs("$0.notifyResize()", formLayout.getElement());
+				}
+			}
 		}
+	}
+
+
+	public static FlexBoxLayout getFormRowLayout(Component c1, Component c2, boolean evenWith) {
+		if (c1 == null) {
+			c1 = createEmptyInvisibleLabel();
+		}
+		if (c2 == null) {
+			c2 = createEmptyInvisibleLabel();
+		}
+
+		FlexBoxLayout layout = new FlexBoxLayout();
+		layout.setFlexDirection(FlexDirection.ROW);
+		layout.setAlignItems(FlexComponent.Alignment.BASELINE);
+		layout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+
+		layout.add(c1, c2);
+		layout.setComponentMargin(c2, Left.M);
+
+//		if (evenWith) {
+//
+//		}
+
+		if (!evenWith) {
+			layout.setFlexGrow("1", c1);
+		}
+
+		return layout;
 	}
 
 
@@ -62,132 +96,93 @@ public class UIUtils {
 		return createCustomButton(text, null, ButtonVariant.LUMO_PRIMARY);
 	}
 
-	public static Button createPrimaryButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createPrimaryButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createTertiaryButton(String text) {
-		return createCustomButton(text, null, ButtonVariant.LUMO_TERTIARY);
-	}
-
-	public static Button createTertiaryButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_TERTIARY);
-	}
-
-	public static Button createTertiaryButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_TERTIARY);
-	}
-
-	public static Button createTertiaryInlineButton(String text) {
-		return createCustomButton(text,null,  ButtonVariant.LUMO_TERTIARY_INLINE);
-	}
-
 	public static Button createTertiaryInlineButton(VaadinIcon icon) {
 		return createCustomButton("", icon, ButtonVariant.LUMO_TERTIARY_INLINE);
 	}
 
-	public static Button createTertiaryInlineButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_TERTIARY_INLINE);
-	}
-
-	public static Button createSuccessButton(String text) {
-		return createCustomButton(text, null, ButtonVariant.LUMO_SUCCESS);
-	}
-
-	public static Button createSuccessButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_SUCCESS);
-	}
-
-	public static Button createSuccessButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_SUCCESS);
-	}
-
-	public static Button createSuccessPrimaryButton(String text) {
-		return createCustomButton(text, null, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createSuccessPrimaryButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createSuccessPrimaryButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createErrorButton(String text) {
-		return createCustomButton(text, null, ButtonVariant.LUMO_ERROR);
-	}
-
-	public static Button createErrorButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_ERROR);
-	}
-
-	public static Button createErrorButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_ERROR);
-	}
-
-	public static Button createErrorPrimaryButton(String text) {
-		return createCustomButton(text, null, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createErrorPrimaryButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createErrorPrimaryButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createContrastButton(String text) {
-		return createCustomButton(text, null, ButtonVariant.LUMO_CONTRAST);
-	}
-
-	public static Button createContrastButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_CONTRAST);
-	}
-
-	public static Button createContrastButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_CONTRAST);
-	}
-
-	public static Button createContrastPrimaryButton(String text) {
-		return createCustomButton(text, null, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createContrastPrimaryButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_PRIMARY);
-	}
-
-	public static Button createContrastPrimaryButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_PRIMARY);
-	}
-
 	public static Button createSmallButton(String text) {
-		return createCustomButton(text, null, ButtonVariant.LUMO_SMALL);
+		Button smallButton = createCustomButton(text, null, ButtonVariant.LUMO_SMALL);
+		smallButton.addClassName(CUSTOM_SMALL_BUTTON);
+		return smallButton;
 	}
 
 	public static Button createSmallButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_SMALL);
+		Button smallButton = createCustomButton("", icon, ButtonVariant.LUMO_SMALL);
+		smallButton.addClassName(CUSTOM_SMALL_BUTTON);
+		return smallButton;
 	}
 
-	public static Button createSmallButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_SMALL);
+	public static Button createSmallButton(String text, ButtonVariant... variants) {
+		Button smallButton = createCustomButton(text, null, variants);
+		smallButton.addClassName(CUSTOM_SMALL_BUTTON);
+		smallButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+		return smallButton;
 	}
 
-	public static Button createLargeButton(String text) {
-		return createCustomButton(text, null,  ButtonVariant.LUMO_LARGE);
+	public static Button createSmallButton(String text, VaadinIcon icon, ButtonVariant... variants) {
+		Button smallButton = createCustomButton(text, icon, variants);
+		smallButton.addClassName(CUSTOM_SMALL_BUTTON);
+		smallButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+		return smallButton;
 	}
 
-	public static Button createLargeButton(VaadinIcon icon) {
-		return createCustomButton("", icon, ButtonVariant.LUMO_LARGE);
+	public static Button createIconButton(String text, VaadinIcon icon, ButtonVariant... variants) {
+		Button button = new Button();
+		button.setText(text);
+		button.getStyle().set("cursor", "pointer");
+
+		if (icon != null) {
+			Icon i = new Icon(icon);
+			i.getStyle().set("padding", "0");
+			i.getElement().setAttribute("slot", "prefix");
+			button.setIcon(i);
+		}
+		if (variants.length > 0) {
+			button.addThemeVariants(variants);
+		}
+
+
+		boolean setBackground = true;
+		for (ButtonVariant bv : variants) {
+			if (bv.equals(ButtonVariant.LUMO_PRIMARY) || bv.equals(ButtonVariant.LUMO_TERTIARY)) {
+				setBackground = false;
+				break;
+			}
+		}
+
+		if (setBackground) {
+			button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
+		}
+		return button;
 	}
 
-	public static Button createLargeButton(String text, VaadinIcon icon) {
-		return createCustomButton(text, icon, ButtonVariant.LUMO_LARGE);
+	public static Button createIconButton(VaadinIcon icon, ButtonVariant... variants) {
+		Button button = new Button();
+		button.getStyle().set("cursor", "pointer");
+
+		if (icon != null) {
+			Icon i = new Icon(icon);
+			i.getStyle().set("padding", "0");
+			i.getElement().setAttribute("slot", "prefix");
+			button.setIcon(i);
+		}
+		if (variants.length > 0) {
+			button.addThemeVariants(variants);
+		}
+
+
+		boolean setBackground = true;
+		for (ButtonVariant bv : variants) {
+			if (bv.equals(ButtonVariant.LUMO_PRIMARY) || bv.equals(ButtonVariant.LUMO_TERTIARY)) {
+				setBackground = false;
+				break;
+			}
+		}
+
+		if (setBackground) {
+			button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
+		}
+		return button;
 	}
 
 	public static Button createButton(String text) {
@@ -228,33 +223,23 @@ public class UIUtils {
 
 		if (variants.length > 0) {
 			button.addThemeVariants(variants);
-
-			boolean backgroundSet = false;
-			boolean colorSet = false;
-
-			for (ButtonVariant variant : variants) {
-				if (variant.equals(ButtonVariant.LUMO_ERROR) || variant.equals(ButtonVariant.LUMO_SUCCESS)) {
-					colorSet = true;
-				}
-				if (variant.equals(ButtonVariant.LUMO_PRIMARY)) {
-					backgroundSet = true;
-					break;
-				}
-			}
-
-			if (!backgroundSet) {
-				button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
-
-				if (!colorSet) {
-					button.getStyle().set("color", "var(--lumo-body-text-color)");
-				}
-			}
-		} else {
-			button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
-			button.getStyle().set("color", "var(--lumo-body-text-color)");
 		}
 
 		button.getStyle().set("cursor", "pointer");
+
+		boolean setBackground = true;
+
+		for (ButtonVariant bv : variants) {
+			if (bv.equals(ButtonVariant.LUMO_PRIMARY) || bv.equals(ButtonVariant.LUMO_TERTIARY)) {
+				setBackground = false;
+				break;
+			}
+		}
+
+		if (setBackground) {
+			button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
+		}
+
 
 		return button;
 	}
@@ -329,13 +314,20 @@ public class UIUtils {
 		return label;
 	}
 
+	private static Label createEmptyInvisibleLabel() {
+		Label label = new Label("");
+		label.setMaxHeight("0px");
+		label.setMaxWidth("0px");
+		label.getStyle().set("display", "none");
+		return label;
+	}
+
 
 	/* === MISC === */
 
 	public static Span createBoldText(String text) {
 		Span span = new Span(text);
 		span.getElement().getStyle().set("font-weight", "bold");
-//		span.addClassName(LumoStyles.FontWeight.BOLD);
 		return span;
 	}
 
@@ -353,14 +345,6 @@ public class UIUtils {
 		return span;
 	}
 
-
-
-
-
-
-
-
-
 	public static Component createInitials(String initials) {
 		FlexBoxLayout layout = new FlexBoxLayout(new Text(initials.toUpperCase()));
 		setFontSize(FontSize.S, layout);
@@ -372,12 +356,6 @@ public class UIUtils {
 		layout.setHeight(LumoStyles.Size.M);
 		layout.setWidth(LumoStyles.Size.M);
 		return layout;
-	}
-
-	public static Button createFloatingActionButton(VaadinIcon icon) {
-		Button button = createPrimaryButton(icon);
-		button.addThemeName("fab");
-		return button;
 	}
 
 
@@ -401,28 +379,9 @@ public class UIUtils {
 		return NumberFormat.getIntegerInstance().format(units);
 	}
 
-	public static Label createUnitsLabel(int units) {
-		Label label = new Label(formatUnits(units));
-		label.addClassName(LumoStyles.FontFamily.MONOSPACE);
-		return label;
-	}
 
 
 	/* === ICONS === */
-
-	public static FlexBoxLayout createTextIcon(Component textComponent, VaadinIcon icon) {
-		FlexBoxLayout layout = new FlexBoxLayout();
-		layout.setFlexDirection(FlexDirection.ROW);
-//		layout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		layout.setAlignItems(FlexComponent.Alignment.CENTER);
-		layout.add(textComponent);
-
-		Icon i = new Icon(icon);
-		setTextColor(TextColor.TERTIARY, i);
-		layout.add(i);
-
-		return layout;
-	}
 
 	public static FlexBoxLayout createTextIcon(VaadinIcon icon, Component textComponent) {
 		FlexBoxLayout layout = new FlexBoxLayout();
@@ -445,70 +404,20 @@ public class UIUtils {
 		return i;
 	}
 
-	public static Icon createSecondaryIcon(VaadinIcon icon) {
-		Icon i = new Icon(icon);
-		setTextColor(TextColor.SECONDARY, i);
-		return i;
-	}
-
-	public static Icon createTertiaryIcon(VaadinIcon icon) {
-		Icon i = new Icon(icon);
-		setTextColor(TextColor.TERTIARY, i);
-		return i;
-	}
-
-	public static Icon createDisabledIcon(VaadinIcon icon) {
-		Icon i = new Icon(icon);
-		setTextColor(TextColor.DISABLED, i);
-		return i;
-	}
-
-	public static Icon createSuccessIcon(VaadinIcon icon) {
-		Icon i = new Icon(icon);
-		setTextColor(TextColor.SUCCESS, i);
-		return i;
-	}
-
 	public static Icon createErrorIcon(VaadinIcon icon) {
 		Icon i = new Icon(icon);
 		setTextColor(TextColor.ERROR, i);
 		return i;
 	}
 
-	public static Icon createSmallIcon(VaadinIcon icon) {
-		Icon i = new Icon(icon);
-		i.addClassName(IconSize.S.getClassName());
-		return i;
-	}
-
-	public static Icon createLargeIcon(VaadinIcon icon) {
-		Icon i = new Icon(icon);
-		i.addClassName(IconSize.L.getClassName());
-		return i;
-	}
-
-	public static Icon createIcon(IconSize size, TextColor color, VaadinIcon icon) {
-		Icon i = new Icon(icon);
-		i.addClassNames(size.getClassName());
-		setTextColor(color, i);
-		return i;
-	}
-
-
-	/* === DATES === */
-
-	public static String formatDate(LocalDate date) {
-		return dateFormat.get().format(date);
-	}
-
 
 	/* === NOTIFICATIONS === */
 
 	public enum NotificationType {
-		INFO (      "#bbb41bf7",                    5000),
-		SUCCESS (   "var(--lumo-success-color)",    2000),
-		WARNING(    "#ff6700",                      5000),
-		ERROR (     "var(--lumo-error-color)",      0);
+		INFO (      "var(--lumo-primary-color-80pct)",5000),
+		SUCCESS (   "var(--lumo-success-color-80pct)",5000),
+		WARNING(    "hsl(22, 96%, 47%)",        5000),
+		ERROR (     "var(--lumo-error-color)",  0);
 
 		private String backgroundColor;
 		private int duration;
@@ -531,18 +440,16 @@ public class UIUtils {
 		Notification notification = new Notification();
 		notification.setPosition(Notification.Position.TOP_CENTER);
 
-//        Label counter = new Label();
-
 		Label msgLabel = new Label(msg);
 		msgLabel.addClassName("notification-text-container");
 
-		Button close = UIUtils.createButton(VaadinIcon.CLOSE);
+		Button close = UIUtils.createIconButton(VaadinIcon.CLOSE, ButtonVariant.LUMO_CONTRAST);
 		close.addClassName("notification-button");
 
 		FlexBoxLayout layout = new FlexBoxLayout();
 		layout.setSizeFull();
-		layout.getStyle().set("align-items", "center");
-		layout.getStyle().set("min-height", "32px");
+		layout.setAlignItems(FlexComponent.Alignment.CENTER);
+		layout.setMinHeight("32px");
 		layout.add(msgLabel);
 		layout.setBackgroundColor(type.getBackgroundColor());
 
@@ -562,21 +469,9 @@ public class UIUtils {
 
 	/* === CSS UTILITIES === */
 
-	public static void setAlignSelf(AlignSelf alignSelf, Component... components) {
-		for (Component component : components) {
-			component.getElement().getStyle().set("align-self", alignSelf.getValue());
-		}
-	}
-
 	public static void setBackgroundColor(String backgroundColor, Component... components) {
 		for (Component component : components) {
 			component.getElement().getStyle().set("background-color", backgroundColor);
-		}
-	}
-
-	public static void setBorderRadius(BorderRadius borderRadius, Component... components) {
-		for (Component component : components) {
-			component.getElement().getStyle().set("border-radius", borderRadius.getValue());
 		}
 	}
 
@@ -598,45 +493,15 @@ public class UIUtils {
 		}
 	}
 
-	public static void setFontWeight(FontWeight fontWeight, Component... components) {
-		for (Component component : components) {
-			component.getElement().getStyle().set("font-weight", fontWeight.getValue());
-		}
-	}
-
-	public static void setMaxWidth(String value, Component... components) {
-		for (Component component : components) {
-			component.getElement().getStyle().set("max-width", value);
-		}
-	}
-
 	public static void setOverflow(Overflow overflow, Component... components) {
 		for (Component component : components) {
 			component.getElement().getStyle().set("overflow", overflow.getValue());
 		}
 	}
 
-	public static void setShadow(Shadow shadow, Component... components) {
-		for (Component component : components) {
-			component.getElement().getStyle().set("box-shadow", shadow.getValue());
-		}
-	}
-
-	public static void setTextAlign(TextAlign textAlign, Component... components) {
-		for (Component component : components) {
-			component.getElement().getStyle().set("text-align", textAlign.getValue());
-		}
-	}
-
 	public static void setTextColor(TextColor textColor, Component... components) {
 		for (Component component : components) {
 			component.getElement().getStyle().set("color", textColor.getValue());
-		}
-	}
-
-	public static void setTheme(String theme, Component... components) {
-		for (Component component : components) {
-			component.getElement().setAttribute("theme", theme);
 		}
 	}
 

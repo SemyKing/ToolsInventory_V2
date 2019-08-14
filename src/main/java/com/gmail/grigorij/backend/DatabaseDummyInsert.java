@@ -1,13 +1,15 @@
 package com.gmail.grigorij.backend;
 
-import com.gmail.grigorij.backend.access.AccessGroups;
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.ToolFacade;
-import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.backend.entities.access.AccessGroups;
+import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.location.Location;
-import com.gmail.grigorij.backend.entities.tool.Tool;
-import com.gmail.grigorij.backend.entities.tool.ToolStatus;
+import com.gmail.grigorij.backend.entities.embeddable.Location;
+import com.gmail.grigorij.backend.entities.embeddable.Person;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.enums.ToolStatus;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
+import com.gmail.grigorij.backend.enums.OperationType;
+import com.gmail.grigorij.backend.enums.OperationTarget;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -20,19 +22,22 @@ public class DatabaseDummyInsert {
 
 	public static boolean entitiesGenerated = false;
 
-	private int usersCount = 10;
-	private int companiesCount = 3; //excluding 1st company: ADMINISTRATION
-	private int usersPerCompany = usersCount / companiesCount;
+	private final String ADMINISTRATION_COMPANY_NAME = "ADMINISTRATION";
 
-	private int toolsCount = 10;
+	private int companiesCount = 3; //excluding 1st company: ADMINISTRATION
+	private int usersPerCompany = 10;
+
+	private int toolsCount = 100;
 	private int toolCategoriesCount = 5;
 	private int subCategories = 3;
 	private int toolsPerCategory = toolsCount / toolCategoriesCount;
 
 	private List<User> users;
 	private List<Company> companies, companiesFromDB;
-	private List<Tool> tools;
 
+	private List<InventoryEntity> tools;
+
+	private User transactionUser;
 
 	public DatabaseDummyInsert() {
 		users = new ArrayList<>();
@@ -52,72 +57,56 @@ public class DatabaseDummyInsert {
 	}
 
 	private void generateUsers() {
-		User user1 = new User();
-		user1.setUsername("u");
-		user1.setPassword("p");
-		user1.setCompanyId(1);
-		user1.setAccessGroup(AccessGroups.ADMIN.getIntValue());
-		user1.setDeleted(false);
+		for (int compInd = 0; compInd < (companiesFromDB.size()); compInd++) {
 
-		user1.setFirstName("Grigorij");
-		user1.setLastName("Semykin");
-		user1.setPhoneNumber("046123456");
-		user1.setEmail("gs@mail.com");
+			Company company = companiesFromDB.get(compInd);
 
-		user1.setThemeVariant(LumoStyles.LIGHT);
-		user1.setAdditionalInfo("ABCDEFG");
+			for (int userInd = 0; userInd < usersPerCompany; userInd++) {
 
-		users.add(user1);
+				User user = new User();
+				user.setUsername("u" + compInd + "." + userInd);
+				user.setPassword("p" + compInd + "." + userInd);
+				user.setCompany(company);
+				user.setAccessGroup(AccessGroups.EMPLOYEE.getIntValue());
+				user.setDeleted(false);
 
+				String rf = RandomStringUtils.randomAlphabetic(1);
+				String rl = RandomStringUtils.randomAlphabetic(1);
 
-		int companyId = 2;
+				Person p = new Person();
 
-		for (int i = 1; i < usersCount; i++) {
+				p.setFirstName(rf + "_FirstName");
+				p.setLastName(rl + "_LastName");
+				p.setPhoneNumber("046" + compInd + "." + userInd);
+				p.setEmail(rf+rl +  "@mail.com");
 
-			if (i >= usersPerCompany) {
-				companyId++;
-				usersPerCompany += usersPerCompany;
+				Location location = new Location();
+				location.setAddressLine1("Street Name" + compInd + "." + userInd);
+				location.setCountry("Country Name" + compInd + "." + userInd);
+				location.setCity("City Name" + compInd + "." + userInd);
+				location.setPostcode("Postcode" + compInd + "." + userInd);
+
+				user.setAddress(location);
+				user.setPerson(p);
+
+				users.add(user);
 			}
-
-			User user = new User();
-			user.setUsername("uname" + i);
-			user.setPassword("upass" + i);
-			user.setCompanyId(companyId);
-			user.setAccessGroup(AccessGroups.EMPLOYEE.getIntValue());
-			user.setDeleted(false);
-
-			String rf = RandomStringUtils.randomAlphabetic(1);
-			String rl = RandomStringUtils.randomAlphabetic(1);
-
-			user.setFirstName(rf + "UserFirstName");
-			user.setLastName(rl + "UserLastName");
-			user.setPhoneNumber("046" + i);
-			user.setEmail(rf+rl +  "@mail.com");
-
-			Location location = new Location();
-			location.setAddressLine1("UserAddress" + i);
-			location.setCountry("UserCountry" + i);
-			location.setCity("UserCity" + i);
-			location.setPostcode("UserPostCode" + i);
-
-			user.setAddress(location);
-
-			users.add(user);
 		}
-		System.out.println("users generated");
 
 		insertUsers();
 	}
 
 	private void generateCompanies() {
 		Company aCompany = new Company();
-		aCompany.setName("Administration");
+		aCompany.setName(ADMINISTRATION_COMPANY_NAME);
 		aCompany.setVat("012345ABCD");
 		aCompany.setDeleted(false);
 
-		aCompany.setFirstName(RandomStringUtils.randomAlphabetic(1) + "PersonFirstName ");
-		aCompany.setLastName(RandomStringUtils.randomAlphabetic(1) + "PersonLastName ");
-		aCompany.setEmail(RandomStringUtils.randomAlphabetic(1)+RandomStringUtils.randomAlphabetic(1) +  "@mail.com");
+		Person cp = new Person();
+
+		cp.setFirstName(RandomStringUtils.randomAlphabetic(1) + "PersonFirstName ");
+		cp.setLastName(RandomStringUtils.randomAlphabetic(1) + "PersonLastName ");
+		cp.setEmail(RandomStringUtils.randomAlphabetic(1)+RandomStringUtils.randomAlphabetic(1) +  "@mail.com");
 
 		Location companyLocation = new Location();
 		companyLocation.setName("Main Office");
@@ -127,10 +116,10 @@ public class DatabaseDummyInsert {
 		companyLocation.setPostcode("01530");
 
 		aCompany.setAddress(companyLocation);
+		aCompany.setContactPerson(cp);
 		aCompany.setAdditionalInfo("ADMINISTRATION COMPANY FOR ADMINS ONLY");
 
 		companies.add(aCompany);
-
 
 		for (int i = 1; i < (companiesCount+1); i++) {
 			Company company = new Company();
@@ -140,10 +129,13 @@ public class DatabaseDummyInsert {
 
 			String rf = RandomStringUtils.randomAlphabetic(1);
 			String rl = RandomStringUtils.randomAlphabetic(1);
-			company.setFirstName(rf + "PersonFirstName" + i);
-			company.setLastName(rl + "PersonLastName" + i);
-			company.setEmail(rf+rl +  "@mail.com");
 
+			Person p = new Person();
+			p.setFirstName(rf + "PersonFirstName" + i);
+			p.setLastName(rl + "PersonLastName" + i);
+			p.setEmail(rf+rl +  "@mail.com");
+
+			company.setContactPerson(p);
 
 			for (int j = 0; j < 3; j++) {
 				Location location = new Location();
@@ -167,48 +159,63 @@ public class DatabaseDummyInsert {
 		int subCategoryCounter = 1;
 		int toolCounter = 1;
 
-		for (int comp = 1; comp < (companiesCount+1); comp++) {
+		for (int comp = 0; comp < (companiesFromDB.size()); comp++) {
 
 			Company company = companiesFromDB.get(comp);
-			List<User> companyUsers = UserFacade.getInstance().getUsersByCompanyId(company.getId());
+			List<User> companyUsers = UserFacade.getInstance().getUsersInCompany(company.getId());
 			System.out.println("USERS IN COMPANY: " + companyUsers.size());
 
 			for (int i = 0; i < toolCategoriesCount; i++) {
-				Tool p = new Tool();
+				InventoryEntity p = new InventoryEntity();
 				p.setName("Category " + categoryCounter);
-				p.setCompanyId(company.getId());
+				p.setCompany(company);
 
 				for (int j = 0; j < subCategories; j++) {
-					Tool c = new Tool();
+					InventoryEntity c = new InventoryEntity();
 					c.setName("Sub Category " + subCategoryCounter + " (P: " + categoryCounter  +")");
 					c.setParentCategory(p);
-					c.setCompanyId(company.getId());
+					c.setCompany(company);
 
-					p.addTool(c);
+					p.addChild(c);
 
 					for (int k = 0; k < toolsPerCategory; k++) {
-						Tool cc = new Tool();
+						InventoryEntity cc = new InventoryEntity();
 
-						int random = (int )(Math.random() * 3);
-						ToolStatus status = ToolStatus.IN_USE;
+//						int random = (int )(Math.random() * 5);
+//						ToolStatus status = ToolStatus.IN_USE;
+//
+//						if (random == 0) {
+//							status = ToolStatus.FREE;
+//						} else if (random == 1) {
+//							status = ToolStatus.IN_USE;
+//						} else if (random == 2) {
+//							status = ToolStatus.LOST;
+//						} else if (random == 3) {
+//							status = ToolStatus.RESERVED;
+//						} else if (random == 4) {
+//							status = ToolStatus.BROKEN;
+//						}
 
-						if (random == 0) {
-							status = ToolStatus.FREE;
-						} else if (random == 1) {
-							status = ToolStatus.IN_USE;
-						} else if (random == 2) {
-							status = ToolStatus.LOST;
-						}
+						cc.setUsageStatus(ToolStatus.FREE);
 
-						cc.setUsageStatus(status);
+//						if (status.equals(ToolStatus.IN_USE)) {
+//							int randomUserIndex = (int )(Math.random() * (companyUsers.size()));
+//							User user = companyUsers.get(randomUserIndex);
+//							cc.setUser(user);
+//						}
+//
+//						if (status.equals(ToolStatus.RESERVED)) {
+//							int randomUserIndex1 = (int )(Math.random() * (companyUsers.size()));
+//							int randomUserIndex2 = (int )(Math.random() * (companyUsers.size()));
+//							User user1 = companyUsers.get(randomUserIndex1);
+//							User user2 = companyUsers.get(randomUserIndex2);
+//
+//							cc.setReservedByUser(user1);
+//							cc.setUser(user2);
+//						}
 
-						if (status.equals(ToolStatus.IN_USE)) {
-							int randomUserIndex = (int )(Math.random() * (companyUsers.size()));
-							User user = companyUsers.get(randomUserIndex);
-							cc.setInUseByUserId(user.getId());
-						}
 
-						cc.setCompanyId(company.getId());
+						cc.setCompany(company);
 						cc.setName("Tool " + toolCounter + " (P: " + categoryCounter  +", SP: "+ subCategoryCounter+ ")");
 						cc.setManufacturer(RandomStringUtils.randomAlphabetic(5));
 						cc.setModel(RandomStringUtils.randomNumeric(10));
@@ -224,7 +231,7 @@ public class DatabaseDummyInsert {
 
 						cc.setParentCategory(c);
 
-						c.addTool(cc);
+						c.addChild(cc);
 
 						toolCounter++;
 					}
@@ -240,24 +247,78 @@ public class DatabaseDummyInsert {
 		insertTools();
 	}
 
+	private void insertCompanies() {
+		for (Company company : companies) {
+			CompanyFacade.getInstance().insert(company);
+
+
+			Transaction transaction = new Transaction();
+			transaction.setWhoDid(transactionUser);
+			transaction.setTransactionOperation(OperationType.ADD);
+			transaction.setTransactionTarget(OperationTarget.COMPANY);
+			transaction.setCompany(company);
+
+			TransactionFacade.getInstance().insert(transaction);
+		}
+
+		companiesFromDB = CompanyFacade.getInstance().getAllCompanies();
+
+		Company administration = null;
+
+		for (Company c : companiesFromDB) {
+			if (c.getName().equals(ADMINISTRATION_COMPANY_NAME)) {
+				administration = c;
+				break;
+			}
+		}
+
+
+		User admin = new User();
+		admin.setUsername("u");
+		admin.setPassword("p");
+		admin.setCompany(administration);
+		admin.setAccessGroup(AccessGroups.ADMIN.getIntValue());
+		admin.setDeleted(false);
+		admin.setThemeVariant(LumoStyles.LIGHT);
+		admin.setAdditionalInfo("AdminMan");
+
+		Person adminP = new Person();
+		adminP.setFirstName("Grigorij");
+		adminP.setLastName("Semykin");
+		adminP.setPhoneNumber("046123456");
+		adminP.setEmail("gs@mail.com");
+
+		admin.setPerson(adminP);
+
+		UserFacade.getInstance().insert(admin);
+		transactionUser = UserFacade.getInstance().getUserByUsername(admin.getUsername());
+	}
 
 	private void insertUsers() {
 		for (User user : users) {
 			UserFacade.getInstance().insert(user);
-		}
-	}
 
-	private void insertCompanies() {
-		for (Company company : companies) {
-			CompanyFacade.getInstance().insert(company);
-		}
+			Transaction transaction = new Transaction();
+			transaction.setWhoDid(transactionUser);
+			transaction.setTransactionOperation(OperationType.ADD);
+			transaction.setTransactionTarget(OperationTarget.USER);
+			transaction.setDestinationUser(user);
 
-		companiesFromDB = CompanyFacade.getInstance().getAllCompanies();
+			TransactionFacade.getInstance().insert(transaction);
+		}
 	}
 
 	private void insertTools() {
-		for (Tool tool : tools) {
-			ToolFacade.getInstance().insert(tool);
+		for (InventoryEntity ie : tools) {
+			InventoryFacade.getInstance().insert(ie);
+
+
+			Transaction transaction = new Transaction();
+			transaction.setWhoDid(transactionUser);
+			transaction.setTransactionOperation(OperationType.ADD);
+			transaction.setInventoryEntity(ie); // <--TransactionTarget is set automatically TOOL/CATEGORY
+
+			TransactionFacade.getInstance().insert(transaction);
 		}
 	}
 }

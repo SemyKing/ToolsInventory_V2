@@ -1,31 +1,53 @@
 package com.gmail.grigorij.backend.entities.user;
 
 
-import com.gmail.grigorij.backend.entities.location.Location;
+import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.entities.company.Company;
+import com.gmail.grigorij.backend.entities.embeddable.Location;
+import com.gmail.grigorij.backend.entities.embeddable.Person;
+import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.message.Message;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
 @NamedQueries({
 		@NamedQuery(
-				name="User.findUserInDatabase",
-				query="SELECT user FROM User user WHERE user.username = :username AND user.password = :password"),
+				name="findUserInDatabase",
+				query="SELECT user FROM User user WHERE" +
+						" user.username = :username_var AND" +
+						" user.password = :password_var"),
+
 		@NamedQuery(
-				name="User.findUserInDatabaseByUsername",
-				query="SELECT user FROM User user WHERE user.username = :username ORDER BY user.username ASC"),
+				name="getUserByUsername",
+				query="SELECT user FROM User user WHERE" +
+						" user.username = :username_var ORDER BY user.username ASC"),
+
 		@NamedQuery(
-				name="User.getAllUsers",
+				name="getAllUsers",
 				query="SELECT user FROM User user ORDER BY user.username ASC"),
+
 		@NamedQuery(
-				name="User.getUsersByCompanyId",
-				query="SELECT user FROM User user WHERE user.companyId = :companyId"),
+				name="getUsersInCompany",
+				query="SELECT user FROM User user WHERE" +
+						" user.company.id = :id_var"),
+
 		@NamedQuery(
-				name="User.getUserById",
-				query="SELECT user FROM User user WHERE user.id = :id")
+				name="getUserById",
+				query="SELECT user FROM User user WHERE" +
+						" user.id = :id_var"),
+
+		@NamedQuery(
+				name="getUserByEmail",
+				query="SELECT user FROM User user WHERE" +
+						" user.person IS NOT NULL AND" +
+						" user.person.email = :email_var")
 })
-public class User extends Person {
+public class User extends EntityPojo {
 
 	@Column(name = "username")
 	private String username;
@@ -39,11 +61,32 @@ public class User extends Person {
 	@Column(name = "locale")
 	private String locale;
 
-	@Column(name = "company_id")
-	private long companyId;
+	@OneToOne
+	private Company company;
 
 	@Column(name = "access_group")
 	private int accessGroup;
+
+
+	@Embedded
+	private Location address;
+
+	@Embedded
+	private Person person;
+
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
+	private Set<InventoryEntity> toolsInUse = new HashSet<>();
+
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "reservedbyuser_id")
+	private Set<InventoryEntity> toolsReserved = new HashSet<>();
+
+	@OneToMany(fetch = FetchType.LAZY)
+	@JoinColumn(name = "recipient_id")
+	private Set<Message> messages = new HashSet<>();
+
+
 
 	public User() {
 		//Default theme for new users
@@ -65,11 +108,25 @@ public class User extends Person {
 		this.password = password;
 	}
 
-	public long getCompanyId() {
-		return companyId;
+	public String getThemeVariant() {
+		return themeVariant;
 	}
-	public void setCompanyId(long companyId) {
-		this.companyId = companyId;
+	public void setThemeVariant(String themeVariant) {
+		this.themeVariant = themeVariant;
+	}
+
+	public String getLocale() {
+		return locale;
+	}
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 
 	public int getAccessGroup() {
@@ -79,27 +136,78 @@ public class User extends Person {
 		this.accessGroup = accessGroup;
 	}
 
-	public String getThemeVariant() {
-		return themeVariant;
+	public Location getAddress() {
+		return address;
 	}
-	public void setThemeVariant(String themeVariant) {
-		this.themeVariant = themeVariant;
+	public void setAddress(Location address) {
+		this.address = address;
+	}
+
+	public Person getPerson() {
+		return person;
+	}
+	public void setPerson(Person person) {
+		this.person = person;
+	}
+
+	public String getFullName() {
+		if (this.person == null) {
+			return "";
+		} else {
+			return this.person.getFirstName() + " " + this.person.getLastName();
+		}
 	}
 
 
-	public static User getEmptyUser() {
-		User user = new User();
-		user.setUsername("");
-		user.setPassword("");
-		user.setCompanyId(-1);
-		user.setDeleted(false);
-		user.setFirstName("");
-		user.setLastName("");
-		user.setEmail("");
+//	public static User getEmptyUser() {
+//		User user = new User();
+//		user.setUsername("");
+//		user.setPassword("");
+//		user.setCompany(null);
+//		user.setDeleted(false);
+//		user.setThemeVariant(Lumo.LIGHT);
+//
+//		return user;
+//	}
 
-		user.setThemeVariant(Lumo.LIGHT);
-		user.setAddress(new Location());
-
-		return user;
+	public Set<InventoryEntity> getToolsInUse() {
+		return toolsInUse;
 	}
+	public void setToolsInUse(Set<InventoryEntity> toolsInUse) {
+		this.toolsInUse = toolsInUse;
+	}
+	public void addToolInUse(InventoryEntity tool) {
+		this.toolsInUse.add(tool);
+	}
+	public void removeToolInUse(InventoryEntity tool) {
+		this.toolsInUse.remove(tool);
+	}
+
+	public Set<InventoryEntity> getToolsReserved() {
+		return toolsReserved;
+	}
+	public void setToolsReserved(Set<InventoryEntity> toolsReserved) {
+		this.toolsReserved = toolsReserved;
+	}
+	public void addToolReserved(InventoryEntity tool) {
+		this.toolsReserved.add(tool);
+	}
+	public void removeToolReserved(InventoryEntity tool) {
+		this.toolsReserved.remove(tool);
+	}
+
+	public Set<Message> getMessages() {
+		return messages;
+	}
+	public void setMessages(Set<Message> messages) {
+		this.messages = messages;
+	}
+	public void addMessage(Message message) {
+		this.messages.add(message);
+	}
+	public void removeMessage(Message message) {
+		this.messages.remove(message);
+	}
+
+
 }

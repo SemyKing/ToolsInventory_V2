@@ -10,7 +10,7 @@ public class EntityPojo {
 	@Column(name = "id", nullable = false, updatable = false)
 	protected long id;
 
-	@Column(name = "deleted", nullable = false, updatable = true)
+	@Column(name = "deleted", nullable = false)
 	private boolean deleted = false;
 
 	@Column(name = "additional_info")

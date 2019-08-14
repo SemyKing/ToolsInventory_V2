@@ -2,15 +2,19 @@ package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.ui.utils.UIUtils;
 
 import javax.persistence.NoResultException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserFacade {
 
+	private List<User> emptyList;
+
 	private static UserFacade mInstance;
-	private UserFacade() {}
+	private UserFacade() {
+		emptyList = new ArrayList<>();
+	}
 	public static UserFacade getInstance() {
 		if (mInstance == null) {
 			mInstance = new UserFacade();
@@ -18,13 +22,23 @@ public class UserFacade {
 		return mInstance;
 	}
 
+	public List<User> getAllUsers() {
+		List<User> users;
+		try {
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllUsers", User.class)
+					.getResultList();
+		} catch (NoResultException nre) {
+			users = null;
+		}
+		return users;
+	}
 
 	public User findUserInDatabase(String username, String password) {
 		User user;
 		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.findUserInDatabase")
-					.setParameter("username", username)
-					.setParameter("password", password)
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("findUserInDatabase", User.class)
+					.setParameter("username_var", username)
+					.setParameter("password_var", password)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
@@ -32,24 +46,38 @@ public class UserFacade {
 		return user;
 	}
 
-
-	public User findUserInDatabaseByUsername(String username) {
+	public User getUserByUsername(String username) {
 		User user;
 		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.findUserInDatabaseByUsername")
-					.setParameter("username", username)
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByUsername")
+					.setParameter("username_var", username)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
 		}
 		return user;
 	}
+
+	public User getUserByEmail(String email) {
+		User user;
+		try {
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByEmail")
+					.setParameter("email_var", email)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			user = null;
+		}
+		return user;
+	}
+
+
+
 
 	public User getUserById(Long id) {
 		User user;
 		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUserById")
-					.setParameter("id", id)
+			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserById")
+					.setParameter("id_var", id)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
@@ -57,11 +85,11 @@ public class UserFacade {
 		return user;
 	}
 
-
-	public List<User> getAllUsers() {
+	public List<User> getUsersInCompany(long companyId) {
 		List<User> users;
 		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getAllUsers", User.class)
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUsersInCompany", User.class)
+					.setParameter("id_var", companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			users = null;
@@ -69,18 +97,6 @@ public class UserFacade {
 		return users;
 	}
 
-
-	public List<User> getUsersByCompanyId(long companyId) {
-		List<User> users;
-		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("User.getUsersByCompanyId", User.class)
-					.setParameter("companyId", companyId)
-					.getResultList();
-		} catch (NoResultException nre) {
-			users = null;
-		}
-		return users;
-	}
 
 
 	public boolean insert(User user) {
@@ -98,7 +114,6 @@ public class UserFacade {
 		System.out.println("User INSERT successful");
 		return true;
 	}
-
 
 	public boolean update(User user) {
 		System.out.println("User UPDATE");
@@ -126,7 +141,6 @@ public class UserFacade {
 		System.out.println("User UPDATE successful");
 		return true;
 	}
-
 
 	public boolean remove(User user) {
 		System.out.println("User REMOVE");

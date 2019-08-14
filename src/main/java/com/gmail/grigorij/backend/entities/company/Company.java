@@ -1,7 +1,8 @@
 package com.gmail.grigorij.backend.entities.company;
 
-import com.gmail.grigorij.backend.entities.location.Location;
-import com.gmail.grigorij.backend.entities.user.Person;
+import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.entities.embeddable.Location;
+import com.gmail.grigorij.backend.entities.embeddable.Person;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.util.Set;
 				name="Company.getAllCompanies",
 				query="SELECT company FROM Company company ORDER BY company.name ASC")
 })
-public class Company extends Person {
+public class Company extends EntityPojo {
 
 	@Column(name = "name")
 	private String name;
@@ -31,6 +32,9 @@ public class Company extends Person {
 
 	@Embedded
 	private Location address;
+
+	@Embedded
+	private Person contactPerson;
 
 	/*
 	List of locations related to company: warehouses, construction sites, etc...
@@ -78,12 +82,15 @@ public class Company extends Person {
 		company.setName("");
 		company.setVat("");
 		company.setDeleted(false);
-		company.setFirstName("");
-		company.setLastName("");
-		company.setEmail("");
-
 		company.setAddress(new Location());
 
 		return company;
+	}
+
+	public Person getContactPerson() {
+		return contactPerson;
+	}
+	public void setContactPerson(Person contactPerson) {
+		this.contactPerson = contactPerson;
 	}
 }

@@ -8,41 +8,20 @@
 }
 
 @media (max-width: 1024px) {
-	.admin-main__options-button-li {
-		display: flex !important;
+	.admin-transactions__header {
+		flex-direction: column;
 	}
-	.admin-main__options-button-tl, .admin-main__options-button-ri {
-    	display: none !important;
+
+	.admin-transactions__dates {
+		margin-left: 0 !important;
+		width: 100%  !important;
+	}
+	.admin-transactions__dates > vaadin-date-picker {
+		flex-grow: 1;
+	}
+	.admin-transactions__dates > vaadin-button {
+        flex-grow: 1;
     }
-}
-
-.admin-main__options-button {
-	min-width: auto;
-
-	cursor: pointer;
-    border-radius: var(--lumo-border-radius);
-    background-color: var(--lumo-shade-10pct);
-
-    margin-top: 0.25em;
-    margin-left: 0.25em;
-    margin-bottom: 0.25em;
-}
-.admin-main__options-button-li {
-    height: var(--lumo-icon-size-s);
-    padding: 0.25em;
-    display: none;
-}
-.admin-main__options-button-tl {
-	cursor: inherit;
-	padding-left: 0.5em;
-}
-.admin-main__options-button-ri {
-	width: var(--lumo-icon-size-s);
-    height: var(--lumo-icon-size-s);
-    padding: 0.25em;
-}
-.admin-main__options-button:hover {
-    background-color: var(--lumo-contrast-20pct);
 }
 
 

@@ -17,7 +17,7 @@ public class BrandExpression extends Composite<Div> {
     public BrandExpression(String text) {
         getContent().setClassName(CLASS_NAME);
 
-        logo = new Image(UIUtils.IMG_PATH + ProjectConstants.LOGO_IMG_ONLY_SVG, "");
+        logo = new Image(ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_IMG_ONLY_SVG, "");
         logo.addClassName(CLASS_NAME + "__logo");
         logo.setAlt(text + " logo");
 
@@ -26,5 +26,4 @@ public class BrandExpression extends Composite<Div> {
 
         getContent().add(logo, title);
     }
-
 }

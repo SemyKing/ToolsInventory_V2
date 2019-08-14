@@ -8,6 +8,8 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.Overflow;
 
+import java.util.ArrayList;
+
 /**
  * NaviTabs supports tabs that can be closed, and that can navigate to a
  * specific target when clicked.
@@ -93,5 +95,4 @@ public class NaviTabs extends Tabs {
     public int getTabCount() {
         return Math.toIntExact(getChildren().filter(component -> component instanceof Tab).count());
     }
-
 }

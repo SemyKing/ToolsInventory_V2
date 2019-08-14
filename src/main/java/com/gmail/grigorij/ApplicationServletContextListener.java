@@ -6,6 +6,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+
 @WebListener
 public class ApplicationServletContextListener implements ServletContextListener {
 
@@ -17,23 +18,25 @@ public class ApplicationServletContextListener implements ServletContextListener
 		if ( entityManagerFactory == null ) {
 			entityManagerFactory = Persistence.createEntityManagerFactory( PERSISTENCE_UNIT_NAME, null );
 		}
-//		if ( logger.isDebugEnabled()) logger.debug( "getEntityManagerFactory()" );
 		return entityManagerFactory;
 	}
 
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		System.out.println("THE SERVER IS STARTED");
+		System.out.println("----------THE SERVER IS STARTED----------");
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		System.out.println("THE SERVER IS STOPPED");
+		System.out.println("----------THE SERVER IS STOPPING----------");
+
 		if ( entityManagerFactory != null && entityManagerFactory.isOpen()) {
 			entityManagerFactory.close();
 			entityManagerFactory = null;
+			System.out.println("----------DATABASE IS CLOSED");
 		}
-		System.out.println("DATABASE IS CLOSED");
+
+		System.out.println("----------THE SERVER IS STOPPED----------");
 	}
 }
