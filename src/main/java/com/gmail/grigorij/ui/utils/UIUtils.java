@@ -414,10 +414,10 @@ public class UIUtils {
 	/* === NOTIFICATIONS === */
 
 	public enum NotificationType {
-		INFO (      "var(--lumo-primary-color-80pct)",5000),
-		SUCCESS (   "var(--lumo-success-color-80pct)",5000),
-		WARNING(    "hsl(22, 96%, 47%)",        5000),
-		ERROR (     "var(--lumo-error-color)",  0);
+		INFO (      LumoStyles.Color.Primary._100,5000),
+		SUCCESS (   LumoStyles.Color.Success._100,5000),
+		WARNING(    "hsl(22, 96%, 47%)",        5000), //ORANGE
+		ERROR (     LumoStyles.Color.Error._100,  0);
 
 		private String backgroundColor;
 		private int duration;
@@ -452,6 +452,7 @@ public class UIUtils {
 		layout.setMinHeight("32px");
 		layout.add(msgLabel);
 		layout.setBackgroundColor(type.getBackgroundColor());
+		layout.setColor("var(--lumo-primary-contrast-color)");
 
 		layout.add(close);
 		close.addClickListener(ev -> notification.close());

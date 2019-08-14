@@ -9,12 +9,8 @@ import java.util.List;
 
 public class UserFacade {
 
-	private List<User> emptyList;
-
 	private static UserFacade mInstance;
-	private UserFacade() {
-		emptyList = new ArrayList<>();
-	}
+	private UserFacade() {}
 	public static UserFacade getInstance() {
 		if (mInstance == null) {
 			mInstance = new UserFacade();
@@ -70,9 +66,6 @@ public class UserFacade {
 		return user;
 	}
 
-
-
-
 	public User getUserById(Long id) {
 		User user;
 		try {
@@ -98,27 +91,38 @@ public class UserFacade {
 	}
 
 
+	public boolean isUsernameUnique(String username) {
+		for (User u : getAllUsers()) {
+			if (u.getUsername().equals(username)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+
 
 	public boolean insert(User user) {
-		System.out.println("User INSERT");
-		if (user == null)
+		if (user == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> INSERT NULL USER");
 			return false;
+		}
 
 		try {
 			DatabaseManager.getInstance().insert(user);
 		} catch (Exception e) {
-			System.out.println("User INSERT fail");
+			System.err.println(this.getClass().getSimpleName() + " -> USER INSERT FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("User INSERT successful");
 		return true;
 	}
 
 	public boolean update(User user) {
-		System.out.println("User UPDATE");
-		if (user == null)
+		if (user == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> UPDATE NULL USER");
 			return false;
+		}
 
 		User userInDatabase = null;
 
@@ -126,40 +130,40 @@ public class UserFacade {
 			userInDatabase = DatabaseManager.getInstance().find(User.class, user.getId());
 		}
 
-		System.out.println("userInDatabase: " + userInDatabase);
-
 		try {
 			if (userInDatabase == null) {
 				return insert(user);
 			} else
 				DatabaseManager.getInstance().update(user);
 		} catch (Exception e) {
-			System.out.println("User UPDATE fail");
+			System.err.println(this.getClass().getSimpleName() + " -> USER UPDATE FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("User UPDATE successful");
 		return true;
 	}
 
 	public boolean remove(User user) {
-		System.out.println("User REMOVE");
-		if (user == null)
+		if (user == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL USER");
 			return false;
+		}
 
-		User userInDatabase = DatabaseManager.getInstance().find(User.class, user.getId());
-		System.out.println("userInDatabase: " + userInDatabase);
+		User userInDatabase = null;
+
+		if (user.getId() != null) {
+			userInDatabase = DatabaseManager.getInstance().find(User.class, user.getId());
+		}
 
 		try {
 			if (userInDatabase != null) {
 				DatabaseManager.getInstance().remove(user);
 			}
 		} catch (Exception e) {
-			System.out.println("User REMOVE fail");
+			System.err.println(this.getClass().getSimpleName() + " -> USER REMOVE FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("User REMOVE successful");
 		return true;
 	}
 }

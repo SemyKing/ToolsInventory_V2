@@ -17,34 +17,32 @@ public class MessageFacade {
 
 
 	public boolean insert(Message message) {
-		System.out.println("Message INSERT");
-		if (message == null)
+		if (message == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> INSERT NULL MESSAGE");
 			return false;
+		}
 
 		try {
 			DatabaseManager.getInstance().insert(message);
 		} catch (Exception e) {
-			System.out.println("Message INSERT fail");
+			System.err.println(this.getClass().getSimpleName() + " -> MESSAGE INSERT FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("Message INSERT successful");
 		return true;
 	}
 
-
 	public boolean update(Message message) {
-		System.out.println("Message UPDATE");
-		if (message == null)
+		if (message == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> UPDATE NULL MESSAGE");
 			return false;
+		}
 
 		Message messageInDatabase = null;
 
 		if (message.getId() != null) {
 			messageInDatabase = DatabaseManager.getInstance().find(Message.class, message.getId());
 		}
-
-		System.out.println("messageInDatabase: " + messageInDatabase);
 
 		try {
 			if (messageInDatabase == null) {
@@ -53,33 +51,34 @@ public class MessageFacade {
 				DatabaseManager.getInstance().update(message);
 			}
 		} catch (Exception e) {
-			System.out.println("Message UPDATE fail");
+			System.err.println(this.getClass().getSimpleName() + " -> MESSAGE UPDATE FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("Message UPDATE successful");
 		return true;
 	}
 
-
 	public boolean remove(Message message) {
-		System.out.println("Message REMOVE");
-		if (message == null)
+		if (message == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL MESSAGE");
 			return false;
+		}
 
-		Message messageInDatabase = DatabaseManager.getInstance().find(Message.class, message.getId());
-		System.out.println("messageInDatabase: " + messageInDatabase);
+		Message messageInDatabase = null;
+
+		if (message.getId() != null) {
+			messageInDatabase = DatabaseManager.getInstance().find(Message.class, message.getId());
+		}
 
 		try {
 			if (messageInDatabase != null) {
 				DatabaseManager.getInstance().remove(message);
 			}
 		} catch (Exception e) {
-			System.out.println("Message REMOVE fail");
+			System.err.println(this.getClass().getSimpleName() + " -> MESSAGE REMOVE FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("Message REMOVE successful");
 		return true;
 	}
 }

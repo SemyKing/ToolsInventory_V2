@@ -3,30 +3,30 @@ package com.gmail.grigorij.ui.utils.forms.editable;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
-import com.gmail.grigorij.backend.enums.InventoryHierarchyType;
+import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.converter.StringToBooleanConverter;
 
 import java.util.List;
 
 public class EditableCategoryForm extends FormLayout {
 
-	private Binder<InventoryEntity> binder = new Binder<>(InventoryEntity.class);
+	private Binder<InventoryItem> binder = new Binder<>(InventoryItem.class);
 
-	private InventoryEntity category;
+	private InventoryItem category;
 	private Company initialCompany;
 	private boolean isNew;
 
-	private ComboBox<InventoryEntity> parentsComboBox;
+	private ComboBox<InventoryItem> parentsComboBox;
 
 	public EditableCategoryForm() {
 
@@ -58,7 +58,7 @@ public class EditableCategoryForm extends FormLayout {
 
 		parentsComboBox.setItems();
 		parentsComboBox.setLabel("Parent Category");
-		parentsComboBox.setItemLabelGenerator(InventoryEntity::getName);
+		parentsComboBox.setItemLabelGenerator(InventoryItem::getName);
 		parentsComboBox.setRequired(true);
 
 //		UIUtils.setColSpan(2, categoryLayout);
@@ -71,30 +71,30 @@ public class EditableCategoryForm extends FormLayout {
 
 		binder.forField(nameField)
 				.asRequired("Name is required")
-				.bind(InventoryEntity::getName, InventoryEntity::setName);
+				.bind(InventoryItem::getName, InventoryItem::setName);
 		binder.forField(status)
 				.asRequired("Status is required")
-				.withConverter(new CustomConverter.StatusConverter())
-				.bind(InventoryEntity::isDeleted, InventoryEntity::setDeleted);
+//				.withConverter(new CustomConverter.StatusConverter())
+				.withConverter(new StringToBooleanConverter("Error", ProjectConstants.INACTIVE, ProjectConstants.ACTIVE))
+				.bind(InventoryItem::isDeleted, InventoryItem::setDeleted);
 		binder.forField(companiesComboBox)
 				.asRequired("Company is required")
-				.bind(InventoryEntity::getCompany, InventoryEntity::setCompany);
+				.bind(InventoryItem::getCompany, InventoryItem::setCompany);
 		binder.forField(parentsComboBox)
 				.asRequired("Parent Category is required")
 //				.withConverter(new CustomConverter.ToolCategoryConverter())
-				.bind(InventoryEntity::getParentCategory, InventoryEntity::setParentCategory);
+				.bind(InventoryItem::getParentCategory, InventoryItem::setParentCategory);
 	}
 
 
 
-	public void setCategory(InventoryEntity c) {
+	public void setCategory(InventoryItem c) {
 		category = c;
 		isNew = false;
 		binder.removeBean();
 
 		if (category == null) {
-//			category = InventoryEntity.getEmptyTool();
-			category = new InventoryEntity();
+			category = new InventoryItem();
 			isNew = true;
 		}
 		category.setInventoryHierarchyType(InventoryHierarchyType.CATEGORY);
@@ -108,7 +108,7 @@ public class EditableCategoryForm extends FormLayout {
 		}
 	}
 
-	public InventoryEntity getCategory() {
+	public InventoryItem getCategory() {
 		try {
 			binder.validate();
 
@@ -119,7 +119,7 @@ public class EditableCategoryForm extends FormLayout {
 				If category's company was changed, it must also be changed for all category children
 				 */
 				if (initialCompany != category.getCompany()) {
-					for (InventoryEntity ie : category.getChildren()) {
+					for (InventoryItem ie : category.getChildren()) {
 						ie.setCompany(category.getCompany());
 					}
 				}
@@ -142,14 +142,14 @@ public class EditableCategoryForm extends FormLayout {
 	}
 
 	private void updateCategoriesComboBoxData(Company company) {
-		List<InventoryEntity> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
+		List<InventoryItem> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
 		categories.add(0, InventoryFacade.getInstance().getRootCategory());
 
 		/*
 		When editing Category remove same category from Parent Category -> can't set self as parent
 		 */
 		if (initialCompany != null) {
-			categories.removeIf((InventoryEntity category) -> category.equals(this.category));
+			categories.removeIf((InventoryItem category) -> category.equals(this.category));
 		}
 		parentsComboBox.setItems(categories);
 	}

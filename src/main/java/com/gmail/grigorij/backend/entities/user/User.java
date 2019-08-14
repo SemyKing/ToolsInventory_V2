@@ -2,15 +2,18 @@ package com.gmail.grigorij.backend.entities.user;
 
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.enums.permissions.AccessGroup;
+import com.gmail.grigorij.backend.embeddable.AccessRight;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.embeddable.Location;
-import com.gmail.grigorij.backend.entities.embeddable.Person;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.embeddable.Location;
+import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.message.Message;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -56,7 +59,7 @@ public class User extends EntityPojo {
 	private String password;
 
 	@Column(name = "theme_variant")
-	private String themeVariant;
+	private String themeVariant = Lumo.LIGHT;
 
 	@Column(name = "locale")
 	private String locale;
@@ -64,34 +67,31 @@ public class User extends EntityPojo {
 	@OneToOne
 	private Company company;
 
-	@Column(name = "access_group")
-	private int accessGroup;
-
 
 	@Embedded
-	private Location address;
+	private Location address; //NECESSARY?
 
 	@Embedded
 	private Person person;
 
-	@OneToMany(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
-	private Set<InventoryEntity> toolsInUse = new HashSet<>();
+	//Set with IDs of tools that this user has in use
+	private Set<Long> toolsInUse = new HashSet<>();
 
-	@OneToMany(fetch = FetchType.LAZY)
-	@JoinColumn(name = "reservedbyuser_id")
-	private Set<InventoryEntity> toolsReserved = new HashSet<>();
+	//Set with IDs of tools that this user has reserved
+	private Set<Long> toolsReserved = new HashSet<>();
 
 	@OneToMany(fetch = FetchType.LAZY)
 	@JoinColumn(name = "recipient_id")
 	private Set<Message> messages = new HashSet<>();
 
 
+	@Enumerated( EnumType.STRING )
+	private AccessGroup accessGroup = AccessGroup.VIEWER;
 
-	public User() {
-		//Default theme for new users
-		this.themeVariant = Lumo.LIGHT;
-	}
+	@ElementCollection
+	private List<AccessRight> accessRights = new ArrayList<>();
+
+	public User() {}
 
 
 	public String getUsername() {
@@ -129,10 +129,10 @@ public class User extends EntityPojo {
 		this.company = company;
 	}
 
-	public int getAccessGroup() {
+	public AccessGroup getAccessGroup() {
 		return accessGroup;
 	}
-	public void setAccessGroup(int accessGroup) {
+	public void setAccessGroup(AccessGroup accessGroup) {
 		this.accessGroup = accessGroup;
 	}
 
@@ -150,50 +150,30 @@ public class User extends EntityPojo {
 		this.person = person;
 	}
 
-	public String getFullName() {
-		if (this.person == null) {
-			return "";
-		} else {
-			return this.person.getFirstName() + " " + this.person.getLastName();
-		}
-	}
-
-
-//	public static User getEmptyUser() {
-//		User user = new User();
-//		user.setUsername("");
-//		user.setPassword("");
-//		user.setCompany(null);
-//		user.setDeleted(false);
-//		user.setThemeVariant(Lumo.LIGHT);
-//
-//		return user;
-//	}
-
-	public Set<InventoryEntity> getToolsInUse() {
+	public Set<Long> getToolsInUse() {
 		return toolsInUse;
 	}
-	public void setToolsInUse(Set<InventoryEntity> toolsInUse) {
+	public void setToolsInUse(Set<Long> toolsInUse) {
 		this.toolsInUse = toolsInUse;
 	}
-	public void addToolInUse(InventoryEntity tool) {
-		this.toolsInUse.add(tool);
+	public void addToolInUse(Long toolId) {
+		this.toolsInUse.add(toolId);
 	}
-	public void removeToolInUse(InventoryEntity tool) {
-		this.toolsInUse.remove(tool);
+	public void removeToolInUse(Long toolId) {
+		this.toolsInUse.remove(toolId);
 	}
 
-	public Set<InventoryEntity> getToolsReserved() {
+	public Set<Long> getToolsReserved() {
 		return toolsReserved;
 	}
-	public void setToolsReserved(Set<InventoryEntity> toolsReserved) {
+	public void setToolsReserved(Set<Long> toolsReserved) {
 		this.toolsReserved = toolsReserved;
 	}
-	public void addToolReserved(InventoryEntity tool) {
-		this.toolsReserved.add(tool);
+	public void addToolReserved(Long toolId) {
+		this.toolsReserved.add(toolId);
 	}
-	public void removeToolReserved(InventoryEntity tool) {
-		this.toolsReserved.remove(tool);
+	public void removeToolReserved(Long toolId) {
+		this.toolsReserved.remove(toolId);
 	}
 
 	public Set<Message> getMessages() {
@@ -209,5 +189,37 @@ public class User extends EntityPojo {
 		this.messages.remove(message);
 	}
 
+	public List<AccessRight> getAccessRights() {
+		List<AccessRight> copyOfAccessRights = new ArrayList<>();
+		for (AccessRight ar : accessRights) {
+			copyOfAccessRights.add(new AccessRight(ar));
+		}
+		return copyOfAccessRights;
+	}
+	public void setAccessRights(List<AccessRight> accessRights) {
+		this.accessRights = accessRights;
+	}
 
+	public Set<Long> getAllTools() {
+		Set<Long> allTools = new HashSet<>();
+		allTools.addAll(this.toolsInUse);
+		allTools.addAll(this.toolsReserved);
+		return allTools;
+	}
+
+	public String getFullName() {
+		if (this.person == null) {
+			return "";
+		} else {
+			return this.person.getFullName();
+		}
+	}
+
+	public String getInitials() {
+		if (this.person == null) {
+			return "";
+		} else {
+			return this.person.getInitials();
+		}
+	}
 }

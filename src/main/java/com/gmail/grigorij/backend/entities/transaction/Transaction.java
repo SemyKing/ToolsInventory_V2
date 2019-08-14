@@ -2,11 +2,10 @@ package com.gmail.grigorij.backend.entities.transaction;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.enums.InventoryHierarchyType;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.OperationTarget;
-import com.gmail.grigorij.backend.enums.OperationType;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -26,10 +25,10 @@ import java.util.Date;
 public class Transaction extends EntityPojo {
 
 	@Enumerated( EnumType.STRING )
-	private OperationType transactionOperation;
+	private TransactionType transactionOperation;
 
 	@Enumerated( EnumType.STRING )
-	private OperationTarget transactionTarget;
+	private TransactionTarget transactionTarget;
 
 	@Temporal( TemporalType.TIMESTAMP )
 	private Date date;
@@ -48,7 +47,7 @@ public class Transaction extends EntityPojo {
 	private Company company;
 
 //	@OneToOne
-	private InventoryEntity inventoryEntity;
+	private InventoryItem inventoryEntity;
 
 
 	public Transaction() {
@@ -57,11 +56,11 @@ public class Transaction extends EntityPojo {
 
 
 
-	public OperationType getTransactionOperation() {
+	public TransactionType getTransactionOperation() {
 		return transactionOperation;
 	}
 
-	public void setTransactionOperation(OperationType transactionOperation) {
+	public void setTransactionOperation(TransactionType transactionOperation) {
 		this.transactionOperation = transactionOperation;
 
 		if (this.transactionOperation != null) {
@@ -71,11 +70,11 @@ public class Transaction extends EntityPojo {
 		}
 	}
 
-	public OperationTarget getTransactionTarget() {
+	public TransactionTarget getTransactionTarget() {
 		return transactionTarget;
 	}
 
-	public void setTransactionTarget(OperationTarget transactionTarget) {
+	public void setTransactionTarget(TransactionTarget transactionTarget) {
 		this.transactionTarget = transactionTarget;
 
 		if (this.transactionTarget != null) {
@@ -83,11 +82,6 @@ public class Transaction extends EntityPojo {
 				setNames();
 			}
 		}
-	}
-
-	private void setNames() {
-		this.fullName = TransactionName.getTransactionFullName(transactionOperation, transactionTarget);
-		this.shortName = TransactionName.getTransactionShortName(transactionOperation, transactionTarget);
 	}
 
 	public Date getDate() {
@@ -122,24 +116,12 @@ public class Transaction extends EntityPojo {
 		this.company = company;
 	}
 
-	public InventoryEntity getInventoryEntity() {
+	public InventoryItem getInventoryEntity() {
 		return inventoryEntity;
 	}
 
-	public void setInventoryEntity(InventoryEntity inventoryEntity) {
+	public void setInventoryEntity(InventoryItem inventoryEntity) {
 		this.inventoryEntity = inventoryEntity;
-
-		if (inventoryEntity.getInventoryHierarchyType() == null) {
-			System.err.println("NULL HierarchyType of InventoryEntity: " + inventoryEntity.getName() + " in Transaction");
-		} else {
-			if (inventoryEntity.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
-				this.setTransactionTarget(OperationTarget.CATEGORY);
-			} else if (inventoryEntity.getInventoryHierarchyType().equals(InventoryHierarchyType.TOOL)) {
-				this.setTransactionTarget(OperationTarget.TOOL);
-			} else {
-				this.setTransactionTarget(null);
-			}
-		}
 	}
 
 	public String getFullName() {
@@ -156,5 +138,11 @@ public class Transaction extends EntityPojo {
 
 	public void setShortName(String shortName) {
 		this.shortName = shortName;
+	}
+
+
+	private void setNames() {
+		this.fullName = TransactionName.getTransactionFullName(transactionOperation, transactionTarget);
+		this.shortName = TransactionName.getTransactionShortName(transactionOperation, transactionTarget);
 	}
 }

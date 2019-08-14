@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.entities.embeddable;
+package com.gmail.grigorij.backend.embeddable;
 
 import javax.persistence.*;
 
@@ -58,7 +58,7 @@ public class Person {
 		return initials;
 	}
 
-	public Object getFullName() {
+	public String getFullName() {
 		return this.firstName + " " + this.lastName;
 	}
 }
