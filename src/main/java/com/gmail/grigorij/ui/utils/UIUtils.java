@@ -78,10 +78,6 @@ public class UIUtils {
 		layout.add(c1, c2);
 		layout.setComponentMargin(c2, Left.M);
 
-//		if (evenWith) {
-//
-//		}
-
 		if (!evenWith) {
 			layout.setFlexGrow("1", c1);
 		}
@@ -443,19 +439,18 @@ public class UIUtils {
 		Label msgLabel = new Label(msg);
 		msgLabel.addClassName("notification-text-container");
 
-		Button close = UIUtils.createIconButton(VaadinIcon.CLOSE, ButtonVariant.LUMO_CONTRAST);
-		close.addClassName("notification-button");
-
 		FlexBoxLayout layout = new FlexBoxLayout();
 		layout.setSizeFull();
 		layout.setAlignItems(FlexComponent.Alignment.CENTER);
+		layout.setBackgroundColor(type.getBackgroundColor());
 		layout.setMinHeight("32px");
 		layout.add(msgLabel);
-		layout.setBackgroundColor(type.getBackgroundColor());
-		layout.setColor("var(--lumo-primary-contrast-color)");
 
-		layout.add(close);
-		close.addClickListener(ev -> notification.close());
+		layout.setColor("var(--lumo-primary-contrast-color)");
+		layout.getStyle().set("cursor", "pointer");
+
+		UIUtils.setTooltip("Close", layout);
+		layout.addClickListener(e -> notification.close());
 
 		if (duration.length > 0) {
 			notification.setDuration(duration[0]);

@@ -61,7 +61,6 @@ public class EditableUserForm extends FormLayout {
 
 
 	//Dynamic elements
-//	private Select<String> statusSelector;
 	private Select<AccessGroup> accessGroupSelect;
 	private Button editAccessButton;
 
@@ -149,10 +148,10 @@ public class EditableUserForm extends FormLayout {
 				.asRequired("Username is required")
 				.withValidator(un -> {
 					if (isNew) {
-						return UserFacade.getInstance().isUsernameUnique(un);
+						return UserFacade.getInstance().isUsernameAvailable(un);
 					} else {
 						if (!initialUsername.equals(usernameField.getValue())) {
-							return UserFacade.getInstance().isUsernameUnique(un);
+							return UserFacade.getInstance().isUsernameAvailable(un);
 						} else {
 							return true;
 						}

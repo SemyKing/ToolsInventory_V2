@@ -61,7 +61,7 @@ public class TransactionFacade {
 	}
 
 
-	public List<Transaction> getAllTransactionsInRange(LocalDate start, LocalDate end) {
+	public List<Transaction> getAllTransactionsBetweenDates(LocalDate start, LocalDate end) {
 		List<Transaction> transactions = getAllTransactions();
 
 		return getSortedList(transactions, start, end);

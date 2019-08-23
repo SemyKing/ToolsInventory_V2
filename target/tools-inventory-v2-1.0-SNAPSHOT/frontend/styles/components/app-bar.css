@@ -20,7 +20,7 @@
 .app-bar__title {
   flex-grow: 1;
   margin: 0;
-  overflow: hidden;
+/*  overflow: hidden; */
   text-overflow: ellipsis;
   white-space: nowrap;
 }

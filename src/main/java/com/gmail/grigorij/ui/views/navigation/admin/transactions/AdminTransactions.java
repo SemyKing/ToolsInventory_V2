@@ -61,7 +61,6 @@ public class AdminTransactions extends FlexBoxLayout {
 	private void createHeader() {
 		FlexBoxLayout header = new FlexBoxLayout();
 		header.setClassName(CLASS_NAME + "__header");
-		header.setMargin(Top.S);
 		header.setAlignItems(Alignment.BASELINE);
 		header.setWidthFull();
 
@@ -101,7 +100,7 @@ public class AdminTransactions extends FlexBoxLayout {
 		datesLayout.setComponentMargin(dateEndField, Horizontal.S);
 
 		Button applyDates = UIUtils.createButton("Apply", ButtonVariant.LUMO_CONTRAST);
-		applyDates.addClickListener(e -> getTransactionsInRange());
+		applyDates.addClickListener(e -> getTransactionsBetweenDates());
 
 		datesLayout.add(applyDates);
 
@@ -124,7 +123,7 @@ public class AdminTransactions extends FlexBoxLayout {
 			}
 		});
 
-		dataProvider = DataProvider.ofCollection(TransactionFacade.getInstance().getAllTransactionsInRange(dateStartField.getValue(), dateEndField.getValue()));
+		dataProvider = DataProvider.ofCollection(TransactionFacade.getInstance().getAllTransactionsBetweenDates(dateStartField.getValue(), dateEndField.getValue()));
 		grid.setDataProvider(dataProvider);
 
 		grid.addColumn(transaction -> {
@@ -132,7 +131,7 @@ public class AdminTransactions extends FlexBoxLayout {
 				if (transaction.getDate() == null) {
 					return "";
 				} else {
-					return DateConverter.toDateWithTime(transaction.getDate());
+					return DateConverter.toStringDateWithTime(transaction.getDate());
 				}
 			} catch (Exception e) {
 				return "";
@@ -154,7 +153,7 @@ public class AdminTransactions extends FlexBoxLayout {
 		add(grid);
 	}
 
-	private void getTransactionsInRange() {
+	private void getTransactionsBetweenDates() {
 		//Handle errors
 		if (dateStartField.getValue() == null) {
 			UIUtils.showNotification("Select Start Date", UIUtils.NotificationType.INFO);
@@ -173,7 +172,7 @@ public class AdminTransactions extends FlexBoxLayout {
 			return;
 		}
 
-		List<Transaction> transactions = TransactionFacade.getInstance().getAllTransactionsInRange(dateStartField.getValue(), dateEndField.getValue());
+		List<Transaction> transactions = TransactionFacade.getInstance().getAllTransactionsBetweenDates(dateStartField.getValue(), dateEndField.getValue());
 
 		dataProvider.getItems().clear();
 		dataProvider.getItems().addAll(transactions);

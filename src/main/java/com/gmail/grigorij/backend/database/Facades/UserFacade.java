@@ -18,6 +18,7 @@ public class UserFacade {
 		return mInstance;
 	}
 
+
 	public List<User> getAllUsers() {
 		List<User> users;
 		try {
@@ -27,55 +28,6 @@ public class UserFacade {
 			users = null;
 		}
 		return users;
-	}
-
-	public User findUserInDatabase(String username, String password) {
-		User user;
-		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("findUserInDatabase", User.class)
-					.setParameter("username_var", username)
-					.setParameter("password_var", password)
-					.getSingleResult();
-		} catch (NoResultException nre) {
-			user = null;
-		}
-		return user;
-	}
-
-	public User getUserByUsername(String username) {
-		User user;
-		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByUsername")
-					.setParameter("username_var", username)
-					.getSingleResult();
-		} catch (NoResultException nre) {
-			user = null;
-		}
-		return user;
-	}
-
-	public User getUserByEmail(String email) {
-		User user;
-		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByEmail")
-					.setParameter("email_var", email)
-					.getSingleResult();
-		} catch (NoResultException nre) {
-			user = null;
-		}
-		return user;
-	}
-
-	public User getUserById(Long id) {
-		User user;
-		try {
-			user = (User) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserById")
-					.setParameter("id_var", id)
-					.getSingleResult();
-		} catch (NoResultException nre) {
-			user = null;
-		}
-		return user;
 	}
 
 	public List<User> getUsersInCompany(long companyId) {
@@ -90,10 +42,84 @@ public class UserFacade {
 		return users;
 	}
 
+	public User getUserById(Long id) {
+		User user;
+		try {
+			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserById", User.class)
+					.setParameter("id_var", id)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			user = null;
+		}
+		return user;
+	}
 
-	public boolean isUsernameUnique(String username) {
+	public User getUserByUsername(String username) {
+		User user;
+		try {
+			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByUsername", User.class)
+					.setParameter("username_var", username)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			user = null;
+		}
+		return user;
+	}
+
+	public User getUserByUsernameAndPassword(String username, String password) {
+		User user;
+		try {
+			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByUsernameAndPassword", User.class)
+					.setParameter("username_var", username)
+					.setParameter("password_var", password)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			user = null;
+		}
+		return user;
+	}
+
+	public User getUserByEmail(String email) {
+		User user;
+		try {
+			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByEmail", User.class)
+					.setParameter("email_var", email)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			user = null;
+		}
+		return user;
+	}
+
+
+
+	public boolean isUsernameAvailable(String username) {
 		for (User u : getAllUsers()) {
+			if (u == null) {
+				System.err.println("NULL USER IN DATABASE");
+				return false;
+			}
+
 			if (u.getUsername().equals(username)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean isEmailAvailable(String email) {
+		for (User u : getAllUsers()) {
+			if (u == null) {
+				System.err.println("NULL USER IN DATABASE");
+				return false;
+			}
+
+			if (u.getPerson() == null) {
+				System.err.println("NULL PERSON IN DATABASE, USER ID: " + u.getId());
+				return false;
+			}
+
+			if (u.getPerson().getEmail().equals(email)) {
 				return false;
 			}
 		}
