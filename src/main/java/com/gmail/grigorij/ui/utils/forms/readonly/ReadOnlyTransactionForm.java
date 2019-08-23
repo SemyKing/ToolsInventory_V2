@@ -180,6 +180,7 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 				break;
 
 			case CATEGORY:
+			case CATEGORY_STATUS:
 				TextField categoryField = new TextField("Category");
 				categoryField.setReadOnly(true);
 				ReadOnlyHasValue<Transaction> t_category = new ReadOnlyHasValue<>(transaction -> {
@@ -215,7 +216,7 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 				break;
 
 			default:
-				System.out.println("Unknown / unhandled TransactionTarget in switch case: \n'" + transaction.getTransactionTarget().getStringValue() + "'");
+				System.out.println("Unknown / Unhandled TransactionTarget in switch case: \n'" + transaction.getTransactionTarget().getStringValue() + "'");
 				break;
 		}
 

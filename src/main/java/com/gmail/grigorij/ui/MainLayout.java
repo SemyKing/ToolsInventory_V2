@@ -34,11 +34,14 @@ import org.slf4j.LoggerFactory;
  *  PWA iconPath: cannot be .svg -> causes lots of NullPointerExceptions
  *
  */
-@Push(PushMode.MANUAL)
 @Route("")
+@Push(PushMode.MANUAL)
 @HtmlImport("frontend://styles/shared-styles.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-@PWA(name = ProjectConstants.PROJECT_NAME_FULL, shortName = ProjectConstants.PROJECT_NAME_FULL, iconPath = ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_IMG_ONLY_PNG, backgroundColor = "#233348", themeColor = "#233348")
+@PWA(name = ProjectConstants.PROJECT_NAME_FULL,
+		shortName = ProjectConstants.PROJECT_NAME_FULL,
+		iconPath = ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_IMG_ONLY_PNG,
+		backgroundColor = "#233348", themeColor = "#233348")
 public class MainLayout extends Div {
 
 	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);

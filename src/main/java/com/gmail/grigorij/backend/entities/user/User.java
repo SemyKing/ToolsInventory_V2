@@ -20,7 +20,7 @@ import java.util.Set;
 @Table(name = "users")
 @NamedQueries({
 		@NamedQuery(
-				name="findUserInDatabase",
+				name="getUserByUsernameAndPassword",
 				query="SELECT user FROM User user WHERE" +
 						" user.username = :username_var AND" +
 						" user.password = :password_var"),
@@ -73,16 +73,6 @@ public class User extends EntityPojo {
 
 	@Embedded
 	private Person person;
-
-	//Set with IDs of tools that this user has in use
-	private Set<Long> toolsInUse = new HashSet<>();
-
-	//Set with IDs of tools that this user has reserved
-	private Set<Long> toolsReserved = new HashSet<>();
-
-	@OneToMany(fetch = FetchType.LAZY)
-	@JoinColumn(name = "recipient_id")
-	private Set<Message> messages = new HashSet<>();
 
 
 	@Enumerated( EnumType.STRING )
@@ -150,44 +140,6 @@ public class User extends EntityPojo {
 		this.person = person;
 	}
 
-	public Set<Long> getToolsInUse() {
-		return toolsInUse;
-	}
-	public void setToolsInUse(Set<Long> toolsInUse) {
-		this.toolsInUse = toolsInUse;
-	}
-	public void addToolInUse(Long toolId) {
-		this.toolsInUse.add(toolId);
-	}
-	public void removeToolInUse(Long toolId) {
-		this.toolsInUse.remove(toolId);
-	}
-
-	public Set<Long> getToolsReserved() {
-		return toolsReserved;
-	}
-	public void setToolsReserved(Set<Long> toolsReserved) {
-		this.toolsReserved = toolsReserved;
-	}
-	public void addToolReserved(Long toolId) {
-		this.toolsReserved.add(toolId);
-	}
-	public void removeToolReserved(Long toolId) {
-		this.toolsReserved.remove(toolId);
-	}
-
-	public Set<Message> getMessages() {
-		return messages;
-	}
-	public void setMessages(Set<Message> messages) {
-		this.messages = messages;
-	}
-	public void addMessage(Message message) {
-		this.messages.add(message);
-	}
-	public void removeMessage(Message message) {
-		this.messages.remove(message);
-	}
 
 	public List<AccessRight> getAccessRights() {
 		List<AccessRight> copyOfAccessRights = new ArrayList<>();
@@ -200,12 +152,7 @@ public class User extends EntityPojo {
 		this.accessRights = accessRights;
 	}
 
-	public Set<Long> getAllTools() {
-		Set<Long> allTools = new HashSet<>();
-		allTools.addAll(this.toolsInUse);
-		allTools.addAll(this.toolsReserved);
-		return allTools;
-	}
+
 
 	public String getFullName() {
 		if (this.person == null) {

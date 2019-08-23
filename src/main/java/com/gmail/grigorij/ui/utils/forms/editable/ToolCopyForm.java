@@ -178,7 +178,7 @@ public class ToolCopyForm extends FormLayout {
 			tool.setUsageStatus(originalTool.getUsageStatus());
 		}
 		if (toolUser.getValue()) {
-			tool.setUser(originalTool.getUser());
+			tool.setInUseByUser(originalTool.getInUseByUser());
 		}
 		if (toolReserved.getValue()) {
 			tool.setReservedByUser(originalTool.getReservedByUser());

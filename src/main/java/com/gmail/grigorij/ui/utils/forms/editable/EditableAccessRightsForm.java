@@ -96,9 +96,9 @@ public class EditableAccessRightsForm extends FormLayout {
 		Select<Permission> systemHeaderSelector = constructPermissionSelector(null);
 		boolean systemHeaderSet = false;
 
-		List<Select<Permission>> visiblePermissionSelectors = new ArrayList<>();
+		List<Select<Permission>> visibilityPermissionSelectors = new ArrayList<>();
 		Select<Permission> visibilityHeaderSelector = constructPermissionSelector(null);
-		boolean visibleHeaderSet = false;
+		boolean visibilityHeaderSet = false;
 
 		TransactionTarget previousTarget = null;
 
@@ -197,15 +197,15 @@ public class EditableAccessRightsForm extends FormLayout {
 
 				Select<Permission> visibilitySelector = constructPermissionSelector(accessRight.getVisibleToUser());
 				selectorsLayout.add(visibilitySelector);
-				visiblePermissionSelectors.add(visibilitySelector);
+				visibilityPermissionSelectors.add(visibilitySelector);
 
 				visibilitySelector.addValueChangeListener(event -> {
 					accessRight.setVisibleToUser(visibilitySelector.getValue());
 				});
 
-				if (!visibleHeaderSet) {
-					handleSelectorHeader(selectorsHeaderLayout, visibilityHeaderSelector, "Visible", visiblePermissionSelectors, PermissionLevel.SYSTEM);
-					visibleHeaderSet = true;
+				if (!visibilityHeaderSet) {
+					handleSelectorHeader(selectorsHeaderLayout, visibilityHeaderSelector, "Visible", visibilityPermissionSelectors, PermissionLevel.SYSTEM);
+					visibilityHeaderSet = true;
 				}
 			}
 

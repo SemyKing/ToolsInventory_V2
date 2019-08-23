@@ -316,7 +316,7 @@ public class EditableToolForm extends FormLayout {
 						}
 					}
 					return ValidationResult.ok();
-				}).bind(InventoryItem::getUser, InventoryItem::setUser);
+				}).bind(InventoryItem::getInUseByUser, InventoryItem::setInUseByUser);
 
 		binder.forField(reservedByComboBox)
 				.withValidator((s, valueContext) -> {

@@ -1,0 +1,71 @@
+.messages_view__wrapper {
+    height: 100%;
+    margin-left: var(--lumo-space-s);
+    margin-right: var(--lumo-space-s);
+}
+
+.messages_view__header {
+	justify-content: center;
+}
+
+.messages_view__unread_label {
+	text-align: center;
+	margin-top: var(--lumo-space-xs);
+	margin-bottom: var(--lumo-space-xs);
+}
+
+
+.messages_view__message-wrapper {
+	background-color: var(--lumo-success-color-10pct);
+	width: 40%;
+	border-radius: 5px;
+}
+.messages_view__message-wrapper[read] {
+	background-color: var(--lumo-shade-10pct);
+}
+
+.messages_view__message-buttons {
+    margin-left: var(--lumo-space-m);
+}
+
+
+@media (max-width: 1024px) {
+	.messages_view__header {
+		flex-direction: column !important;
+	}
+
+	.messages_view__dates {
+		width: 100%  !important;
+	}
+	.messages_view__dates > vaadin-date-picker {
+        max-width: 30%;
+    }
+	.messages_view__dates > vaadin-button {
+		flex-grow: 1;
+	}
+
+
+	.messages_view__message-wrapper {
+    	width: 100% !important;
+    	justify-content: space-between;
+    }
+
+	.messages_view__dates_actions {
+		width: 100%  !important;
+		justify-content: space-evenly;
+	}
+	.messages_view__dates_actions > vaadin-button {
+        margin-left: 0;
+    }
+
+    .messages_view__message_footer {
+        flex-direction: column !important;
+    }
+    .messages_view__message_footer > label {
+        margin-left: 0 !important;
+    }
+
+    .messages_view__message-buttons {
+        margin-left: var(--lumo-space-xs) !important;
+    }
+}

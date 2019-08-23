@@ -210,11 +210,11 @@ public class AdminInventory extends FlexBoxLayout {
 //				.setFlexGrow(0);
 
 		grid.addColumn(tool -> {
-			if (tool.getUser() != null && tool.getReservedByUser() != null) {
-				return tool.getUser().getFullName() + ", " + tool.getReservedByUser().getFullName();
+			if (tool.getInUseByUser() != null && tool.getReservedByUser() != null) {
+				return tool.getInUseByUser().getFullName() + ", " + tool.getReservedByUser().getFullName();
 			}
-			if (tool.getUser() != null) {
-				return tool.getUser().getFullName();
+			if (tool.getInUseByUser() != null) {
+				return tool.getInUseByUser().getFullName();
 			}
 			if (tool.getReservedByUser() != null) {
 				return tool.getReservedByUser().getFullName();
@@ -258,7 +258,7 @@ public class AdminInventory extends FlexBoxLayout {
 
 						for (String sParam : searchParams) {
 							res =  StringUtils.containsIgnoreCase(tool.getName(), sParam) ||
-									StringUtils.containsIgnoreCase((tool.getUser() == null) ? "" : tool.getUser().getUsername(), sParam) ||
+									StringUtils.containsIgnoreCase((tool.getInUseByUser() == null) ? "" : tool.getInUseByUser().getUsername(), sParam) ||
 									StringUtils.containsIgnoreCase((tool.getReservedByUser() == null) ? "" : tool.getReservedByUser().getUsername(), sParam) ||
 									StringUtils.containsIgnoreCase((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName(), sParam) ||
 									StringUtils.containsIgnoreCase((tool.getCompany() == null) ? "" : tool.getCompany().getName(), sParam) ||
@@ -275,7 +275,7 @@ public class AdminInventory extends FlexBoxLayout {
 		} else {
 			dataProvider.addFilter(
 					tool -> StringUtils.containsIgnoreCase(tool.getName(), mainSearchString)  ||
-							StringUtils.containsIgnoreCase((tool.getUser() == null) ? "" : tool.getUser().getUsername(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((tool.getInUseByUser() == null) ? "" : tool.getInUseByUser().getUsername(), mainSearchString) ||
 							StringUtils.containsIgnoreCase((tool.getReservedByUser() == null) ? "" : tool.getReservedByUser().getUsername(), mainSearchString) ||
 							StringUtils.containsIgnoreCase((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName(), mainSearchString) ||
 							StringUtils.containsIgnoreCase((tool.getCompany() == null) ? "" : tool.getCompany().getName(), mainSearchString) ||

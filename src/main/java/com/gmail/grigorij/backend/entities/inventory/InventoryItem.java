@@ -52,6 +52,16 @@ import java.util.*;
 						" ie.company.id = :company_id_var AND" +
 						" ie.inventoryHierarchyType = :type_var"),
 
+		@NamedQuery(name="getAllToolsInUseByUser",
+				query="SELECT ie FROM InventoryItem ie WHERE" +
+						" ie.inUseByUser.id = :user_id_var AND" +
+						" ie.inventoryHierarchyType = :type_var"),
+
+		@NamedQuery(name="getAllToolsReservedByUser",
+				query="SELECT ie FROM InventoryItem ie WHERE" +
+						" ie.reservedByUser.id = :user_id_var AND" +
+						" ie.inventoryHierarchyType = :type_var"),
+
 		@NamedQuery(name="getToolById",
 				query="SELECT ie FROM InventoryItem ie WHERE" +
 						" ie.id = :id_var"),
@@ -131,7 +141,7 @@ public class InventoryItem extends EntityPojo {
 	private Company company;
 
 	@OneToOne
-	private User user;
+	private User inUseByUser;
 
 	@OneToOne
 	private User reservedByUser;
@@ -327,11 +337,11 @@ public class InventoryItem extends EntityPojo {
 		this.rfCode = rfCode;
 	}
 
-	public User getUser() {
-		return user;
+	public User getInUseByUser() {
+		return inUseByUser;
 	}
-	public void setUser(User user) {
-		this.user = user;
+	public void setInUseByUser(User inUseByUser) {
+		this.inUseByUser = inUseByUser;
 	}
 
 	public User getReservedByUser() {

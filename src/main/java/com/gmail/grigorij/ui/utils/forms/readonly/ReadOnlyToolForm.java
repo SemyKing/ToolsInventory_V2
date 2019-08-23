@@ -69,7 +69,7 @@ public class ReadOnlyToolForm extends FormLayout {
 		TextField inUseByField = new TextField("In Use By");
 		inUseByField.setReadOnly(true);
 		ReadOnlyHasValue<InventoryItem> inUseBy = new ReadOnlyHasValue<>(tool -> {
-			inUseByField.setValue((tool.getUser() == null) ? "" : tool.getUser().getUsername());
+			inUseByField.setValue((tool.getInUseByUser() == null) ? "" : tool.getInUseByUser().getUsername());
 		});
 
 		TextField reservedByField = new TextField("Reserved By");
@@ -82,14 +82,14 @@ public class ReadOnlyToolForm extends FormLayout {
 		dateBoughtField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
 		dateBoughtField.setReadOnly(true);
 		ReadOnlyHasValue<InventoryItem> dateBought = new ReadOnlyHasValue<>(tool -> {
-			dateBoughtField.setValue(tool.getDateBought() == null ? "" : DateConverter.toDate(tool.getDateBought()));
+			dateBoughtField.setValue(tool.getDateBought() == null ? "" : DateConverter.toStringDate(tool.getDateBought()));
 		});
 
 		TextField dateNextMaintenanceField = new TextField("Next Maintenance");
 		dateNextMaintenanceField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
 		dateNextMaintenanceField.setReadOnly(true);
 		ReadOnlyHasValue<InventoryItem> dateNextMaintenance = new ReadOnlyHasValue<>(tool -> {
-			dateNextMaintenanceField.setValue((tool.getDateBought() == null) ? "" : DateConverter.toDate(tool.getDateNextMaintenance()));
+			dateNextMaintenanceField.setValue((tool.getDateBought() == null) ? "" : DateConverter.toStringDate(tool.getDateNextMaintenance()));
 		});
 
 		//DATE BOUGHT & DATE NEXT MAINTENANCE

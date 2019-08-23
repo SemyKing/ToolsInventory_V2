@@ -16,31 +16,12 @@ import elemental.json.impl.JreJsonFactory;
 import java.io.OutputStream;
 import java.util.Map;
 
+
 @Tag("camera-element")
-@HtmlImport("custom-components/camera-element.html")
+@HtmlImport("elements/camera-element.html")
 public class Camera extends Component {
 
 	Camera() {}
-
-//	private JsonValue toJson(Map<String,Object> map, JsonFactory factory) {
-//		JsonObject obj = factory.createObject();
-//		for(Map.Entry<String,Object> entry: map.entrySet()) {
-//			if(entry.getValue() instanceof Boolean) {
-//				obj.put(entry.getKey(), factory.create((Boolean)entry.getValue()));
-//			} else if(entry.getValue() instanceof Double) {
-//				obj.put(entry.getKey(), factory.create((Double)entry.getValue()));
-//			} else if(entry.getValue() instanceof Integer) {
-//				obj.put(entry.getKey(), factory.create((Integer)entry.getValue()));
-//			} else if(entry.getValue() instanceof String) {
-//				obj.put(entry.getKey(), factory.create((String)entry.getValue()));
-//			} else if(entry.getValue() instanceof Map) {
-//				obj.put(entry.getKey(), toJson((Map<String,Object>)entry.getValue(), factory));
-//			} else {
-//				throw new IllegalArgumentException("Unsopported argument in options");
-//			}
-//		}
-//		return obj;
-//	}
 
 	void setReceiver(DataReceiver receiver) {
 		getElement().setAttribute("target", new StreamReceiver(
@@ -52,24 +33,20 @@ public class Camera extends Component {
 	}
 
 	public void stopCamera() {
-//		getElement().callFunction("stopCamera");
 		getElement().callJsFunction("stopCamera");
 	}
 
 	public void takePicture() {
-//		getElement().callFunction("takePicture");
 		getElement().callJsFunction("takePicture");
 	}
 
 	public void showPreview() {
-//		getElement().callFunction("showPreview");
 		getElement().callJsFunction("showPreview");
 	}
 
 	public Registration addFinishedListener(ComponentEventListener<FinishedEvent> listener) {
 		return addListener(FinishedEvent.class, listener);
 	}
-
 
 	private class CameraStreamVariable implements StreamVariable {
 

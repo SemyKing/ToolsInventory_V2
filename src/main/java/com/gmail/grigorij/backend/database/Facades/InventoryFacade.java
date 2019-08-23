@@ -70,6 +70,32 @@ public class InventoryFacade {
 		return tools;
 	}
 
+	public List<InventoryItem> getAllToolsInUseByUser(long userId) {
+		List<InventoryItem> tools;
+		try {
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllToolsInUseByUser", InventoryItem.class)
+					.setParameter("user_id_var", userId)
+					.setParameter("type_var", InventoryHierarchyType.TOOL)
+					.getResultList();
+		} catch (NoResultException nre) {
+			tools = null;
+		}
+		return tools;
+	}
+
+	public List<InventoryItem> getAllToolsReservedByUser(long userId) {
+		List<InventoryItem> tools;
+		try {
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllToolsReservedByUser", InventoryItem.class)
+					.setParameter("user_id_var", userId)
+					.setParameter("type_var", InventoryHierarchyType.TOOL)
+					.getResultList();
+		} catch (NoResultException nre) {
+			tools = null;
+		}
+		return tools;
+	}
+
 	public List<InventoryItem> getAllByHierarchyType(InventoryHierarchyType type) {
 		List<InventoryItem> tools;
 		try {
@@ -113,6 +139,7 @@ public class InventoryFacade {
 		}
 		return item.getInventoryHierarchyType().toString().toUpperCase();
 	}
+
 
 	public boolean insert(InventoryItem item) {
 		if (item == null){

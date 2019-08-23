@@ -16,27 +16,30 @@ public class Broadcaster {
 
 	private static Executor executor = Executors.newSingleThreadExecutor();
 
-	private static HashMap<Long, Consumer<String>> list = new HashMap<>();
+	private static HashMap<Long, Consumer<String>> userBroadcasterList = new HashMap<>();
 
 	public static synchronized Registration registerUser(long userId, Consumer<String> listener) {
-		if (list.get(userId) != null) {
-			list.replace(userId, listener);
+		if (userBroadcasterList.get(userId) != null) {
+			userBroadcasterList.replace(userId, listener);
 		} else {
-			list.put(userId, listener);
+			userBroadcasterList.put(userId, listener);
 		}
 
 		return () -> {
 			synchronized (Broadcaster.class) {
-				list.remove(userId);
+				userBroadcasterList.remove(userId);
 			}
 		};
 	}
 
 
 	public static synchronized void broadcastToUser(long userId, String message) {
-
-		if (list.get(userId) != null) {
-			executor.execute(() -> list.get(userId).accept(message));
+		if (userBroadcasterList.get(userId) != null) {
+			executor.execute(() -> userBroadcasterList.get(userId).accept(message));
 		}
+	}
+
+	public void removeBroadcasterForUser(long userId) {
+		userBroadcasterList.remove(userId);
 	}
 }

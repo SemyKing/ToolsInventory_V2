@@ -2,6 +2,13 @@ package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.message.Message;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
+
+import javax.persistence.NoResultException;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
 
 
 public class MessageFacade {
@@ -13,6 +20,38 @@ public class MessageFacade {
 			mInstance = new MessageFacade();
 		}
 		return mInstance;
+	}
+
+	private List<Message> getAllMessagesForUser(long userId) {
+		List<Message> messages;
+		try {
+			messages = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllMessagesForUser", Message.class)
+					.setParameter("user_id_var", userId)
+					.getResultList();
+		} catch (NoResultException nre) {
+			messages = null;
+		}
+		return messages;
+	}
+
+	private List<Message> getSortedList(List<Message> list, LocalDate start, LocalDate end) {
+
+		final Date startDate = Date.valueOf(start);
+		final Date endDate = Date.valueOf(end.plusDays(1));
+
+		list.removeIf((Message message) -> message.getDate().before(startDate));
+		list.removeIf((Message message) -> message.getDate().after(endDate));
+
+		list.sort(Comparator.comparing(Message::getDate));
+
+		return list;
+	}
+
+
+	public List<Message> getAllMessagesBetweenDates(LocalDate start, LocalDate end, long userId) {
+		List<Message> messages = getAllMessagesForUser(userId);
+
+		return getSortedList(messages, start, end);
 	}
 
 

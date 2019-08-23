@@ -8,7 +8,7 @@ public class DateConverter {
 	private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("dd.MM.yyyy");
 	private final static SimpleDateFormat dateWithTimeFormatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
-	public static String toDate(Date date) {
+	public static String toStringDate(Date date) {
 		if (date == null) {
 			return "";
 		} else {
@@ -22,7 +22,7 @@ public class DateConverter {
 		}
 	}
 
-	public static String toDateWithTime(Date date) {
+	public static String toStringDateWithTime(Date date) {
 		if (date == null) {
 			return "";
 		} else {
