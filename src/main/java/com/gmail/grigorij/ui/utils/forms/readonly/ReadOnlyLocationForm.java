@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.utils.forms.readonly;
 
-import com.gmail.grigorij.backend.entities.embeddable.Location;
+import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;

@@ -2,11 +2,14 @@ package com.gmail.grigorij.ui;
 
 import com.gmail.grigorij.backend.DatabaseDummyInsert;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.views.MenuLayout;
-import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.ui.views.authentication.LoginView;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.UI;
@@ -31,23 +34,31 @@ import org.slf4j.LoggerFactory;
  *  PWA iconPath: cannot be .svg -> causes lots of NullPointerExceptions
  *
  */
-@Push(PushMode.MANUAL)
 @Route("")
+@Push(PushMode.MANUAL)
 @HtmlImport("frontend://styles/shared-styles.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
-@PWA(name = ProjectConstants.PROJECT_NAME_FULL, shortName = ProjectConstants.PROJECT_NAME_FULL, iconPath = ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_IMG_ONLY_PNG, backgroundColor = "#233348", themeColor = "#233348")
+@PWA(name = ProjectConstants.PROJECT_NAME_FULL,
+		shortName = ProjectConstants.PROJECT_NAME_FULL,
+		iconPath = ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_IMG_ONLY_PNG,
+		backgroundColor = "#233348", themeColor = "#233348")
 public class MainLayout extends Div {
 
 	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
 	private static final String CLASS_NAME = "root";
 
+	private void test() {
+	}
+
 
 	public MainLayout() {
+
+		test();
+
 
 		//TODO:REMOVE AT PRODUCTION
 		DatabaseDummyInsert dbDummy = new DatabaseDummyInsert();
 		dbDummy.generateAndInsert();
-		System.out.println("DatabaseDummyInsert done");
 
 
 		if (UI.getCurrent() != null) {
@@ -72,7 +83,13 @@ public class MainLayout extends Div {
 		if (AuthenticationService.isAuthenticated()) {
 			System.out.println("User is authenticated -> show menu");
 
-			TransactionFacade.getInstance().insertLoginTransaction("Log In via Remember Me");
+			Transaction tr = new Transaction();
+			tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+			tr.setTransactionOperation(TransactionType.LOGIN);
+			tr.setTransactionTarget(TransactionTarget.USER);
+			tr.setAdditionalInfo("Log In via Remember Me");
+
+			TransactionFacade.getInstance().insert(tr);
 
 			showMainMenuLayout();
 		} else {

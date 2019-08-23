@@ -17,7 +17,7 @@
 		width: 100%  !important;
 	}
 	.admin-transactions__dates > vaadin-date-picker {
-		flex-grow: 1;
+	    max-width: 30%;
 	}
 	.admin-transactions__dates > vaadin-button {
         flex-grow: 1;

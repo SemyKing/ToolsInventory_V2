@@ -1,8 +1,7 @@
 package com.gmail.grigorij.ui.utils.forms.readonly;
 
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.enums.OperationType;
-import com.gmail.grigorij.backend.enums.OperationTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.CustomDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
@@ -124,10 +123,10 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 			dynamicForm = null;
 		}
 
-		if (transaction.getTransactionOperation().equals(OperationType.LOGIN)) {
+		if (transaction.getTransactionOperation().equals(TransactionType.LOGIN)) {
 			return;
 		}
-		if (transaction.getTransactionOperation().equals(OperationType.LOGOUT)) {
+		if (transaction.getTransactionOperation().equals(TransactionType.LOGOUT)) {
 			return;
 		}
 
@@ -139,79 +138,86 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 
 		Button showDetailsButton = UIUtils.createButton("Show Details", ButtonVariant.LUMO_CONTRAST);
 
+		switch (transaction.getTransactionTarget()) {
 
-		if (transaction.getTransactionTarget().equals(OperationTarget.USER)) {
+			case USER:
+			case USER_STATUS:
+			case USER_PASSWORD:
+			case USER_ACCESS_RIGHTS:
+				TextField targetUserField = new TextField("User");
+				targetUserField.setReadOnly(true);
+				ReadOnlyHasValue<Transaction> t_user = new ReadOnlyHasValue<>(transaction -> {
+					targetUserField.setValue( (transaction.getDestinationUser() == null) ? "" : transaction.getDestinationUser().getUsername() );
+				});
 
-			TextField targetUserField = new TextField("User");
-			targetUserField.setReadOnly(true);
-			ReadOnlyHasValue<Transaction> t_user = new ReadOnlyHasValue<>(transaction -> {
-				targetUserField.setValue( (transaction.getDestinationUser() == null) ? "" : transaction.getDestinationUser().getUsername() );
-			});
+				showDetailsButton.addClickListener(e -> {
+					ReadOnlyUserForm form = new ReadOnlyUserForm();
+					form.setUser(transaction.getDestinationUser());
 
-			showDetailsButton.addClickListener(e -> {
-				ReadOnlyUserForm form = new ReadOnlyUserForm();
-				form.setUser(transaction.getDestinationUser());
+					constructTargetDetailsDialog(form);
+				});
 
-				constructTargetDetailsDialog(form);
-			});
+				finalizeForm(t_user, targetUserField, showDetailsButton);
+				break;
 
-			finalizeForm(t_user, targetUserField, showDetailsButton);
+			case COMPANY:
+			case COMPANY_STATUS:
+			case COMPANY_LOCATION:
+				TextField companyField = new TextField("Company");
+				companyField.setReadOnly(true);
+				ReadOnlyHasValue<Transaction> t_company = new ReadOnlyHasValue<>(transaction -> {
+					companyField.setValue( (transaction.getCompany() == null) ? "" : transaction.getCompany().getName() );
+				});
 
+				showDetailsButton.addClickListener(e -> {
+					ReadOnlyCompanyForm form = new ReadOnlyCompanyForm();
+					form.setCompany(transaction.getCompany());
 
-		} else if (transaction.getTransactionTarget().equals(OperationTarget.COMPANY)) {
+					constructTargetDetailsDialog(form);
+				});
 
-			TextField companyField = new TextField("Company");
-			companyField.setReadOnly(true);
-			ReadOnlyHasValue<Transaction> t_company = new ReadOnlyHasValue<>(transaction -> {
-				companyField.setValue( (transaction.getCompany() == null) ? "" : transaction.getCompany().getName() );
-			});
+				finalizeForm(t_company, companyField, showDetailsButton);
+				break;
 
-			showDetailsButton.addClickListener(e -> {
-				ReadOnlyCompanyForm form = new ReadOnlyCompanyForm();
-				form.setCompany(transaction.getCompany());
+			case CATEGORY:
+			case CATEGORY_STATUS:
+				TextField categoryField = new TextField("Category");
+				categoryField.setReadOnly(true);
+				ReadOnlyHasValue<Transaction> t_category = new ReadOnlyHasValue<>(transaction -> {
+					categoryField.setValue((transaction.getInventoryEntity() == null) ? "" : transaction.getInventoryEntity().getName());
+				});
 
-				constructTargetDetailsDialog(form);
-			});
+				showDetailsButton.addClickListener(e -> {
+					ReadOnlyCategoryForm form = new ReadOnlyCategoryForm();
+					form.setCategory(transaction.getInventoryEntity());
 
-			finalizeForm(t_company, companyField, showDetailsButton);
+					constructTargetDetailsDialog(form);
+				});
 
+				finalizeForm(t_category, categoryField, showDetailsButton);
+				break;
 
-		} else if (transaction.getTransactionTarget().equals(OperationTarget.CATEGORY)) {
+			case TOOL:
+			case TOOL_STATUS:
+				TextField toolField = new TextField("Tool");
+				toolField.setReadOnly(true);
+				ReadOnlyHasValue<Transaction> t_tool = new ReadOnlyHasValue<>(transaction -> {
+					toolField.setValue( (transaction.getInventoryEntity() == null) ? "" : transaction.getInventoryEntity().getName() );
+				});
 
-			TextField categoryField = new TextField("Category");
-			categoryField.setReadOnly(true);
-			ReadOnlyHasValue<Transaction> t_category = new ReadOnlyHasValue<>(transaction -> {
-				categoryField.setValue((transaction.getInventoryEntity() == null) ? "" : transaction.getInventoryEntity().getName());
-			});
+				showDetailsButton.addClickListener(e -> {
+					ReadOnlyToolForm form = new ReadOnlyToolForm();
+					form.setTool(transaction.getInventoryEntity());
 
-			showDetailsButton.addClickListener(e -> {
-				ReadOnlyCategoryForm form = new ReadOnlyCategoryForm();
-				form.setCategory(transaction.getInventoryEntity());
+					constructTargetDetailsDialog(form);
+				});
 
-				constructTargetDetailsDialog(form);
-			});
+				finalizeForm(t_tool, toolField, showDetailsButton);
+				break;
 
-			finalizeForm(t_category, categoryField, showDetailsButton);
-
-
-		} else if (transaction.getTransactionTarget().equals(OperationTarget.TOOL)) {
-
-			TextField toolField = new TextField("Tool");
-			toolField.setReadOnly(true);
-			ReadOnlyHasValue<Transaction> t_tool = new ReadOnlyHasValue<>(transaction -> {
-				toolField.setValue( (transaction.getInventoryEntity() == null) ? "" : transaction.getInventoryEntity().getName() );
-			});
-
-			showDetailsButton.addClickListener(e -> {
-				ReadOnlyToolForm form = new ReadOnlyToolForm();
-				form.setTool(transaction.getInventoryEntity());
-
-				constructTargetDetailsDialog(form);
-			});
-
-			finalizeForm(t_tool, toolField, showDetailsButton);
-
-
+			default:
+				System.out.println("Unknown / Unhandled TransactionTarget in switch case: \n'" + transaction.getTransactionTarget().getStringValue() + "'");
+				break;
 		}
 
 		add(dynamicForm);

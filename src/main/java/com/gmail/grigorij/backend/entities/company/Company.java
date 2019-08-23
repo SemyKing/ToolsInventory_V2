@@ -1,8 +1,8 @@
 package com.gmail.grigorij.backend.entities.company;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
-import com.gmail.grigorij.backend.entities.embeddable.Location;
-import com.gmail.grigorij.backend.entities.embeddable.Person;
+import com.gmail.grigorij.backend.embeddable.Location;
+import com.gmail.grigorij.backend.embeddable.Person;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -15,11 +15,12 @@ import java.util.Set;
 @Table(name = "companies")
 @NamedQueries({
 		@NamedQuery(
-				name="Company.findCompanyById",
-				query="SELECT company FROM Company company WHERE company.id = :company_id"),
+				name="getAllCompanies",
+				query="SELECT company FROM Company company ORDER BY company.name ASC"),
+
 		@NamedQuery(
-				name="Company.getAllCompanies",
-				query="SELECT company FROM Company company ORDER BY company.name ASC")
+				name="getCompanyById",
+				query="SELECT company FROM Company company WHERE company.id = :company_id")
 })
 public class Company extends EntityPojo {
 
@@ -75,16 +76,6 @@ public class Company extends EntityPojo {
 	}
 	public void removeLocation(Location location) {
 		this.locations.remove(location);
-	}
-
-	public static Company getEmptyCompany() {
-		Company company = new Company();
-		company.setName("");
-		company.setVat("");
-		company.setDeleted(false);
-		company.setAddress(new Location());
-
-		return company;
 	}
 
 	public Person getContactPerson() {

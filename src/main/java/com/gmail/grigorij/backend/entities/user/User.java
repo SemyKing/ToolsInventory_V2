@@ -2,22 +2,25 @@ package com.gmail.grigorij.backend.entities.user;
 
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.enums.permissions.AccessGroup;
+import com.gmail.grigorij.backend.embeddable.AccessRight;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.embeddable.Location;
-import com.gmail.grigorij.backend.entities.embeddable.Person;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.embeddable.Location;
+import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.message.Message;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
 @NamedQueries({
 		@NamedQuery(
-				name="findUserInDatabase",
+				name="getUserByUsernameAndPassword",
 				query="SELECT user FROM User user WHERE" +
 						" user.username = :username_var AND" +
 						" user.password = :password_var"),
@@ -56,7 +59,7 @@ public class User extends EntityPojo {
 	private String password;
 
 	@Column(name = "theme_variant")
-	private String themeVariant;
+	private String themeVariant = Lumo.LIGHT;
 
 	@Column(name = "locale")
 	private String locale;
@@ -64,34 +67,21 @@ public class User extends EntityPojo {
 	@OneToOne
 	private Company company;
 
-	@Column(name = "access_group")
-	private int accessGroup;
-
 
 	@Embedded
-	private Location address;
+	private Location address; //NECESSARY?
 
 	@Embedded
 	private Person person;
 
-	@OneToMany(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
-	private Set<InventoryEntity> toolsInUse = new HashSet<>();
 
-	@OneToMany(fetch = FetchType.LAZY)
-	@JoinColumn(name = "reservedbyuser_id")
-	private Set<InventoryEntity> toolsReserved = new HashSet<>();
+	@Enumerated( EnumType.STRING )
+	private AccessGroup accessGroup = AccessGroup.VIEWER;
 
-	@OneToMany(fetch = FetchType.LAZY)
-	@JoinColumn(name = "recipient_id")
-	private Set<Message> messages = new HashSet<>();
+	@ElementCollection
+	private List<AccessRight> accessRights = new ArrayList<>();
 
-
-
-	public User() {
-		//Default theme for new users
-		this.themeVariant = Lumo.LIGHT;
-	}
+	public User() {}
 
 
 	public String getUsername() {
@@ -129,10 +119,10 @@ public class User extends EntityPojo {
 		this.company = company;
 	}
 
-	public int getAccessGroup() {
+	public AccessGroup getAccessGroup() {
 		return accessGroup;
 	}
-	public void setAccessGroup(int accessGroup) {
+	public void setAccessGroup(AccessGroup accessGroup) {
 		this.accessGroup = accessGroup;
 	}
 
@@ -150,64 +140,33 @@ public class User extends EntityPojo {
 		this.person = person;
 	}
 
+
+	public List<AccessRight> getAccessRights() {
+		List<AccessRight> copyOfAccessRights = new ArrayList<>();
+		for (AccessRight ar : accessRights) {
+			copyOfAccessRights.add(new AccessRight(ar));
+		}
+		return copyOfAccessRights;
+	}
+	public void setAccessRights(List<AccessRight> accessRights) {
+		this.accessRights = accessRights;
+	}
+
+
+
 	public String getFullName() {
 		if (this.person == null) {
 			return "";
 		} else {
-			return this.person.getFirstName() + " " + this.person.getLastName();
+			return this.person.getFullName();
 		}
 	}
 
-
-//	public static User getEmptyUser() {
-//		User user = new User();
-//		user.setUsername("");
-//		user.setPassword("");
-//		user.setCompany(null);
-//		user.setDeleted(false);
-//		user.setThemeVariant(Lumo.LIGHT);
-//
-//		return user;
-//	}
-
-	public Set<InventoryEntity> getToolsInUse() {
-		return toolsInUse;
+	public String getInitials() {
+		if (this.person == null) {
+			return "";
+		} else {
+			return this.person.getInitials();
+		}
 	}
-	public void setToolsInUse(Set<InventoryEntity> toolsInUse) {
-		this.toolsInUse = toolsInUse;
-	}
-	public void addToolInUse(InventoryEntity tool) {
-		this.toolsInUse.add(tool);
-	}
-	public void removeToolInUse(InventoryEntity tool) {
-		this.toolsInUse.remove(tool);
-	}
-
-	public Set<InventoryEntity> getToolsReserved() {
-		return toolsReserved;
-	}
-	public void setToolsReserved(Set<InventoryEntity> toolsReserved) {
-		this.toolsReserved = toolsReserved;
-	}
-	public void addToolReserved(InventoryEntity tool) {
-		this.toolsReserved.add(tool);
-	}
-	public void removeToolReserved(InventoryEntity tool) {
-		this.toolsReserved.remove(tool);
-	}
-
-	public Set<Message> getMessages() {
-		return messages;
-	}
-	public void setMessages(Set<Message> messages) {
-		this.messages = messages;
-	}
-	public void addMessage(Message message) {
-		this.messages.add(message);
-	}
-	public void removeMessage(Message message) {
-		this.messages.remove(message);
-	}
-
-
 }

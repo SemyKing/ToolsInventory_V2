@@ -2,8 +2,8 @@ package com.gmail.grigorij.utils;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.enums.OperationTarget;
-import com.gmail.grigorij.backend.enums.OperationType;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -57,7 +57,7 @@ public class AuthenticationService {
         if (password == null || password.isEmpty())
             return false;
 
-        com.gmail.grigorij.backend.entities.user.User user = UserFacade.getInstance().findUserInDatabase(username, password);
+        User user = UserFacade.getInstance().getUserByUsernameAndPassword(username, password);
 
         if (user != null) {
             if (!constructSessionData(user, null)) {
@@ -81,13 +81,11 @@ public class AuthenticationService {
         }
 
         Transaction logOutTransaction = new Transaction();
-        logOutTransaction.setTransactionTarget(OperationTarget.USER);
-        logOutTransaction.setTransactionOperation(OperationType.LOGOUT);
+        logOutTransaction.setTransactionTarget(TransactionTarget.USER);
+        logOutTransaction.setTransactionOperation(TransactionType.LOGOUT);
         logOutTransaction.setWhoDid(AuthenticationService.getCurrentSessionUser());
 
         TransactionFacade.getInstance().insert(logOutTransaction);
-
-        userSessions.remove(AuthenticationService.getCurrentSessionUser());
 
         getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
         UI.getCurrent().getSession().close();
@@ -95,7 +93,7 @@ public class AuthenticationService {
     }
 
 
-    private static boolean constructSessionData(com.gmail.grigorij.backend.entities.user.User user, String username) {
+    private static boolean constructSessionData(User user, String username) {
         System.out.println();
 
         if (user == null) {
@@ -120,8 +118,6 @@ public class AuthenticationService {
         }
 
         setCurrentSessionUser(user);
-
-        userSessions.put(user, VaadinSession.getCurrent());
 
         return true;
     }
@@ -179,13 +175,5 @@ public class AuthenticationService {
             throw new IllegalStateException("No request bound to current thread.");
         }
         return request;
-    }
-
-
-
-    private static HashMap<User, VaadinSession> userSessions = new HashMap<>();
-
-    public static VaadinSession getUserSession(User user) {
-        return userSessions.get(user);
     }
 }

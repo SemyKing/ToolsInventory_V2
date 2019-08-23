@@ -22,7 +22,6 @@ public class RecoveryLinkFacade {
 	}
 
 
-
 	public RecoveryLink getRecoveryLinkByToken(String token) {
 		RecoveryLink link;
 		try {
@@ -38,46 +37,42 @@ public class RecoveryLinkFacade {
 
 
 	public boolean insert(RecoveryLink link) {
-		System.out.println("RecoveryLink INSERT");
-		if (link == null)
+		if (link == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> INSERT NULL RECOVERY_LINK");
 			return false;
+		}
 
 		try {
 			DatabaseManager.getInstance().insert(link);
 		} catch (Exception e) {
-			System.out.println("RecoveryLink INSERT fail");
+			System.err.println(this.getClass().getSimpleName() + " -> RECOVERY_LINK INSERT FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("RecoveryLink INSERT successful");
 		return true;
 	}
 
 	public boolean remove(RecoveryLink link) {
-		System.out.println("RecoveryLink REMOVE");
 		if (link == null) {
-			System.err.println("RecoveryLink is NULL");
+			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL RECOVERY_LINK");
 			return false;
 		}
 
-		if (link.getId() == null) {
-			System.err.println("RecoveryLink ID is NULL");
-			return false;
-		}
+		RecoveryLink linkInDatabase = null;
 
-		RecoveryLink linkInDatabase = DatabaseManager.getInstance().find(RecoveryLink.class, link.getId());
-		System.out.println("linkInDatabase: " + linkInDatabase);
+		if (link.getId() != null) {
+			linkInDatabase = DatabaseManager.getInstance().find(RecoveryLink.class, link.getId());
+		}
 
 		try {
 			if (linkInDatabase != null) {
 				DatabaseManager.getInstance().remove(link);
 			}
 		} catch (Exception e) {
-			System.out.println("RecoveryLink REMOVE fail");
+			System.err.println(this.getClass().getSimpleName() + " -> RECOVERY_LINK REMOVE FAIL");
 			e.printStackTrace();
 			return false;
 		}
-		System.out.println("RecoveryLink REMOVE successful");
 		return true;
 	}
 }

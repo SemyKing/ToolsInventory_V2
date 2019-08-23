@@ -4,8 +4,8 @@ import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
-import com.gmail.grigorij.backend.enums.ToolStatus;
+import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.camera.CameraView;
@@ -19,7 +19,6 @@ import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.views.navigation.admin.inventory.AdminInventory;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.gmail.grigorij.utils.converters.CustomConverter;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -35,10 +34,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
-import com.vaadin.flow.data.converter.DateToSqlDateConverter;
-import com.vaadin.flow.data.converter.LocalDateToDateConverter;
-import com.vaadin.flow.data.converter.StringToDoubleConverter;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.converter.*;
 
 import java.time.LocalDate;
 import java.util.EnumSet;
@@ -47,13 +43,13 @@ import java.util.List;
 
 public class EditableToolForm extends FormLayout {
 
-	private Binder<InventoryEntity> binder = new Binder<>(InventoryEntity.class);
-	private InventoryEntity tool;
+	private Binder<InventoryItem> binder = new Binder<>(InventoryItem.class);
+	private InventoryItem tool;
 	private boolean isNew;
 
 	private TextField qrCodeField, barCodeField;
 
-	private ComboBox<InventoryEntity> categoriesComboBox;
+	private ComboBox<InventoryItem> categoriesComboBox;
 	private ComboBox<User> inUseByComboBox;
 	private ComboBox<User> reservedByComboBox;
 
@@ -157,13 +153,13 @@ public class EditableToolForm extends FormLayout {
 		categoriesComboBox = new ComboBox<>();
 		categoriesComboBox.setItems();
 		categoriesComboBox.setLabel("Parent Category");
-		categoriesComboBox.setItemLabelGenerator(InventoryEntity::getName);
+		categoriesComboBox.setItemLabelGenerator(InventoryItem::getName);
 		categoriesComboBox.setRequired(true);
 
 		editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
 		editCategoryButton.addClickListener(e -> {
 			if (e != null) {
-				InventoryEntity selectedCategory = categoriesComboBox.getValue();
+				InventoryItem selectedCategory = categoriesComboBox.getValue();
 				if (selectedCategory != null) {
 					if (!selectedCategory.equals(InventoryFacade.getInstance().getRootCategory())) {
 						adminInventory.constructCategoryDialog(selectedCategory);
@@ -176,7 +172,7 @@ public class EditableToolForm extends FormLayout {
 		setAllCategoriesButton = UIUtils.createButton("Set all", ButtonVariant.LUMO_CONTRAST);
 		setAllCategoriesButton.addClickListener(e -> {
 				if (e != null) {
-					InventoryEntity parentCategory = categoriesComboBox.getValue();
+					InventoryItem parentCategory = categoriesComboBox.getValue();
 					if (parentCategory != null) {
 						if (!parentCategory.equals(InventoryFacade.getInstance().getRootCategory())) {
 							adminInventory.setBulkCategories(parentCategory);
@@ -283,32 +279,32 @@ public class EditableToolForm extends FormLayout {
 
 		binder.forField(nameField)
 				.asRequired("Name is required")
-				.bind(InventoryEntity::getName, InventoryEntity::setName);
+				.bind(InventoryItem::getName, InventoryItem::setName);
 		binder.forField(status)
 				.asRequired("Status is required")
-				.withConverter(new CustomConverter.StatusConverter())
-				.bind(InventoryEntity::isDeleted, InventoryEntity::setDeleted);
+				.withConverter(new StringToBooleanConverter("Error", ProjectConstants.INACTIVE, ProjectConstants.ACTIVE))
+				.bind(InventoryItem::isDeleted, InventoryItem::setDeleted);
 		binder.forField(qrCodeField)
-				.bind(InventoryEntity::getQrCode, InventoryEntity::setQrCode);
+				.bind(InventoryItem::getQrCode, InventoryItem::setQrCode);
 		binder.forField(barCodeField)
-				.bind(InventoryEntity::getBarcode, InventoryEntity::setBarcode);
+				.bind(InventoryItem::getBarcode, InventoryItem::setBarcode);
 		binder.forField(snCodeField)
-				.bind(InventoryEntity::getSnCode, InventoryEntity::setSnCode);
+				.bind(InventoryItem::getSnCode, InventoryItem::setSnCode);
 		binder.forField(toolInfoField)
-				.bind(InventoryEntity::getToolInfo, InventoryEntity::setToolInfo);
+				.bind(InventoryItem::getToolInfo, InventoryItem::setToolInfo);
 		binder.forField(manufacturerField)
-				.bind(InventoryEntity::getManufacturer, InventoryEntity::setManufacturer);
+				.bind(InventoryItem::getManufacturer, InventoryItem::setManufacturer);
 		binder.forField(modelField)
-				.bind(InventoryEntity::getModel, InventoryEntity::setModel);
+				.bind(InventoryItem::getModel, InventoryItem::setModel);
 		binder.forField(companiesComboBox)
 				.asRequired("Company is required")
-				.bind(InventoryEntity::getCompany, InventoryEntity::setCompany);
+				.bind(InventoryItem::getCompany, InventoryItem::setCompany);
 		binder.forField(categoriesComboBox)
 				.asRequired("Parent Category is required")
-				.bind(InventoryEntity::getParentCategory, InventoryEntity::setParentCategory);
+				.bind(InventoryItem::getParentCategory, InventoryItem::setParentCategory);
 		binder.forField(usageStatusComboBox)
 				.asRequired("Usage Status is required")
-				.bind(InventoryEntity::getUsageStatus, InventoryEntity::setUsageStatus);
+				.bind(InventoryItem::getUsageStatus, InventoryItem::setUsageStatus);
 
 		binder.forField(inUseByComboBox)
 				.withValidator((s, valueContext) -> {
@@ -320,7 +316,7 @@ public class EditableToolForm extends FormLayout {
 						}
 					}
 					return ValidationResult.ok();
-				}).bind(InventoryEntity::getUser, InventoryEntity::setUser);
+				}).bind(InventoryItem::getInUseByUser, InventoryItem::setInUseByUser);
 
 		binder.forField(reservedByComboBox)
 				.withValidator((s, valueContext) -> {
@@ -332,21 +328,21 @@ public class EditableToolForm extends FormLayout {
 						}
 					}
 					return ValidationResult.ok();
-				}).bind(InventoryEntity::getReservedByUser, InventoryEntity::setReservedByUser);
+				}).bind(InventoryItem::getReservedByUser, InventoryItem::setReservedByUser);
 
 		binder.forField(priceField)
 				.withConverter(new StringToDoubleConverter("Price must be a number"))
 				.withNullRepresentation(0.00)
-				.bind(InventoryEntity::getPrice, InventoryEntity::setPrice);
+				.bind(InventoryItem::getPrice, InventoryItem::setPrice);
 		binder.forField(guaranteeField)
 				.withConverter(new StringToIntegerConverter("Guarantee must be a number"))
 				.withNullRepresentation(0)
-				.bind(InventoryEntity::getGuarantee_months, InventoryEntity::setGuarantee_months);
+				.bind(InventoryItem::getGuarantee_months, InventoryItem::setGuarantee_months);
 
 		binder.forField(dateBoughtPicker)
 				.withConverter(new LocalDateToDateConverter())
 				.withConverter(new DateToSqlDateConverter())
-				.bind(InventoryEntity::getDateBought, InventoryEntity::setDateBought);
+				.bind(InventoryItem::getDateBought, InventoryItem::setDateBought);
 
 		binder.forField(dateNextMaintenancePicker)
 				.withValidator((Validator<LocalDate>) (nextMaintenanceDate, valueContext) -> {
@@ -365,10 +361,10 @@ public class EditableToolForm extends FormLayout {
 				})
 				.withConverter(new LocalDateToDateConverter())
 				.withConverter(new DateToSqlDateConverter())
-				.bind(InventoryEntity::getDateNextMaintenance, InventoryEntity::setDateNextMaintenance);
+				.bind(InventoryItem::getDateNextMaintenance, InventoryItem::setDateNextMaintenance);
 
 		binder.forField(additionalInfo)
-				.bind(InventoryEntity::getAdditionalInfo, InventoryEntity::setAdditionalInfo);
+				.bind(InventoryItem::getAdditionalInfo, InventoryItem::setAdditionalInfo);
 	}
 
 
@@ -452,7 +448,7 @@ public class EditableToolForm extends FormLayout {
 
 	private void updateComboBoxData(Company company) {
 		if (company != null) {
-			List<InventoryEntity> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
+			List<InventoryItem> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
 			categories.add(0, InventoryFacade.getInstance().getRootCategory());
 
 			categoriesComboBox.setItems(categories);
@@ -464,13 +460,13 @@ public class EditableToolForm extends FormLayout {
 
 
 
-	public void setTool(InventoryEntity t) {
+	public void setTool(InventoryItem t) {
 		tool = t;
 		isNew = false;
 		binder.removeBean();
 
 		if (tool == null) {
-			tool = InventoryEntity.getEmptyTool();
+			tool = new InventoryItem();
 			isNew = true;
 		}
 
@@ -481,7 +477,7 @@ public class EditableToolForm extends FormLayout {
 		}
 	}
 
-	public InventoryEntity getTool() {
+	public InventoryItem getTool() {
 		try {
 			binder.validate();
 

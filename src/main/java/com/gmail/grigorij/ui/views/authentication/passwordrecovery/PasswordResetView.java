@@ -1,14 +1,19 @@
 package com.gmail.grigorij.ui.views.authentication.passwordrecovery;
 
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.recoverylink.RecoveryLink;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
+import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.UI;
@@ -40,16 +45,17 @@ public class PasswordResetView extends FlexBoxLayout implements HasUrlParameter<
 		setClassName(CLASS_NAME);
 		setJustifyContentMode(JustifyContentMode.CENTER);
 
-		H2 logoText = new H2(ProjectConstants.PROJECT_NAME_FULL);
-
 		Image logoImage = new Image("/" + ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_FULL_ROUND_SVG,"logo");
 		logoImage.setClassName(CLASS_NAME + "__image");
+
+		H2 logoText = new H2(ProjectConstants.PROJECT_NAME_FULL);
 
 		FlexBoxLayout logoWrapper = new FlexBoxLayout();
 		logoWrapper.setClassName(CLASS_NAME + "__logo-wrapper");
 		logoWrapper.setFlexDirection(FlexDirection.ROW);
 		logoWrapper.setDisplay(Display.FLEX);
 		logoWrapper.add(logoImage, logoText);
+		logoWrapper.setComponentMargin(logoImage, Right.L);
 
 
 		FlexBoxLayout wrapper = new FlexBoxLayout();
@@ -71,6 +77,9 @@ public class PasswordResetView extends FlexBoxLayout implements HasUrlParameter<
 
 	@Override
 	public void setParameter(BeforeEvent event, String tokenParameter) {
+
+		tokenParameter = tokenParameter.replaceAll("[^a-zA-Z]", "");
+
 		if (tokenParameter.length() < ProjectConstants.RECOVERY_TOKEN_LENGTH || tokenParameter.length() > ProjectConstants.RECOVERY_TOKEN_LENGTH) {
 			System.err.println("Token length is Invalid");
 			showTokenInvalid();
@@ -133,28 +142,16 @@ public class PasswordResetView extends FlexBoxLayout implements HasUrlParameter<
 
 	private void validatePasswords(PasswordField p1, PasswordField p2) {
 
-		if (p1.getValue() == null) {
-			p1.setErrorMessage("Please enter password");
+		if (p1.getValue().length() < ProjectConstants.PASSWORD_MIN_LENGTH) {
+			p1.setErrorMessage("Password length must be at least " + ProjectConstants.PASSWORD_MIN_LENGTH + " characters");
 			p1.setInvalid(true);
 			return;
-		} else {
-			if (p1.getValue().length() < ProjectConstants.PASSWORD_MIN_LENGTH) {
-				p1.setErrorMessage("Password length must be at least " + ProjectConstants.PASSWORD_MIN_LENGTH + " characters");
-				p1.setInvalid(true);
-				return;
-			}
 		}
 
-		if (p2.getValue() == null) {
-			p2.setErrorMessage("Please enter password");
+		if (p2.getValue().length() < ProjectConstants.PASSWORD_MIN_LENGTH) {
+			p2.setErrorMessage("Password length must be at least " + ProjectConstants.PASSWORD_MIN_LENGTH + " characters");
 			p2.setInvalid(true);
 			return;
-		} else {
-			if (p2.getValue().length() < ProjectConstants.PASSWORD_MIN_LENGTH) {
-				p2.setErrorMessage("Password length must be at least " + ProjectConstants.PASSWORD_MIN_LENGTH + " characters");
-				p2.setInvalid(true);
-				return;
-			}
 		}
 
 		if (!p1.getValue().equals(p2.getValue())) {
@@ -179,6 +176,13 @@ public class PasswordResetView extends FlexBoxLayout implements HasUrlParameter<
 			if (UserFacade.getInstance().update(user)) {
 				UIUtils.showNotification("Password reset successfully", UIUtils.NotificationType.SUCCESS);
 
+				Transaction tr = new Transaction();
+				tr.setTransactionOperation(TransactionType.EDIT);
+				tr.setTransactionTarget(TransactionTarget.USER);
+				tr.setWhoDid(user);
+				tr.setDestinationUser(user);
+				tr.setAdditionalInfo("User has reset the password");
+				TransactionFacade.getInstance().insert(tr);
 
 				// REMOVE LINK OR SET DELETED?
 				if (!RecoveryLinkFacade.getInstance().remove(link)) {

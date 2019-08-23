@@ -8,7 +8,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
 import javax.persistence.RollbackException;
 
-//DataFacade
+
 public class DatabaseManager {
 
 	private static DatabaseManager mInstance;
@@ -26,18 +26,14 @@ public class DatabaseManager {
 	}
 
 
-	public <T extends EntityPojo> T insert(T pojo) {
-//		logger.debug( "Inserting new pojo:" + pojo.getClass().getName());
-		System.out.println();
-		System.out.println("Inserting new pojo: " + pojo.getClass().getSimpleName());
+	public <T> T find(Class<T> c, Object primaryKey) {
+		if (c == null || primaryKey == null) {
+			return null;
+		}
 
 		EntityManager em = createEntityManager();
 		try {
-			em.getTransaction().begin();
-			em.persist(pojo);
-			em.getTransaction().commit();
-			System.out.println("pojo inserted");
-			return pojo;
+			return em.find(c, primaryKey);
 		} catch (PersistenceException e) {
 			throw e;
 		} finally {
@@ -45,6 +41,25 @@ public class DatabaseManager {
 		}
 	}
 
+	public <T extends EntityPojo> T insert(T pojo) {
+//		logger.debug( "Inserting new pojo:" + pojo.getClass().getName());
+		System.out.println();
+		System.out.println(this.getClass().getSimpleName() + " INSERT: " + pojo.getClass().getSimpleName());
+
+		EntityManager em = createEntityManager();
+		try {
+			em.getTransaction().begin();
+			em.persist(pojo);
+			em.getTransaction().commit();
+			System.out.println("INSERT SUCCESSFUL");
+			return pojo;
+		} catch (PersistenceException e) {
+			System.err.println("INSERT ERROR");
+			throw e;
+		} finally {
+			em.close();
+		}
+	}
 
 	public <T> T merge(T pojo) {
 		EntityManager em = createEntityManager();
@@ -62,10 +77,9 @@ public class DatabaseManager {
 		}
 	}
 
-
 	public <T> T update(T pojo) {
 		System.out.println();
-		System.out.println("Updating pojo: " + pojo.getClass().getSimpleName());
+		System.out.println(this.getClass().getSimpleName() + " UPDATE: " + pojo.getClass().getSimpleName());
 
 		EntityManager em = createEntityManager();
 		try {
@@ -74,45 +88,34 @@ public class DatabaseManager {
 			em.flush();
 			p = em.merge(p); // Related entities marked cascade-merge will become merged too.
 			em.getTransaction().commit();
-			System.out.println("pojo updated");
+			System.out.println("UPDATE SUCCESSFUL");
 			return p;
 		} catch (RollbackException e) {
+			System.err.println("UPDATE ERROR");
 			throw e;
 		} finally {
 			em.close();
 		}
 	}
 
-
 	public void remove(EntityPojo pojo) {
 		System.out.println();
-		System.out.println("deleting pojo: " + pojo);
+		System.out.println(this.getClass().getSimpleName() + " DELETE");
 		if (pojo == null || pojo.getId() <= 0 ) {
+			System.err.println("ENTITY IS NULL OR ID <= 0");
 			return;
 		}
+
+		System.out.println("DELETING: " + pojo.getClass().getSimpleName());
 
 		EntityManager em = createEntityManager();
 		try {
 			em.getTransaction().begin();
 			em.remove(em.find(pojo.getClass(), pojo.getId()));
 			em.getTransaction().commit();
-			System.out.println("pojo deleted");
+			System.out.println("DELETE SUCCESSFUL");
 		} catch (PersistenceException e) {
-			throw e;
-		} finally {
-			em.close();
-		}
-	}
-
-
-	public <T> T find(Class<T> c, Object obj) {
-		System.out.println();
-		System.out.println("looking for pojo: " + c.getSimpleName() + ", obj_id: " + obj);
-
-		EntityManager em = createEntityManager();
-		try {
-			return em.find(c, obj);
-		} catch (PersistenceException e) {
+			System.err.println("DELETE ERROR");
 			throw e;
 		} finally {
 			em.close();

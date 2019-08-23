@@ -26,6 +26,7 @@ public class RecoveryLink extends EntityPojo {
 
 	public RecoveryLink() {}
 
+
 	public static RecoveryLink generateRecoveryLink() {
 		String token = RandomStringUtils.randomAlphabetic(ProjectConstants.RECOVERY_TOKEN_LENGTH);
 
@@ -38,7 +39,7 @@ public class RecoveryLink extends EntityPojo {
 	public String getToken() {
 		return token;
 	}
-	public void setToken(String token) {
+	private void setToken(String token) {
 		this.token = token;
 	}
 

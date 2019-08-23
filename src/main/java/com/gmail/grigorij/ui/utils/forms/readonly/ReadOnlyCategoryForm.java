@@ -1,8 +1,6 @@
 package com.gmail.grigorij.ui.utils.forms.readonly;
 
-import com.gmail.grigorij.backend.database.facades.InventoryFacade;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
-import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -12,26 +10,26 @@ import com.vaadin.flow.data.binder.ReadOnlyHasValue;
 
 public class ReadOnlyCategoryForm extends FormLayout {
 
-	private Binder<InventoryEntity> binder = new Binder<>(InventoryEntity.class);
+	private Binder<InventoryItem> binder = new Binder<>(InventoryItem.class);
 
 
 	public ReadOnlyCategoryForm() {
 
 		TextField categoryNameField = new TextField("Name");
 		categoryNameField.setReadOnly(true);
-		ReadOnlyHasValue<InventoryEntity> categoryName = new ReadOnlyHasValue<>(category -> {
+		ReadOnlyHasValue<InventoryItem> categoryName = new ReadOnlyHasValue<>(category -> {
 			categoryNameField.setValue( category.getName() );
 		});
 
 		TextField parentNameField = new TextField("Parent Name");
 		parentNameField.setReadOnly(true);
-		ReadOnlyHasValue<InventoryEntity> parentName = new ReadOnlyHasValue<>(category -> {
+		ReadOnlyHasValue<InventoryItem> parentName = new ReadOnlyHasValue<>(category -> {
 			parentNameField.setValue( (category.getParentCategory() == null) ? ProjectConstants.ROOT_CATEGORY : category.getParentCategory().getName() );
 		});
 
 		TextField companyField = new TextField("Company (Owner)");
 		companyField.setReadOnly(true);
-		ReadOnlyHasValue<InventoryEntity> company = new ReadOnlyHasValue<>(category -> {
+		ReadOnlyHasValue<InventoryItem> company = new ReadOnlyHasValue<>(category -> {
 			companyField.setValue( (category.getCompany() == null) ? "" : category.getCompany().getName() );
 		});
 
@@ -49,7 +47,7 @@ public class ReadOnlyCategoryForm extends FormLayout {
 				.bind(category -> category, null);
 	}
 
-	public void setCategory(InventoryEntity category) {
+	public void setCategory(InventoryItem category) {
 		try {
 			binder.removeBean();
 			binder.readBean(category);

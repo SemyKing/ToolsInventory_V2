@@ -20,7 +20,7 @@
 .app-bar__title {
   flex-grow: 1;
   margin: 0;
-  overflow: hidden;
+/*  overflow: hidden; */
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -80,7 +80,8 @@
 
 @media (max-width: 1023px) {
   .app-bar__container {
-    padding: 0 var(--lumo-space-m);
+    padding-left: var(--lumo-space-m);
+    padding-right: var(--lumo-space-s);
   }
 
   .app-bar__navi-icon,
@@ -101,7 +102,8 @@
 
 @media (min-width: 1024px) {
   .app-bar__container {
-    padding: 0 var(--lumo-space-l);
+    padding-left: var(--lumo-space-l);
+    padding-right: var(--lumo-space-m);
   }
 
   .app-bar__navi-icon {

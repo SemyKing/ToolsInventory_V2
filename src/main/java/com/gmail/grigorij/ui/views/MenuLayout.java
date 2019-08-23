@@ -1,9 +1,9 @@
 package com.gmail.grigorij.ui.views;
 
+import com.gmail.grigorij.backend.enums.permissions.AccessGroup;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.MainLayout;
-import com.gmail.grigorij.backend.entities.access.AccessGroups;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
 import com.gmail.grigorij.ui.utils.components.navigation.drawer.NaviDrawer;
@@ -17,6 +17,7 @@ import com.gmail.grigorij.ui.views.navigation.inventory.Inventory;
 import com.gmail.grigorij.ui.views.navigation.messages.Messages;
 import com.gmail.grigorij.ui.views.navigation.reporting.Reporting;
 import com.gmail.grigorij.ui.views.navigation.transactions.Transactions;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.AttachEvent;
@@ -155,7 +156,8 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 		});
 		menu.addNaviItem(reporting);
 
-		if (AuthenticationService.getCurrentSessionUser().getAccessGroup() == AccessGroups.ADMIN.getIntValue()) {
+
+		if (AuthenticationService.getCurrentSessionUser().getAccessGroup().getPermissionLevel().higherOrEqualsTo(PermissionLevel.COMPANY)) {
 			NaviItem admin = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN, true);
 			menu.addNaviItem(admin);
 

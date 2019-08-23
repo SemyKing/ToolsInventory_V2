@@ -4,9 +4,13 @@ import com.github.appreciated.papermenubutton.HorizontalAlignment;
 import com.github.appreciated.papermenubutton.PaperMenuButton;
 import com.github.appreciated.papermenubutton.VerticalAlignment;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
+import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.utils.components.Divider;
@@ -19,6 +23,7 @@ import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.*;
 import com.gmail.grigorij.ui.utils.forms.editable.EditableCompanyForm;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -154,16 +159,17 @@ public class AdminCompanies extends FlexBoxLayout {
 		dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getAllCompanies());
 		grid.setDataProvider(dataProvider);
 
-		grid.addColumn(Company::getName).setHeader("Company Name")
-				.setWidth(UIUtils.COLUMN_WIDTH_L);
+		grid.addColumn(Company::getName)
+				.setHeader("Company Name")
+				.setAutoWidth(true);
 
 		grid.addColumn(company -> (company.getContactPerson() == null) ? "" : company.getContactPerson().getFullName())
 				.setHeader("Contact Person")
-				.setWidth(UIUtils.COLUMN_WIDTH_L);
+				.setAutoWidth(true);
 
-		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted()))).setHeader("Active")
-				.setWidth(UIUtils.COLUMN_WIDTH_XS)
-				.setFlexGrow(0);
+		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted())))
+				.setHeader("Active")
+				.setAutoWidth(true);
 
 		add(grid);
 	}
@@ -266,6 +272,14 @@ public class AdminCompanies extends FlexBoxLayout {
 					dataProvider.getItems().add(editedCompany);
 					dataProvider.refreshAll();
 					UIUtils.showNotification("Company created successfully", UIUtils.NotificationType.SUCCESS);
+
+					Transaction tr = new Transaction();
+					tr.setTransactionOperation(TransactionType.ADD);
+					tr.setTransactionTarget(TransactionTarget.COMPANY);
+					tr.setCompany(editedCompany);
+					tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+					TransactionFacade.getInstance().insert(tr);
+
 				} else {
 					UIUtils.showNotification("Company insert failed", UIUtils.NotificationType.ERROR);
 				}
@@ -275,11 +289,18 @@ public class AdminCompanies extends FlexBoxLayout {
 						dataProvider.refreshItem(grid.asSingleSelect().getValue());
 					}
 
+					UIUtils.showNotification("Company updated successfully", UIUtils.NotificationType.SUCCESS);
+
+					Transaction tr = new Transaction();
+					tr.setTransactionOperation(TransactionType.EDIT);
+					tr.setTransactionTarget(TransactionTarget.COMPANY);
+					tr.setCompany(editedCompany);
+					tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+					TransactionFacade.getInstance().insert(tr);
+
 					if ((!previousStatus && editedCompany.isDeleted()) || (previousStatus && !editedCompany.isDeleted())) {
 						confirmAllEmployeesInCompanyStatusChange(editedCompany);
 					}
-
-					UIUtils.showNotification("Company updated successfully", UIUtils.NotificationType.SUCCESS);
 				} else {
 					UIUtils.showNotification("Company update failed", UIUtils.NotificationType.ERROR);
 				}
@@ -303,7 +324,17 @@ public class AdminCompanies extends FlexBoxLayout {
 
 			for (User user : employeesInSelectedCompany) {
 				user.setDeleted(company.isDeleted());
-				if (!UserFacade.getInstance().update(user)) {
+				if (UserFacade.getInstance().update(user)) {
+
+					Transaction tr = new Transaction();
+					tr.setTransactionOperation(TransactionType.EDIT);
+					tr.setTransactionTarget(TransactionTarget.USER_STATUS);
+					tr.setDestinationUser(user);
+					tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+					tr.setAdditionalInfo("User Status changed to:  " + status);
+					TransactionFacade.getInstance().insert(tr);
+
+				} else {
 					UIUtils.showNotification("User status change failed for: " + user.getUsername(), UIUtils.NotificationType.ERROR);
 					error = true;
 				}
@@ -332,6 +363,15 @@ public class AdminCompanies extends FlexBoxLayout {
 						dataProvider.refreshAll();
 						closeDetails();
 						UIUtils.showNotification("Company deleted successfully", UIUtils.NotificationType.SUCCESS);
+
+						Transaction tr = new Transaction();
+						tr.setTransactionOperation(TransactionType.DELETE);
+						tr.setTransactionTarget(TransactionTarget.COMPANY);
+						tr.setCompany(selectedCompany);
+						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+						tr.setAdditionalInfo("Completely removed from database");
+						TransactionFacade.getInstance().insert(tr);
+
 					} else {
 						UIUtils.showNotification("Company delete failed", UIUtils.NotificationType.ERROR);
 					}

@@ -3,7 +3,6 @@ package com.gmail.grigorij.ui.views.navigation.admin.transactions;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerFooter;
@@ -17,6 +16,7 @@ import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.ui.utils.forms.readonly.ReadOnlyTransactionForm;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
 import com.gmail.grigorij.utils.ProjectConstants;
+import com.gmail.grigorij.utils.converters.DateConverter;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -27,7 +27,6 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
@@ -35,7 +34,6 @@ import java.util.Locale;
 public class AdminTransactions extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-transactions";
-	private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
 	private final AdminMain adminMain;
 
@@ -45,7 +43,6 @@ public class AdminTransactions extends FlexBoxLayout {
 	private ListDataProvider<Transaction> dataProvider;
 
 	private DetailsDrawer detailsDrawer;
-	private Button deleteButton;
 
 	private DatePicker dateStartField, dateEndField;
 
@@ -64,7 +61,6 @@ public class AdminTransactions extends FlexBoxLayout {
 	private void createHeader() {
 		FlexBoxLayout header = new FlexBoxLayout();
 		header.setClassName(CLASS_NAME + "__header");
-		header.setMargin(Top.S);
 		header.setAlignItems(Alignment.BASELINE);
 		header.setWidthFull();
 
@@ -104,7 +100,7 @@ public class AdminTransactions extends FlexBoxLayout {
 		datesLayout.setComponentMargin(dateEndField, Horizontal.S);
 
 		Button applyDates = UIUtils.createButton("Apply", ButtonVariant.LUMO_CONTRAST);
-		applyDates.addClickListener(e -> getTransactionsInRange());
+		applyDates.addClickListener(e -> getTransactionsBetweenDates());
 
 		datesLayout.add(applyDates);
 
@@ -127,7 +123,7 @@ public class AdminTransactions extends FlexBoxLayout {
 			}
 		});
 
-		dataProvider = DataProvider.ofCollection(TransactionFacade.getInstance().getAllTransactionsInRange(dateStartField.getValue(), dateEndField.getValue()));
+		dataProvider = DataProvider.ofCollection(TransactionFacade.getInstance().getAllTransactionsBetweenDates(dateStartField.getValue(), dateEndField.getValue()));
 		grid.setDataProvider(dataProvider);
 
 		grid.addColumn(transaction -> {
@@ -135,7 +131,7 @@ public class AdminTransactions extends FlexBoxLayout {
 				if (transaction.getDate() == null) {
 					return "";
 				} else {
-					return dateFormat.format(transaction.getDate());
+					return DateConverter.toStringDateWithTime(transaction.getDate());
 				}
 			} catch (Exception e) {
 				return "";
@@ -157,7 +153,7 @@ public class AdminTransactions extends FlexBoxLayout {
 		add(grid);
 	}
 
-	private void getTransactionsInRange() {
+	private void getTransactionsBetweenDates() {
 		//Handle errors
 		if (dateStartField.getValue() == null) {
 			UIUtils.showNotification("Select Start Date", UIUtils.NotificationType.INFO);
@@ -176,7 +172,7 @@ public class AdminTransactions extends FlexBoxLayout {
 			return;
 		}
 
-		List<Transaction> transactions = TransactionFacade.getInstance().getAllTransactionsInRange(dateStartField.getValue(), dateEndField.getValue());
+		List<Transaction> transactions = TransactionFacade.getInstance().getAllTransactionsBetweenDates(dateStartField.getValue(), dateEndField.getValue());
 
 		dataProvider.getItems().clear();
 		dataProvider.getItems().addAll(transactions);
@@ -197,13 +193,6 @@ public class AdminTransactions extends FlexBoxLayout {
 		// Header
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Transaction Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
-
-		deleteButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR);
-		deleteButton.addClickListener(e -> confirmDelete());
-		UIUtils.setTooltip("Delete this transaction from Database", deleteButton);
-
-		detailsDrawerHeader.add(deleteButton);
-		detailsDrawerHeader.getContainer().setComponentMargin(deleteButton, Left.AUTO);
 
 		detailsDrawer.setHeader(detailsDrawerHeader);
 		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
@@ -229,36 +218,5 @@ public class AdminTransactions extends FlexBoxLayout {
 	private void closeDetails() {
 		detailsDrawer.hide();
 		grid.select(null);
-	}
-
-	private void confirmDelete() {
-		System.out.println("confirmDelete selected Transaction...");
-
-		if (detailsDrawer.isOpen()) {
-
-			final Transaction selectedTransaction =  grid.asSingleSelect().getValue();
-			if (selectedTransaction != null) {
-
-				String confirmationText = "";
-				confirmationText += (selectedTransaction.getTransactionOperation() == null) ?  "NULL OPERATION" : selectedTransaction.getTransactionOperation().toString();
-				confirmationText += (selectedTransaction.getTransactionTarget() == null) ?  "NULL TARGET" : selectedTransaction.getTransactionTarget().toString();
-
-				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "selected transaction", confirmationText);
-				dialog.closeOnCancel();
-
-				dialog.getConfirmButton().addClickListener(e -> {
-					if (TransactionFacade.getInstance().remove(selectedTransaction)) {
-						dataProvider.getItems().remove(selectedTransaction);
-						dataProvider.refreshAll();
-						closeDetails();
-						UIUtils.showNotification("Transaction deleted successfully", UIUtils.NotificationType.SUCCESS);
-					} else {
-						UIUtils.showNotification("Transaction delete failed", UIUtils.NotificationType.ERROR);
-					}
-					dialog.close();
-				});
-				dialog.open();
-			}
-		}
 	}
 }

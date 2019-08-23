@@ -1,15 +1,11 @@
 package com.gmail.grigorij.ui.utils.forms.editable;
 
-import com.gmail.grigorij.backend.entities.embeddable.Location;
+import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.utils.css.size.Size;
-import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;

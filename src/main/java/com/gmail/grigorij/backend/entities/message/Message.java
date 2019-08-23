@@ -1,7 +1,7 @@
 package com.gmail.grigorij.backend.entities.message;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
-import com.gmail.grigorij.backend.entities.inventory.InventoryEntity;
+import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.MessageType;
 
@@ -11,21 +11,16 @@ import java.util.Date;
 
 @Entity
 @Table(name = "messages")
-//@NamedQueries({
-//
-//		@NamedQuery(
-//				name="getMessagesByUserId",
-//				query="SELECT message FROM Message message WHERE" +
-//						" message.recipient IS NOT NULL AND" +
-//						" message.recipient.id = :id_var")
-//})
+
+@NamedQueries({
+		@NamedQuery(
+				name="getAllMessagesForUser",
+				query="SELECT message FROM Message message WHERE message.recipientId = :user_id_var")
+})
 public class Message extends EntityPojo {
 
-	@OneToOne
-	private User recipient = null;
-
-	@OneToOne
-	private User sender = null;
+	@Enumerated(EnumType.STRING)
+	private MessageType messageType;
 
 	@Column(name = "message_header")
 	private String messageHeader = "";
@@ -33,17 +28,21 @@ public class Message extends EntityPojo {
 	@Column(name = "message_text")
 	private String messageText = "";
 
+	private String sender;
+
+	private Long senderId;
+
+	private Long recipientId;
+
+	private Long toolId;
+
 	@Temporal( TemporalType.TIMESTAMP )
 	private Date date;
 
 	@Column(name = "message_read")
 	private boolean messageRead = false;
 
-	@OneToOne
-	private InventoryEntity tool = null;
 
-	@Enumerated(EnumType.STRING)
-	private MessageType messageType;
 
 
 	public Message() {
@@ -51,18 +50,11 @@ public class Message extends EntityPojo {
 	}
 
 
-	public User getRecipient() {
-		return recipient;
+	public MessageType getMessageType() {
+		return messageType;
 	}
-	public void setRecipient(User recipient) {
-		this.recipient = recipient;
-	}
-
-	public User getSender() {
-		return sender;
-	}
-	public void setSender(User sender) {
-		this.sender = sender;
+	public void setMessageType(MessageType messageType) {
+		this.messageType = messageType;
 	}
 
 	public String getMessageHeader() {
@@ -79,6 +71,34 @@ public class Message extends EntityPojo {
 		this.messageText = messageText;
 	}
 
+	public String getSender() {
+		return sender;
+	}
+	public void setSender(String sender) {
+		this.sender = sender;
+	}
+
+	public Long getSenderId() {
+		return senderId;
+	}
+	public void setSenderId(Long senderId) {
+		this.senderId = senderId;
+	}
+
+	public Long getRecipientId() {
+		return recipientId;
+	}
+	public void setRecipientId(Long recipientId) {
+		this.recipientId = recipientId;
+	}
+
+	public Long getToolId() {
+		return toolId;
+	}
+	public void setToolId(Long toolId) {
+		this.toolId = toolId;
+	}
+
 	public Date getDate() {
 		return date;
 	}
@@ -88,19 +108,5 @@ public class Message extends EntityPojo {
 	}
 	public void setMessageRead(boolean messageRead) {
 		this.messageRead = messageRead;
-	}
-
-	public InventoryEntity getTool() {
-		return tool;
-	}
-	public void setTool(InventoryEntity tool) {
-		this.tool = tool;
-	}
-
-	public MessageType getMessageType() {
-		return messageType;
-	}
-	public void setMessageType(MessageType messageType) {
-		this.messageType = messageType;
 	}
 }
