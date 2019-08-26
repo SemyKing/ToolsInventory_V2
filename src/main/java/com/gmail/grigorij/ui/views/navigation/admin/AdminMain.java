@@ -1,8 +1,8 @@
 package com.gmail.grigorij.ui.views.navigation.admin;
 
-import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
-import com.gmail.grigorij.ui.utils.components.frames.SplitViewFrame;
-import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
+import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
+import com.gmail.grigorij.ui.components.frames.SplitViewFrame;
+import com.gmail.grigorij.ui.components.navigation.bar.AppBar;
 import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.views.navigation.admin.companies.AdminCompanies;
 import com.gmail.grigorij.ui.views.navigation.admin.inventory.AdminInventory;
@@ -10,10 +10,12 @@ import com.gmail.grigorij.ui.views.navigation.admin.personnel.AdminPersonnel;
 import com.gmail.grigorij.ui.views.navigation.admin.transactions.AdminTransactions;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.tabs.TabsVariant;
 
 
+@StyleSheet("styles/views/admin/admin-main.css")
 public class AdminMain extends SplitViewFrame {
 
 	private static final String CLASS_NAME = "admin-main";
@@ -53,7 +55,7 @@ public class AdminMain extends SplitViewFrame {
 		this.content.removeAll();
 
 		if (appBar.getSelectedTab() != null) {
-			menuLayout.selectCorrectNaviItem(appBar.getSelectedTab().getLabel(), true);
+			menuLayout.selectCorrectNaviItem(ProjectConstants.ADMIN, appBar.getSelectedTab().getLabel());
 
 			if (appBar.getSelectedTab().getLabel().equals(ProjectConstants.COMPANIES)) {
 				this.content.add(new AdminCompanies(this));

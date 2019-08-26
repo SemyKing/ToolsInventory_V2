@@ -1,6 +1,6 @@
 package com.gmail.grigorij.backend.enums.inventory;
 
-import com.gmail.grigorij.ui.utils.components.CustomBadge.BadgeColor;
+import com.gmail.grigorij.ui.components.CustomBadge.BadgeColor;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
 public enum ToolStatus {

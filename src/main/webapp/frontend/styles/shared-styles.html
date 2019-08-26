@@ -3,100 +3,74 @@
 <link rel="import" href="../bower_components/vaadin-lumo-styles/style.html">
 <link rel="import" href="../bower_components/vaadin-lumo-styles/typography.html">
 
-<link rel="stylesheet" href="lumo/lumo-border-radius.css">
-<link rel="stylesheet" href="lumo/lumo-icon-size.css">
-<link rel="stylesheet" href="lumo/lumo-margin.css">
-<link rel="stylesheet" href="lumo/lumo-padding.css">
-<link rel="stylesheet" href="lumo/lumo-shadow.css">
-<link rel="stylesheet" href="lumo/lumo-spacing.css">
-<link rel="stylesheet" href="lumo/lumo-typography.css">
-
-<link rel="stylesheet" href="components/app-bar.css">
-<link rel="stylesheet" href="components/brand-expression.css">
-<link rel="stylesheet" href="components/details-drawer.css">
+<!--GLOBAL IMPORT-->
+<link rel="stylesheet" href="lumo/lumo-styles.css">
 <link rel="stylesheet" href="components/initials.css">
-<link rel="stylesheet" href="components/forms.css">
-<link rel="stylesheet" href="components/list-item.css">
-<link rel="stylesheet" href="components/navi-drawer.css">
-<link rel="import"     href="components/navi-icon.html">
-<link rel="stylesheet" href="components/navi-item.css">
-<link rel="stylesheet" href="components/navi-menu.css">
-<link rel="stylesheet" href="components/tab-bar.css">
-<link rel="stylesheet" href="components/view-frame.css">
 <link rel="stylesheet" href="components/grid-view.css">
-<link rel="stylesheet" href="components/custom-dialog.css">
-
 <link rel="stylesheet" href="misc/box-shadow-borders.css">
-
-<link rel="stylesheet" href="views/login.css">
-<link rel="stylesheet" href="views/dashboard.css">
-<link rel="stylesheet" href="views/admin.css">
-<link rel="stylesheet" href="views/inventory.css">
-<link rel="stylesheet" href="views/reporting.css">
-<link rel="stylesheet" href="views/password-recovery.css">
 
 <custom-style>
 	<style include="lumo-badge">
 
     :root {
-      --app-bar-height-desktop: var(--lumo-size-xl);
-      --app-bar-height-mobile: var(--lumo-size-l);
+		--app-bar-height-desktop: var(--lumo-size-xl);
+		--app-bar-height-mobile: var(--lumo-size-l);
 
-      --navi-drawer-rail-width: calc(var(--lumo-size-m) * 1.75);
-      --navi-drawer-width: calc(var(--lumo-size-m) * 6);
-      --navi-item-indentation: calc(var(--lumo-icon-size-s) + var(--lumo-space-l));
+		--navi-drawer-rail-width: calc(var(--lumo-size-m) * 1.75);
+		--navi-drawer-width: calc(var(--lumo-size-m) * 6);
+		--navi-item-indentation: calc(var(--lumo-icon-size-s) + var(--lumo-space-l));
 
-      --details-drawer-width: calc(var(--lumo-size-m) * 11);
-      --large-details-drawer-width: calc(var(--lumo-size-m) * 18);
+		--details-drawer-width: calc(var(--lumo-size-m) * 11);
+		--large-details-drawer-width: calc(var(--lumo-size-m) * 18);
 
-      --transition-duration-s: 160ms;
-      --transition-duration-m: 240ms;
-      --transition-duration-l: 320ms;
+		--transition-duration-s: 160ms;
+		--transition-duration-m: 240ms;
+		--transition-duration-l: 320ms;
     }
 
     @media (max-width: 479px) {
-      :root {
-        --lumo-space-r-m: var(--lumo-space-s);
-        --lumo-space-r-l: var(--lumo-space-m);
-        --lumo-space-r-x: 0;
+		:root {
+			--lumo-space-r-m: var(--lumo-space-s);
+			--lumo-space-r-l: var(--lumo-space-m);
+			--lumo-space-r-x: 0;
 
-        --lumo-space-wide-r-m: var(--lumo-space-wide-s);
-        --lumo-space-wide-r-l: var(--lumo-space-wide-m);
-      }
+			--lumo-space-wide-r-m: var(--lumo-space-wide-s);
+			--lumo-space-wide-r-l: var(--lumo-space-wide-m);
+		}
     }
     @media (min-width: 480px) and (max-width: 1023px) {
-      :root {
-        --lumo-space-r-m: var(--lumo-space-s);
-        --lumo-space-r-l: var(--lumo-space-m);
-        --lumo-space-r-x: var(--lumo-space-m);
+		:root {
+			--lumo-space-r-m: var(--lumo-space-s);
+			--lumo-space-r-l: var(--lumo-space-m);
+			--lumo-space-r-x: var(--lumo-space-m);
 
-        --lumo-space-wide-r-m: var(--lumo-space-wide-s);
-        --lumo-space-wide-r-l: var(--lumo-space-wide-m);
-      }
+			--lumo-space-wide-r-m: var(--lumo-space-wide-s);
+			--lumo-space-wide-r-l: var(--lumo-space-wide-m);
+		}
     }
     @media (min-width: 1024px) {
-      :root {
-        --lumo-space-r-m: var(--lumo-space-m);
-        --lumo-space-r-l: var(--lumo-space-l);
-        --lumo-space-r-x: var(--lumo-space-l);
+		:root {
+			--lumo-space-r-m: var(--lumo-space-m);
+			--lumo-space-r-l: var(--lumo-space-l);
+			--lumo-space-r-x: var(--lumo-space-l);
 
-        --lumo-space-wide-r-m: var(--lumo-space-wide-m);
-        --lumo-space-wide-r-l: var(--lumo-space-wide-l);
-      }
+			--lumo-space-wide-r-m: var(--lumo-space-wide-m);
+			--lumo-space-wide-r-l: var(--lumo-space-wide-l);
+		}
     }
 
-    html,
-    body {
-      height: 100%;
-      overflow: hidden;
-      width: 100%;
+    html, body {
+		height: 100%;
+		overflow: hidden;
+		width: 100%;
     }
 
 
     .app-header-outer,
     .app-footer-outer {
-      z-index: 3;
+		z-index: 3;
     }
+
 
     .custom-vaadin-small-button {
     	margin: 0;
@@ -105,36 +79,35 @@
     	font-size: medium;
     }
 
-	vaadin-notification-card {
+
+	.custom-notification {
 		min-width: 100vw;
-		margin: 0px;
-		margin-bottom: 2px;
+		min-height: 25px;
+		cursor: pointer;
+		color: var(--lumo-primary-contrast-color);
+		align-items: center;
+
+	}
+	.custom-notification-label {
+		width: 100vw;
+		cursor: pointer;
+		font-weight: bold;
+		text-align: center;
 	}
 
-	flow-component-renderer {
-		min-width: 100%;
+
+	vaadin-dialog-overlay flow-component-renderer {
 		display: flex;
 	}
-
-	flow-component-renderer > div {
-		min-width: 100%;
-	}
-
-	.notification-text-container {
-		flex-grow: 1;
-        text-align: center;
-        font-weight: bold;
-        cursor: pointer;
-	}
-
 	</style>
 </custom-style>
 
-<dom-module id="notification-theme" theme-for="vaadin-notification-card">
+<dom-module id="notification-custom-style" theme-for="vaadin-notification-card">
 	<template>
 		<style>
-			[part="overlay"] {
-				min-width: 100vw;
+			:host {
+				margin: 0px;
+				margin-bottom: 5px;
 			}
 			[part="content"] {
 				padding: 0px;
@@ -143,7 +116,7 @@
 	</template>
 </dom-module>
 
-<dom-module id="my-vaadin-dialog-theme" theme-for="vaadin-dialog-overlay">
+<dom-module id="dialog-custom-style" theme-for="vaadin-dialog-overlay">
 	<template>
 		<style>
 			[part="content"] {
@@ -158,7 +131,7 @@
 	</template>
 </dom-module>
 
-<dom-module theme-for="vaadin-button" id="button-align-left">
+<dom-module id="button-align-left" theme-for="vaadin-button">
 	<template>
 		<style>
             :host(.button-align-left) > .vaadin-button-container {
@@ -172,7 +145,7 @@
 	</template>
 </dom-module>
 
-<dom-module theme-for="vaadin-button" id="hiding-text-button">
+<dom-module id="hiding-text-button" theme-for="vaadin-button">
 	<template>
 		<style>
 			@media (max-width: 1024px) {

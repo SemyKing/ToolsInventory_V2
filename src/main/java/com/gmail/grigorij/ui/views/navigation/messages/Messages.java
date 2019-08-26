@@ -13,9 +13,9 @@ import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.components.ConfirmDialog;
-import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.components.frames.ViewFrame;
+import com.gmail.grigorij.ui.components.ConfirmDialog;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.frames.ViewFrame;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.*;
@@ -26,6 +26,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -46,6 +47,7 @@ import java.util.Locale;
  */
 
 @PageTitle("Messages")
+@StyleSheet("styles/views/messages.css")
 public class Messages extends ViewFrame {
 
 	private static final String CLASS_NAME = "messages_view";
@@ -55,10 +57,9 @@ public class Messages extends ViewFrame {
 	private FlexBoxLayout contentLayout;
 
 	private DatePicker dateStartField, dateEndField;
-//	private Checkbox showReadCheckbox;
 
 	private Label unreadMessagesLabel;
-	private boolean showReadMessages = false;
+	private boolean showReadMessages = true;
 
 	public Messages() {
 		setViewContent(createContent());
@@ -159,6 +160,24 @@ public class Messages extends ViewFrame {
 	}
 
 	private void getMessagesBetweenDates() {
+		//Handle errors
+		if (dateStartField.isInvalid()) {
+			UIUtils.showNotification("Invalid Start Date", UIUtils.NotificationType.INFO);
+			dateStartField.focus();
+			return;
+		}
+
+		if (dateEndField.isInvalid()) {
+			UIUtils.showNotification("Invalid End Date", UIUtils.NotificationType.INFO);
+			dateEndField.focus();
+			return;
+		}
+
+		if (dateStartField.getValue().isAfter(dateEndField.getValue())) {
+			UIUtils.showNotification("Start Date cannot be after End Date", UIUtils.NotificationType.INFO);
+			return;
+		}
+
 		messages = MessageFacade.getInstance().getAllMessagesBetweenDates(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId());
 
 		messages.sort(Comparator.comparing(Message::getDate).reversed());
@@ -304,26 +323,19 @@ public class Messages extends ViewFrame {
 			return;
 		}
 
-		if (message.getMessageType().equals(MessageType.TOOL_FREE)) {
-			if (message.getToolId() == null) {
-				System.err.println("'TOOL FREE' MESSAGE WITH NULL TOOL, MESSAGE ID: " + message.getId());
-				return;
-			}
-
+		if (message.getToolId() != null) {
 			InventoryItem tool = InventoryFacade.getInstance().getToolById(message.getToolId());
 
-			//USER TOOK THE TOOL
+			// USER TOOK THE TOOL
 			if (tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
 				markMessageAsRead(message, messageWrapper);
-				return;
 			}
 
-			//USER DIDN'T TAKE TOOL
+			// USER DIDN'T TAKE THE TOOL -> CONFIRM TOOL RELEASE
 			if (tool.getUsageStatus().equals(ToolStatus.RESERVED)) {
 				ConfirmDialog dialog = new ConfirmDialog("This action will mark the tool as " + ToolStatus.FREE.getStringValue() + ". Proceed?");
 
 				dialog.closeOnCancel();
-
 				dialog.getConfirmButton().addClickListener(e -> {
 					dialog.close();
 
@@ -331,9 +343,6 @@ public class Messages extends ViewFrame {
 					tool.setReservedByUser(null);
 
 					if (InventoryFacade.getInstance().update(tool)) {
-
-//						AuthenticationService.getCurrentSessionUser().removeToolReserved(message.getToolId());
-//						UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
 
 						Transaction tr = new Transaction();
 						tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
@@ -349,73 +358,24 @@ public class Messages extends ViewFrame {
 						UIUtils.showNotification("Tool release failed", UIUtils.NotificationType.ERROR);
 					}
 
-
 					markMessageAsRead(message, messageWrapper);
 				});
 
 				dialog.open();
 			}
 
+		} else {
+			markMessageAsRead(message, messageWrapper);
 		}
-
-
-			if (message.getToolId() != null) {
-				InventoryItem tool = InventoryFacade.getInstance().getToolById(message.getToolId());
-
-				if (tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
-					markMessageAsRead(message, messageWrapper);
-				}
-
-				if (tool.getUsageStatus().equals(ToolStatus.RESERVED)) {
-					ConfirmDialog dialog = new ConfirmDialog("This action will mark the tool as " + ToolStatus.FREE.getStringValue() + ". Proceed?");
-
-					dialog.closeOnCancel();
-
-					dialog.getConfirmButton().addClickListener(e -> {
-						dialog.close();
-
-						tool.setUsageStatus(ToolStatus.FREE);
-						tool.setReservedByUser(null);
-
-						if (InventoryFacade.getInstance().update(tool)) {
-
-//							AuthenticationService.getCurrentSessionUser().removeToolReserved(message.getToolId());
-//							UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
-
-							Transaction tr = new Transaction();
-							tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
-							tr.setTransactionOperation(TransactionType.EDIT);
-							tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-							tr.setInventoryEntity(tool);
-							tr.setAdditionalInfo("User released the tool.\nTool Status changed from: " + ToolStatus.RESERVED.getStringValue() + " to: " + ToolStatus.FREE.getStringValue());
-
-							TransactionFacade.getInstance().insert(tr);
-
-							UIUtils.showNotification("Tool released", UIUtils.NotificationType.SUCCESS);
-						} else {
-							UIUtils.showNotification("Tool release failed", UIUtils.NotificationType.ERROR);
-						}
-
-
-						markMessageAsRead(message, messageWrapper);
-					});
-
-					dialog.open();
-				}
-			} else {
-				markMessageAsRead(message, messageWrapper);
-			}
-		}
+	}
 
 	private void markMessageAsRead(Message message, FlexBoxLayout messageWrapper) {
 		message.setMessageRead(true);
-		MessageFacade.getInstance().update(message);
-
 		messageWrapper.getElement().setAttribute(READ, true);
 
-		if (!showReadMessages) {
-			contentLayout.remove(messageWrapper);
-		}
+		MessageFacade.getInstance().update(message);
+
+		showMessages();
 
 		handleUnreadMessagesCount();
 	}
@@ -437,6 +397,7 @@ public class Messages extends ViewFrame {
 		InventoryItem tool = InventoryFacade.getInstance().getToolById(toolId);
 
 		tool.setInUseByUser(AuthenticationService.getCurrentSessionUser());
+		tool.setReservedByUser(null);
 		tool.setUsageStatus(ToolStatus.IN_USE);
 
 		if (InventoryFacade.getInstance().update(tool)) {
@@ -450,7 +411,7 @@ public class Messages extends ViewFrame {
 
 			TransactionFacade.getInstance().insert(tr);
 
-			UIUtils.showNotification("Tool taken successfully", UIUtils.NotificationType.SUCCESS);
+			UIUtils.showNotification("Tool taken", UIUtils.NotificationType.SUCCESS);
 		} else {
 			UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
 		}

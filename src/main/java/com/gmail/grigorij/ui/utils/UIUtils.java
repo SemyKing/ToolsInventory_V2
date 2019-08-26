@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.utils;
 
-import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.*;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.vaadin.flow.component.Component;
@@ -8,6 +8,7 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
@@ -20,8 +21,8 @@ import com.vaadin.flow.component.textfield.TextFieldVariant;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
 
 public class UIUtils {
 
@@ -411,8 +412,8 @@ public class UIUtils {
 
 	public enum NotificationType {
 		INFO (      LumoStyles.Color.Primary._100,5000),
-		SUCCESS (   LumoStyles.Color.Success._100,5000),
-		WARNING(    "hsl(22, 96%, 47%)",        5000), //ORANGE
+		SUCCESS (   LumoStyles.Color.Success._100,3000),
+		WARNING(    "hsl(22, 96%, 47%)", 5000), //ORANGE
 		ERROR (     LumoStyles.Color.Error._100,  0);
 
 		private String backgroundColor;
@@ -437,17 +438,12 @@ public class UIUtils {
 		notification.setPosition(Notification.Position.TOP_CENTER);
 
 		Label msgLabel = new Label(msg);
-		msgLabel.addClassName("notification-text-container");
+		msgLabel.addClassName("custom-notification-label");
 
 		FlexBoxLayout layout = new FlexBoxLayout();
-		layout.setSizeFull();
-		layout.setAlignItems(FlexComponent.Alignment.CENTER);
+		layout.setClassName("custom-notification");
 		layout.setBackgroundColor(type.getBackgroundColor());
-		layout.setMinHeight("32px");
 		layout.add(msgLabel);
-
-		layout.setColor("var(--lumo-primary-contrast-color)");
-		layout.getStyle().set("cursor", "pointer");
 
 		UIUtils.setTooltip("Close", layout);
 		layout.addClickListener(e -> notification.close());
