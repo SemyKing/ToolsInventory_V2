@@ -3,17 +3,16 @@ package com.gmail.grigorij.ui.views.navigation.admin.transactions;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawer;
-import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerFooter;
-import com.gmail.grigorij.ui.utils.components.detailsdrawer.DetailsDrawerHeader;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
+import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
+import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Right;
-import com.gmail.grigorij.ui.utils.css.size.Top;
-import com.gmail.grigorij.ui.utils.forms.readonly.ReadOnlyTransactionForm;
+import com.gmail.grigorij.ui.forms.readonly.ReadOnlyTransactionForm;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.converters.DateConverter;
@@ -155,14 +154,15 @@ public class AdminTransactions extends FlexBoxLayout {
 
 	private void getTransactionsBetweenDates() {
 		//Handle errors
-		if (dateStartField.getValue() == null) {
-			UIUtils.showNotification("Select Start Date", UIUtils.NotificationType.INFO);
+
+		if (dateStartField.isInvalid()) {
+			UIUtils.showNotification("Invalid Start Date", UIUtils.NotificationType.INFO);
 			dateStartField.focus();
 			return;
 		}
 
-		if (dateEndField.getValue() == null) {
-			UIUtils.showNotification("Select End Date", UIUtils.NotificationType.INFO);
+		if (dateEndField.isInvalid()) {
+			UIUtils.showNotification("Invalid End Date", UIUtils.NotificationType.INFO);
 			dateEndField.focus();
 			return;
 		}

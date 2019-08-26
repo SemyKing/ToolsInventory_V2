@@ -1,14 +1,13 @@
 package com.gmail.grigorij.ui.views;
 
-import com.gmail.grigorij.backend.enums.permissions.AccessGroup;
 import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.MainLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.components.navigation.bar.AppBar;
-import com.gmail.grigorij.ui.utils.components.navigation.drawer.NaviDrawer;
-import com.gmail.grigorij.ui.utils.components.navigation.drawer.NaviItem;
-import com.gmail.grigorij.ui.utils.components.navigation.drawer.NaviMenu;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.navigation.bar.AppBar;
+import com.gmail.grigorij.ui.components.navigation.drawer.NaviDrawer;
+import com.gmail.grigorij.ui.components.navigation.drawer.NaviItem;
+import com.gmail.grigorij.ui.components.navigation.drawer.NaviMenu;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.Overflow;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
@@ -202,23 +201,22 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 	}
 
 	private void naviItemOnClick(NaviItem naviItem) {
+		naviDrawer.close();
 		viewContainer.removeAll();
 		appBar.reset();
 
-		selectCorrectNaviItem(naviItem.getText(), false);
-
-		naviDrawer.close();
+		selectCorrectNaviItem("", naviItem.getText());
 	}
 
 	private void adminNaviItemOnClick(NaviItem naviItem) {
+		naviDrawer.close();
+
 		viewContainer.removeAll();
 		appBar.reset();
 
 		viewContainer.add(new AdminMain(this));
 
-		selectCorrectNaviItem(naviItem.getText(), true);
-
-		naviDrawer.close();
+		selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
 
 		for (Tab tab : appBar.getTabs()) {
 			if (tab.getLabel().equals(naviItem.getText())) {
@@ -228,12 +226,8 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 		}
 	}
 
-	public void selectCorrectNaviItem(String tabName, boolean adminTab) {
-		if (adminTab) {
-			appBar.setTitle(ProjectConstants.ADMIN + " " + tabName);
-		} else {
-			appBar.setTitle(tabName);
-		}
+	public void selectCorrectNaviItem(String tabNamePrefix, String tabName) {
+		appBar.setTitle(tabNamePrefix + " " + tabName);
 
 		for (NaviItem item : naviDrawer.getMenu().getNaviItems()) {
 			item.setSelected(false);

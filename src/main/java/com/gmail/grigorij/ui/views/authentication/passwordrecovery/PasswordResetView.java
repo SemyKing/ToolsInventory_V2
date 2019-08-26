@@ -9,7 +9,7 @@ import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
@@ -19,7 +19,7 @@ import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -32,7 +32,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 
 
 @Route(value = "reset-password")
-@HtmlImport("frontend://styles/shared-styles.html")
+@StyleSheet("styles/views/password-reset.css")
 public class PasswordResetView extends FlexBoxLayout implements HasUrlParameter<String> {
 
 	private static final String CLASS_NAME = "password-reset-view";
