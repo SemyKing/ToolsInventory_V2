@@ -9,7 +9,7 @@ public class TransactionName {
 
 	public static String getTransactionFullName(TransactionType operation, TransactionTarget target) {
 		String ed = "ed";
-		String hasHave = (target.equals(TransactionTarget.USER_ACCESS_RIGHTS)) ? "have been" : "has been";
+		String hasHave = (target.equals(TransactionTarget.USER_ACCESS_RIGHTS)) ? "have been " : "has been ";
 
 		if (operation.equals(TransactionType.LOGIN)) {
 			return target.getStringValue() + " Logged In";

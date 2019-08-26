@@ -1,9 +1,0 @@
-/* FORMS */
-
-
-@media (max-width: 1024px) {
-	.access-rights-form + span {
-        text-align: center;
-        margin-top: var(--lumo-space-s);
-    }
-}

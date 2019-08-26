@@ -33,7 +33,6 @@ public class ApplicationServletContextListener implements ServletContextListener
 
 		if ( entityManagerFactory != null && entityManagerFactory.isOpen()) {
 			entityManagerFactory.close();
-			entityManagerFactory = null;
 			System.out.println("----------DATABASE IS CLOSED");
 		}
 
