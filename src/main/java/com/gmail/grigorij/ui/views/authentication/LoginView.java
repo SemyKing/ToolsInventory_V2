@@ -11,7 +11,7 @@ import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
-import com.gmail.grigorij.ui.views.authentication.passwordrecovery.ForgotPasswordView;
+import com.gmail.grigorij.ui.views.authentication.password_reset.ForgotPasswordView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.OperationStatus;
@@ -59,13 +59,10 @@ public class LoginView extends Div {
 		setSizeFull();
 		setClassName(CLASS_NAME);
 
-//		getElement().setAttribute(LumoStyles.THEME, LumoStyles.DARK);
-
         buildUI();
 		usernameField.focus();
 
-
-		//TODO:REMOVE
+		//TODO:REMOVE AT PRODUCTION
 		usernameField.setValue("u");
 		passwordField.setValue("p");
 	}
@@ -149,7 +146,6 @@ public class LoginView extends Div {
 
 		Binder<User> binder = new Binder<>(User.class);
 		binder.setBean(new User());
-//		binder.setBean(User.getEmptyUser());
 
 		binder.forField(usernameField)
 				.asRequired("Username is required")

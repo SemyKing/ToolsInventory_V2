@@ -92,7 +92,6 @@ public class NaviDrawer extends Composite<Div> implements AfterNavigationObserve
 	}
 
 	private void initFooter() {
-//		railButton = UIUtils.createSmallButton("Collapse", VaadinIcon.CHEVRON_LEFT_SMALL);
 		railButton = UIUtils.createSmallButton(VaadinIcon.CHEVRON_LEFT_SMALL);
 		railButton.addClassName(CLASS_NAME + "__footer");
 		railButton.addClickListener(event -> toggleRailMode());
@@ -104,19 +103,13 @@ public class NaviDrawer extends Composite<Div> implements AfterNavigationObserve
 		if (getElement().hasAttribute(RAIL)) {
 			getElement().setAttribute(RAIL, false);
 			railButton.setIcon(new Icon(VaadinIcon.CHEVRON_LEFT_SMALL));
-//			railButton.setText("");
 			railButton.getElement().setAttribute("aria-label", "Collapse menu");
 		} else {
 			getElement().setAttribute(RAIL, true);
 			railButton.setIcon(new Icon(VaadinIcon.CHEVRON_RIGHT_SMALL));
-//			railButton.setText("");
 			railButton.getElement().setAttribute("aria-label", "Expand menu");
 
 			if (getUI().isPresent()) {
-//				getUI().get().getPage().executeJavaScript(
-//						"var originalStyle = getComputedStyle($0).pointerEvents;" //
-//								+ "$0.style.pointerEvents='none';" //
-//								+ "setTimeout(function() {$0.style.pointerEvents=originalStyle;}, 170);", getElement());
 				getUI().get().getPage().executeJs(
 						"var originalStyle = getComputedStyle($0).pointerEvents;" //
 								+ "$0.style.pointerEvents='none';" //
@@ -147,11 +140,6 @@ public class NaviDrawer extends Composite<Div> implements AfterNavigationObserve
 		// It should be gone after 240ms
 		// This will make sure it disappears even when the browser fails.
 		if (getUI().isPresent()) {
-//			getUI().get().getPage().executeJavaScript(
-//					"var originalStyle = getComputedStyle($0).transitionProperty;" //
-//							+   "setTimeout(function() {$0.style.transitionProperty='padding'; " +
-//							"requestAnimationFrame(function() {$0.style.transitionProperty=originalStyle})}, 250);",
-//					mainContent.getElement());
 			getUI().get().getPage().executeJs(
 					"var originalStyle = getComputedStyle($0).transitionProperty;" //
 							+   "setTimeout(function() {$0.style.transitionProperty='padding'; " +

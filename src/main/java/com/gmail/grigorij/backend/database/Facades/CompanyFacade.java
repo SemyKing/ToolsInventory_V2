@@ -5,6 +5,7 @@ import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.ui.utils.UIUtils;
 
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +41,17 @@ public class CompanyFacade {
 			company = null;
 		}
 		return company;
+	}
+
+	public long getCompaniesCount() {
+		Long companiesCount = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getCompaniesCount", Long.class)
+			.getSingleResult();
+
+		if (companiesCount == null) {
+			return 0;
+		} else {
+			return companiesCount;
+		}
 	}
 
 

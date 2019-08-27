@@ -118,11 +118,11 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 	private void initNaviItems() {
 		NaviMenu menu = naviDrawer.getMenu();
 
-		NaviItem dashboard = new NaviItem(VaadinIcon.DASHBOARD, ProjectConstants.DASHBOARD, false);
-		NaviItem inventory = new NaviItem(VaadinIcon.STORAGE, ProjectConstants.INVENTORY, false);
-		NaviItem messages = new NaviItem(VaadinIcon.ENVELOPES_O, ProjectConstants.MESSAGES, false);
-		NaviItem transaction = new NaviItem(VaadinIcon.EXCHANGE, ProjectConstants.TRANSACTIONS, false);
-		NaviItem reporting = new NaviItem(VaadinIcon.CLIPBOARD_TEXT, ProjectConstants.REPORTING, false);
+		NaviItem dashboard = new NaviItem(VaadinIcon.DASHBOARD, ProjectConstants.DASHBOARD);
+		NaviItem inventory = new NaviItem(VaadinIcon.STORAGE, ProjectConstants.INVENTORY);
+		NaviItem messages = new NaviItem(VaadinIcon.ENVELOPES_O, ProjectConstants.MESSAGES);
+		NaviItem transaction = new NaviItem(VaadinIcon.EXCHANGE, ProjectConstants.TRANSACTIONS);
+		NaviItem reporting = new NaviItem(VaadinIcon.CLIPBOARD_TEXT, ProjectConstants.REPORTING);
 
 
 		dashboard.addClickListener(e-> {
@@ -157,14 +157,14 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 
 
 		if (AuthenticationService.getCurrentSessionUser().getAccessGroup().getPermissionLevel().higherOrEqualsTo(PermissionLevel.COMPANY)) {
-			NaviItem admin = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN, true);
+			NaviItem admin = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN);
 			menu.addNaviItem(admin);
 
 			admin.addClickListener(e-> {
 				admin.expandCollapse.click();
 			});
 
-			NaviItem admin_companies = new NaviItem(ProjectConstants.COMPANIES, null , false);
+			NaviItem admin_companies = new NaviItem(ProjectConstants.COMPANIES);
 			menu.addNaviItem(admin, admin_companies);
 
 			admin_companies.addClickListener(e-> {
@@ -172,21 +172,21 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 			});
 
 
-			NaviItem admin_personnel = new NaviItem(ProjectConstants.PERSONNEL, null , false);
+			NaviItem admin_personnel = new NaviItem(ProjectConstants.PERSONNEL);
 			menu.addNaviItem(admin, admin_personnel);
 
 			admin_personnel.addClickListener(e-> {
 				adminNaviItemOnClick(admin_personnel);
 			});
 
-			NaviItem admin_inventory = new NaviItem(ProjectConstants.ADMIN_INVENTORY, null , false);
+			NaviItem admin_inventory = new NaviItem(ProjectConstants.ADMIN_INVENTORY);
 			menu.addNaviItem(admin, admin_inventory);
 
 			admin_inventory.addClickListener(e-> {
 				adminNaviItemOnClick(admin_inventory);
 			});
 
-			NaviItem admin_transactions = new NaviItem(ProjectConstants.ADMIN_TRANSACTIONS, null , false);
+			NaviItem admin_transactions = new NaviItem(ProjectConstants.ADMIN_TRANSACTIONS);
 			menu.addNaviItem(admin, admin_transactions);
 
 			admin_transactions.addClickListener(e-> {

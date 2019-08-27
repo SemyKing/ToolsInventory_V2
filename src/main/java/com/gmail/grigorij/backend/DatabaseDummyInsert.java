@@ -151,7 +151,6 @@ public class DatabaseDummyInsert {
 
 			companies.add(company);
 		}
-		System.out.println("companies generated");
 		insertCompanies();
 	}
 
@@ -312,7 +311,6 @@ public class DatabaseDummyInsert {
 	private void insertTools() {
 		for (InventoryItem ie : tools) {
 			InventoryFacade.getInstance().insert(ie);
-
 
 			Transaction transaction = new Transaction();
 			transaction.setWhoDid(transactionUser);

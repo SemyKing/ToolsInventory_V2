@@ -11,7 +11,7 @@ import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.forms.editable.EditableUserForm;
 import com.gmail.grigorij.ui.views.MenuLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.CustomDialog;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.Divider;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.ListItem;

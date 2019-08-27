@@ -21,78 +21,49 @@ import java.util.List;
 public class NaviItem extends Div {
 
     protected final String CLASS_NAME = "navi-item";
-    protected final String HIGHLIGHT = "highlight";
+    private final String HIGHLIGHT = "highlight";
 
     private String text;
-    private Class<? extends Component> navigationTarget;
-
+    private Div naviLink;
     public Button expandCollapse;
 
-    private boolean subItemsVisible;
     private List<NaviItem> subItems;
+    private boolean subItemsVisible = true;
 
     private boolean selected = false;
-
+    private boolean expandCollapseAdded = false;
 
     private int level = 0;
 
-    public NaviItem(VaadinIcon icon, String text, boolean groupCollapseButton) {
-        this(text, null, groupCollapseButton);
-        link.getElement().insertChild(0, new Icon(icon).getElement());
+    public NaviItem(String text) {
+        this(null, text);
     }
 
-    public NaviItem(VaadinIcon icon, String text, Class<? extends Component> navigationTarget, boolean groupCollapseButton) {
-        this(text, navigationTarget, groupCollapseButton);
-        link.getElement().insertChild(0, new Icon(icon).getElement());
-    }
-
-    public NaviItem(Image image, String text, Class<? extends Component> navigationTarget, boolean groupCollapseButton) {
-        this(text, navigationTarget, groupCollapseButton);
-        link.getElement().insertChild(0, image.getElement());
-    }
-
-    public NaviItem(String text, Class<? extends Component> navigationTarget, boolean groupCollapseButton) {
+    public NaviItem(VaadinIcon icon, String text) {
         setClassName(CLASS_NAME);
 
         this.text = text;
-        this.navigationTarget = navigationTarget;
-
         subItems = new ArrayList<>();
         setLevel(0);
 
-        if (groupCollapseButton) {
-            expandCollapse = UIUtils.createButton(VaadinIcon.CARET_UP, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-            expandCollapse.setVisible(false);
-            expandCollapse.addClickListener(event -> setSubItemsVisible(!subItemsVisible));
+        naviLink = new Div(new Label(text));
+        naviLink.setClassName(CLASS_NAME + "__link");
 
-            Div div = new Div(new Label(text));
-            div.setClassName(CLASS_NAME + "__link");
-            div.add(expandCollapse);
-
-            subItemsVisible = true;
-            updateAriaLabel();
-
-            this.link = div;
-        } else {
-            if (navigationTarget != null) {
-                RouterLink routerLink = new RouterLink(null, navigationTarget);
-                routerLink.add(new Label(text));
-                routerLink.setHighlightCondition(HighlightConditions.sameLocation());
-                routerLink.setClassName(CLASS_NAME + "__link");
-                this.link = routerLink;
-            } else {
-                Div div = new Div(new Label(text));
-                div.setClassName(CLASS_NAME + "__link");
-                this.link = div;
-            }
+        if (icon != null) {
+            naviLink.getElement().insertChild(0, new Icon(icon).getElement());
         }
 
-        getElement().insertChild(0, link.getElement());
+        getElement().insertChild(0, naviLink.getElement());
     }
 
-    public void addSubItem(NaviItem item) {
-        if (!expandCollapse.isVisible()) {
-            expandCollapse.setVisible(true);
+    void addSubItem(NaviItem item) {
+        if (!expandCollapseAdded) {
+            expandCollapse = UIUtils.createSmallButton("", VaadinIcon.CARET_UP, ButtonVariant.LUMO_TERTIARY);
+            expandCollapse.getElement().getStyle().set("padding-right", "0");
+            expandCollapse.addClickListener(event -> setSubItemsVisible(!subItemsVisible));
+
+            naviLink.add(expandCollapse);
+            expandCollapseAdded = true;
         }
         item.setLevel(getLevel() + 1);
         subItems.add(item);
@@ -105,7 +76,7 @@ public class NaviItem extends Div {
         }
     }
 
-    public int getLevel() {
+    private int getLevel() {
         return level;
     }
 
@@ -113,16 +84,11 @@ public class NaviItem extends Div {
         return text;
     }
 
-    public Class<? extends Component> getNavigationTarget() {
-        return navigationTarget;
-    }
-
     @Override
     public void setVisible(boolean visible) {
         super.setVisible(visible);
 
-        // If true, we only update the icon. If false, we hide all the sub
-        // items.
+        // If true, we only update the icon. If false, we hide all the sub items.
         if (visible) {
             if (level == 0) {
                 expandCollapse.setIcon(new Icon(VaadinIcon.CARET_DOWN));
@@ -156,13 +122,6 @@ public class NaviItem extends Div {
 
     public boolean hasSubItems() {
         return subItems.size() > 0;
-    }
-
-
-    private final Component link;
-
-    public boolean isHighlighted(AfterNavigationEvent e) {
-        return link instanceof RouterLink && ((RouterLink) link).getHighlightCondition().shouldHighlight((RouterLink) link, e);
     }
 
     public boolean isSelected() {

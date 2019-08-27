@@ -1,6 +1,6 @@
-package com.gmail.grigorij.ui.components;
+package com.gmail.grigorij.ui.components.dialogs;
 
-
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
@@ -9,12 +9,14 @@ import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-@StyleSheet("styles/components/custom-dialog.css")
+
+@HtmlImport("styles/components/custom-dialog.html")
 public class CustomDialog extends Div {
 
 	private final static String CLASS_NAME = "custom-dialog";
