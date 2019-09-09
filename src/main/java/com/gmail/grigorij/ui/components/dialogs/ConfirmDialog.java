@@ -1,5 +1,6 @@
-package com.gmail.grigorij.ui.components;
+package com.gmail.grigorij.ui.components.dialogs;
 
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;

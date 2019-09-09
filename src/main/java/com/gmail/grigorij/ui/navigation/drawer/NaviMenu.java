@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.navigation.drawer;
+package com.gmail.grigorij.ui.navigation.drawer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,7 @@ import com.vaadin.flow.component.html.Div;
 
 @StyleSheet("styles/components/navi-menu.css")
 public class NaviMenu extends Div {
+
     private static final String CLASS_NAME = "navi-menu";
 
     private List<NaviItem> naviItems = new ArrayList<>();
@@ -18,7 +19,6 @@ public class NaviMenu extends Div {
 
     public void addNaviItem(NaviItem item) {
         add(item);
-
         naviItems.add(item);
     }
 
@@ -47,6 +47,5 @@ public class NaviMenu extends Div {
 
     public List<NaviItem> getNaviItems() {
         return new ArrayList<>(naviItems);
-//        return (List) getChildren().collect(Collectors.toList());
     }
 }

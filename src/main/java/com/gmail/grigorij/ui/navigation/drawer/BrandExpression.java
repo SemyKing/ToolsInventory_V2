@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.navigation.drawer;
+package com.gmail.grigorij.ui.navigation.drawer;
 
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Composite;

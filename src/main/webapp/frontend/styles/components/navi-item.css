@@ -88,7 +88,6 @@
   color: var(--lumo-body-text-color);
 }
 
-
 /* Link icon */
 .navi-item__link iron-icon {
   height: var(--lumo-icon-size-s);
@@ -112,7 +111,6 @@
   white-space: nowrap;
 }
 
-
 /* (Link) Button */
 .navi-item__button {
   align-items: center;
@@ -123,7 +121,6 @@
   padding: 0 var(--lumo-space-m);
 }
 
-
 .navi-item__button > div:first-child {
   display: flex;
 }
@@ -132,5 +129,4 @@
 .navi-item vaadin-button {
   flex-shrink: 0;
   margin-left: auto;
-  margin-right: var(--lumo-space-s);
 }

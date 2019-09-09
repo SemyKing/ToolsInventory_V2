@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.authentication.passwordrecovery;
+package com.gmail.grigorij.ui.views.authentication.password_reset;
 
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
@@ -9,7 +9,7 @@ import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
-import com.gmail.grigorij.ui.components.CustomDialog;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.utils.OperationStatus;
@@ -32,6 +32,8 @@ public class ForgotPasswordView {
 	private void constructPasswordRecoveryDialog() {
 		EmailField emailField = new EmailField("E-mail");
 		emailField.setMinWidth("400px");
+
+		//TODO: REMOVE AT PRODUCTION
 		emailField.setValue("gs@mail.com");
 
 		Binder<Person> binder = new Binder<>();
@@ -56,7 +58,7 @@ public class ForgotPasswordView {
 				constructRecoveryEmail(emailField.getValue());
 
 				dialog.close();
-				operationStatus.onSuccess("Password recovery dialog closed from button", null);
+				operationStatus.onSuccess("Password recovery dialog closed from confirm button", null);
 			}
 		});
 
@@ -68,11 +70,6 @@ public class ForgotPasswordView {
 
 	private void generateRecoveryLink(String emailAddress) {
 		User user = UserFacade.getInstance().getUserByEmail(emailAddress);
-
-		if (user == null) {
-			UIUtils.showNotification("Email address not found", UIUtils.NotificationType.INFO);
-			return;
-		}
 
 		if (user.isDeleted()) {
 			UIUtils.showNotification("Your credentials have expired", UIUtils.NotificationType.INFO);
@@ -88,10 +85,10 @@ public class ForgotPasswordView {
 		tr.setTransactionOperation(TransactionType.EDIT);
 		tr.setTransactionTarget(TransactionTarget.USER);
 		tr.setWhoDid(user);
-		tr.setAdditionalInfo("User has requested password reset link.");
+		tr.setAdditionalInfo("User has requested password reset link. Email: " + emailAddress);
 		TransactionFacade.getInstance().insert(tr);
 
-		UIUtils.showNotification("/reset-password/" + link.getToken(), UIUtils.NotificationType.ERROR);
+		UIUtils.showNotification("https://localhost:8443/reset-password/" + link.getToken(), UIUtils.NotificationType.SUCCESS, 0);
 	}
 
 	private void constructRecoveryEmail(String emailAddress) {

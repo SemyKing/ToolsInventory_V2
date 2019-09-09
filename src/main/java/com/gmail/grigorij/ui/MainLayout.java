@@ -29,15 +29,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  *  Application UI entry point
- *
- *
- *  PWA iconPath: cannot be .svg -> causes lots of NullPointerExceptions
- *
  */
 @Route("")
 @Push(PushMode.MANUAL)
-@HtmlImport("frontend://styles/shared-styles.html")
+@HtmlImport("styles/shared-styles.html")
 @Viewport("width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes")
+
+//  PWA iconPath: cannot be .svg -> causes lots of NullPointerExceptions
 @PWA(name = ProjectConstants.PROJECT_NAME_FULL,
 		shortName = ProjectConstants.PROJECT_NAME_FULL,
 		iconPath = ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_IMG_ONLY_PNG,
@@ -47,14 +45,7 @@ public class MainLayout extends Div {
 	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
 	private static final String CLASS_NAME = "root";
 
-	private void test() {
-	}
-
-
 	public MainLayout() {
-
-		test();
-
 
 		//TODO:REMOVE AT PRODUCTION
 		DatabaseDummyInsert dbDummy = new DatabaseDummyInsert();
@@ -81,19 +72,19 @@ public class MainLayout extends Div {
 		System.out.println();
 		System.out.println("Authentication...");
 		if (AuthenticationService.isAuthenticated()) {
-			System.out.println("User is authenticated -> show menu");
+			System.out.println("User authenticated -> construct main menu view");
 
 			Transaction tr = new Transaction();
 			tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 			tr.setTransactionOperation(TransactionType.LOGIN);
 			tr.setTransactionTarget(TransactionTarget.USER);
-			tr.setAdditionalInfo("Log In via Remember Me");
+			tr.setAdditionalInfo("Login via 'Remember Me'");
 
 			TransactionFacade.getInstance().insert(tr);
 
 			showMainMenuLayout();
 		} else {
-			System.out.println("User is not authenticated -> show login");
+			System.out.println("User not authenticated -> construct login view");
 			showLoginView();
 		}
 	}

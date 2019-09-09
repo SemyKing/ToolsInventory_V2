@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.navigation.bar.tab;
+package com.gmail.grigorij.ui.navigation.bar.tab;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -60,13 +60,10 @@ public class NaviTabs extends Tabs {
             try {
                 UI.getCurrent().navigate( ((NaviTab) getSelectedTab()).getNavigationTarget() );
             } catch (Exception e) {
-                // @todo this is a code flow by exception anti-pattern. Either
-                // handle the case without the exception, or
-                // @todo at least document meticulously why this can't be done
-                // any other way and what kind of exceptions are we catching
-                // @todo and when they can occur.
-                // @todo this block consumes all exceptions, even
-                // backend-originated, and may result in exceptions disappearing mysteriously.
+                // @todo this is a code flow by exception anti-pattern. Either handle the case without the exception, or
+                // @todo    at least document meticulously why this can't be done any other way and what kind of exceptions are we catching
+                // @todo    and when they can occur. this block consumes all exceptions, even backend-originated, and may result in exceptions disappearing mysteriously.
+
                 System.err.println("NaviTabs -> navigateToSelectedTab() \n");
                 e.printStackTrace();
             }

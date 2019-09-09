@@ -113,7 +113,6 @@ public class EditableCategoryForm extends FormLayout {
 			binder.validate();
 
 			if (binder.isValid()) {
-				binder.writeBean(category);
 
 				/*
 				If category's company was changed, it must also be changed for all category children
@@ -128,6 +127,7 @@ public class EditableCategoryForm extends FormLayout {
 					category.setParentCategory(null);
 				}
 
+				binder.writeBean(category);
 				return category;
 			}
 		} catch (ValidationException e) {

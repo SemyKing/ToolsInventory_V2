@@ -10,95 +10,89 @@
 <link rel="stylesheet" href="misc/box-shadow-borders.css">
 
 <custom-style>
-	<style include="lumo-badge">
-
-    :root {
-		--app-bar-height-desktop: var(--lumo-size-xl);
-		--app-bar-height-mobile: var(--lumo-size-l);
-
-		--navi-drawer-rail-width: calc(var(--lumo-size-m) * 1.75);
-		--navi-drawer-width: calc(var(--lumo-size-m) * 6);
-		--navi-item-indentation: calc(var(--lumo-icon-size-s) + var(--lumo-space-l));
-
-		--details-drawer-width: calc(var(--lumo-size-m) * 11);
-		--large-details-drawer-width: calc(var(--lumo-size-m) * 18);
-
-		--transition-duration-s: 160ms;
-		--transition-duration-m: 240ms;
-		--transition-duration-l: 320ms;
-    }
-
-    @media (max-width: 479px) {
+<!--	<style include="lumo-badge">-->
+	<style>
 		:root {
-			--lumo-space-r-m: var(--lumo-space-s);
-			--lumo-space-r-l: var(--lumo-space-m);
-			--lumo-space-r-x: 0;
+			--app-bar-height-desktop: var(--lumo-size-xl);
+			--app-bar-height-mobile: var(--lumo-size-l);
 
-			--lumo-space-wide-r-m: var(--lumo-space-wide-s);
-			--lumo-space-wide-r-l: var(--lumo-space-wide-m);
+			--navi-drawer-rail-width: calc(var(--lumo-size-m) * 1.75);
+			--navi-drawer-width: calc(var(--lumo-size-m) * 6);
+			--navi-item-indentation: calc(var(--lumo-icon-size-s) + var(--lumo-space-l));
+
+			--details-drawer-width: calc(var(--lumo-size-m) * 11);
+			--large-details-drawer-width: calc(var(--lumo-size-m) * 18);
+
+			--transition-duration-s: 160ms;
+			--transition-duration-m: 240ms;
+			--transition-duration-l: 320ms;
 		}
-    }
-    @media (min-width: 480px) and (max-width: 1023px) {
-		:root {
-			--lumo-space-r-m: var(--lumo-space-s);
-			--lumo-space-r-l: var(--lumo-space-m);
-			--lumo-space-r-x: var(--lumo-space-m);
 
-			--lumo-space-wide-r-m: var(--lumo-space-wide-s);
-			--lumo-space-wide-r-l: var(--lumo-space-wide-m);
+		@media (max-width: 479px) {
+			:root {
+				--lumo-space-r-m: var(--lumo-space-s);
+				--lumo-space-r-l: var(--lumo-space-m);
+				--lumo-space-r-x: 0;
+
+				--lumo-space-wide-r-m: var(--lumo-space-wide-s);
+				--lumo-space-wide-r-l: var(--lumo-space-wide-m);
+			}
 		}
-    }
-    @media (min-width: 1024px) {
-		:root {
-			--lumo-space-r-m: var(--lumo-space-m);
-			--lumo-space-r-l: var(--lumo-space-l);
-			--lumo-space-r-x: var(--lumo-space-l);
+		@media (min-width: 480px) and (max-width: 1023px) {
+			:root {
+				--lumo-space-r-m: var(--lumo-space-s);
+				--lumo-space-r-l: var(--lumo-space-m);
+				--lumo-space-r-x: var(--lumo-space-m);
 
-			--lumo-space-wide-r-m: var(--lumo-space-wide-m);
-			--lumo-space-wide-r-l: var(--lumo-space-wide-l);
+				--lumo-space-wide-r-m: var(--lumo-space-wide-s);
+				--lumo-space-wide-r-l: var(--lumo-space-wide-m);
+			}
 		}
-    }
+		@media (min-width: 1024px) {
+			:root {
+				--lumo-space-r-m: var(--lumo-space-m);
+				--lumo-space-r-l: var(--lumo-space-l);
+				--lumo-space-r-x: var(--lumo-space-l);
 
-    html, body {
-		height: 100%;
-		overflow: hidden;
-		width: 100%;
-    }
+				--lumo-space-wide-r-m: var(--lumo-space-wide-m);
+				--lumo-space-wide-r-l: var(--lumo-space-wide-l);
+			}
+		}
 
-
-    .app-header-outer,
-    .app-footer-outer {
-		z-index: 3;
-    }
-
-
-    .custom-vaadin-small-button {
-    	margin: 0;
-    	margin-top: var(--lumo-space-xs);
-    	margin-bottom: var(--lumo-space-xs);
-    	font-size: medium;
-    }
+		html, body {
+			height: 100%;
+			width: 100%;
+			overflow: hidden;
+		}
 
 
-	.custom-notification {
-		min-width: 100vw;
-		min-height: 25px;
-		cursor: pointer;
-		color: var(--lumo-primary-contrast-color);
-		align-items: center;
-
-	}
-	.custom-notification-label {
-		width: 100vw;
-		cursor: pointer;
-		font-weight: bold;
-		text-align: center;
-	}
+		.app-header-outer, .app-footer-outer {
+			z-index: 3;
+		}
 
 
-	vaadin-dialog-overlay flow-component-renderer {
-		display: flex;
-	}
+		.custom-vaadin-small-button {
+			margin: 0;
+			margin-top: var(--lumo-space-xs);
+			margin-bottom: var(--lumo-space-xs);
+			font-size: medium;
+		}
+
+
+		.custom-notification {
+			min-width: 100vw;
+			min-height: 25px;
+			cursor: pointer;
+			color: var(--lumo-primary-contrast-color);
+			align-items: center;
+
+		}
+		.custom-notification-label {
+			width: 100vw;
+			cursor: pointer;
+			font-weight: bold;
+			text-align: center;
+		}
 	</style>
 </custom-style>
 
@@ -113,21 +107,6 @@
 				padding: 0px;
 			}
     	</style>
-	</template>
-</dom-module>
-
-<dom-module id="dialog-custom-style" theme-for="vaadin-dialog-overlay">
-	<template>
-		<style>
-			[part="content"] {
-				padding: 0px;
-				display: flex;
-			}
-			[part="overlay"] {
-				display: flex;
-				overflow: hidden;
-			}
-		</style>
 	</template>
 </dom-module>
 

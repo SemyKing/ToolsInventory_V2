@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.navigation.bar.tab;
+package com.gmail.grigorij.ui.navigation.bar.tab;
 
 import java.util.Objects;
 

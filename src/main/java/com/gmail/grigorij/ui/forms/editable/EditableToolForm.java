@@ -9,7 +9,7 @@ import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.camera.CameraView;
-import com.gmail.grigorij.ui.components.CustomDialog;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.Divider;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
@@ -61,9 +61,6 @@ public class EditableToolForm extends FormLayout {
 
 	//DEFAULT
 	private boolean bulkEditMode;
-
-
-
 
 
 	public EditableToolForm(AdminInventory adminInventory) {
@@ -457,7 +454,6 @@ public class EditableToolForm extends FormLayout {
 			reservedByComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
 		}
 	}
-
 
 
 	public void setTool(InventoryItem t) {
