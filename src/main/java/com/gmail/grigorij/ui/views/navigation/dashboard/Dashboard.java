@@ -82,7 +82,7 @@ public class Dashboard extends ViewFrame {
 		DashboardItem companiesItem = new DashboardItem();
 		companiesItem.getHeader().add(new ListItem(VaadinIcon.OFFICE.create(), "TOTAL COMPANIES"));
 		companiesItem.getContent().add(new Span("" + companies.size()));
-//		companiesItem.getFooter().add(companiesDetails);
+//		companiesItem.getFooter().add();
 
 		firstRowLayout.add(companiesItem);
 
@@ -99,7 +99,6 @@ public class Dashboard extends ViewFrame {
 				if (user.getCompany() != null) {
 					if (user.getCompany().getId().equals(company.getId())) {
 						userCount.getAndIncrement();
-//						users.remove(user);
 					}
 				}
 			});
@@ -195,6 +194,19 @@ public class Dashboard extends ViewFrame {
 		FlexBoxLayout content = new FlexBoxLayout();
 		content.setClassName(CLASS_NAME + "__content");
 		content.add(UIUtils.createH2Label(AuthenticationService.getCurrentSessionUser().getCompany().getName().toUpperCase()));
+
+		// 1st ROW
+		FlexBoxLayout firstRowLayout = getContentRowLayout();
+
+		DashboardItem item = new DashboardItem();
+//		item.getHeader().add();
+		item.getContent().add(new Span("99999"));
+		item.getFooter().add(new ListItem(VaadinIcon.EXCLAMATION.create(), "DAYS WITHOUT AN ACCIDENT"));
+
+		firstRowLayout.add(item);
+
+
+		content.add(firstRowLayout);
 
 		return content;
 	}

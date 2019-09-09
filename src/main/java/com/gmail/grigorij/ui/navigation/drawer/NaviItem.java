@@ -1,18 +1,13 @@
-package com.gmail.grigorij.ui.components.navigation.drawer;
+package com.gmail.grigorij.ui.navigation.drawer;
 
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.router.AfterNavigationEvent;
-import com.vaadin.flow.router.HighlightConditions;
-import com.vaadin.flow.router.RouterLink;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -38,11 +38,15 @@
 		width: 100%  !important;
 	}
 	.messages_view__dates > vaadin-date-picker {
-        max-width: 30%;
+        flex-grow: 1;
     }
-	.messages_view__dates > vaadin-button {
-		flex-grow: 1;
-	}
+    .messages_view__new-message-button {
+        flex-grow: 1;
+        margin-left: 0 !important;
+    }
+    .messages_view__show-read-messages-checkbox {
+        flex-grow: 2;
+    }
 
 
 	.messages_view__message-wrapper {
@@ -54,9 +58,6 @@
 		width: 100%  !important;
 		justify-content: space-evenly;
 	}
-	.messages_view__dates_actions > vaadin-button {
-        margin-left: 0;
-    }
 
     .messages_view__message_footer {
         flex-direction: column !important;

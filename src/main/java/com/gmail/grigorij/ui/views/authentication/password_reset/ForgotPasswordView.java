@@ -71,11 +71,6 @@ public class ForgotPasswordView {
 	private void generateRecoveryLink(String emailAddress) {
 		User user = UserFacade.getInstance().getUserByEmail(emailAddress);
 
-//		if (user == null) {
-//			UIUtils.showNotification("Email address not found", UIUtils.NotificationType.INFO);
-//			return;
-//		}
-
 		if (user.isDeleted()) {
 			UIUtils.showNotification("Your credentials have expired", UIUtils.NotificationType.INFO);
 			return;

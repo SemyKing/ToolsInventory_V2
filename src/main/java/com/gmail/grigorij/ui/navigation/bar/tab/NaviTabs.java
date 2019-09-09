@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.navigation.bar.tab;
+package com.gmail.grigorij.ui.navigation.bar.tab;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;

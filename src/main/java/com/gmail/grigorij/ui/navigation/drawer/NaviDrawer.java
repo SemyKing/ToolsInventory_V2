@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.navigation.drawer;
+package com.gmail.grigorij.ui.navigation.drawer;
 
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -38,9 +38,6 @@ public class NaviDrawer extends Composite<Div> implements AfterNavigationObserve
 	protected void onAttach(AttachEvent attachEvent) {
 		super.onAttach(attachEvent);
 		UI ui = attachEvent.getUI();
-//		ui.getPage().executeJavaScript("window.addSwipeAway($0,$1,$2,$3)",
-//				mainContent.getElement(), this, "onSwipeAway", scrim.getElement());
-
 
 		ui.getPage().executeJs("window.addSwipeAway($0,$1,$2,$3)",
 				mainContent.getElement(), this, "onSwipeAway", scrim.getElement());

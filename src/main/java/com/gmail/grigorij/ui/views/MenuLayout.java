@@ -4,10 +4,10 @@ import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.MainLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.components.navigation.bar.AppBar;
-import com.gmail.grigorij.ui.components.navigation.drawer.NaviDrawer;
-import com.gmail.grigorij.ui.components.navigation.drawer.NaviItem;
-import com.gmail.grigorij.ui.components.navigation.drawer.NaviMenu;
+import com.gmail.grigorij.ui.navigation.bar.AppBar;
+import com.gmail.grigorij.ui.navigation.drawer.NaviDrawer;
+import com.gmail.grigorij.ui.navigation.drawer.NaviItem;
+import com.gmail.grigorij.ui.navigation.drawer.NaviMenu;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.Overflow;
 import com.gmail.grigorij.ui.views.navigation.admin.AdminMain;
@@ -294,6 +294,7 @@ public class MenuLayout extends FlexBoxLayout implements PageConfigurator {
 	public AppBar getAppBar() {
 		return appBar;
 	}
+
 
 	@Override
 	public void configurePage(InitialPageSettings settings) {

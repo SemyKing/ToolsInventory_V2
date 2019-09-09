@@ -63,9 +63,6 @@ public class EditableToolForm extends FormLayout {
 	private boolean bulkEditMode;
 
 
-
-
-
 	public EditableToolForm(AdminInventory adminInventory) {
 
 		TextField nameField = new TextField("Name");
@@ -457,7 +454,6 @@ public class EditableToolForm extends FormLayout {
 			reservedByComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
 		}
 	}
-
 
 
 	public void setTool(InventoryItem t) {

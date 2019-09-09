@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.navigation.drawer;
+package com.gmail.grigorij.ui.navigation.drawer;
 
 import java.util.ArrayList;
 import java.util.List;
