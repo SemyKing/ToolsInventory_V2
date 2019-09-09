@@ -27,153 +27,156 @@ import java.util.concurrent.TimeUnit;
  */
 public class AuthenticationService {
 
-    private static final String COOKIE_NAME = "remember_me_cookie";
-    private static final String SESSION_DATA = "SESSION_DATA";
+	private static final String COOKIE_NAME = "remember_me_cookie";
+	private static final String SESSION_DATA = "session_data";
 
-    private static SecureRandom random = new SecureRandom();
-    private static Map<String, String> rememberedUsers = new HashMap<>();
-
-
-    public static boolean isAuthenticated() {
-        return getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA) != null || loginRememberedUser();
-    }
-
-    public static User getCurrentSessionUser() {
-        return (User) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA);
-    }
-
-    public static void setCurrentSessionUser(User user) {
-        if (user == null) {
-            return;
-        }
-        getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
-        getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, user);
-    }
-
-    public static boolean signIn(String username, String password, boolean rememberMe) {
-        if (username == null || username.isEmpty())
-            return false;
-
-        if (password == null || password.isEmpty())
-            return false;
-
-        User user = UserFacade.getInstance().getUserByUsernameAndPassword(username, password);
-
-        if (user != null) {
-            if (!constructSessionData(user, null)) {
-                return false;
-            }
-            if (rememberMe) {
-                rememberUser(username);
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static void signOut() {
-        Optional<Cookie> cookie = getRememberMeCookie();
-        if (cookie.isPresent()) {
-            String id = cookie.get().getValue();
-            rememberedUsers.remove(id);
-            deleteRememberMeCookie();
-        }
-
-        Transaction logOutTransaction = new Transaction();
-        logOutTransaction.setTransactionTarget(TransactionTarget.USER);
-        logOutTransaction.setTransactionOperation(TransactionType.LOGOUT);
-        logOutTransaction.setWhoDid(AuthenticationService.getCurrentSessionUser());
-
-        TransactionFacade.getInstance().insert(logOutTransaction);
-
-        getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
-        UI.getCurrent().getSession().close();
-        UI.getCurrent().getPage().reload();
-    }
+	private static SecureRandom random = new SecureRandom();
+	private static Map<String, String> rememberedUsers = new HashMap<>();
 
 
-    private static boolean constructSessionData(User user, String username) {
-        System.out.println();
+	public static boolean isAuthenticated() {
+		return getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA) != null || loginRememberedUser();
+	}
 
-        if (user == null) {
-            user = UserFacade.getInstance().getUserByUsername(username);
-        }
+	public static User getCurrentSessionUser() {
+		return (User) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA);
+	}
 
-        if (user == null) {
-            System.out.println("login fail, user not found (NULL)");
-            return false;
-        } else {
-            if (user.isDeleted()) {
-                UIUtils.showNotification("Your credentials have expired", UIUtils.NotificationType.INFO);
-                System.out.println("login fail, user: '" + user.getUsername() + "' set as 'deleted'");
-                return false;
-            }
+	public static void setCurrentSessionUser(User user) {
+		if (user == null) {
+			return;
+		}
+		getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
+		getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, user);
+	}
 
-            if (user.getCompany() == null) {
-                UIUtils.showNotification("Company is NULL", UIUtils.NotificationType.ERROR);
-                System.out.println("login fail, NULL company");
-                return false;
-            }
-        }
+	public static boolean signIn(String username, String password, boolean rememberMe) {
+		if (username == null || username.isEmpty())
+			return false;
 
-        setCurrentSessionUser(user);
+		if (password == null || password.isEmpty())
+			return false;
 
-        return true;
-    }
+		User user = UserFacade.getInstance().getUserByUsernameAndPassword(username, password);
 
-    private static boolean loginRememberedUser() {
-        Optional<Cookie> rememberMeCookie = getRememberMeCookie();
+		if (user != null) {
+			if (!constructSessionData(user, null)) {
+				return false;
+			}
+			if (rememberMe) {
+				rememberUser(username);
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-        if (rememberMeCookie.isPresent()) {
-            String id = rememberMeCookie.get().getValue();
-            String username = rememberedUsers.get(id);
+	public static void signOut() {
+		Optional<Cookie> cookie = getRememberMeCookie();
+		if (cookie.isPresent()) {
+			String id = cookie.get().getValue();
+			rememberedUsers.remove(id);
+			deleteRememberMeCookie();
+		}
 
-            if (username != null) {
-                return constructSessionData(null, username);
-            }
-        }
 
-        return false;
-    }
+		Broadcaster.removeBroadcasterForUser(getCurrentSessionUser().getId());
 
-    private static Optional<Cookie> getRememberMeCookie() {
-        Cookie[] cookies = getCurrentRequest().getCookies();
-        if (cookies != null) {
-            return Arrays.stream(cookies).filter(c -> c.getName().equals(COOKIE_NAME)).findFirst();
-        }
+		Transaction logOutTransaction = new Transaction();
+		logOutTransaction.setTransactionTarget(TransactionTarget.USER);
+		logOutTransaction.setTransactionOperation(TransactionType.LOGOUT);
+		logOutTransaction.setWhoDid(getCurrentSessionUser());
 
-        return Optional.empty();
-    }
+		TransactionFacade.getInstance().insert(logOutTransaction);
 
-    private static void rememberUser(String username) {
-        String id = new BigInteger(130, random).toString(32);
+		getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
+		UI.getCurrent().getSession().close();
+		UI.getCurrent().getPage().reload();
+	}
 
-        System.out.println();
-        System.out.println("New user to remember---");
-        System.out.println("id: " + id);
-        System.out.println("username: " + username);
 
-        rememberedUsers.put(id, username);
+	private static boolean constructSessionData(User user, String username) {
+		System.out.println();
 
-        Cookie cookie = new Cookie(COOKIE_NAME, id);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) TimeUnit.HOURS.toSeconds(24));
-        VaadinService.getCurrentResponse().addCookie(cookie);
-    }
+		if (user == null) {
+			user = UserFacade.getInstance().getUserByUsername(username);
+		}
 
-    private static void deleteRememberMeCookie() {
-        Cookie cookie = new Cookie(COOKIE_NAME, "");
-        cookie.setPath("/");
-        cookie.setMaxAge(0);
-        VaadinService.getCurrentResponse().addCookie(cookie);
-    }
+		if (user == null) {
+			System.out.println("LOGIN FAIL, user not found (NULL)");
+			return false;
+		} else {
+			if (user.isDeleted()) {
+				UIUtils.showNotification("Your credentials have expired", UIUtils.NotificationType.INFO, 0);
+				System.out.println("LOGIN FAIL, user: '" + user.getUsername() + "' set as 'deleted'");
+				return false;
+			}
 
-    private static VaadinRequest getCurrentRequest() {
-        VaadinRequest request = VaadinService.getCurrentRequest();
-        if (request == null) {
-            throw new IllegalStateException("No request bound to current thread.");
-        }
-        return request;
-    }
+			if (user.getCompany() == null) {
+				UIUtils.showNotification("Company is NULL", UIUtils.NotificationType.ERROR);
+				System.err.println("LOGIN FAIL, NULL company");
+				return false;
+			}
+		}
+
+		setCurrentSessionUser(user);
+
+		return true;
+	}
+
+	private static boolean loginRememberedUser() {
+		Optional<Cookie> rememberMeCookie = getRememberMeCookie();
+
+		if (rememberMeCookie.isPresent()) {
+			String id = rememberMeCookie.get().getValue();
+			String username = rememberedUsers.get(id);
+
+			if (username != null) {
+				return constructSessionData(null, username);
+			}
+		}
+
+		return false;
+	}
+
+	private static Optional<Cookie> getRememberMeCookie() {
+		Cookie[] cookies = getCurrentRequest().getCookies();
+		if (cookies != null) {
+			return Arrays.stream(cookies).filter(c -> c.getName().equals(COOKIE_NAME)).findFirst();
+		}
+
+		return Optional.empty();
+	}
+
+	private static void rememberUser(String username) {
+		String id = new BigInteger(130, random).toString(32);
+
+		System.out.println();
+		System.out.println("New user to remember---");
+		System.out.println("id: " + id);
+		System.out.println("username: " + username);
+
+		rememberedUsers.put(id, username);
+
+		Cookie cookie = new Cookie(COOKIE_NAME, id);
+		cookie.setPath("/");
+		cookie.setMaxAge((int) TimeUnit.HOURS.toSeconds(24));
+		VaadinService.getCurrentResponse().addCookie(cookie);
+	}
+
+	private static void deleteRememberMeCookie() {
+		Cookie cookie = new Cookie(COOKIE_NAME, "");
+		cookie.setPath("/");
+		cookie.setMaxAge(0);
+		VaadinService.getCurrentResponse().addCookie(cookie);
+	}
+
+	private static VaadinRequest getCurrentRequest() {
+		VaadinRequest request = VaadinService.getCurrentRequest();
+		if (request == null) {
+			throw new IllegalStateException("No request bound to current thread.");
+		}
+		return request;
+	}
 }

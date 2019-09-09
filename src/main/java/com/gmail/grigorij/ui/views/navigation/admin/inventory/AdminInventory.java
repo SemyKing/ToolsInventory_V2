@@ -12,6 +12,8 @@ import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.*;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;

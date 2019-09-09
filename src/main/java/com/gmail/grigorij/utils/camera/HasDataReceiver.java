@@ -18,6 +18,7 @@ public interface HasDataReceiver extends DataReceiver {
 			} else {
 				suffix = ".file";
 			}
+
 			File latest = getLatest();
 			if (latest != null) {
 				latest.delete();

@@ -10,7 +10,7 @@ import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.enums.permissions.PermissionOperation;
-import com.gmail.grigorij.ui.components.CustomDialog;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
@@ -261,8 +261,6 @@ public class EditableUserForm extends FormLayout {
 			binder.validate();
 
 			if (binder.isValid()) {
-				binder.writeBean(targetUser);
-
 				Location address = locationForm.getLocation();
 
 				if (address == null) {
@@ -280,6 +278,7 @@ public class EditableUserForm extends FormLayout {
 					targetUser.setPerson(person);
 				}
 
+				binder.writeBean(targetUser);
 				return targetUser;
 			}
 		} catch (ValidationException e) {

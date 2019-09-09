@@ -77,6 +77,8 @@ public class InventoryFacade {
 					.setParameter("user_id_var", userId)
 					.setParameter("type_var", InventoryHierarchyType.TOOL)
 					.getResultList();
+
+			System.out.println("found tools in use: " + tools.size());
 		} catch (NoResultException nre) {
 			tools = null;
 		}
@@ -90,6 +92,8 @@ public class InventoryFacade {
 					.setParameter("user_id_var", userId)
 					.setParameter("type_var", InventoryHierarchyType.TOOL)
 					.getResultList();
+
+			System.out.println("found tools reserved: " + tools.size());
 		} catch (NoResultException nre) {
 			tools = null;
 		}
@@ -130,6 +134,18 @@ public class InventoryFacade {
 			tool = null;
 		}
 		return tool;
+	}
+
+	public Long getToolsCount() {
+		Long toolsCount;
+		try {
+			toolsCount = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getToolsCount", Long.class)
+					.setParameter("type_var", InventoryHierarchyType.TOOL)
+					.getSingleResult();
+		} catch (NoResultException nre) {
+			toolsCount = 0L;
+		}
+		return toolsCount;
 	}
 
 

@@ -11,7 +11,7 @@ import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
-import com.gmail.grigorij.ui.views.authentication.passwordrecovery.ForgotPasswordView;
+import com.gmail.grigorij.ui.views.authentication.password_reset.ForgotPasswordView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.OperationStatus;
@@ -42,8 +42,8 @@ public class LoginView extends Div {
 	private FlexBoxLayout loginFailWrapper;
 	private Paragraph loginFailContent;
 
-	private H5 loginFailHeader = new H5();
-	private Span loginFailMessage = new Span();
+//	private H5 loginFailHeader = new H5();
+//	private Span loginFailMessage = new Span();
 
 	private TextField usernameField;
 	private PasswordField passwordField;
@@ -59,15 +59,12 @@ public class LoginView extends Div {
 		setSizeFull();
 		setClassName(CLASS_NAME);
 
-//		getElement().setAttribute(LumoStyles.THEME, LumoStyles.DARK);
-
         buildUI();
 		usernameField.focus();
 
-
-		//TODO:REMOVE
-		usernameField.setValue("u");
-		passwordField.setValue("p");
+		//TODO:REMOVE AT PRODUCTION
+		usernameField.setValue("system_admin");
+		passwordField.setValue("password");
 	}
 
 	private void buildUI() {
@@ -129,6 +126,12 @@ public class LoginView extends Div {
 		loginFailWrapper.setWidth("100%");
 		loginFailWrapper.setClassName(CLASS_NAME + "__fail-wrapper");
 
+		H5 loginFailHeader = new H5();
+		Span loginFailMessage = new Span();
+
+		loginFailHeader.setText("Incorrect username or password");
+		loginFailMessage.setText("The username and password you entered do not match our records. Please double-check and try again");
+
 		loginFailContent = new Paragraph(loginFailHeader, loginFailMessage);
 		loginFailWrapper.add(loginFailContent);
 		loginFailWrapper.setComponentDisplay(loginFailContent, Display.NONE);
@@ -149,7 +152,6 @@ public class LoginView extends Div {
 
 		Binder<User> binder = new Binder<>(User.class);
 		binder.setBean(new User());
-//		binder.setBean(User.getEmptyUser());
 
 		binder.forField(usernameField)
 				.asRequired("Username is required")
@@ -190,8 +192,6 @@ public class LoginView extends Div {
 
 	private void validateAndLogIn(String username, String password, boolean rememberMe) {
 		loginFailWrapper.setComponentDisplay(loginFailContent, Display.NONE);
-		loginFailHeader.setText("");
-		loginFailMessage.setText("");
 
 		if (AuthenticationService.signIn(username, password, rememberMe)) {
 
@@ -204,16 +204,8 @@ public class LoginView extends Div {
 
 			operationStatus.onSuccess("Login successful", null);
 		} else {
-			showLoginFail();
+			loginFailWrapper.setComponentDisplay(loginFailContent, Display.FLEX);
+			operationStatus.onFail("Login fail", null);
 		}
-	}
-
-
-	private void showLoginFail() {
-		operationStatus.onFail("Login fail", null);
-
-		loginFailWrapper.setComponentDisplay(loginFailContent, Display.FLEX);
-		loginFailHeader.setText("Incorrect username or password");
-		loginFailMessage.setText("The username and password you entered do not match our records. Please double-check and try again");
 	}
 }

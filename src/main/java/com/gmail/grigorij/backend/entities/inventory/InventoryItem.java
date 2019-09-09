@@ -68,7 +68,11 @@ import java.util.*;
 
 		@NamedQuery(name="getToolByCode",
 				query="SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.qrCode = :code_var OR ie.barcode = :code_var")
+						" ie.qrCode = :code_var OR ie.barcode = :code_var"),
+
+		@NamedQuery( name = "getToolsCount",
+				query = "SELECT COUNT( ie.id ) FROM InventoryItem ie WHERE" +
+						" ie.inventoryHierarchyType = :type_var"),
 })
 public class InventoryItem extends EntityPojo {
 

@@ -3,7 +3,7 @@ package com.gmail.grigorij.ui.forms.readonly;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.CustomDialog;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.Divider;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.Display;

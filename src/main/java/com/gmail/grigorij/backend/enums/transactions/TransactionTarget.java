@@ -13,8 +13,9 @@ public enum TransactionTarget {
 	CATEGORY("Category"),
 	CATEGORY_STATUS("Category Status"),
 	TOOL("Tool"),
-	TOOL_STATUS("Tool Status");
+	TOOL_STATUS("Tool Status"),
 
+	MESSAGE("Message");
 
 	private String name;
 

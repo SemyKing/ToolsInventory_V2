@@ -4,8 +4,8 @@ import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.ui.components.ConfirmDialog;
-import com.gmail.grigorij.ui.components.CustomDialog;
+import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.Divider;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
@@ -140,12 +140,8 @@ public class EditableCompanyForm extends FormLayout {
 		try {
 			binder.validate();
 			if (binder.isValid()) {
-				binder.writeBean(company);
-
 
 				Location location = locationForm.getLocation();
-
-				System.out.println("getCompany() -> location: " + (location==null));
 
 				if (location == null) {
 					return null;
@@ -153,10 +149,7 @@ public class EditableCompanyForm extends FormLayout {
 					company.setAddress(location);
 				}
 
-
 				Person contactPerson = personForm.getPerson();
-
-				System.out.println("getCompany() -> contactPerson: " + (contactPerson==null));
 
 				if (contactPerson == null) {
 					return null;
@@ -164,7 +157,7 @@ public class EditableCompanyForm extends FormLayout {
 					company.setContactPerson(contactPerson);
 				}
 
-
+				binder.writeBean(company);
 				return company;
 			}
 		} catch (ValidationException e) {

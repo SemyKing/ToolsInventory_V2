@@ -10,10 +10,12 @@ import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.MessageType;
 import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.ConfirmDialog;
+import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.frames.ViewFrame;
 import com.gmail.grigorij.ui.utils.css.Display;
@@ -25,12 +27,15 @@ import com.gmail.grigorij.utils.converters.DateConverter;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 
 import java.time.LocalDate;
@@ -42,7 +47,6 @@ import java.util.Locale;
 /**
  * User receives Message when:
  * - The tool that user has reserved becomes Free
- * - Other user sends a Request for a tool that this user has
  * - Other user sends a simple Message
  */
 
@@ -111,17 +115,16 @@ public class Messages extends ViewFrame {
 		datesActionsLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
 
 
-		Button todayButton = UIUtils.createIconButton("Today", VaadinIcon.CALENDAR, ButtonVariant.LUMO_CONTRAST);
-		todayButton.addClickListener(e -> {
-			dateStartField.setValue(LocalDate.now());
-			dateEndField.setValue(LocalDate.now());
-			getMessagesBetweenDates();
-			showMessages();
+		Button newMessage = UIUtils.createIconButton("Message", VaadinIcon.ENVELOPE, ButtonVariant.LUMO_CONTRAST);
+		newMessage.setClassName(CLASS_NAME + "__new-message-button");
+		newMessage.addClickListener(e -> {
+			constructNewMessageDialog(false, null);
 		});
-		datesActionsLayout.add(todayButton);
-		datesActionsLayout.setComponentMargin(todayButton, Horizontal.S);
+		datesActionsLayout.add(newMessage);
+		datesActionsLayout.setComponentMargin(newMessage, Horizontal.S);
 
 		Checkbox showReadCheckbox = new Checkbox("Show Read Messages");
+		showReadCheckbox.setClassName(CLASS_NAME + "__show-read-messages-checkbox");
 		showReadCheckbox.setValue(true);
 		showReadCheckbox.addClickListener(e -> {
 			showReadMessages = showReadCheckbox.getValue();
@@ -266,7 +269,9 @@ public class Messages extends ViewFrame {
 			if (message.getMessageType().equals(MessageType.SIMPLE_MESSAGE) || message.getMessageType().equals(MessageType.TOOL_REQUEST)) {
 				Button replyButton = UIUtils.createSmallButton("Reply", VaadinIcon.REPLY, ButtonVariant.LUMO_PRIMARY);
 				replyButton.addClickListener(e -> {
-					replyToUser(message.getSenderId(), messageWrapper);
+					constructNewMessageDialog(true, message);
+
+					confirmMarkMessageAsRead(message, messageWrapper);
 				});
 				messageButtonsLayout.add(replyButton);
 			}
@@ -287,10 +292,6 @@ public class Messages extends ViewFrame {
 		return messageWrapper;
 	}
 
-
-	/*
-		MESSAGE ACTIONS
-	 */
 	private void confirmMarkMessageAsRead(Message message, FlexBoxLayout messageWrapper) {
 
 		if (message.getMessageType().equals(MessageType.SIMPLE_MESSAGE)) {
@@ -380,18 +381,104 @@ public class Messages extends ViewFrame {
 		handleUnreadMessagesCount();
 	}
 
-	private void replyToUser(long senderId, FlexBoxLayout messageWrapper) {
-		System.out.println("REPLY");
 
-		if (sendReply()) {
-			contentLayout.remove(messageWrapper);
+	private void constructNewMessageDialog(boolean isReply, Message originalMessage) {
+		CustomDialog dialog = new CustomDialog();
+		dialog.setCloseOnEsc(false);
+		dialog.setCloseOnOutsideClick(false);
+
+
+		ComboBox<User> recipientComboBox = new ComboBox<>("Recipient");
+		recipientComboBox.setItems();
+		recipientComboBox.setItemLabelGenerator(User::getFullName);
+		recipientComboBox.setRequired(true);
+
+		if (isReply) {
+			recipientComboBox.setValue(UserFacade.getInstance().getUserById(originalMessage.getSenderId()));
+			recipientComboBox.setEnabled(false);
+		} else {
+			List<User> recipients;
+
+			if (AuthenticationService.getCurrentSessionUser().getAccessGroup().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM)) {
+				recipients = UserFacade.getInstance().getAllUsers();
+			} else {
+				recipients = UserFacade.getInstance().getUsersInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId());
+			}
+
+//			recipients.remove(AuthenticationService.getCurrentSessionUser());
+			recipientComboBox.setItems(recipients);
 		}
+
+
+		TextField titleField = new TextField("Title");
+		titleField.setMinWidth("400px");
+
+		if (isReply) {
+			titleField.setValue("RE: " + originalMessage.getMessageHeader());
+		}
+
+		TextArea messageField = new TextArea("Message");
+		messageField.setRequired(true);
+		messageField.setWidthFull();
+		messageField.setMinHeight("300px");
+
+		if (isReply) {
+			dialog.setHeader(UIUtils.createH3Label("Reply Message"));
+		} else {
+			dialog.setHeader(UIUtils.createH3Label("New Message"));
+		}
+
+
+		dialog.getContent().add(recipientComboBox, titleField, messageField);
+		dialog.getCancelButton().addClickListener(e -> dialog.close());
+
+		dialog.getConfirmButton().setText("Send");
+		dialog.getConfirmButton().addClickListener(e -> {
+
+			if (recipientComboBox.getValue() == null) {
+				recipientComboBox.setInvalid(true);
+				recipientComboBox.setErrorMessage("Select Recipient");
+				return;
+			}
+
+			if (messageField.getValue().length() <= 0) {
+				messageField.setInvalid(true);
+				messageField.setErrorMessage("Cannot send empty message");
+				return;
+			}
+
+			Message message = new Message();
+			message.setSenderId(AuthenticationService.getCurrentSessionUser().getId());
+			message.setMessageType(MessageType.SIMPLE_MESSAGE);
+			message.setRecipientId(recipientComboBox.getValue().getId());
+
+			message.setMessageHeader(titleField.getValue());
+			message.setMessageText(messageField.getValue());
+
+			if (MessageFacade.getInstance().insert(message)) {
+
+				Transaction tr = new Transaction();
+				tr.setTransactionOperation(TransactionType.SEND);
+				tr.setTransactionTarget(TransactionTarget.MESSAGE);
+				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+				tr.setDestinationUser(recipientComboBox.getValue());
+				tr.setAdditionalInfo("User sent message");
+
+				TransactionFacade.getInstance().insert(tr);
+
+				UIUtils.showNotification("Message sent", UIUtils.NotificationType.SUCCESS);
+			} else {
+				UIUtils.showNotification("Message send error", UIUtils.NotificationType.ERROR);
+			}
+
+			Broadcaster.broadcastToUser(recipientComboBox.getValue().getId(), "You have new message");
+
+			dialog.close();
+		});
+
+		dialog.open();
 	}
 
-	private boolean sendReply() {
-
-		return true;
-	}
 
 	private void takeTool(Long toolId) {
 		InventoryItem tool = InventoryFacade.getInstance().getToolById(toolId);

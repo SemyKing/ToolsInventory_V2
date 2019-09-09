@@ -64,8 +64,8 @@ public class DatabaseDummyInsert {
 			for (int userInd = 0; userInd < usersPerCompany; userInd++) {
 
 				User user = new User();
-				user.setUsername("u" + compInd + "." + userInd);
-				user.setPassword("111111");
+				user.setUsername("user" + (compInd++) + "." + userInd);
+				user.setPassword("password");
 				user.setCompany(company);
 				user.setAccessGroup(AccessGroup.COMPANY_ADMIN);
 				user.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.NO, Permission.YES));
@@ -151,7 +151,6 @@ public class DatabaseDummyInsert {
 
 			companies.add(company);
 		}
-		System.out.println("companies generated");
 		insertCompanies();
 	}
 
@@ -274,8 +273,8 @@ public class DatabaseDummyInsert {
 
 
 		User admin = new User();
-		admin.setUsername("u");
-		admin.setPassword("p");
+		admin.setUsername("system_admin");
+		admin.setPassword("password");
 		admin.setCompany(administration);
 		admin.setThemeVariant(LumoStyles.LIGHT);
 		admin.setAdditionalInfo("System Administrator");
@@ -312,7 +311,6 @@ public class DatabaseDummyInsert {
 	private void insertTools() {
 		for (InventoryItem ie : tools) {
 			InventoryFacade.getInstance().insert(ie);
-
 
 			Transaction transaction = new Transaction();
 			transaction.setWhoDid(transactionUser);

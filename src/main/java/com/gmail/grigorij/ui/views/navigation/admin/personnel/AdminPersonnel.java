@@ -10,7 +10,7 @@ import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.ConfirmDialog;
+import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.Divider;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;

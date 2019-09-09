@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.authentication.passwordrecovery;
+package com.gmail.grigorij.ui.views.authentication.password_reset;
 
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
@@ -33,14 +33,14 @@ import com.vaadin.flow.theme.lumo.Lumo;
 
 @Route(value = "reset-password")
 @StyleSheet("styles/views/password-reset.css")
-public class PasswordResetView extends FlexBoxLayout implements HasUrlParameter<String> {
+public class ResetPasswordView extends FlexBoxLayout implements HasUrlParameter<String> {
 
 	private static final String CLASS_NAME = "password-reset-view";
 
 	private FlexBoxLayout formLayout;
 	private RecoveryLink link;
 
-	public PasswordResetView() {
+	public ResetPasswordView() {
 		setSizeFull();
 		setClassName(CLASS_NAME);
 		setJustifyContentMode(JustifyContentMode.CENTER);
@@ -174,7 +174,7 @@ public class PasswordResetView extends FlexBoxLayout implements HasUrlParameter<
 
 			user.setPassword(newPassword);
 			if (UserFacade.getInstance().update(user)) {
-				UIUtils.showNotification("Password reset successfully", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Password reset", UIUtils.NotificationType.SUCCESS);
 
 				Transaction tr = new Transaction();
 				tr.setTransactionOperation(TransactionType.EDIT);

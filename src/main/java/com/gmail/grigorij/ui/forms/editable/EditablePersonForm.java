@@ -78,7 +78,6 @@ public class EditablePersonForm extends FormLayout {
 			binder.validate();
 			if (binder.isValid()) {
 				binder.writeBean(person);
-
 				return person;
 			}
 		} catch (ValidationException e) {

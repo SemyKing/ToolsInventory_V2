@@ -77,7 +77,6 @@ public class EditableLocationForm extends FormLayout {
 			binder.validate();
 			if (binder.isValid()) {
 				binder.writeBean(location);
-
 				return location;
 			}
 		} catch (ValidationException e) {

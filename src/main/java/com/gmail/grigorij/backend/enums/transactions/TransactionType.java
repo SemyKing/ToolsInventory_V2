@@ -4,6 +4,7 @@ public enum TransactionType {
 	ADD("Add"),
 	EDIT("Edit"),
 	DELETE("Delete"),
+	SEND("Send"),
 
 	LOGIN("Log In"),
 	LOGOUT("Log Out");
