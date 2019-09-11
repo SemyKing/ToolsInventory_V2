@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.utils;
 
-import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.*;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.vaadin.flow.component.Component;
@@ -8,7 +8,6 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
@@ -344,14 +343,7 @@ public class UIUtils {
 
 	public static Component createInitials(String initials) {
 		FlexBoxLayout layout = new FlexBoxLayout(new Text(initials.toUpperCase()));
-		setFontSize(FontSize.S, layout);
 		layout.addClassName("initials");
-
-		layout.setAlignItems(FlexComponent.Alignment.CENTER);
-		layout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-
-		layout.setHeight(LumoStyles.Size.M);
-		layout.setWidth(LumoStyles.Size.M);
 		return layout;
 	}
 

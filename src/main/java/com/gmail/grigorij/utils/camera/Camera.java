@@ -3,22 +3,16 @@ package com.gmail.grigorij.utils.camera;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.HtmlImport;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamVariable;
 import com.vaadin.flow.shared.Registration;
 
-import elemental.json.JsonFactory;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-import elemental.json.impl.JreJsonFactory;
-
 import java.io.OutputStream;
-import java.util.Map;
 
 
 @Tag("camera-element")
-@HtmlImport("elements/camera-element.html")
+@JsModule("./src/camera-element.js")
 public class Camera extends Component {
 
 	Camera() {}

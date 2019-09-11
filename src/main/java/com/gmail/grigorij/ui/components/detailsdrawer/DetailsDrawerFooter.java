@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.detailsdrawer;
 
-import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;

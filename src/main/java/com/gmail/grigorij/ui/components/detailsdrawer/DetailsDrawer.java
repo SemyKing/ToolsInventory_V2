@@ -5,12 +5,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 
-@StyleSheet("styles/components/details-drawer.css")
+@CssImport("./styles/components/details-drawer.css")
 public class DetailsDrawer extends Composite<FlexLayout> implements HasStyle, HasSize {
 
     private static final String CLASS_NAME = "details-drawer";

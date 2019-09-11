@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.detailsdrawer;
 
-import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.*;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.vaadin.flow.component.button.Button;
