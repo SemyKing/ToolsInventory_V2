@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.application.admin;
+package com.gmail.grigorij.ui.application.views.admin;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
@@ -19,7 +19,6 @@ import com.gmail.grigorij.ui.components.forms.editable.EditableUserForm;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -39,7 +38,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
 
 
-public class AdminPersonnel extends FlexBoxLayout {
+class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
 
@@ -50,10 +49,9 @@ public class AdminPersonnel extends FlexBoxLayout {
 	private ListDataProvider<User> dataProvider;
 
 	private DetailsDrawer detailsDrawer;
-	private Button deleteButton;
 
 
-	public AdminPersonnel(AdminContainerView adminMain) {
+	AdminPersonnel(AdminContainerView adminMain) {
 		this.adminMain = adminMain;
 		setClassName(CLASS_NAME);
 		setSizeFull();
@@ -183,27 +181,22 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 	private void createDetailsDrawer() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
-		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
-		detailsDrawer.setContent(userForm);
-		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Header
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("User Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
-//		Select<String> userStatusSelector = new Select<>(ProjectConstants.ACTIVE, ProjectConstants.INACTIVE);
-//		userForm.setUserStatusSelector(userStatusSelector);
-
-//		detailsDrawerHeader.add(userStatusSelector);
-//		detailsDrawerHeader.getContainer().setComponentMargin(userStatusSelector, Left.AUTO);
-
 		detailsDrawer.setHeader(detailsDrawerHeader);
-		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
+
+		// Content
+		detailsDrawer.setContent(userForm);
+		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Footer
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.getSave().addClickListener(e -> updateUser());
 		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
+
 		detailsDrawer.setFooter(detailsDrawerFooter);
 
 		adminMain.setDetailsDrawer(detailsDrawer);
@@ -213,7 +206,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 		userForm.setTargetUser(user);
 		detailsDrawer.show();
 
-		UIUtils.updateFormSize(userForm);
+//		UIUtils.updateFormSize(userForm);
 	}
 
 	private void closeDetails() {
@@ -222,12 +215,9 @@ public class AdminPersonnel extends FlexBoxLayout {
 	}
 
 	private void updateUser() {
-		System.out.println("updateUser()");
-
 		User editedUser = userForm.getTargetUser();
 
 		if (editedUser != null) {
-
 			if (userForm.isNew()) {
 				if (UserFacade.getInstance().insert(editedUser)) {
 					dataProvider.getItems().add(editedUser);
@@ -264,40 +254,6 @@ public class AdminPersonnel extends FlexBoxLayout {
 			}
 
 			grid.select(editedUser);
-		}
-	}
-
-	private void confirmDelete() {
-		System.out.println("Delete selected user...");
-
-		if (detailsDrawer.isOpen()) {
-
-			final User selectedUser =  grid.asSingleSelect().getValue();
-			if (selectedUser != null) {
-
-				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, " selected user ", selectedUser.getUsername());
-				dialog.closeOnCancel();
-				dialog.getConfirmButton().addClickListener(e -> {
-					if (UserFacade.getInstance().remove(selectedUser)) {
-						dataProvider.getItems().remove(selectedUser);
-						dataProvider.refreshAll();
-						closeDetails();
-						UIUtils.showNotification("User deleted successfully", UIUtils.NotificationType.SUCCESS);
-
-						Transaction tr = new Transaction();
-						tr.setTransactionOperation(TransactionType.DELETE);
-						tr.setTransactionTarget(TransactionTarget.USER);
-						tr.setDestinationUser(selectedUser);
-						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-						tr.setAdditionalInfo("Completely remove from database");
-						TransactionFacade.getInstance().insert(tr);
-					} else {
-						UIUtils.showNotification("User delete failed", UIUtils.NotificationType.ERROR);
-					}
-					dialog.close();
-				});
-				dialog.open();
-			}
 		}
 	}
 
@@ -368,6 +324,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 //			e.printStackTrace();
 //		}
 //	}
+
 
 	private void exportOnClick() {
 		System.out.println("Export Users...");

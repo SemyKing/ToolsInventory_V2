@@ -5,13 +5,10 @@ import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
 import com.gmail.grigorij.backend.enums.permissions.AccessGroup;
 import com.gmail.grigorij.backend.enums.permissions.Permission;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -21,7 +18,7 @@ import java.util.List;
 
 public class DummyDataGenerator {
 
-	public static boolean entitiesGenerated = false;
+	private static boolean entitiesGenerated = false;
 
 
 	private int companiesCount = 3; //excluding 1st company: ADMINISTRATION
@@ -32,21 +29,12 @@ public class DummyDataGenerator {
 	private int subCategories = 2;
 	private int toolsPerCategory = toolsCount / toolCategoriesCount;
 
-	private List<Company> companies;
-	private List<User> users;
-	private List<InventoryItem> tools;
+	private List<Company> companies = new ArrayList<>();
+	private List<User> users = new ArrayList<>();
+	private List<InventoryItem> tools = new ArrayList<>();
 
 
 	public DummyDataGenerator() {
-		companies = new ArrayList<>();
-		users = new ArrayList<>();
-		tools = new ArrayList<>();
-
-		generateAndInsert();
-	}
-
-
-	private void generateAndInsert() {
 		if (!entitiesGenerated) {
 			generateCompanies();
 
@@ -56,6 +44,7 @@ public class DummyDataGenerator {
 		}
 		entitiesGenerated = true;
 	}
+
 
 	private void generateCompanies() {
 		Company administrationCompany = new Company();
@@ -117,8 +106,6 @@ public class DummyDataGenerator {
 		}
 	}
 
-	private static int counter = 1;
-
 	private void generateUsers() {
 		companies = CompanyFacade.getInstance().getAllCompanies();
 
@@ -178,7 +165,7 @@ public class DummyDataGenerator {
 			}
 		}
 
-		System.out.println("\nUSERS: " + users.size());
+//		System.out.println("\nUSERS: " + users.size());
 
 		for (User user : users) {
 			UserFacade.getInstance().insert(user);

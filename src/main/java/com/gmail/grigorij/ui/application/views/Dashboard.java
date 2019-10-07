@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.application;
+package com.gmail.grigorij.ui.application.views;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
@@ -30,11 +30,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @PageTitle("Dashboard")
 @CssImport("./styles/views/dashboard.css")
-public class Dashboard extends ViewFrame {
+class Dashboard extends ViewFrame {
 
 	private final static String CLASS_NAME = "dashboard";
 
-	public Dashboard() {
+	Dashboard() {
 		setId("dashboard");
 		setViewContent(createContent());
 	}

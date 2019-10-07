@@ -1,4 +1,4 @@
-package com.gmail.grigorij;
+package com.gmail.grigorij.utils;
 
 import com.vaadin.flow.server.*;
 

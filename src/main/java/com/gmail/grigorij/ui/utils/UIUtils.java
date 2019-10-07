@@ -450,6 +450,31 @@ public class UIUtils {
 		notification.open();
 	}
 
+	public static Notification constructNotification(String msg, NotificationType type, int... duration) {
+		Notification notification = new Notification();
+		notification.setPosition(Notification.Position.TOP_CENTER);
+
+		Label msgLabel = new Label(msg);
+		msgLabel.addClassName("custom-notification-label");
+
+		FlexBoxLayout layout = new FlexBoxLayout();
+		layout.setClassName("custom-notification");
+		layout.setBackgroundColor(type.getBackgroundColor());
+		layout.add(msgLabel);
+
+		UIUtils.setTooltip("Close", layout);
+		layout.addClickListener(e -> notification.close());
+
+		if (duration.length > 0) {
+			notification.setDuration(duration[0]);
+		} else {
+			notification.setDuration(type.getDuration());
+		}
+
+		notification.add(layout);
+		return notification;
+	}
+
 
 	/* === CSS UTILITIES === */
 

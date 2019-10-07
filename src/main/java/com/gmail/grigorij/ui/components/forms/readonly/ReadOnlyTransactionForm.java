@@ -96,10 +96,10 @@ public class ReadOnlyTransactionForm extends FlexBoxLayout {
 
 		constructDynamicForm();
 
-		UIUtils.updateFormSize(staticForm);
+//		UIUtils.updateFormSize(staticForm);
 
 		if (dynamicForm != null) {
-			UIUtils.updateFormSize(dynamicForm);
+//			UIUtils.updateFormSize(dynamicForm);
 		}
 
 

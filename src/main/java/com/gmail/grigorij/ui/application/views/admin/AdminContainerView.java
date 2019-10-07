@@ -1,9 +1,9 @@
-package com.gmail.grigorij.ui.views.application.admin;
+package com.gmail.grigorij.ui.application.views.admin;
 
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.layouts.SplitViewFrame;
 import com.gmail.grigorij.ui.components.navigation.bar.AppBar;
-import com.gmail.grigorij.ui.views.application.ApplicationContainerView;
+import com.gmail.grigorij.ui.application.views.ApplicationContainerView;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.CssImport;

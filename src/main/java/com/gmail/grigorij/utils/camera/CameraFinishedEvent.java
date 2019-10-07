@@ -2,11 +2,11 @@ package com.gmail.grigorij.utils.camera;
 
 import com.vaadin.flow.component.ComponentEvent;
 
-public class FinishedEvent extends ComponentEvent<Camera> {
+public class CameraFinishedEvent extends ComponentEvent<Camera> {
 
 	private String mime;
 
-	public FinishedEvent(Camera source, boolean fromClient, String mime) {
+	public CameraFinishedEvent(Camera source, boolean fromClient, String mime) {
 		super(source, fromClient);
 		this.mime = mime;
 	}

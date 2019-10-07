@@ -45,7 +45,7 @@ import '@polymer/polymer/lib/elements/custom-style.js';
 		min-width: 25%;
 		align-items: center;
 		margin: var(--lumo-space-s);
-		box-shadow: var( --lumo-box-shadow-m);
+		box-shadow: var(--custom-shadow) var(--lumo-secondary-text-color);
 		flex-direction: column;
 	}
 	.dashboard-item__header {

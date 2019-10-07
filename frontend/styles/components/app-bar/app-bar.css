@@ -1,6 +1,6 @@
 .app-bar {
     background-color: var(--lumo-shade-10pct);
-    box-shadow: var(--lumo-box-shadow-m);
+    box-shadow: var(--custom-shadow) var(--lumo-secondary-text-color);
     flex-direction: column;
     position: relative;
     z-index: 1;

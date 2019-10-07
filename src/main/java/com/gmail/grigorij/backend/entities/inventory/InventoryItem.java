@@ -6,7 +6,7 @@ import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
-import com.gmail.grigorij.ui.views.application.Inventory;
+import com.gmail.grigorij.ui.application.views.Inventory;
 
 import javax.persistence.*;
 import java.sql.Date;

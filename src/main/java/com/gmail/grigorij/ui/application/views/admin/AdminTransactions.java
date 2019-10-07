@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.application.admin;
+package com.gmail.grigorij.ui.application.views.admin;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
@@ -14,7 +14,7 @@ import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.ui.components.forms.readonly.ReadOnlyTransactionForm;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.gmail.grigorij.utils.converters.DateConverter;
+import com.gmail.grigorij.utils.DateConverter;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -29,7 +29,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 
-public class AdminTransactions extends FlexBoxLayout {
+class AdminTransactions extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-transactions";
 
@@ -44,7 +44,8 @@ public class AdminTransactions extends FlexBoxLayout {
 
 	private DatePicker dateStartField, dateEndField;
 
-	public AdminTransactions(AdminContainerView adminMain) {
+
+	AdminTransactions(AdminContainerView adminMain) {
 		this.adminMain = adminMain;
 		setClassName(CLASS_NAME);
 		setSizeFull();
@@ -182,23 +183,22 @@ public class AdminTransactions extends FlexBoxLayout {
 
 
 
-
 	private void createDetailsDrawer() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
-		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
-		detailsDrawer.setContent(transactionsForm);
-		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Header
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Transaction Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
 		detailsDrawer.setHeader(detailsDrawerHeader);
-		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
+
+		// Content
+		detailsDrawer.setContent(transactionsForm);
+		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Footer
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
-		detailsDrawerFooter.removeButton(detailsDrawerFooter.getSave());
+		detailsDrawerFooter.getContent().remove(detailsDrawerFooter.getSave());
 		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 

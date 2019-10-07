@@ -2,11 +2,8 @@ package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.ui.utils.UIUtils;
 
 import javax.persistence.NoResultException;
-import javax.persistence.Query;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CompanyFacade {

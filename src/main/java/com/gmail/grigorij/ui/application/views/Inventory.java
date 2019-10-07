@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.application;
+package com.gmail.grigorij.ui.application.views;
 
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
@@ -65,7 +65,7 @@ public class Inventory extends SplitViewFrame {
 	private Button reserveToolButton;
 	private Button reportToolButton;
 
-	public Inventory() {
+	Inventory() {
 		setViewContent(createContent());
 		setViewDetails(createDetailsDrawer());
 	}
@@ -239,7 +239,6 @@ public class Inventory extends SplitViewFrame {
 
 	private DetailsDrawer createDetailsDrawer() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
-		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
 		detailsDrawer.setContent(toolForm);
 		detailsDrawer.setContentPadding(Left.M, Right.S);
 
@@ -248,7 +247,6 @@ public class Inventory extends SplitViewFrame {
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
 		detailsDrawer.setHeader(detailsDrawerHeader);
-		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
 
 		// Footer
 		detailsDrawer.setFooter(createDetailsFooter());
@@ -324,7 +322,7 @@ public class Inventory extends SplitViewFrame {
 					toolForm.setTool(tool);
 					detailsDrawer.show();
 
-					UIUtils.updateFormSize(toolForm);
+//					UIUtils.updateFormSize(toolForm);
 				}
 			}
 		}

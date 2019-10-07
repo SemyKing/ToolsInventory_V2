@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.application;
+package com.gmail.grigorij.ui.application.views;
 
 import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.MainLayout;
@@ -10,7 +10,7 @@ import com.gmail.grigorij.ui.components.navigation.drawer.NaviItem;
 import com.gmail.grigorij.ui.components.navigation.drawer.NaviMenu;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.Overflow;
-import com.gmail.grigorij.ui.views.application.admin.AdminContainerView;
+import com.gmail.grigorij.ui.application.views.admin.AdminContainerView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -21,6 +21,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
@@ -28,14 +29,19 @@ import com.vaadin.flow.shared.Registration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @CssImport("./styles/lumo/lumo-styles.css")
-//@CssImport("./styles/misc/box-shadow-borders.css")
+@CssImport("./styles/components/forms.css")
 @CssImport(value = "./styles/components/grid-style.css", themeFor = "vaadin-grid")
 @CssImport(value = "./styles/components/menu-bar-style.css", themeFor = "vaadin-menu-bar")
 public class ApplicationContainerView extends FlexBoxLayout implements PageConfigurator {
 
 	private static final Logger log = LoggerFactory.getLogger(ApplicationContainerView.class);
 	private static final String CLASS_NAME = "main-menu";
+
+	private List<Notification> notifications = new ArrayList<>();
 
 	private Div appHeaderOuter;
 
@@ -53,30 +59,26 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 	public ApplicationContainerView(MainLayout mainLayout) {
 		this.mainLayout = mainLayout;
-		setId("menu-layout");
+
 		addClassName(CLASS_NAME);
 		setThemeVariant(AuthenticationService.getCurrentSessionUser().getThemeVariant());
 		setFlexDirection(FlexDirection.COLUMN);
 		setSizeFull();
 
-		// Initialise the navigation drawer
 		initDrawerStructure();
 
-		// Configure the headers and footers (optional)
 		initHeadersAndFooters();
 
 		// Populate the navigation drawer
-		//!!! Must be constructed after initHeadersAndFooters();
+		// !!! Must be constructed after initHeadersAndFooters();
 		initNaviItems();
-
 
 		//Show notification about closing tab
 //		if (UI.getCurrent() != null) {
 //			Page page = UI.getCurrent().getPage();
 //
 //			if (page != null) {
-//				System.out.println("execute js");
-//				page.executeJavaScript("window.onbeforeunload = confirmExit; function confirmExit() { return 'Are you sure, you want to close?';}");
+//				page.executeJavaScript("window.onbeforeunload = confirmExit; function confirmExit() { return 'Are you sure, you want to exit?';}");
 //			}
 //		}
 	}
@@ -139,6 +141,9 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		messages.addClickListener(e-> {
 			naviItemOnClick(messages);
 			viewContainer.add(new Messages());
+
+			notifications.forEach(Notification::close);
+			notifications.clear();
 		});
 		menu.addNaviItem(messages);
 
@@ -154,17 +159,16 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		});
 		menu.addNaviItem(reporting);
 
-
 		if (AuthenticationService.getCurrentSessionUser().getAccessGroup().getPermissionLevel().higherOrEqualsTo(PermissionLevel.COMPANY)) {
-			NaviItem admin = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN);
-			menu.addNaviItem(admin);
+			NaviItem adminItem = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN);
+			menu.addNaviItem(adminItem);
 
-			admin.addClickListener(e-> {
-				admin.expandCollapse.click();
+			adminItem.addClickListener(e-> {
+				adminItem.expandCollapse.click();
 			});
 
 			NaviItem admin_companies = new NaviItem(ProjectConstants.COMPANIES);
-			menu.addNaviItem(admin, admin_companies);
+			menu.addNaviItem(adminItem, admin_companies);
 
 			admin_companies.addClickListener(e-> {
 				adminNaviItemOnClick(admin_companies);
@@ -172,27 +176,26 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 
 			NaviItem admin_personnel = new NaviItem(ProjectConstants.PERSONNEL);
-			menu.addNaviItem(admin, admin_personnel);
+			menu.addNaviItem(adminItem, admin_personnel);
 
 			admin_personnel.addClickListener(e-> {
 				adminNaviItemOnClick(admin_personnel);
 			});
 
 			NaviItem admin_inventory = new NaviItem(ProjectConstants.ADMIN_INVENTORY);
-			menu.addNaviItem(admin, admin_inventory);
+			menu.addNaviItem(adminItem, admin_inventory);
 
 			admin_inventory.addClickListener(e-> {
 				adminNaviItemOnClick(admin_inventory);
 			});
 
 			NaviItem admin_transactions = new NaviItem(ProjectConstants.ADMIN_TRANSACTIONS);
-			menu.addNaviItem(admin, admin_transactions);
+			menu.addNaviItem(adminItem, admin_transactions);
 
 			admin_transactions.addClickListener(e-> {
 				adminNaviItemOnClick(admin_transactions);
 			});
 		}
-
 
 		//Open Dashboard view
 		naviItemOnClick(dashboard);
@@ -209,7 +212,6 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 	private void adminNaviItemOnClick(NaviItem naviItem) {
 		naviDrawer.close();
-
 		viewContainer.removeAll();
 		appBar.reset();
 
@@ -310,7 +312,12 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 	protected void onAttach(AttachEvent attachEvent) {
 		UI ui = attachEvent.getUI();
 		broadcasterRegistration = Broadcaster.registerUser(AuthenticationService.getCurrentSessionUser().getId(), newMessage -> {
-			ui.access(() -> UIUtils.showNotification(newMessage, UIUtils.NotificationType.INFO, 0));
+			ui.access(() -> {
+				Notification notification = UIUtils.constructNotification(newMessage, UIUtils.NotificationType.INFO, 0);
+				notification.open();
+
+				notifications.add(notification);
+			});
 			ui.getSession().lock();
 			ui.push();
 			ui.getSession().unlock();

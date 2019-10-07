@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.application.admin;
+package com.gmail.grigorij.ui.application.views.admin;
 
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
@@ -67,11 +67,10 @@ public class AdminInventory extends FlexBoxLayout {
 	private DetailsDrawer detailsDrawer;
 	private DetailsDrawerHeader detailsDrawerHeader;
 	private Button copyToolButton;
-	private Button deleteToolButton;
 	private Button editToolButton;
 
 
-	public AdminInventory(AdminContainerView adminMain) {
+	AdminInventory(AdminContainerView adminMain) {
 		this.adminMain = adminMain;
 
 		setClassName(CLASS_NAME);
@@ -245,33 +244,29 @@ public class AdminInventory extends FlexBoxLayout {
 
 	private void createDetailsDrawer() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
-		detailsDrawer.setContent(editableToolForm);
-		detailsDrawer.setContentPadding(Left.M, Right.S);
-		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
 
+		// Header
 		detailsDrawerHeader = new DetailsDrawerHeader("");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
-		copyToolButton = UIUtils.createIconButton(VaadinIcon.COPY, ButtonVariant.LUMO_CONTRAST);
+		copyToolButton = UIUtils.createIconButton(VaadinIcon.COPY, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY_INLINE);
 		copyToolButton.addClickListener(e -> constructToolCopyDialog());
-		UIUtils.setTooltip("Create a copy of this inventory", copyToolButton);
+		UIUtils.setTooltip("Create a copy of this Tool", copyToolButton);
 
-		deleteToolButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR);
-		deleteToolButton.addClickListener(e -> confirmDelete());
-		UIUtils.setTooltip("Delete this inventory from Database", deleteToolButton);
-
-		detailsDrawerHeader.getContainer().add(copyToolButton, deleteToolButton);
-		detailsDrawerHeader.getContainer().setComponentMargin(copyToolButton, Left.AUTO);
-		detailsDrawerHeader.getContainer().setComponentMargin(deleteToolButton, Left.M);
-
+		detailsDrawerHeader.getContent().add(copyToolButton);
+		detailsDrawerHeader.getContent().setComponentMargin(copyToolButton, Left.AUTO, Right.M);
 
 		detailsDrawer.setHeader(detailsDrawerHeader);
-		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
+
+		// Content
+		detailsDrawer.setContent(editableToolForm);
+		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Footer
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.getSave().addClickListener(e -> updateTool());
 		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
+
 		detailsDrawer.setFooter(detailsDrawerFooter);
 
 		adminMain.setDetailsDrawer(detailsDrawer);
@@ -280,14 +275,13 @@ public class AdminInventory extends FlexBoxLayout {
 	private void showToolDetails(InventoryItem tool, String title) {
 		detailsDrawerHeader.setTitle(title);
 
-		deleteToolButton.setEnabled( tool != null );
 		copyToolButton.setEnabled( tool != null );
 
 		editableToolForm.setBulkEditMode(false);
 		editableToolForm.setTool(tool);
 		detailsDrawer.show();
 
-		UIUtils.updateFormSize(editableToolForm);
+//		UIUtils.updateFormSize(editableToolForm);
 	}
 
 	private void closeDetails() {
@@ -347,44 +341,44 @@ public class AdminInventory extends FlexBoxLayout {
 		/*
 		Allow and handle category delete
 		 */
-		if (!bNewCategory) {
-			dialog.setDeleteButtonVisible(true);
-			dialog.getDeleteButton().addClickListener(deleteEvent -> {
-
-				ConfirmDialog confirmCategoryDeleteDialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "category", category.getName());
-				confirmCategoryDeleteDialog.closeOnCancel();
-				confirmCategoryDeleteDialog.getConfirmButton().addClickListener(confirmDeleteEvent -> {
-					try {
-						InventoryFacade.getInstance().remove(category, new OperationStatus() {
-							@Override
-							public void onSuccess(String msg, UIUtils.NotificationType type) {
-								UIUtils.showNotification("Category deleted successfully", type);
-
-								confirmCategoryDeleteDialog.close();
-								dialog.close();
-
-								Transaction tr = new Transaction();
-								tr.setTransactionOperation(TransactionType.DELETE);
-								tr.setTransactionTarget(TransactionTarget.CATEGORY);
-								tr.setInventoryEntity(category);
-								tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-								tr.setAdditionalInfo("Completely removed from database");
-								TransactionFacade.getInstance().insert(tr);
-							}
-
-							@Override
-							public void onFail(String msg, UIUtils.NotificationType type) {
-								UIUtils.showNotification(msg, type);
-							}
-						});
-					} catch (Exception ex) {
-						UIUtils.showNotification("Category delete failed", UIUtils.NotificationType.ERROR);
-						ex.printStackTrace();
-					}
-				});
-				confirmCategoryDeleteDialog.open();
-			});
-		}
+//		if (!bNewCategory) {
+//			dialog.setDeleteButtonVisible(true);
+//			dialog.getDeleteButton().addClickListener(deleteEvent -> {
+//
+//				ConfirmDialog confirmCategoryDeleteDialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "category", category.getName());
+//				confirmCategoryDeleteDialog.closeOnCancel();
+//				confirmCategoryDeleteDialog.getConfirmButton().addClickListener(confirmDeleteEvent -> {
+//					try {
+//						InventoryFacade.getInstance().remove(category, new OperationStatus() {
+//							@Override
+//							public void onSuccess(String msg, UIUtils.NotificationType type) {
+//								UIUtils.showNotification("Category deleted successfully", type);
+//
+//								confirmCategoryDeleteDialog.close();
+//								dialog.close();
+//
+//								Transaction tr = new Transaction();
+//								tr.setTransactionOperation(TransactionType.DELETE);
+//								tr.setTransactionTarget(TransactionTarget.CATEGORY);
+//								tr.setInventoryEntity(category);
+//								tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+//								tr.setAdditionalInfo("Completely removed from database");
+//								TransactionFacade.getInstance().insert(tr);
+//							}
+//
+//							@Override
+//							public void onFail(String msg, UIUtils.NotificationType type) {
+//								UIUtils.showNotification(msg, type);
+//							}
+//						});
+//					} catch (Exception ex) {
+//						UIUtils.showNotification("Category delete failed", UIUtils.NotificationType.ERROR);
+//						ex.printStackTrace();
+//					}
+//				});
+//				confirmCategoryDeleteDialog.open();
+//			});
+//		}
 
 		dialog.open();
 	}
@@ -510,54 +504,52 @@ public class AdminInventory extends FlexBoxLayout {
 		}
 	}
 
-	private void confirmDelete() {
-		if (detailsDrawer.isOpen()) {
-
-			final InventoryItem selectedTool = selectedTools.get(0);
-
-			if (selectedTool != null) {
-
-				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, " selected tool ", selectedTool.getName());
-				dialog.closeOnCancel();
-				dialog.getConfirmButton().addClickListener(e -> {
-
-					InventoryFacade.getInstance().remove(selectedTool, new OperationStatus() {
-						@Override
-						public void onSuccess(String msg, UIUtils.NotificationType type) {
-							selectedTools.clear();
-							grid.select(null);
-
-							dataProvider.getItems().remove(selectedTool);
-							dataProvider.refreshAll();
-
-							closeDetails();
-							UIUtils.showNotification(msg, type);
-
-							dialog.close();
-
-							Transaction tr = new Transaction();
-							tr.setTransactionOperation(TransactionType.DELETE);
-							tr.setTransactionTarget(TransactionTarget.TOOL);
-							tr.setInventoryEntity(selectedTool);
-							tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-							tr.setAdditionalInfo("Completely removed from database");
-							TransactionFacade.getInstance().insert(tr);
-						}
-
-						@Override
-						public void onFail(String msg, UIUtils.NotificationType type) {
-							UIUtils.showNotification(msg, type);
-
-							dialog.close();
-						}
-					});
-				});
-				dialog.open();
-			}
-		}
-	}
-
-
+//	private void confirmDelete() {
+//		if (detailsDrawer.isOpen()) {
+//
+//			final InventoryItem selectedTool = selectedTools.get(0);
+//
+//			if (selectedTool != null) {
+//
+//				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, " selected tool ", selectedTool.getName());
+//				dialog.closeOnCancel();
+//				dialog.getConfirmButton().addClickListener(e -> {
+//
+//					InventoryFacade.getInstance().remove(selectedTool, new OperationStatus() {
+//						@Override
+//						public void onSuccess(String msg, UIUtils.NotificationType type) {
+//							selectedTools.clear();
+//							grid.select(null);
+//
+//							dataProvider.getItems().remove(selectedTool);
+//							dataProvider.refreshAll();
+//
+//							closeDetails();
+//							UIUtils.showNotification(msg, type);
+//
+//							dialog.close();
+//
+//							Transaction tr = new Transaction();
+//							tr.setTransactionOperation(TransactionType.DELETE);
+//							tr.setTransactionTarget(TransactionTarget.TOOL);
+//							tr.setInventoryEntity(selectedTool);
+//							tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+//							tr.setAdditionalInfo("Completely removed from database");
+//							TransactionFacade.getInstance().insert(tr);
+//						}
+//
+//						@Override
+//						public void onFail(String msg, UIUtils.NotificationType type) {
+//							UIUtils.showNotification(msg, type);
+//
+//							dialog.close();
+//						}
+//					});
+//				});
+//				dialog.open();
+//			}
+//		}
+//	}
 
 	private void exportTools() {
 		System.out.println("Export Tools...");
@@ -684,7 +676,7 @@ public class AdminInventory extends FlexBoxLayout {
 			***HEADER BUTTONS & EVENTS***
 		 */
 		// ACTIVE WHEN COPYING TOOLS -> ALLOWS TO ADD ONE MORE COPY OF CURRENT TOOL
-		Button addOneCopyButton = UIUtils.createIconButton(VaadinIcon.PLUS, ButtonVariant.LUMO_CONTRAST);
+		Button addOneCopyButton = UIUtils.createIconButton(VaadinIcon.PLUS, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY_INLINE);
 		UIUtils.setTooltip("Create new copy of this Tool", addOneCopyButton);
 		addOneCopyButton.addClickListener(e -> {
 			InventoryItem newToolCopy = new InventoryItem(bulkTools.get(currentBulkEditToolIndex));
@@ -697,11 +689,11 @@ public class AdminInventory extends FlexBoxLayout {
 
 		addOneCopyButton.setEnabled(!editMode);
 
-		Button toolsToLeftButton = UIUtils.createIconButton(VaadinIcon.ANGLE_LEFT, ButtonVariant.LUMO_CONTRAST);
-		Button toolsToRightButton = UIUtils.createIconButton(VaadinIcon.ANGLE_RIGHT, ButtonVariant.LUMO_CONTRAST);
+		Button toolsToLeftButton = UIUtils.createIconButton(VaadinIcon.ANGLE_LEFT, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY_INLINE);
+		Button toolsToRightButton = UIUtils.createIconButton(VaadinIcon.ANGLE_RIGHT, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY_INLINE);
 
 		// ACTIVE WHEN COPYING TOOLS -> ALLOWS TO REMOVE CURRENT TOOL FROM LIST
-		Button removeCurrentTool = UIUtils.createIconButton(VaadinIcon.MINUS, ButtonVariant.LUMO_ERROR);
+		Button removeCurrentTool = UIUtils.createIconButton(VaadinIcon.MINUS, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY_INLINE);
 		UIUtils.setTooltip("Remove selected Tool", removeCurrentTool);
 		removeCurrentTool.addClickListener(e -> {
 			// If more than one item

@@ -19,11 +19,14 @@ public class DetailsDrawer extends Composite<FlexLayout> implements HasStyle, Ha
     private final FlexBoxLayout content;
     private final FlexBoxLayout footer;
 
+    private boolean open = false;
+
     public enum Position {
         RIGHT, BOTTOM
     }
 
-    public DetailsDrawer(Position position, Component... components) {
+
+    public DetailsDrawer(Position position) {
         addClassName(CLASS_NAME);
 
         header = new FlexBoxLayout();
@@ -31,7 +34,6 @@ public class DetailsDrawer extends Composite<FlexLayout> implements HasStyle, Ha
 
         content = new FlexBoxLayout();
         content.addClassName(CLASS_NAME + "__content");
-        content.setFlexDirection(FlexDirection.COLUMN);
 
         footer = new FlexBoxLayout();
         footer.addClassName(CLASS_NAME + "__footer");
@@ -41,14 +43,21 @@ public class DetailsDrawer extends Composite<FlexLayout> implements HasStyle, Ha
         setPosition(position);
     }
 
-    public void setHeader(Component... components) {
+    public void setHeader(DetailsDrawerHeader detailsDrawerHeader) {
         this.header.removeAll();
-        this.header.add(components);
+        this.header.add(detailsDrawerHeader);
     }
 
-    public FlexBoxLayout getHeader() {
-        return this.header;
+    public void setContent(Component... components) {
+        this.content.removeAll();
+        this.content.add(components);
     }
+
+    public void setFooter(FlexBoxLayout detailsDrawerFooter) {
+        this.footer.removeAll();
+        this.footer.add(detailsDrawerFooter);
+    }
+
 
     public void setContentPadding(Size...sizes) {
         if (this.content != null) {
@@ -60,21 +69,10 @@ public class DetailsDrawer extends Composite<FlexLayout> implements HasStyle, Ha
         }
     }
 
-    public void setContent(Component... components) {
-        this.content.removeAll();
-        this.content.add(components);
-    }
-
-    public void setFooter(Component... components) {
-        this.footer.removeAll();
-        this.footer.add(components);
-    }
-
     public void setPosition(Position position) {
         getElement().setAttribute("position", position.name().toLowerCase());
     }
 
-    private boolean open = false;
 
     public void hide() {
         open = false;

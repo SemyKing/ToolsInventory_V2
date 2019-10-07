@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.application.admin;
+package com.gmail.grigorij.ui.application.views.admin;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
@@ -20,8 +20,6 @@ import com.gmail.grigorij.ui.utils.css.size.*;
 import com.gmail.grigorij.ui.components.forms.editable.EditableCompanyForm;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
@@ -40,21 +38,21 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 
-public class AdminCompanies extends FlexBoxLayout {
+class AdminCompanies extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-companies";
 
 	private final AdminContainerView adminMain;
 	private EditableCompanyForm companyForm = new EditableCompanyForm();
 
+
 	private Grid<Company> grid;
 	private ListDataProvider<Company> dataProvider;
 
 	private DetailsDrawer detailsDrawer;
-	private Button deleteButton;
 
 
-	public AdminCompanies(AdminContainerView adminMain) {
+	AdminCompanies(AdminContainerView adminMain) {
 		this.adminMain = adminMain;
 		setClassName(CLASS_NAME);
 		setSizeFull();
@@ -183,23 +181,16 @@ public class AdminCompanies extends FlexBoxLayout {
 
 	private void createDetailsDrawer() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
-		detailsDrawer.getElement().setAttribute(ProjectConstants.FORM_LAYOUT_LARGE_ATTR, true);
-		detailsDrawer.setContent(companyForm);
-		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Header
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Company Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
 
-		deleteButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_ERROR);
-		deleteButton.addClickListener(e -> confirmDelete());
-		UIUtils.setTooltip("Delete this company from Database", deleteButton);
-
-		detailsDrawerHeader.getContainer().add(deleteButton);
-		detailsDrawerHeader.getContainer().setComponentMargin(deleteButton, Left.AUTO);
-
 		detailsDrawer.setHeader(detailsDrawerHeader);
-		detailsDrawer.getHeader().setFlexDirection(FlexDirection.COLUMN);
+
+		// Content
+		detailsDrawer.setContent(companyForm);
+		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Footer
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
@@ -214,8 +205,6 @@ public class AdminCompanies extends FlexBoxLayout {
 	private boolean previousStatus;
 
 	private void showDetails(Company company) {
-		deleteButton.setEnabled( company != null );
-
 		if (company != null) {
 			previousStatus = company.isDeleted();
 		}
@@ -223,7 +212,7 @@ public class AdminCompanies extends FlexBoxLayout {
 		companyForm.setCompany(company);
 		detailsDrawer.show();
 
-		UIUtils.updateFormSize(companyForm);
+//		UIUtils.updateFormSize(companyForm);
 	}
 
 	private void closeDetails() {
@@ -317,42 +306,6 @@ public class AdminCompanies extends FlexBoxLayout {
 		});
 		dialog.open();
 	}
-
-	private void confirmDelete() {
-		System.out.println("Delete selected company...");
-
-		if (detailsDrawer.isOpen()) {
-
-			final Company selectedCompany = grid.asSingleSelect().getValue();
-			if (selectedCompany != null) {
-
-				ConfirmDialog dialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, " selected company ", selectedCompany.getName());
-				dialog.closeOnCancel();
-				dialog.getConfirmButton().addClickListener(e -> {
-					if (CompanyFacade.getInstance().remove(selectedCompany)) {
-						dataProvider.getItems().remove(selectedCompany);
-						dataProvider.refreshAll();
-						closeDetails();
-						UIUtils.showNotification("Company deleted successfully", UIUtils.NotificationType.SUCCESS);
-
-						Transaction tr = new Transaction();
-						tr.setTransactionOperation(TransactionType.DELETE);
-						tr.setTransactionTarget(TransactionTarget.COMPANY);
-						tr.setCompany(selectedCompany);
-						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-						tr.setAdditionalInfo("Completely removed from database");
-						TransactionFacade.getInstance().insert(tr);
-
-					} else {
-						UIUtils.showNotification("Company delete failed", UIUtils.NotificationType.ERROR);
-					}
-					dialog.close();
-				});
-				dialog.open();
-			}
-		}
-	}
-
 
 	private void exportCompanies() {
 		System.out.println("Export companies...");

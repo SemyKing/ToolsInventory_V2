@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.authentication.forgot;
+package com.gmail.grigorij.ui.application.authentication.forgot;
 
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;

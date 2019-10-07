@@ -4,65 +4,81 @@ import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
-import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
+import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
+import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.converter.StringToBooleanConverter;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EditableCompanyForm extends FormLayout {
 
 	private EditableLocationForm locationForm = new EditableLocationForm();
 	private EditablePersonForm personForm = new EditablePersonForm();
 
-	private Binder<Company> binder = new Binder<>(Company.class);
+	private Binder<Company> binder;
 
-	private Company company;
+	private Company tempCompany;
+	private List<Location> locations = new ArrayList<>();
 	private boolean isNew;
 
-	private ComboBox<Location> companyLocationsComboBox;
-	private ListDataProvider<Location> provider;
+	// FORM ITEMS
+	private TextField nameField;
+	private TextField vatField;
+	private Checkbox entityStatusCheckbox;
+//	private ComboBox<Location> companyLocationsComboBox;
+	private FlexBoxLayout locationsLayout;
+	private TextArea additionalInfo;
+
+	private Hr hr;
 
 
 	public EditableCompanyForm() {
+		constructFormItems();
 
-		TextField nameField = new TextField("Name");
+		constructForm();
+
+		constructBinder();
+	}
+
+
+	private void constructFormItems() {
+		nameField = new TextField("Name");
 		nameField.setRequired(true);
 
-		TextField vatField = new TextField("VAT");
-		vatField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		vatField = new TextField("VAT");
 		vatField.setRequired(true);
 
-		Select<String> status = new Select<>(ProjectConstants.ACTIVE, ProjectConstants.INACTIVE);
-		status.setLabel("Status");
-		status.setWidth(ProjectConstants.FORM_HALF_WIDTH);
-
-		//NAME & STATUS
-		FlexBoxLayout vatStatusLayout = UIUtils.getFormRowLayout(vatField, status, true);
-
-		companyLocationsComboBox = new ComboBox<>();
+		ComboBox<Location>  companyLocationsComboBox = new ComboBox<>();
 		companyLocationsComboBox.setLabel("Locations");
+		companyLocationsComboBox.setPlaceholder("Select location to edit");
+		companyLocationsComboBox.setItems(locations);
 		companyLocationsComboBox.setItemLabelGenerator(Location::getName);
 		companyLocationsComboBox.addValueChangeListener(e -> {
 			if (e != null) {
 				if (e.getValue() != null) {
 					openLocationDialog(e.getValue());
+					companyLocationsComboBox.setValue(null);
 				}
 			}
 		});
@@ -72,31 +88,66 @@ public class EditableCompanyForm extends FormLayout {
 		newLocationButton.addClickListener(e -> openLocationDialog(null));
 
 		//LOCATION & NEW LOCATION BUTTON
-		FlexBoxLayout locationsLayout = UIUtils.getFormRowLayout(companyLocationsComboBox, newLocationButton, false);
+		locationsLayout = new FlexBoxLayout();
+		locationsLayout.addClassName(ProjectConstants.SPACE_BETWEEN_CONTAINER);
+		locationsLayout.add(companyLocationsComboBox, newLocationButton);
+		locationsLayout.setFlexGrow("1", companyLocationsComboBox);
+		locationsLayout.setComponentMargin(companyLocationsComboBox, Right.S);
 
-		TextArea additionalInfo = new TextArea("Additional Info");
+		setColspan(locationsLayout, 2);
+
+
+		additionalInfo = new TextArea("Additional Info");
 		additionalInfo.setMaxHeight("200px");
 
-//		UIUtils.setColSpan(2, locationForm, personForm, locationsLayout, additionalInfo);
-		UIUtils.setColSpan(2, locationsLayout, locationForm, personForm, additionalInfo);
+		entityStatusCheckbox = new Checkbox("Deleted");
 
-		// Form layout
-		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
+		UIUtils.setColSpan(2, locationsLayout, locationForm, personForm, additionalInfo);
+	}
+
+	private void initDynamicFormItems() {
+		locations = tempCompany.getLocations();
+	}
+
+	private void constructForm() {
+		addClassNames(LumoStyles.Padding.Vertical.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
 
 		add(nameField);
-		add(vatStatusLayout);
+		add(vatField);
 		add(locationsLayout);
-		add(new Hr());
-		add(UIUtils.createH4Label("Address"));
+
+		hr = new Hr();
+		setColspan(hr, 2);
+		add(hr);
+
+		Label addressLabel = UIUtils.createH4Label("Address");
+		setColspan(addressLabel, 2);
+		add(addressLabel);
+
 		add(locationForm);
-		add(new Hr());
-		add(UIUtils.createH4Label("Contact Person"));
+
+		hr = new Hr();
+		setColspan(hr, 2);
+		add(hr);
+
+		Label contactLabel = UIUtils.createH4Label("Contact Person");
+		setColspan(contactLabel, 2);
+		add(contactLabel);
+
 		add(personForm);
-		add(new Hr());
+
+		hr = new Hr();
+		setColspan(hr, 2);
+		add(hr);
+
 		add(additionalInfo);
+	}
+
+	private void constructBinder() {
+		binder = new Binder<>(Company.class);
 
 		binder.forField(nameField)
 				.asRequired("Name is required")
@@ -104,39 +155,78 @@ public class EditableCompanyForm extends FormLayout {
 		binder.forField(vatField)
 				.asRequired("VAT is required")
 				.bind(Company::getVat, Company::setVat);
-		binder.forField(status)
-				.asRequired("Select one")
-//				.withConverter(new CustomConverter.StatusConverter())
-				.withConverter(new StringToBooleanConverter("Error", ProjectConstants.INACTIVE, ProjectConstants.ACTIVE))
+		binder.forField(entityStatusCheckbox)
 				.bind(Company::isDeleted, Company::setDeleted);
 		binder.forField(additionalInfo)
 				.bind(Company::getAdditionalInfo, Company::setAdditionalInfo);
 	}
 
-	public void setCompany(Company c) {
-		binder.removeBean();
+	private void openLocationDialog(Location location) {
+
+		boolean bNewLocation = (location == null);
+
+		EditableLocationForm locationForm = new EditableLocationForm();
+		locationForm.setLocation(location);
+
+		String buttonText = (bNewLocation) ? "Add" : "Save";
+
+		CustomDialog dialog = new CustomDialog();
+		dialog.setHeader(UIUtils.createH3Label("Location Details"));
+
+		dialog.setContent(locationForm);
+
+		dialog.getCancelButton().addClickListener(e -> dialog.close());
+
+		dialog.getConfirmButton().setText(buttonText);
+		dialog.getConfirmButton().addClickListener(e -> {
+
+			Location editedLocation = locationForm.getLocation();
+
+			if (editedLocation != null) {
+				if (bNewLocation) {
+					tempCompany.addLocation(locationForm.getLocation());
+					locations.add(editedLocation);
+				}
+
+				String notificationSuccess = (bNewLocation) ? "New location added successfully" : "Location edited successfully";
+				String notificationFail = (bNewLocation) ? "New location add failed" : "Location edit fail";
+
+				if (CompanyFacade.getInstance().update(tempCompany)) {
+					UIUtils.showNotification(notificationSuccess, UIUtils.NotificationType.SUCCESS);
+				} else {
+					UIUtils.showNotification(notificationFail, UIUtils.NotificationType.ERROR);
+				}
+				dialog.close();
+			}
+		});
+		dialog.open();
+
+//		dialog.addDetachListener((DetachEvent event) -> companyLocationsComboBox.setValue(null));
+	}
+
+
+	public void setCompany(Company company) {
 		isNew = false;
-		company = c;
 
 		if (company == null) {
-//			company = Company.getEmptyCompany();
-			company = new Company();
+			tempCompany = new Company();
 			isNew = true;
+		} else {
+			tempCompany = new Company(company);
 		}
 
-		binder.readBean(company);
-		locationForm.setLocation(company.getAddress());
-		personForm.setPerson(company.getContactPerson());
+		binder.readBean(tempCompany);
 
-		provider = DataProvider.ofCollection(company.getLocations());
+		locationForm.setLocation(tempCompany.getAddress());
+		personForm.setPerson(tempCompany.getContactPerson());
 
-		companyLocationsComboBox.setDataProvider(provider);
-		companyLocationsComboBox.setPlaceholder( (company.getLocations().size() <= 0) ? "No locations found" : "Select location to edit" );
+		initDynamicFormItems();
 	}
 
 	public Company getCompany() {
 		try {
 			binder.validate();
+
 			if (binder.isValid()) {
 
 				Location location = locationForm.getLocation();
@@ -144,7 +234,7 @@ public class EditableCompanyForm extends FormLayout {
 				if (location == null) {
 					return null;
 				} else {
-					company.setAddress(location);
+					tempCompany.setAddress(location);
 				}
 
 				Person contactPerson = personForm.getPerson();
@@ -152,11 +242,11 @@ public class EditableCompanyForm extends FormLayout {
 				if (contactPerson == null) {
 					return null;
 				} else {
-					company.setContactPerson(contactPerson);
+					tempCompany.setContactPerson(contactPerson);
 				}
 
-				binder.writeBean(company);
-				return company;
+				binder.writeBean(tempCompany);
+				return tempCompany;
 			}
 		} catch (ValidationException e) {
 			e.printStackTrace();
@@ -167,83 +257,5 @@ public class EditableCompanyForm extends FormLayout {
 
 	public boolean isNew() {
 		return isNew;
-	}
-
-
-	private void openLocationDialog(Location location) {
-
-		boolean bNewLocation = (location == null);
-
-		EditableLocationForm locationForm = new EditableLocationForm();
-		locationForm.setLocation(location);
-
-		String header = (bNewLocation) ? "New Location" : "Edit Location";
-		String buttonText = (bNewLocation) ? "Add" : "Save";
-
-		CustomDialog dialog = new CustomDialog();
-		dialog.setHeader(UIUtils.createH3Label(header));
-
-		/*
-		If location is not NULL, allow to delete itS
-		 */
-		if (!bNewLocation) {
-			dialog.setDeleteButtonVisible(true);
-			dialog.getDeleteButton().addClickListener(deleteEvent -> {
-
-				ConfirmDialog confirmDialog = new ConfirmDialog(ConfirmDialog.Type.DELETE, "selected location", location.getName());
-				confirmDialog.closeOnCancel();
-				confirmDialog.getConfirmButton().addClickListener(confirmDeleteEvent -> {
-					try {
-						company.removeLocation(location);
-						provider.getItems().remove(location);
-						provider.refreshAll();
-
-						if (CompanyFacade.getInstance().update(company)) {
-							UIUtils.showNotification("Location deleted successfully", UIUtils.NotificationType.SUCCESS);
-						} else {
-							UIUtils.showNotification("Location delete failed", UIUtils.NotificationType.ERROR);
-						}
-						confirmDialog.close();
-						dialog.close();
-
-					} catch (Exception ex) {
-						System.err.println("Error deleting location: " + location.getName() +", from company: " + company.getName());
-						UIUtils.showNotification("Location delete failed", UIUtils.NotificationType.ERROR);
-						ex.printStackTrace();
-					}
-				});
-				confirmDialog.open();
-			});
-		}
-
-
-		dialog.setContent(locationForm);
-
-		dialog.getCancelButton().addClickListener(e -> dialog.close());
-
-		dialog.getConfirmButton().setText(buttonText);
-		dialog.getConfirmButton().addClickListener(e -> {
-
-			if (locationForm.getLocation() != null) {
-				if (bNewLocation) {
-					company.addLocation(locationForm.getLocation());
-					provider.getItems().add(locationForm.getLocation());
-					provider.refreshAll();
-				}
-
-				String notificationSuccess = (bNewLocation) ? "New location added successfully" : "Location edited successfully";
-				String notificationFail = (bNewLocation) ? "New location add failed" : "Location edit fail";
-
-				if (CompanyFacade.getInstance().update(company)) {
-					UIUtils.showNotification(notificationSuccess, UIUtils.NotificationType.SUCCESS);
-				} else {
-					UIUtils.showNotification(notificationFail, UIUtils.NotificationType.ERROR);
-				}
-				dialog.close();
-			}
-		});
-		dialog.open();
-
-		dialog.addDetachListener((DetachEvent event) -> companyLocationsComboBox.setValue(null));
 	}
 }

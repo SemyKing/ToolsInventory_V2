@@ -23,7 +23,7 @@ public class Camera extends Component {
 	}
 
 	private void fireFinishedEvent(String mime) {
-		fireEvent(new FinishedEvent(this, true, mime));
+		fireEvent(new CameraFinishedEvent(this, true, mime));
 	}
 
 	public void stopCamera() {
@@ -38,8 +38,8 @@ public class Camera extends Component {
 		getElement().callJsFunction("showPreview");
 	}
 
-	public Registration addFinishedListener(ComponentEventListener<FinishedEvent> listener) {
-		return addListener(FinishedEvent.class, listener);
+	public Registration addFinishedListener(ComponentEventListener<CameraFinishedEvent> listener) {
+		return addListener(CameraFinishedEvent.class, listener);
 	}
 
 	private class CameraStreamVariable implements StreamVariable {

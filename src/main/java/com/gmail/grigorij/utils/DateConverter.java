@@ -1,4 +1,4 @@
-package com.gmail.grigorij.utils.converters;
+package com.gmail.grigorij.utils;
 
 import java.util.Date;
 import java.text.SimpleDateFormat;

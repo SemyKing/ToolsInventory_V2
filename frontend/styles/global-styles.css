@@ -6,8 +6,7 @@
     --navi-drawer-width: calc(var(--lumo-size-m) * 6);
     --navi-item-indentation: calc(var(--lumo-icon-size-s) + var(--lumo-space-l));
 
-    --details-drawer-width: calc(var(--lumo-size-m) * 11);
-    --large-details-drawer-width: calc(var(--lumo-size-m) * 18);
+    --details-drawer-width: calc(var(--lumo-size-m) * 20);
 
     --transition-duration-s: 160ms;
     --transition-duration-m: 240ms;
@@ -58,7 +57,7 @@ html, body {
 
 .custom-notification {
 	min-width: 100vw;
-	min-height: 25px;
+	min-height: 30px;
 	cursor: pointer;
 	color: var(--lumo-primary-contrast-color);
 	align-items: center;

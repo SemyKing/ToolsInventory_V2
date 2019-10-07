@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.application;
+package com.gmail.grigorij.ui.application.views;
 
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
@@ -23,7 +23,7 @@ import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.*;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
-import com.gmail.grigorij.utils.converters.DateConverter;
+import com.gmail.grigorij.utils.DateConverter;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -411,7 +411,7 @@ public class Messages extends ViewFrame {
 
 
 		TextField titleField = new TextField("Title");
-		titleField.setMinWidth("400px");
+//		titleField.setMinWidth("400px");
 
 		if (isReply) {
 			titleField.setValue("RE: " + originalMessage.getMessageHeader());
