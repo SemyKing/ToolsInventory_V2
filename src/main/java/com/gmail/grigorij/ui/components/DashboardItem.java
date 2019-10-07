@@ -1,7 +1,10 @@
 package com.gmail.grigorij.ui.components;
 
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.dependency.CssImport;
 
+@CssImport(value = "./styles/views/dashboard.css", themeFor = "vaadin-details")
 public class DashboardItem extends FlexBoxLayout {
 
 	private final String CLASS_NAME = "dashboard-item";

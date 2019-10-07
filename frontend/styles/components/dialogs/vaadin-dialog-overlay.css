@@ -1,0 +1,11 @@
+[part="backdrop"] {
+	background-color: var(--lumo-shade-80pct);
+}
+[part="content"] {
+	padding: 0px;
+	display: flex;
+}
+[part="overlay"] {
+	display: flex;
+	overflow: hidden;
+}

@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.detailsdrawer;
 
-import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.*;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.vaadin.flow.component.button.Button;
@@ -11,53 +11,32 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 
 public class DetailsDrawerHeader extends FlexBoxLayout {
 
+    private static final String CLASS_NAME = "header-content";
+
     private Button close;
     private Label title;
-    private FlexBoxLayout container;
 
     public DetailsDrawerHeader(String title) {
-        setDisplay(Display.FLEX);
-        setFlexDirection(FlexDirection.ROW);
-        setAlignItems(Alignment.CENTER);
+        addClassNames(CLASS_NAME, BoxShadowBorders.BOTTOM);
 
-        addClassNames(LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Vertical.S, BoxShadowBorders.BOTTOM);
-        UIUtils.setBoxSizing(BoxSizing.BORDER_BOX, this);
-        setWidth("100%");
-
-        this.close = UIUtils.createTertiaryInlineButton(VaadinIcon.CLOSE);
-        this.close.removeThemeVariants(ButtonVariant.LUMO_ICON);
-        this.close.getElement().getStyle().set("line-height", "1");
+        close = UIUtils.createButton(VaadinIcon.CLOSE, ButtonVariant.LUMO_TERTIARY_INLINE);
+        close.addClassName(CLASS_NAME + "__close_button");
 
         this.title = UIUtils.createH3Label(title);
+        this.title.addClassName(CLASS_NAME + "__title");
 
-
-        container = new FlexBoxLayout(this.close, this.title);
-        container.setSizeFull();
-        container.setAlignItems(Alignment.CENTER);
-        container.setComponentPadding(this.close, Right.M);
-        add(container);
+        add(close, this.title);
     }
 
     public void setTitle(String title) {
         this.title.setText(title);
     }
 
-    public Label getTitleLabel() {
-        return this.title;
-    }
-
     public Button getClose() {
         return this.close;
     }
 
-    public FlexBoxLayout getContainer() {
-        return this.container;
-    }
-
-    public void removeBoxing() {
-        UIUtils.setBoxSizing(BoxSizing.NONE, this);
-    }
-    public void removeStyles() {
-        removeClassNames(LumoStyles.Padding.Horizontal.M, LumoStyles.Padding.Top.M, LumoStyles.Padding.Bottom.S, BoxShadowBorders.BOTTOM);
+    public FlexBoxLayout getContent() {
+        return this;
     }
 }
