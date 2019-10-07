@@ -1,8 +1,9 @@
 package com.gmail.grigorij.ui.components;
 
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -13,7 +14,7 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.WhiteSpace;
 
-@StyleSheet("styles/components/list-item.css")
+@CssImport("./styles/components/list-item.css")
 public class ListItem extends FlexLayout implements HasStyle {
 
     private final String CLASS_NAME = "list-item";

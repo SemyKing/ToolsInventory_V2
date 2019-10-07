@@ -77,8 +77,6 @@ public class InventoryFacade {
 					.setParameter("user_id_var", userId)
 					.setParameter("type_var", InventoryHierarchyType.TOOL)
 					.getResultList();
-
-			System.out.println("found tools in use: " + tools.size());
 		} catch (NoResultException nre) {
 			tools = null;
 		}
@@ -92,8 +90,6 @@ public class InventoryFacade {
 					.setParameter("user_id_var", userId)
 					.setParameter("type_var", InventoryHierarchyType.TOOL)
 					.getResultList();
-
-			System.out.println("found tools reserved: " + tools.size());
 		} catch (NoResultException nre) {
 			tools = null;
 		}
