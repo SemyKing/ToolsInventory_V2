@@ -10,7 +10,6 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 
 import javax.servlet.http.Cookie;
 

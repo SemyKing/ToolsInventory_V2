@@ -4,7 +4,7 @@ public final class ProjectConstants {
 
 	public static final String PROJECT_NAME_FULL = "Tools Inventory";
 
-	//Images & Logos
+	// Images & Logos
 	public static final String IMAGES_PATH = "images/";
 	public static final String LOGO_IMG_ONLY_PNG = "uisko_logo_img_only.png";
 	public static final String LOGO_IMG_ONLY_SVG = "uisko_logo_img_only.svg";
@@ -12,7 +12,7 @@ public final class ProjectConstants {
 	public static final String LOGO_FULL_ROUND_SVG = "uisko_logo_round.svg";
 
 
-	//NaviItems
+	// NaviItems
 	public static final String DASHBOARD = "Dashboard";
 	public static final String INVENTORY = "Inventory";
 	public static final String MESSAGES = "Messages";
@@ -20,13 +20,13 @@ public final class ProjectConstants {
 	public static final String REPORTING = "Reporting";
 	public static final String ADMIN = "Admin";
 
-	//Tab names
+	// Tab names
 	public static final String COMPANIES = "Companies";
 	public static final String PERSONNEL = "Personnel";
 	public static final String ADMIN_INVENTORY = "Inventory "; //defined
 	public static final String ADMIN_TRANSACTIONS = "Transactions ";
 
-	//EntityStatus
+	// EntityStatus
 	public static final String ACTIVE = "Active";
 	public static final String INACTIVE = "Inactive";
 
@@ -36,10 +36,13 @@ public final class ProjectConstants {
 
 	public static final String ROOT_CATEGORY = "**Root Category**";
 
-	//RecoveryLink
+	// RecoveryLink
 	public static final Integer RECOVERY_TOKEN_LENGTH = 32;
 	public static final Integer PASSWORD_MIN_LENGTH = 6;
 
+	// Forms
+	public static final String SPACE_BETWEEN_CONTAINER = "space-between-container";
+	public static final String FIRST_CHILD_GROW_CONTAINER = "first-child-grow-container";
 
 
 }

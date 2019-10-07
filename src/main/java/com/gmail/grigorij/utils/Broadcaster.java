@@ -9,8 +9,7 @@ import java.util.function.Consumer;
 
 
 /**
- * Allows to send messages to other users who are online
- *
+ * Allows to send notifications to other users who are online
  */
 public class Broadcaster {
 
@@ -39,7 +38,7 @@ public class Broadcaster {
 		}
 	}
 
-	public static void removeBroadcasterForUser(long userId) {
+	static void removeBroadcasterForUser(long userId) {
 		userBroadcasterList.remove(userId);
 	}
 }

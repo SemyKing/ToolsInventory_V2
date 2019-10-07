@@ -4,7 +4,7 @@
     <persistence-unit name="tools_inventory" transaction-type="RESOURCE_LOCAL">
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/test_db" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/tools_inventory_v2" />
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver" />
             <property name="javax.persistence.jdbc.user" value="postgres" />
             <property name="javax.persistence.jdbc.password" value="Kass5v1v" />

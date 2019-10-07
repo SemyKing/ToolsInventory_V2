@@ -25,17 +25,17 @@ import java.util.Set;
 public class Company extends EntityPojo {
 
 	@Column(name = "name")
-	private String name;
+	private String name = "";
 
 	@Column(name = "vat")
-	private String vat;
+	private String vat = "";
 
 
 	@Embedded
-	private Location address;
+	private Location address = new Location();
 
 	@Embedded
-	private Person contactPerson;
+	private Person contactPerson = new Person();
 
 	/*
 	List of locations related to company: warehouses, construction sites, etc...
@@ -43,6 +43,16 @@ public class Company extends EntityPojo {
 	@ElementCollection
 	private Set<Location> locations = new HashSet<>();
 
+
+	public Company() {}
+
+	public Company(Company other) {
+		this.name = other.name;
+		this.vat = other.vat;
+		this.address = other.address;
+		this.contactPerson = other.contactPerson;
+		this.locations = other.locations;
+	}
 
 	public String getName() {
 		return name;

@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.components;
 
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.BorderRadius;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Right;

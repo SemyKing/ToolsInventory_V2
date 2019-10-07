@@ -6,6 +6,7 @@ import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
+import com.gmail.grigorij.ui.application.views.Inventory;
 
 import javax.persistence.*;
 import java.sql.Date;
@@ -18,7 +19,7 @@ import java.util.*;
  * Grid element only accepts one object type
  *
  * Used by a TreeGrid in
- * @see com.gmail.grigorij.ui.views.navigation.inventory.Inventory
+ * @see Inventory
  *
  *
  * {@link #inventoryHierarchyType} defines if entity is a Category or a Tool
