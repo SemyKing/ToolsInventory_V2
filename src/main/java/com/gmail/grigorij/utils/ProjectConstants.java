@@ -30,8 +30,7 @@ public final class ProjectConstants {
 	public static final String ACTIVE = "Active";
 	public static final String INACTIVE = "Inactive";
 
-	public static final String FORM_LAYOUT_LARGE_ATTR = "large";
-	public static final String FORM_HALF_WIDTH = "47%";
+	public static final String FORM_ITEM_HALF_WIDTH = "46%";
 	public static final String COL_2_MIN_WIDTH = "520px";
 
 	public static final String ROOT_CATEGORY = "**Root Category**";
@@ -40,9 +39,10 @@ public final class ProjectConstants {
 	public static final Integer RECOVERY_TOKEN_LENGTH = 32;
 	public static final Integer PASSWORD_MIN_LENGTH = 6;
 
-	// Forms
-	public static final String SPACE_BETWEEN_CONTAINER = "space-between-container";
-	public static final String FIRST_CHILD_GROW_CONTAINER = "first-child-grow-container";
+	// Containers
+	public static final String CONTAINER_SPACE_BETWEEN = "container-space-between";
+	public static final String CONTAINER_ALIGN_RIGHT = "container-align-right";
+	public static final String CONTAINER_ALIGN_CENTER = "container-align-center";
 
 
 }

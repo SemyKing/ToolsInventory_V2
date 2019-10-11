@@ -61,7 +61,7 @@ public class ReadOnlyToolForm extends FormLayout {
 		TextField usageStatusField = new TextField("Status");
 		usageStatusField.setReadOnly(true);
 		ReadOnlyHasValue<InventoryItem> usageStatus = new ReadOnlyHasValue<>(tool -> {
-			usageStatusField.setValue(tool.getUsageStatus().getStringValue());
+			usageStatusField.setValue(tool.getToolUsageStatus().getStringValue());
 		});
 
 		TextField inUseByField = new TextField("In Use By");
@@ -77,14 +77,14 @@ public class ReadOnlyToolForm extends FormLayout {
 		});
 
 		TextField dateBoughtField = new TextField("Bought");
-		dateBoughtField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		dateBoughtField.setWidth(ProjectConstants.FORM_ITEM_HALF_WIDTH);
 		dateBoughtField.setReadOnly(true);
 		ReadOnlyHasValue<InventoryItem> dateBought = new ReadOnlyHasValue<>(tool -> {
 			dateBoughtField.setValue(tool.getDateBought() == null ? "" : DateConverter.toStringDate(tool.getDateBought()));
 		});
 
 		TextField dateNextMaintenanceField = new TextField("Next Maintenance");
-		dateNextMaintenanceField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		dateNextMaintenanceField.setWidth(ProjectConstants.FORM_ITEM_HALF_WIDTH);
 		dateNextMaintenanceField.setReadOnly(true);
 		ReadOnlyHasValue<InventoryItem> dateNextMaintenance = new ReadOnlyHasValue<>(tool -> {
 			dateNextMaintenanceField.setValue((tool.getDateBought() == null) ? "" : DateConverter.toStringDate(tool.getDateNextMaintenance()));
@@ -94,7 +94,7 @@ public class ReadOnlyToolForm extends FormLayout {
 		FlexBoxLayout datesLayout = UIUtils.getFormRowLayout(dateBoughtField, dateNextMaintenanceField, true);
 
 		TextField priceField = new TextField("Price");
-		priceField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		priceField.setWidth(ProjectConstants.FORM_ITEM_HALF_WIDTH);
 		priceField.setSuffixComponent(new Span("€"));
 		priceField.setReadOnly(true);
 		ReadOnlyHasValue<InventoryItem> price = new ReadOnlyHasValue<>(tool -> {
@@ -102,7 +102,7 @@ public class ReadOnlyToolForm extends FormLayout {
 		});
 
 		TextField guaranteeField = new TextField("Guarantee");
-		guaranteeField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		guaranteeField.setWidth(ProjectConstants.FORM_ITEM_HALF_WIDTH);
 		guaranteeField.setSuffixComponent(new Span("Months"));
 		guaranteeField.setReadOnly(true);
 		ReadOnlyHasValue<InventoryItem> guarantee = new ReadOnlyHasValue<>(tool ->{

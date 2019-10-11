@@ -173,7 +173,7 @@ public class ToolCopyForm extends FormLayout {
 			tool.setParentCategory(originalTool.getParentCategory());
 		}
 		if (status.getValue()) {
-			tool.setUsageStatus(originalTool.getUsageStatus());
+			tool.setToolUsageStatus(originalTool.getToolUsageStatus());
 		}
 		if (toolUser.getValue()) {
 			tool.setInUseByUser(originalTool.getInUseByUser());

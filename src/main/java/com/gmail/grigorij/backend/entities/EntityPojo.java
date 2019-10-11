@@ -16,7 +16,9 @@ public class EntityPojo {
 	@Column(name = "additional_info")
 	private String additionalInfo = "";
 
-	public EntityPojo() {}
+
+	protected EntityPojo() {}
+
 
 	public Long getId() {
 		return id;

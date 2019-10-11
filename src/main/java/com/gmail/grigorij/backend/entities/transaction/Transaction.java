@@ -30,23 +30,18 @@ public class Transaction extends EntityPojo {
 	@Enumerated( EnumType.STRING )
 	private TransactionTarget transactionTarget;
 
-	@Temporal( TemporalType.TIMESTAMP )
 	private Date date;
 
 	private String fullName;
 
 	private String shortName;
 
-//	@OneToMany
 	private User whoDid;
 
-//	@OneToOne
 	private User destinationUser;
 
-//	@OneToOne
 	private Company company;
 
-//	@OneToOne
 	private InventoryItem inventoryEntity;
 
 

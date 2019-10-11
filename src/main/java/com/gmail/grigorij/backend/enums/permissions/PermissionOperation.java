@@ -17,6 +17,7 @@ public enum PermissionOperation {
 	EDIT_USER_ACCESS_GROUP(  "Edit Access Group", TransactionTarget.USER),
 
 
+
 	ADD_COMPANY(    "Add Company",    TransactionTarget.COMPANY),
 	DELETE_COMPANY( "Delete Company", TransactionTarget.COMPANY),
 
@@ -24,9 +25,11 @@ public enum PermissionOperation {
 	EDIT_COMPANY_DETAILS("Edit Company Details", TransactionTarget.COMPANY),
 
 
+
 	ADD_CATEGORY(           "Add Category",          TransactionTarget.CATEGORY),
 	DELETE_CATEGORY(        "Delete Category",       TransactionTarget.CATEGORY),
 	EDIT_CATEGORY_DETAILS(  "Edit Category Details", TransactionTarget.CATEGORY),
+
 
 
 	ADD_TOOL(           "Add Tool",          TransactionTarget.TOOL),

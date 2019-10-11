@@ -3,25 +3,35 @@ import '@polymer/polymer/lib/elements/custom-style.js';
 <custom-style>
 	<style>
 
-	.last-update-label {
-	    text-align: end;
-	    font-style: italic;
-	    margin-top: var(--lumo-space-s);
-	}
+	.details-drawer__content {}
 
-	.space-between-container {
+	.h4 {
+    	margin-top: var(--lumo-space-m);
+    }
+
+    hr {
+        margin-top: var(--lumo-space-s);
+        margin-bottom: var(--lumo-space-s);
+    }
+
+	.container-space-between {
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
 	    align-items: baseline;
 	}
 
-	.grow-1 {
-		flex-grow: 1;
+	.container-align-right {
+		display: flex;
+	    flex-direction: row;
+	    align-items: baseline;
 	}
 
-	.padding-s {
-
+	.container-align-center {
+		display: flex;
+	    flex-direction: row;
+	    align-items: baseline;
+        justify-content: center;
 	}
 
 	</style>

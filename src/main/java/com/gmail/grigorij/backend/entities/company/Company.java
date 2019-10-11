@@ -30,29 +30,18 @@ public class Company extends EntityPojo {
 	@Column(name = "vat")
 	private String vat = "";
 
-
 	@Embedded
 	private Location address = new Location();
 
 	@Embedded
 	private Person contactPerson = new Person();
 
-	/*
-	List of locations related to company: warehouses, construction sites, etc...
-	 */
 	@ElementCollection
-	private Set<Location> locations = new HashSet<>();
+	private List<Location> locations = new ArrayList<>();
 
 
 	public Company() {}
 
-	public Company(Company other) {
-		this.name = other.name;
-		this.vat = other.vat;
-		this.address = other.address;
-		this.contactPerson = other.contactPerson;
-		this.locations = other.locations;
-	}
 
 	public String getName() {
 		return name;
@@ -69,23 +58,20 @@ public class Company extends EntityPojo {
 	}
 
 	public Location getAddress() {
-		return (this.address == null) ? new Location() : address;
+		return address;
 	}
 	public void setAddress(Location address) {
 		this.address = address;
 	}
 
 	public List<Location> getLocations() {
-		return new ArrayList<>(locations);
+		return locations;
 	}
-	public void setLocations(Set<Location> locations) {
+	public void setLocations(List<Location> locations) {
 		this.locations = locations;
 	}
 	public void addLocation(Location location) {
 		this.locations.add(location);
-	}
-	public void removeLocation(Location location) {
-		this.locations.remove(location);
 	}
 
 	public Person getContactPerson() {

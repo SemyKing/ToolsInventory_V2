@@ -13,6 +13,13 @@ public class Person {
 
 	public Person() {}
 
+	public Person(Person other) {
+		this.firstName = other.firstName;
+		this.lastName = other.lastName;
+		this.phoneNumber = other.phoneNumber;
+		this.email = other.email;
+	}
+
 	public String getFirstName() {
 		return firstName;
 	}

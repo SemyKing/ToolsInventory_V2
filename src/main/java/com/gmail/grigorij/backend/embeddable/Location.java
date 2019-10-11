@@ -19,6 +19,15 @@ public class Location {
 
 	public Location() {}
 
+	public Location(Location other) {
+		this.name = other.name;
+		this.addressLine1 = other.addressLine1;
+		this.addressLine2 = other.addressLine2;
+		this.postcode = other.postcode;
+		this.city = other.city;
+		this.country = other.country;
+	}
+
 	public String getName() {
 		return name;
 	}
