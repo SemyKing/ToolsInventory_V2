@@ -48,9 +48,9 @@ import java.util.List;
  */
 public class EditableUserForm extends FormLayout {
 
-	private EditableLocationForm locationForm = new EditableLocationForm();
-	private EditablePersonForm personForm = new EditablePersonForm();
-	private EditableAccessRightsForm accessRightsForm = new EditableAccessRightsForm();
+	private final EditableLocationForm locationForm = new EditableLocationForm();
+	private final EditablePersonForm personForm = new EditablePersonForm();
+	private final EditableAccessRightsForm accessRightsForm = new EditableAccessRightsForm();
 	private Binder<User> binder = new Binder<>(User.class);
 
 	private User targetUser, currentUser;
@@ -115,7 +115,7 @@ public class EditableUserForm extends FormLayout {
 		UIUtils.setColSpan(2, locationForm, personForm, additionalInfo);
 
 
-		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
+		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));

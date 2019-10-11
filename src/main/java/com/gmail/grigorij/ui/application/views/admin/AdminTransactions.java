@@ -2,23 +2,20 @@ package com.gmail.grigorij.ui.application.views.admin;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.utils.css.Display;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
+import com.gmail.grigorij.ui.components.forms.readonly.ReadOnlyTransactionForm;
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
+import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Left;
-import com.gmail.grigorij.ui.utils.css.size.Right;
-import com.gmail.grigorij.ui.components.forms.readonly.ReadOnlyTransactionForm;
-import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.DateConverter;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -32,39 +29,33 @@ import java.util.Locale;
 class AdminTransactions extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-transactions";
+	private final ReadOnlyTransactionForm transactionsForm = new ReadOnlyTransactionForm();
+	private final AdminView adminView;
 
-	private final AdminContainerView adminMain;
-
-	private ReadOnlyTransactionForm transactionsForm = new ReadOnlyTransactionForm();
+	private DatePicker dateStartField, dateEndField;
 
 	private Grid<Transaction> grid;
 	private ListDataProvider<Transaction> dataProvider;
 
 	private DetailsDrawer detailsDrawer;
 
-	private DatePicker dateStartField, dateEndField;
 
+	AdminTransactions(AdminView adminView) {
+		this.adminView = adminView;
+		addClassName(CLASS_NAME);
 
-	AdminTransactions(AdminContainerView adminMain) {
-		this.adminMain = adminMain;
-		setClassName(CLASS_NAME);
-		setSizeFull();
-		setDisplay(Display.FLEX);
-		setFlexDirection(FlexDirection.COLUMN);
+		add(constructHeader());
+		add(constructContent());
 
-		createHeader();
-		createGrid();
-		createDetailsDrawer();
+		constructDetails();
 	}
 
-	private void createHeader() {
-		FlexBoxLayout header = new FlexBoxLayout();
+
+	private Div constructHeader() {
+		Div header = new Div();
 		header.setClassName(CLASS_NAME + "__header");
-		header.setAlignItems(Alignment.BASELINE);
-		header.setWidthFull();
 
 		TextField searchField = new TextField();
-		searchField.setWidth("100%");
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Transactions");
@@ -88,7 +79,6 @@ class AdminTransactions extends FlexBoxLayout {
 
 		datesLayout.add(dateStartField);
 
-
 		dateEndField = new DatePicker();
 		dateEndField.setLabel("End Date");
 		dateEndField.setPlaceholder("End Date");
@@ -106,10 +96,20 @@ class AdminTransactions extends FlexBoxLayout {
 
 		header.add(datesLayout);
 
-		add(header);
+		return header;
 	}
 
-	private void createGrid() {
+	private Div constructContent() {
+		Div content = new Div();
+		content.setClassName(CLASS_NAME + "__content");
+
+		// GRID
+		content.add(constructGrid());
+
+		return content;
+	}
+
+	private Grid constructGrid() {
 		grid = new Grid<>();
 		grid.setId("transactions-grid");
 		grid.setClassName("grid-view");
@@ -149,8 +149,26 @@ class AdminTransactions extends FlexBoxLayout {
 				.setHeader("Who Did")
 				.setWidth(UIUtils.COLUMN_WIDTH_M);
 
-		add(grid);
+		return grid;
 	}
+
+	private void constructDetails() {
+		detailsDrawer = adminView.getDetailsDrawer();
+
+		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Transaction Details");
+		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
+		detailsDrawer.setHeader(detailsDrawerHeader);
+
+		detailsDrawer.setContent(transactionsForm);
+
+		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
+		detailsDrawerFooter.getContent().remove(detailsDrawerFooter.getSave());
+		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
+		detailsDrawer.setFooter(detailsDrawerFooter);
+	}
+
+
+	//TODO: FILTER
 
 	private void getTransactionsBetweenDates() {
 		//Handle errors
@@ -180,42 +198,18 @@ class AdminTransactions extends FlexBoxLayout {
 		dataProvider.refreshAll();
 	}
 
-
-
-
-	private void createDetailsDrawer() {
-		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
-
-		// Header
-		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Transaction Details");
-		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
-
-		detailsDrawer.setHeader(detailsDrawerHeader);
-
-		// Content
-		detailsDrawer.setContent(transactionsForm);
-		detailsDrawer.setContentPadding(Left.M, Right.S);
-
-		// Footer
-		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
-		detailsDrawerFooter.getContent().remove(detailsDrawerFooter.getSave());
-		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
-		detailsDrawer.setFooter(detailsDrawerFooter);
-
-		adminMain.setDetailsDrawer(detailsDrawer);
-	}
-
 	private void showDetails(Transaction transaction) {
 		if (transaction == null) {
 			UIUtils.showNotification("Cannot show details of NULL Transaction", UIUtils.NotificationType.ERROR);
 			return;
 		}
+
 		transactionsForm.setTransaction(transaction);
 		detailsDrawer.show();
 	}
 
 	private void closeDetails() {
 		detailsDrawer.hide();
-		grid.select(null);
+		grid.deselectAll();
 	}
 }

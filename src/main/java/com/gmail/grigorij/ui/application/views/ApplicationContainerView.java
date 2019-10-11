@@ -10,7 +10,7 @@ import com.gmail.grigorij.ui.components.navigation.drawer.NaviItem;
 import com.gmail.grigorij.ui.components.navigation.drawer.NaviMenu;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.Overflow;
-import com.gmail.grigorij.ui.application.views.admin.AdminContainerView;
+import com.gmail.grigorij.ui.application.views.admin.AdminView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -215,7 +215,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		viewContainer.removeAll();
 		appBar.reset();
 
-		viewContainer.add(new AdminContainerView(this));
+		viewContainer.add(new AdminView(this));
 
 		selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
 

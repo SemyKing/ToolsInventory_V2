@@ -6,7 +6,7 @@ import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
+import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.enums.permissions.AccessGroup;
 import com.gmail.grigorij.backend.enums.permissions.Permission;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
@@ -194,7 +194,7 @@ public class DummyDataGenerator {
 
 					for (int k = 0; k < toolsPerCategory; k++) {
 						InventoryItem cc = new InventoryItem();
-						cc.setUsageStatus(ToolStatus.FREE);
+						cc.setToolUsageStatus(ToolUsageStatus.FREE);
 						cc.setCompany(company);
 						cc.setName("Tool " + toolCounter + " (P: " + categoryCounter + ", SP: " + subCategoryCounter + ")");
 						cc.setManufacturer(RandomStringUtils.randomAlphabetic(5));
@@ -204,8 +204,8 @@ public class DummyDataGenerator {
 						cc.setBarcode(RandomStringUtils.randomNumeric(10));
 						cc.setPrice(999.93);
 
-						cc.setDateBought(new Date(100, 12, 31));
-						cc.setDateNextMaintenance(new Date(102, 1, 1));
+//						cc.setDateBought(new Date(100, 12, 31));
+//						cc.setDateNextMaintenance(new Date(102, 1, 1));
 
 						cc.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
 

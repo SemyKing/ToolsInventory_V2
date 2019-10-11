@@ -9,7 +9,7 @@ import com.gmail.grigorij.backend.entities.message.Message;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.MessageType;
-import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
+import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
@@ -328,19 +328,19 @@ public class Messages extends ViewFrame {
 			InventoryItem tool = InventoryFacade.getInstance().getToolById(message.getToolId());
 
 			// USER TOOK THE TOOL
-			if (tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
+			if (tool.getToolUsageStatus().equals(ToolUsageStatus.IN_USE)) {
 				markMessageAsRead(message, messageWrapper);
 			}
 
 			// USER DIDN'T TAKE THE TOOL -> CONFIRM TOOL RELEASE
-			if (tool.getUsageStatus().equals(ToolStatus.RESERVED)) {
-				ConfirmDialog dialog = new ConfirmDialog("This action will mark the tool as " + ToolStatus.FREE.getStringValue() + ". Proceed?");
+			if (tool.getToolUsageStatus().equals(ToolUsageStatus.RESERVED)) {
+				ConfirmDialog dialog = new ConfirmDialog("This action will mark the tool as " + ToolUsageStatus.FREE.getStringValue() + ". Proceed?");
 
 				dialog.closeOnCancel();
 				dialog.getConfirmButton().addClickListener(e -> {
 					dialog.close();
 
-					tool.setUsageStatus(ToolStatus.FREE);
+					tool.setToolUsageStatus(ToolUsageStatus.FREE);
 					tool.setReservedByUser(null);
 
 					if (InventoryFacade.getInstance().update(tool)) {
@@ -350,7 +350,7 @@ public class Messages extends ViewFrame {
 						tr.setTransactionOperation(TransactionType.EDIT);
 						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 						tr.setInventoryEntity(tool);
-						tr.setAdditionalInfo("User released the tool.\nTool Status changed from: " + ToolStatus.RESERVED.getStringValue() + " to: " + ToolStatus.FREE.getStringValue());
+						tr.setAdditionalInfo("User released the tool.\nTool Status changed from: " + ToolUsageStatus.RESERVED.getStringValue() + " to: " + ToolUsageStatus.FREE.getStringValue());
 
 						TransactionFacade.getInstance().insert(tr);
 
@@ -485,7 +485,7 @@ public class Messages extends ViewFrame {
 
 		tool.setInUseByUser(AuthenticationService.getCurrentSessionUser());
 		tool.setReservedByUser(null);
-		tool.setUsageStatus(ToolStatus.IN_USE);
+		tool.setToolUsageStatus(ToolUsageStatus.IN_USE);
 
 		if (InventoryFacade.getInstance().update(tool)) {
 
@@ -494,7 +494,7 @@ public class Messages extends ViewFrame {
 			tr.setTransactionOperation(TransactionType.EDIT);
 			tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 			tr.setInventoryEntity(tool);
-			tr.setAdditionalInfo("User took the tool.\nTool Status changed from: " + ToolStatus.FREE.getStringValue() + " to: " + ToolStatus.IN_USE.getStringValue());
+			tr.setAdditionalInfo("User took the tool.\nTool Status changed from: " + ToolUsageStatus.FREE.getStringValue() + " to: " + ToolUsageStatus.IN_USE.getStringValue());
 
 			TransactionFacade.getInstance().insert(tr);
 

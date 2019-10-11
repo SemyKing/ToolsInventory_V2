@@ -1,8 +1,6 @@
 package com.gmail.grigorij.backend.entities.message;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.MessageType;
 
 import javax.persistence.*;
@@ -36,13 +34,10 @@ public class Message extends EntityPojo {
 
 	private Long toolId;
 
-	@Temporal( TemporalType.TIMESTAMP )
 	private Date date;
 
 	@Column(name = "message_read")
 	private boolean messageRead = false;
-
-
 
 
 	public Message() {

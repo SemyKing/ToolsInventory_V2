@@ -6,7 +6,7 @@
     --navi-drawer-width: calc(var(--lumo-size-m) * 6);
     --navi-item-indentation: calc(var(--lumo-icon-size-s) + var(--lumo-space-l));
 
-    --details-drawer-width: calc(var(--lumo-size-m) * 20);
+    --details-drawer-width: calc(var(--lumo-size-m) * 35);
 
     --transition-duration-s: 160ms;
     --transition-duration-m: 240ms;
