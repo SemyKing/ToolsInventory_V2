@@ -20,8 +20,7 @@ public class CustomDialog extends Div {
 
 	private final static String CLASS_NAME = "custom-dialog";
 
-	private boolean deleteButtonAdded = false;
-	private Button deleteButton, cancelButton, confirmButton;
+	private Button cancelButton, confirmButton;
 	private Dialog dialog;
 
 	private FlexBoxLayout header, content, footer;
@@ -39,7 +38,6 @@ public class CustomDialog extends Div {
 		footer = new FlexBoxLayout();
 		footer.addClassName(CLASS_NAME  + "__footer");
 
-		deleteButton = UIUtils.createButton("Delete", VaadinIcon.TRASH, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
 		cancelButton = UIUtils.createSmallButton("Cancel", ButtonVariant.LUMO_TERTIARY);
 		confirmButton = UIUtils.createSmallButton("Confirm", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
 
@@ -67,26 +65,10 @@ public class CustomDialog extends Div {
 		content.add(components);
 	}
 
-	public Button getDeleteButton() {
-		return deleteButton;
+	public FlexBoxLayout getFooter() {
+		return footer;
 	}
-	public void setDeleteButtonVisible(boolean b) {
-		if (!deleteButtonAdded) {
-			footer.addComponentAsFirst(deleteButton);
-			deleteButtonAdded = true;
-		}
 
-		if (b) {
-			footer.setComponentDisplay(deleteButton, Display.INITIAL);
-			footer.setComponentMargin(cancelButton, Left.AUTO);
-			footer.setComponentMargin(cancelButton, Right.M);
-		} else {
-			footer.setComponentDisplay(deleteButton, Display.NONE);
-			footer.setComponentMargin(cancelButton, Left.NONE);
-			footer.setComponentMargin(cancelButton, Right.AUTO);
-		}
-		deleteButton.setEnabled(b);
-	}
 
 	public Button getCancelButton() {
 		return cancelButton;
@@ -99,7 +81,6 @@ public class CustomDialog extends Div {
 			footer.add(cancelButton);
 		}
 	}
-
 
 
 	public Button getConfirmButton() {

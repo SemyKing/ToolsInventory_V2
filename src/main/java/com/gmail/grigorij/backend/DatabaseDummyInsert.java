@@ -6,7 +6,7 @@ import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
+import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
@@ -196,7 +196,7 @@ public class DatabaseDummyInsert {
 //							status = ToolStatus.BROKEN;
 //						}
 
-						cc.setUsageStatus(ToolStatus.FREE);
+						cc.setToolUsageStatus(ToolUsageStatus.FREE);
 
 //						if (status.equals(ToolStatus.IN_USE)) {
 //							int randomUserIndex = (int )(Math.random() * (companyUsers.size()));
@@ -224,8 +224,8 @@ public class DatabaseDummyInsert {
 						cc.setBarcode(RandomStringUtils.randomNumeric(10));
 						cc.setPrice(999.93);
 
-						cc.setDateBought(new Date(100, 12, 31));
-						cc.setDateNextMaintenance(new Date(102, 1, 1));
+//						cc.setDateBought(new Date(100, 12, 31));
+//						cc.setDateNextMaintenance(new Date(102, 1, 1));
 
 						cc.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
 

@@ -43,14 +43,14 @@ public class ReadOnlyLocationForm extends FormLayout {
 
 		TextField postcodeField = new TextField("Postcode");
 		postcodeField.setReadOnly(true);
-		postcodeField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		postcodeField.setWidth(ProjectConstants.FORM_ITEM_HALF_WIDTH);
 		ReadOnlyHasValue<Location> postcode = new ReadOnlyHasValue<>(location -> {
 			postcodeField.setValue( location.getPostcode() );
 		});
 
 		TextField countryField = new TextField("Country");
 		countryField.setReadOnly(true);
-		countryField.setWidth(ProjectConstants.FORM_HALF_WIDTH);
+		countryField.setWidth(ProjectConstants.FORM_ITEM_HALF_WIDTH);
 		ReadOnlyHasValue<Location> country = new ReadOnlyHasValue<>(location -> {
 			countryField.setValue( location.getCountry() );
 		});

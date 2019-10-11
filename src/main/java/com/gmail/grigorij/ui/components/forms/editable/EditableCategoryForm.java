@@ -5,12 +5,9 @@ import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
-import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
@@ -20,72 +17,92 @@ import java.util.List;
 
 public class EditableCategoryForm extends FormLayout {
 
-	private Binder<InventoryItem> binder = new Binder<>(InventoryItem.class);
+	private Binder<InventoryItem> binder;
 
 	private InventoryItem category;
 	private Company initialCompany;
 	private boolean isNew;
 
-	private ComboBox<InventoryItem> parentsComboBox;
+	// FORM ITEMS
+	private TextField nameField;
+	private ComboBox<Company> companyComboBox;
+	private ComboBox<InventoryItem> parentCategoryComboBox;
+
 
 	public EditableCategoryForm() {
 
-		TextField nameField = new TextField("Name");
+		constructFormItems();
+
+		constructForm();
+
+		constructBinder();
+	}
+
+
+	private void constructFormItems() {
+		nameField = new TextField("Name");
 		nameField.setRequired(true);
 
-		Select<String> status = new Select<>(ProjectConstants.ACTIVE, ProjectConstants.INACTIVE);
-		status.setWidth("25%");
-		status.setLabel("Status");
+		parentCategoryComboBox = new ComboBox<>();
 
-		//NAME & STATUS
-		FlexBoxLayout nameStatusLayout = UIUtils.getFormRowLayout(nameField, status, false);
-
-		parentsComboBox = new ComboBox<>();
-
-		ComboBox<Company> companiesComboBox = new ComboBox<>();
-		companiesComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
-		companiesComboBox.setItemLabelGenerator(Company::getName);
-		companiesComboBox.setLabel("Company");
-		companiesComboBox.setRequired(true);
-		companiesComboBox.addValueChangeListener(e -> {
+		companyComboBox = new ComboBox<>();
+		companyComboBox.setLabel("Company");
+		companyComboBox.setRequired(true);
+		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
+		companyComboBox.setItemLabelGenerator(Company::getName);
+		companyComboBox.addValueChangeListener(e -> {
 			if (e != null) {
 				if (e.getValue() != null) {
-					parentsComboBox.setValue(null);
+					parentCategoryComboBox.setValue(null);
 					updateCategoriesComboBoxData(e.getValue());
 				}
 			}
 		});
 
-		parentsComboBox.setItems();
-		parentsComboBox.setLabel("Parent Category");
-		parentsComboBox.setItemLabelGenerator(InventoryItem::getName);
-		parentsComboBox.setRequired(true);
+		parentCategoryComboBox.setItems();
+		parentCategoryComboBox.setLabel("Parent Category");
+		parentCategoryComboBox.setRequired(true);
+		parentCategoryComboBox.setItemLabelGenerator(InventoryItem::getName);
+	}
 
-//		UIUtils.setColSpan(2, categoryLayout);
-
-//      Form layout
+	private void constructForm() {
 		setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		add(nameStatusLayout);
-		add(companiesComboBox);
-		add(parentsComboBox);
+		add(nameField);
+		add(companyComboBox);
+		add(parentCategoryComboBox);
+	}
+
+	private void constructBinder() {
+		binder = new Binder<>(InventoryItem.class);
 
 		binder.forField(nameField)
 				.asRequired("Name is required")
 				.bind(InventoryItem::getName, InventoryItem::setName);
-		binder.forField(status)
-				.asRequired("Status is required")
-//				.withConverter(new CustomConverter.StatusConverter())
-				.withConverter(new StringToBooleanConverter("Error", ProjectConstants.INACTIVE, ProjectConstants.ACTIVE))
-				.bind(InventoryItem::isDeleted, InventoryItem::setDeleted);
-		binder.forField(companiesComboBox)
+		binder.forField(companyComboBox)
 				.asRequired("Company is required")
 				.bind(InventoryItem::getCompany, InventoryItem::setCompany);
-		binder.forField(parentsComboBox)
+		binder.forField(parentCategoryComboBox)
 				.asRequired("Parent Category is required")
-//				.withConverter(new CustomConverter.ToolCategoryConverter())
 				.bind(InventoryItem::getParentCategory, InventoryItem::setParentCategory);
 	}
 
+
+	private void initDynamicFormItems() {
+
+	}
+
+	private void updateCategoriesComboBoxData(Company company) {
+		List<InventoryItem> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
+		categories.add(0, InventoryFacade.getInstance().getRootCategory());
+
+		/*
+		When editing Category remove same category from Parent Category -> can't set self as parent
+		 */
+		if (initialCompany != null) {
+			categories.removeIf((InventoryItem category) -> category.equals(this.category));
+		}
+		parentCategoryComboBox.setItems(categories);
+	}
 
 
 	public void setCategory(InventoryItem c) {
@@ -139,18 +156,5 @@ public class EditableCategoryForm extends FormLayout {
 
 	public boolean isNew() {
 		return isNew;
-	}
-
-	private void updateCategoriesComboBoxData(Company company) {
-		List<InventoryItem> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
-		categories.add(0, InventoryFacade.getInstance().getRootCategory());
-
-		/*
-		When editing Category remove same category from Parent Category -> can't set self as parent
-		 */
-		if (initialCompany != null) {
-			categories.removeIf((InventoryItem category) -> category.equals(this.category));
-		}
-		parentsComboBox.setItems(categories);
 	}
 }

@@ -79,7 +79,9 @@ public class User extends EntityPojo {
 	private AccessGroup accessGroup = AccessGroup.VIEWER;
 
 	@ElementCollection
+	@Enumerated( EnumType.STRING )
 	private List<AccessRight> accessRights = new ArrayList<>();
+
 
 	public User() {}
 
@@ -142,11 +144,12 @@ public class User extends EntityPojo {
 
 
 	public List<AccessRight> getAccessRights() {
-		List<AccessRight> copyOfAccessRights = new ArrayList<>();
-		for (AccessRight ar : accessRights) {
-			copyOfAccessRights.add(new AccessRight(ar));
-		}
-		return copyOfAccessRights;
+//		List<AccessRight> copyOfAccessRights = new ArrayList<>();
+//		for (AccessRight ar : accessRights) {
+//			copyOfAccessRights.add(new AccessRight(ar));
+//		}
+//		return copyOfAccessRights;
+		return accessRights;
 	}
 	public void setAccessRights(List<AccessRight> accessRights) {
 		this.accessRights = accessRights;

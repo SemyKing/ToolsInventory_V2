@@ -1,7 +1,7 @@
 [part~="container"] > vaadin-menu-bar-button {
     padding: 0;
     margin: 0;
-    height: 100%;
+    cursor: pointer;
 }
 
 /*  classes are here because they are in SHADOW DOM of vaadin-menu-bar  */

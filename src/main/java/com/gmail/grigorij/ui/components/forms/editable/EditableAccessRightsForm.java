@@ -30,7 +30,8 @@ public class EditableAccessRightsForm extends FormLayout {
 	private User targetUser;
 	private User currentUser;
 
-	private List<AccessRight> accessRights = new ArrayList<>();
+	private List<AccessRight> originalAccessRights = new ArrayList<>();
+	private List<AccessRight> temporaryAccessRights = new ArrayList<>();
 
 	private boolean isNew;
 
@@ -102,7 +103,7 @@ public class EditableAccessRightsForm extends FormLayout {
 		TransactionTarget previousTarget = null;
 
 
-		for (AccessRight accessRight : accessRights) {
+		for (AccessRight accessRight : temporaryAccessRights) {
 
 			// IF USER IS NOT SYSTEM ADMIN DON'T SHOW HIDDEN RIGHTS
 			if (currentUser.getAccessGroup().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM)) {
@@ -245,6 +246,7 @@ public class EditableAccessRightsForm extends FormLayout {
 	public void setTargetUser(User user) {
 		targetUser = user;
 		isNew = false;
+
 		if (targetUser == null) {
 			targetUser = new User();
 			isNew = true;
@@ -253,12 +255,26 @@ public class EditableAccessRightsForm extends FormLayout {
 
 		this.removeAll();
 
-		accessRights = new ArrayList<>();
-		accessRights.addAll(targetUser.getAccessRights());
+		originalAccessRights = targetUser.getAccessRights();
+
+		for (AccessRight ar : originalAccessRights) {
+			temporaryAccessRights.add(new AccessRight(ar));
+		}
+
 		constructFormLayout();
 	}
 
 	public List<AccessRight> getAccessRights() {
-		return accessRights;
+		if (isValid()) {
+			originalAccessRights = temporaryAccessRights;
+			return originalAccessRights;
+		}
+		return null;
+	}
+
+	private boolean isValid() {
+		boolean valid = true;
+
+		return valid;
 	}
 }

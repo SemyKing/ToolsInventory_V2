@@ -28,7 +28,7 @@ public class AccessRight {
 
 	public AccessRight() {}
 
-	public AccessRight(PermissionOperation permissionOperation,Permission permissionOwn, Permission permissionCompany, Permission permissionSystem, Permission visibleToUser) {
+	public AccessRight(PermissionOperation permissionOperation, Permission permissionOwn, Permission permissionCompany, Permission permissionSystem, Permission visibleToUser) {
 		this.permissionOperation = permissionOperation;
 		this.permissionOwn = permissionOwn;
 		this.permissionCompany = permissionCompany;
@@ -36,13 +36,15 @@ public class AccessRight {
 		this.visibleToUser = visibleToUser;
 	}
 
-	public AccessRight(AccessRight accessRight) {
-		this.permissionOperation = accessRight.getPermissionOperation();
-		this.permissionOwn = accessRight.getPermissionOwn();
-		this.permissionCompany = accessRight.getPermissionCompany();
-		this.permissionSystem = accessRight.getPermissionSystem();
-		this.visibleToUser = accessRight.getVisibleToUser();
+	public AccessRight(AccessRight other) {
+		this.userId = other.userId;
+		this.permissionOperation = other.permissionOperation;
+		this.permissionOwn = other.permissionOwn;
+		this.permissionCompany = other.permissionCompany;
+		this.permissionSystem = other.permissionSystem;
+		this.visibleToUser = other.visibleToUser;
 	}
+
 
 	public Long getUserId() {
 		return userId;

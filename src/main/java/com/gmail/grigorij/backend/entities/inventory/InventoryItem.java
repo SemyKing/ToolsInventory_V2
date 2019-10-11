@@ -5,11 +5,11 @@ import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
-import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
+import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.ui.application.views.Inventory;
 
 import javax.persistence.*;
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.*;
 
 
@@ -88,13 +88,13 @@ public class InventoryItem extends EntityPojo {
 	private Set<InventoryItem> children = new HashSet<>();
 
 	/*
-	Allows to keep track of item position in tree hierarchy and sort list -> Parent must be added before child
+	Allows to keep track of item position in Category tree hierarchy and sort list -> Parent must be added before child
 	 */
 	@Column(name = "level")
 	private Integer level = 1;
 
 	/*
-	Allows to easily identify if Entity is a tool or a category
+	Allows to identify if Entity is a tool or a category
 	 */
 	@Enumerated( EnumType.STRING )
 	private InventoryHierarchyType inventoryHierarchyType = InventoryHierarchyType.TOOL;
@@ -140,7 +140,7 @@ public class InventoryItem extends EntityPojo {
 	private String reportMessage = "";
 
 	@Enumerated(EnumType.STRING)
-	private ToolStatus usageStatus;
+	private ToolUsageStatus toolUsageStatus;
 
 	@OneToOne
 	private Company company;
@@ -152,10 +152,10 @@ public class InventoryItem extends EntityPojo {
 	private User reservedByUser;
 
 	@Column(name = "date_bought")
-	private Date dateBought;
+	private LocalDate dateBought;
 
 	@Column(name = "date_next_maintenance")
-	private Date dateNextMaintenance;
+	private LocalDate dateNextMaintenance;
 
 	@Column(name = "price")
 	private Double price = 0.00;
@@ -181,7 +181,7 @@ public class InventoryItem extends EntityPojo {
 		this.setBarcode(tool.getBarcode());
 		this.setCompany(tool.getCompany());
 		this.setParentCategory(tool.getParentCategory());
-		this.setUsageStatus(tool.getUsageStatus());
+		this.setToolUsageStatus(tool.getToolUsageStatus());
 		this.setDateBought(tool.getDateBought());
 		this.setDateNextMaintenance(tool.getDateNextMaintenance());
 		this.setPrice(tool.getPrice());
@@ -244,11 +244,11 @@ public class InventoryItem extends EntityPojo {
 		this.toolInfo = toolInfo;
 	}
 
-	public ToolStatus getUsageStatus() {
-		return usageStatus;
+	public ToolUsageStatus getToolUsageStatus() {
+		return toolUsageStatus;
 	}
-	public void setUsageStatus(ToolStatus usageStatus) {
-		this.usageStatus = usageStatus;
+	public void setToolUsageStatus(ToolUsageStatus toolUsageStatus) {
+		this.toolUsageStatus = toolUsageStatus;
 	}
 
 	public boolean isPersonal() {
@@ -279,17 +279,17 @@ public class InventoryItem extends EntityPojo {
 		this.barcode = barcode;
 	}
 
-	public Date getDateBought() {
+	public LocalDate getDateBought() {
 		return dateBought;
 	}
-	public void setDateBought(Date dateBought) {
+	public void setDateBought(LocalDate dateBought) {
 		this.dateBought = dateBought;
 	}
 
-	public Date getDateNextMaintenance() {
+	public LocalDate getDateNextMaintenance() {
 		return dateNextMaintenance;
 	}
-	public void setDateNextMaintenance(Date dateNextMaintenance) {
+	public void setDateNextMaintenance(LocalDate dateNextMaintenance) {
 		this.dateNextMaintenance = dateNextMaintenance;
 	}
 

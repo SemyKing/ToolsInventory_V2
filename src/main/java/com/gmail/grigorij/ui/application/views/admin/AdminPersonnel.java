@@ -7,24 +7,20 @@ import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.utils.css.Display;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.size.*;
 import com.gmail.grigorij.ui.components.forms.editable.EditableUserForm;
 import com.gmail.grigorij.utils.AuthenticationService;
-import com.gmail.grigorij.utils.ProjectConstants;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
@@ -41,9 +37,8 @@ import org.apache.commons.lang3.StringUtils;
 class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
-
-	private final AdminContainerView adminMain;
-	private EditableUserForm userForm = new EditableUserForm();
+	private final EditableUserForm userForm = new EditableUserForm();
+	private final AdminView adminView;
 
 	private Grid<User> grid;
 	private ListDataProvider<User> dataProvider;
@@ -51,27 +46,22 @@ class AdminPersonnel extends FlexBoxLayout {
 	private DetailsDrawer detailsDrawer;
 
 
-	AdminPersonnel(AdminContainerView adminMain) {
-		this.adminMain = adminMain;
+	AdminPersonnel(AdminView adminView) {
+		this.adminView = adminView;
 		setClassName(CLASS_NAME);
-		setSizeFull();
-		setDisplay(Display.FLEX);
-		setFlexDirection(FlexDirection.COLUMN);
 
-		createHeader();
-		createGrid();
-		createDetailsDrawer();
+		add(constructHeader());
+		add(constructContent());
+
+		constructDetails();
 	}
 
-	private void createHeader() {
-		FlexBoxLayout header = new FlexBoxLayout();
+
+	private Div constructHeader() {
+		Div header = new Div();
 		header.setClassName(CLASS_NAME + "__header");
-		header.setMargin(Top.S);
-		header.setAlignItems(Alignment.BASELINE);
-		header.setWidthFull();
 
 		TextField searchField = new TextField();
-		searchField.setWidth("100%");
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Personnel");
@@ -79,18 +69,11 @@ class AdminPersonnel extends FlexBoxLayout {
 		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 
 		header.add(searchField);
-		header.setComponentMargin(searchField, Right.S);
-
-
-		Div actionsButton = new Div();
-		actionsButton.addClassName("hiding-text-menu-bar");
-		actionsButton.add(VaadinIcon.MENU.create());
-		actionsButton.add(new Span("Options"));
 
 		MenuBar actionsMenuBar = new MenuBar();
 		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_CONTRAST);
 
-		MenuItem menuItem = actionsMenuBar.addItem(actionsButton);
+		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
 
 		menuItem.getSubMenu().addItem("New User", e -> {
 			grid.select(null);
@@ -107,10 +90,20 @@ class AdminPersonnel extends FlexBoxLayout {
 
 		header.add(actionsMenuBar);
 
-		add(header);
+		return header;
 	}
 
-	private void createGrid() {
+	private Div constructContent() {
+		Div content = new Div();
+		content.setClassName(CLASS_NAME + "__content");
+
+		// GRID
+		content.add(constructGrid());
+
+		return content;
+	}
+
+	private Grid constructGrid() {
 		grid = new Grid<>();
 		grid.setId("personnel-grid");
 		grid.setClassName("grid-view");
@@ -138,8 +131,24 @@ class AdminPersonnel extends FlexBoxLayout {
 				.setHeader("Active")
 				.setAutoWidth(true);
 
-		add(grid);
+		return grid;
 	}
+
+	private void constructDetails() {
+		detailsDrawer = adminView.getDetailsDrawer();
+
+		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("User Details");
+		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
+		detailsDrawer.setHeader(detailsDrawerHeader);
+
+		detailsDrawer.setContent(userForm);
+
+		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
+		detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
+		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
+		detailsDrawer.setFooter(detailsDrawerFooter);
+	}
+
 
 	private void filterGrid(String searchString) {
 		dataProvider.clearFilters();
@@ -178,85 +187,58 @@ class AdminPersonnel extends FlexBoxLayout {
 
 	}
 
-
-	private void createDetailsDrawer() {
-		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
-
-		// Header
-		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("User Details");
-		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
-
-		detailsDrawer.setHeader(detailsDrawerHeader);
-
-		// Content
-		detailsDrawer.setContent(userForm);
-		detailsDrawer.setContentPadding(Left.M, Right.S);
-
-		// Footer
-		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
-		detailsDrawerFooter.getSave().addClickListener(e -> updateUser());
-		detailsDrawerFooter.getCancel().addClickListener(e -> closeDetails());
-
-		detailsDrawer.setFooter(detailsDrawerFooter);
-
-		adminMain.setDetailsDrawer(detailsDrawer);
-	}
-
 	private void showDetails(User user) {
 		userForm.setTargetUser(user);
 		detailsDrawer.show();
-
-//		UIUtils.updateFormSize(userForm);
 	}
 
 	private void closeDetails() {
 		detailsDrawer.hide();
-		grid.select(null);
+		grid.deselectAll();
 	}
 
-	private void updateUser() {
+	private void saveOnClick() {
 		User editedUser = userForm.getTargetUser();
 
-		if (editedUser != null) {
-			if (userForm.isNew()) {
-				if (UserFacade.getInstance().insert(editedUser)) {
-					dataProvider.getItems().add(editedUser);
-					dataProvider.refreshAll();
-					UIUtils.showNotification("User created successfully", UIUtils.NotificationType.SUCCESS);
-
-					Transaction tr = new Transaction();
-					tr.setTransactionOperation(TransactionType.ADD);
-					tr.setTransactionTarget(TransactionTarget.USER);
-					tr.setDestinationUser(editedUser);
-					tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-					TransactionFacade.getInstance().insert(tr);
-				} else {
-					UIUtils.showNotification("User insert failed", UIUtils.NotificationType.ERROR);
-				}
-			} else {
-				if (UserFacade.getInstance().update(editedUser)) {
-					if (grid.asSingleSelect().getValue() != null) {
-						dataProvider.refreshItem(grid.asSingleSelect().getValue());
-					}
-
-					UIUtils.showNotification("User updated successfully", UIUtils.NotificationType.SUCCESS);
-
-					Transaction tr = new Transaction();
-					tr.setTransactionOperation(TransactionType.EDIT);
-					tr.setTransactionTarget(TransactionTarget.USER);
-					tr.setDestinationUser(editedUser);
-					tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-					TransactionFacade.getInstance().insert(tr);
-				} else {
-					UIUtils.showNotification("User update failed", UIUtils.NotificationType.ERROR);
-				}
-
-			}
-
-			grid.select(editedUser);
+		if (editedUser == null) {
+			return;
 		}
-	}
 
+		if (userForm.isNew()) {
+			if (UserFacade.getInstance().insert(editedUser)) {
+
+				UIUtils.showNotification("User created successfully", UIUtils.NotificationType.SUCCESS);
+
+				Transaction tr = new Transaction();
+				tr.setTransactionOperation(TransactionType.ADD);
+				tr.setTransactionTarget(TransactionTarget.USER);
+				tr.setDestinationUser(editedUser);
+				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+				TransactionFacade.getInstance().insert(tr);
+			} else {
+				UIUtils.showNotification("User insert failed", UIUtils.NotificationType.ERROR);
+				return;
+			}
+		} else {
+			if (UserFacade.getInstance().update(editedUser)) {
+
+				UIUtils.showNotification("User updated successfully", UIUtils.NotificationType.SUCCESS);
+
+				Transaction tr = new Transaction();
+				tr.setTransactionOperation(TransactionType.EDIT);
+				tr.setTransactionTarget(TransactionTarget.USER);
+				tr.setDestinationUser(editedUser);
+				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
+				TransactionFacade.getInstance().insert(tr);
+			} else {
+				UIUtils.showNotification("User update failed", UIUtils.NotificationType.ERROR);
+				return;
+			}
+		}
+
+		dataProvider.refreshAll();
+		grid.select(editedUser);
+	}
 
 	private void importOnClick() {
 		System.out.println("Import Users...");
@@ -324,7 +306,6 @@ class AdminPersonnel extends FlexBoxLayout {
 //			e.printStackTrace();
 //		}
 //	}
-
 
 	private void exportOnClick() {
 		System.out.println("Export Users...");

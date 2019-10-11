@@ -1,0 +1,144 @@
+@media (max-width: 1024px) and (orientation: landscape)  {
+
+}
+
+@media (max-width: 1024px)  {
+
+}
+
+/********** MAIN **********/
+.admin-container {
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+}
+
+.admin-container__content_wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-container__header {
+	width: 100%;
+	justify-content: center;
+
+	box-shadow: inset 0 -1px 0 0 var(--lumo-contrast-10pct);
+}
+
+.admin-container__content {
+    height: 100%;
+}
+
+
+/********** COMPANIES **********/
+.admin-companies {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-companies__header {
+	display: flex;
+    flex-direction: row;
+    margin: 5px 5px 0 5px;
+    align-items: baseline;
+}
+.admin-companies__header vaadin-text-field {
+    width: 100%;
+}
+.admin-companies__header vaadin-menu-bar {
+    margin-right: var(--lumo-space-s);
+    margin-left: var(--lumo-space-s);
+}
+
+.admin-companies__content {
+    height: 100%;
+    margin: 2px 5px 2px 5px;
+}
+
+
+/********** PERSONNEL **********/
+.admin-personnel {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-personnel__header {
+	display: flex;
+    flex-direction: row;
+    margin: 5px 5px 0 5px;
+    align-items: baseline;
+}
+.admin-personnel__header vaadin-text-field {
+    width: 100%;
+}
+.admin-personnel__header vaadin-menu-bar {
+    margin-right: var(--lumo-space-s);
+    margin-left: var(--lumo-space-s);
+}
+
+.admin-personnel__content {
+    height: 100%;
+    margin: 2px 5px 2px 5px;
+}
+
+
+/********** INVENTORY **********/
+.admin-inventory {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-inventory__header {
+	display: flex;
+    flex-direction: row;
+    margin: 5px 5px 0 5px;
+    align-items: baseline;
+}
+.admin-inventory__header vaadin-text-field {
+    width: 100%;
+    margin-left: var(--lumo-space-m);
+}
+.admin-inventory__header vaadin-menu-bar {
+    margin-right: var(--lumo-space-s);
+    margin-left: var(--lumo-space-s);
+}
+
+.admin-inventory__content {
+    height: 100%;
+    margin: 2px 5px 2px 5px;
+}
+
+
+/********** TRANSACTIONS **********/
+.admin-transactions {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-transactions__header {
+	display: flex;
+    flex-direction: row;
+    margin: 5px 5px 0 5px;
+    align-items: baseline;
+}
+.admin-transactions__header vaadin-text-field {
+    width: 100%;
+}
+.admin-transactions__header vaadin-menu-bar {
+    margin-right: var(--lumo-space-s);
+    margin-left: var(--lumo-space-s);
+}
+
+.admin-transactions__content {
+    height: 100%;
+    margin: 2px 5px 2px 5px;
+}

@@ -6,7 +6,7 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.enums.MessageType;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
-import com.gmail.grigorij.backend.enums.inventory.ToolStatus;
+import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.entities.message.Message;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
@@ -26,7 +26,6 @@ import com.gmail.grigorij.ui.components.forms.readonly.ReadOnlyToolForm;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.OperationStatus;
-import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -159,7 +158,7 @@ public class Inventory extends SplitViewFrame {
 					.setHeader("Tools")
 					.setAutoWidth(true);
 
-			grid.addColumn(ie -> (ie.getInventoryHierarchyType().equals(InventoryHierarchyType.TOOL) ? ie.getUsageStatus().getStringValue() : ""))
+			grid.addColumn(ie -> (ie.getInventoryHierarchyType().equals(InventoryHierarchyType.TOOL) ? ie.getToolUsageStatus().getStringValue() : ""))
 					.setHeader("Status")
 					.setAutoWidth(true);
 //			ComponentRenderer<FlexBoxLayout, InventoryEntity> toolStatusRenderer = new ComponentRenderer<>(
@@ -378,10 +377,10 @@ public class Inventory extends SplitViewFrame {
 
 		myToolsGrid.addColumn(tool -> {
 					if (tool.getInUseByUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-						return ToolStatus.IN_USE.getStringValue();
+						return ToolUsageStatus.IN_USE.getStringValue();
 					}
 					if (tool.getReservedByUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-						return ToolStatus.RESERVED.getStringValue();
+						return ToolUsageStatus.RESERVED.getStringValue();
 					}
 					return "";
 				})
@@ -423,7 +422,7 @@ public class Inventory extends SplitViewFrame {
 					return;
 				}
 
-				ToolStatus originalToolStatus = tool.getUsageStatus();
+				ToolUsageStatus originalToolStatus = tool.getToolUsageStatus();
 
 
 				// TOOL IN USE BY USER
@@ -432,7 +431,7 @@ public class Inventory extends SplitViewFrame {
 
 						// TOOL IS RESERVED BY OTHER USER
 						if (tool.getReservedByUser() != null) {
-							tool.setUsageStatus(ToolStatus.RESERVED);
+							tool.setToolUsageStatus(ToolUsageStatus.RESERVED);
 
 							Message message = new Message();
 							message.setMessageType(MessageType.TOOL_FREE);
@@ -446,7 +445,7 @@ public class Inventory extends SplitViewFrame {
 
 							Broadcaster.broadcastToUser(tool.getReservedByUser().getId(), "You have new message");
 						} else {
-							tool.setUsageStatus(ToolStatus.FREE);
+							tool.setToolUsageStatus(ToolUsageStatus.FREE);
 						}
 
 						tool.setInUseByUser(null);
@@ -456,7 +455,7 @@ public class Inventory extends SplitViewFrame {
 				// TOOL IS RESERVED BY USER
 				if (tool.getReservedByUser() != null) {
 					if (tool.getReservedByUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-						tool.setUsageStatus(ToolStatus.IN_USE);
+						tool.setToolUsageStatus(ToolUsageStatus.IN_USE);
 						tool.setReservedByUser(null);
 					}
 				}
@@ -473,10 +472,10 @@ public class Inventory extends SplitViewFrame {
 				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 				tr.setInventoryEntity(tool);
 
-				if (originalToolStatus.equals(ToolStatus.IN_USE_AND_RESERVED) || originalToolStatus.equals(ToolStatus.IN_USE)) {
-					tr.setAdditionalInfo("User returned tool, new status:  " + tool.getUsageStatus().getStringValue());
+				if (originalToolStatus.equals(ToolUsageStatus.IN_USE_AND_RESERVED) || originalToolStatus.equals(ToolUsageStatus.IN_USE)) {
+					tr.setAdditionalInfo("User returned tool, new status:  " + tool.getToolUsageStatus().getStringValue());
 				} else {
-					tr.setAdditionalInfo("User cancelled tool reservation, new status:  " + tool.getUsageStatus().getStringValue());
+					tr.setAdditionalInfo("User cancelled tool reservation, new status:  " + tool.getToolUsageStatus().getStringValue());
 				}
 
 				TransactionFacade.getInstance().insert(tr);
@@ -580,13 +579,13 @@ public class Inventory extends SplitViewFrame {
 			return;
 		}
 
-		if (tool.getUsageStatus().equals(ToolStatus.IN_USE)) {
+		if (tool.getToolUsageStatus().equals(ToolUsageStatus.IN_USE)) {
 			if (!tool.getInUseByUser().equals(AuthenticationService.getCurrentSessionUser())) {
 				reserveToolButton.setEnabled(true);
 			}
 		}
 
-		if (tool.getUsageStatus().equals(ToolStatus.FREE)) {
+		if (tool.getToolUsageStatus().equals(ToolUsageStatus.FREE)) {
 			takeToolButton.setEnabled(true);
 		}
 	}
@@ -602,12 +601,12 @@ public class Inventory extends SplitViewFrame {
 		}
 
 		// TAKE TOOL IF IT IS FREE
-		if (toolInDB.getUsageStatus().equals(ToolStatus.FREE)) {
+		if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.FREE)) {
 			toolInDB.setInUseByUser(AuthenticationService.getCurrentSessionUser());
-			toolInDB.setUsageStatus(ToolStatus.IN_USE);
+			toolInDB.setToolUsageStatus(ToolUsageStatus.IN_USE);
 
 			toolInGrid.setInUseByUser(AuthenticationService.getCurrentSessionUser());
-			toolInGrid.setUsageStatus(ToolStatus.IN_USE);
+			toolInGrid.setToolUsageStatus(ToolUsageStatus.IN_USE);
 
 			if (InventoryFacade.getInstance().update(toolInDB)) {
 
@@ -616,7 +615,7 @@ public class Inventory extends SplitViewFrame {
 				tr.setTransactionOperation(TransactionType.EDIT);
 				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 				tr.setInventoryEntity(toolInDB);
-				tr.setAdditionalInfo("User took the tool. Status change from:  " + ToolStatus.FREE.getStringValue() + "  to:  " + ToolStatus.IN_USE.getStringValue());
+				tr.setAdditionalInfo("User took the tool. Status change from:  " + ToolUsageStatus.FREE.getStringValue() + "  to:  " + ToolUsageStatus.IN_USE.getStringValue());
 
 				TransactionFacade.getInstance().insert(tr);
 
@@ -627,12 +626,12 @@ public class Inventory extends SplitViewFrame {
 
 		// TOOL NOT FREE
 		} else {
-			if (toolInDB.getUsageStatus().equals(ToolStatus.RESERVED) || toolInDB.getUsageStatus().equals(ToolStatus.IN_USE_AND_RESERVED)) {
+			if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.RESERVED) || toolInDB.getToolUsageStatus().equals(ToolUsageStatus.IN_USE_AND_RESERVED)) {
 				UIUtils.showNotification("Tool is reserved by another user", UIUtils.NotificationType.INFO);
 				return;
 			}
 
-			if (toolInDB.getUsageStatus().equals(ToolStatus.IN_USE)) {
+			if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.IN_USE)) {
 
 				toolInGrid.setInUseByUser(toolInDB.getInUseByUser()); // VISUAL REFRESH
 
@@ -641,10 +640,10 @@ public class Inventory extends SplitViewFrame {
 
 				confirmDialog.getConfirmButton().addClickListener(e -> {
 					toolInDB.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-					toolInDB.setUsageStatus(ToolStatus.IN_USE_AND_RESERVED);
+					toolInDB.setToolUsageStatus(ToolUsageStatus.IN_USE_AND_RESERVED);
 
 					toolInGrid.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-					toolInGrid.setUsageStatus(ToolStatus.IN_USE_AND_RESERVED);
+					toolInGrid.setToolUsageStatus(ToolUsageStatus.IN_USE_AND_RESERVED);
 
 					if (InventoryFacade.getInstance().update(toolInDB)) {
 
@@ -653,7 +652,7 @@ public class Inventory extends SplitViewFrame {
 						tr.setTransactionOperation(TransactionType.EDIT);
 						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 						tr.setInventoryEntity(toolInDB);
-						tr.setAdditionalInfo("User reserved tool.\nStatus change from:  " + ToolStatus.IN_USE.getStringValue() + "  to:  " + ToolStatus.IN_USE_AND_RESERVED.getStringValue());
+						tr.setAdditionalInfo("User reserved tool.\nStatus change from:  " + ToolUsageStatus.IN_USE.getStringValue() + "  to:  " + ToolUsageStatus.IN_USE_AND_RESERVED.getStringValue());
 
 						TransactionFacade.getInstance().insert(tr);
 
@@ -679,18 +678,18 @@ public class Inventory extends SplitViewFrame {
 			return;
 		}
 
-		if (toolInDB.getUsageStatus().equals(ToolStatus.RESERVED) || toolInDB.getUsageStatus().equals(ToolStatus.IN_USE_AND_RESERVED)) {
+		if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.RESERVED) || toolInDB.getToolUsageStatus().equals(ToolUsageStatus.IN_USE_AND_RESERVED)) {
 			UIUtils.showNotification("Tool is reserved by another user", UIUtils.NotificationType.INFO);
 			return;
 		}
 
 		// FREE
-		if (toolInDB.getUsageStatus().equals(ToolStatus.FREE)) {
+		if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.FREE)) {
 			toolInDB.setInUseByUser(AuthenticationService.getCurrentSessionUser());
-			toolInDB.setUsageStatus(ToolStatus.IN_USE);
+			toolInDB.setToolUsageStatus(ToolUsageStatus.IN_USE);
 
 			toolInGrid.setInUseByUser(AuthenticationService.getCurrentSessionUser());
-			toolInGrid.setUsageStatus(ToolStatus.IN_USE);
+			toolInGrid.setToolUsageStatus(ToolUsageStatus.IN_USE);
 
 			if (InventoryFacade.getInstance().update(toolInDB)) {
 
@@ -699,11 +698,11 @@ public class Inventory extends SplitViewFrame {
 				tr.setTransactionOperation(TransactionType.EDIT);
 				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 				tr.setInventoryEntity(toolInDB);
-				tr.setAdditionalInfo("User took the tool.\nStatus changed from:  " + ToolStatus.FREE.getStringValue() + "  to:  " + ToolStatus.IN_USE.getStringValue());
+				tr.setAdditionalInfo("User took the tool.\nStatus changed from:  " + ToolUsageStatus.FREE.getStringValue() + "  to:  " + ToolUsageStatus.IN_USE.getStringValue());
 
 				TransactionFacade.getInstance().insert(tr);
 
-				UIUtils.showNotification("Tool taken successfully (it was " + ToolStatus.FREE.getStringValue() + ")", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Tool taken successfully (it was " + ToolUsageStatus.FREE.getStringValue() + ")", UIUtils.NotificationType.SUCCESS);
 			} else {
 				UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
 			}
@@ -712,12 +711,12 @@ public class Inventory extends SplitViewFrame {
 		}
 
 		// IN USE
-		if (toolInDB.getUsageStatus().equals(ToolStatus.IN_USE)) {
+		if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.IN_USE)) {
 			toolInDB.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-			toolInDB.setUsageStatus(ToolStatus.IN_USE_AND_RESERVED);
+			toolInDB.setToolUsageStatus(ToolUsageStatus.IN_USE_AND_RESERVED);
 
 			toolInGrid.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-			toolInGrid.setUsageStatus(ToolStatus.IN_USE_AND_RESERVED);
+			toolInGrid.setToolUsageStatus(ToolUsageStatus.IN_USE_AND_RESERVED);
 
 			if (InventoryFacade.getInstance().update(toolInDB)) {
 
@@ -726,7 +725,7 @@ public class Inventory extends SplitViewFrame {
 				tr.setTransactionOperation(TransactionType.EDIT);
 				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
 				tr.setInventoryEntity(toolInDB);
-				tr.setAdditionalInfo("User reserved the tool. Status changed from:  " + ToolStatus.IN_USE.getStringValue() + "  to:  " + ToolStatus.IN_USE_AND_RESERVED.getStringValue());
+				tr.setAdditionalInfo("User reserved the tool. Status changed from:  " + ToolUsageStatus.IN_USE.getStringValue() + "  to:  " + ToolUsageStatus.IN_USE_AND_RESERVED.getStringValue());
 
 				TransactionFacade.getInstance().insert(tr);
 
@@ -755,13 +754,13 @@ public class Inventory extends SplitViewFrame {
 		}
 
 		if (checkStatus) {
-			if (tool.getUsageStatus().equals(ToolStatus.BROKEN)) {
-				UIUtils.showNotification("Tool was reported " + ToolStatus.BROKEN.getStringValue() + ", operation cancelled", UIUtils.NotificationType.INFO);
+			if (tool.getToolUsageStatus().equals(ToolUsageStatus.BROKEN)) {
+				UIUtils.showNotification("Tool was reported " + ToolUsageStatus.BROKEN.getStringValue() + ", operation cancelled", UIUtils.NotificationType.INFO);
 				return null;
 			}
 
-			if (tool.getUsageStatus().equals(ToolStatus.LOST)) {
-				UIUtils.showNotification("Tool was reported " + ToolStatus.LOST.getStringValue() + ", operation cancelled", UIUtils.NotificationType.INFO);
+			if (tool.getToolUsageStatus().equals(ToolUsageStatus.LOST)) {
+				UIUtils.showNotification("Tool was reported " + ToolUsageStatus.LOST.getStringValue() + ", operation cancelled", UIUtils.NotificationType.INFO);
 				return null;
 			}
 		}

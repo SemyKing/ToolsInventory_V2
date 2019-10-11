@@ -3,7 +3,7 @@ package com.gmail.grigorij.backend.enums.inventory;
 import com.gmail.grigorij.ui.components.CustomBadge.BadgeColor;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-public enum ToolStatus {
+public enum ToolUsageStatus {
 
 	//Tool is in use
 	IN_USE(     "In Use",       VaadinIcon.CLOCK,           BadgeColor.GREY),
@@ -27,7 +27,7 @@ public enum ToolStatus {
 	private VaadinIcon icon;
 	private BadgeColor color;
 
-	ToolStatus(String stringValue, VaadinIcon icon, BadgeColor color) {
+	ToolUsageStatus(String stringValue, VaadinIcon icon, BadgeColor color) {
 		this.stringValue = stringValue;
 		this.icon = icon;
 		this.color = color;
