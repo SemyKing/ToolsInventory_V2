@@ -399,7 +399,7 @@ public class Messages extends ViewFrame {
 		} else {
 			List<User> recipients;
 
-			if (AuthenticationService.getCurrentSessionUser().getAccessGroup().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM)) {
+			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 				recipients = UserFacade.getInstance().getAllUsers();
 			} else {
 				recipients = UserFacade.getInstance().getUsersInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId());

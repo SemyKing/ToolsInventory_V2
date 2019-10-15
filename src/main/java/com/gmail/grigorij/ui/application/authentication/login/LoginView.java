@@ -5,6 +5,7 @@ import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.ui.application.authentication.forgot.ForgotPasswordDialog;
 import com.gmail.grigorij.ui.application.authentication.forgot.ForgotPasswordView;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.Display;
@@ -15,6 +16,7 @@ import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.OperationStatus;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
@@ -47,16 +49,27 @@ public class LoginView extends Div {
 
 	private ShortcutRegistration registration;
 
+	private Binder<User> binder;
 
-	private OperationStatus operationStatus;
+	private Checkbox rememberMeCheckBox;
+	private Button loginButton;
+
+	private final OperationStatus operationStatus;
 
 
 	public LoginView(OperationStatus operationStatus) {
 		this.operationStatus = operationStatus;
-		setSizeFull();
+
 		setClassName(CLASS_NAME);
 
-        buildUI();
+
+		add(constructContentHeader());
+		add(constructContent());
+
+		constructBinder();
+
+
+//        buildUI();
 		usernameField.focus();
 
 		//TODO:REMOVE AT PRODUCTION
@@ -64,24 +77,32 @@ public class LoginView extends Div {
 		passwordField.setValue("password");
 	}
 
-	private void buildUI() {
+	private FlexBoxLayout constructContentHeader() {
+		FlexBoxLayout contentHeader = new FlexBoxLayout();
+		contentHeader.addClassName(CLASS_NAME + "__content-header");
+
 		H2 logoText = new H2(ProjectConstants.PROJECT_NAME_FULL);
+
+		return contentHeader;
+	}
+
+
+	private FlexBoxLayout constructContent() {
+		FlexBoxLayout content = new FlexBoxLayout();
+		content.addClassName(CLASS_NAME + "__content");
+
+
 
 		Image logoImage = new Image("/" + ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_FULL_ROUND_SVG,"logo");
 		logoImage.setClassName(CLASS_NAME + "__image");
 
-		FlexBoxLayout oval = new FlexBoxLayout();
-		oval.setClassName(CLASS_NAME + "__logo-bg");
-		oval.setSizeFull();
-		oval.setFlexDirection(FlexDirection.COLUMN);
-		oval.setDisplay(Display.FLEX);
-		oval.add(logoText, logoImage);
+		Div logoBackgroundDiv = new Div();
+		logoBackgroundDiv.setClassName(CLASS_NAME + "__logo-bg");
+		logoBackgroundDiv.add(logoText, logoImage);
 
-		FlexBoxLayout logoWrapper = new FlexBoxLayout();
+		Div logoWrapper = new Div();
 		logoWrapper.setClassName(CLASS_NAME + "__logo-wrapper");
-		logoWrapper.setFlexDirection(FlexDirection.COLUMN);
-		logoWrapper.setDisplay(Display.FLEX);
-		logoWrapper.add(oval);
+		logoWrapper.add(logoBackgroundDiv);
 
 		usernameField = new TextField("Username");
 		usernameField.setId("username");
@@ -94,7 +115,8 @@ public class LoginView extends Div {
 		passwordField.setRequired(true);
 		passwordField.setPrefixComponent(VaadinIcon.LOCK.create());
 
-		Checkbox rememberMe = new Checkbox("Remember me");
+		rememberMeCheckBox = new Checkbox("Remember me");
+
 		Button forgotPasswordButton = UIUtils.createButton("Forgot password", ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
 
 		FlexBoxLayout flexLayout = new FlexBoxLayout();
@@ -102,10 +124,9 @@ public class LoginView extends Div {
 		flexLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
 		flexLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 		flexLayout.setMargin(Vertical.S);
-		flexLayout.add(rememberMe, forgotPasswordButton);
+		flexLayout.add(rememberMeCheckBox, forgotPasswordButton);
 
-		Button loginButton = UIUtils.createPrimaryButton("LOG IN");
-		loginButton.setWidth("100%");
+		loginButton = UIUtils.createPrimaryButton("LOG IN");
 		registration = loginButton.addClickShortcut(Key.ENTER);
 
 
@@ -147,7 +168,19 @@ public class LoginView extends Div {
 		add(viewWrapper);
 
 
-		Binder<User> binder = new Binder<>(User.class);
+		loginButton.addClickListener(e -> {
+			loginOnClick();
+		});
+
+		forgotPasswordButton.addClickListener(e -> {
+			forgotPasswordOnClick();
+		});
+
+		return content;
+	}
+
+	private void constructBinder() {
+		binder = new Binder<>(User.class);
 		binder.setBean(new User());
 
 		binder.forField(usernameField)
@@ -157,33 +190,26 @@ public class LoginView extends Div {
 		binder.forField(passwordField)
 				.asRequired("Password is required")
 				.bind(User::getPassword, User::setPassword);
+	}
 
 
-		loginButton.addClickListener(e -> {
-			binder.validate();
-			if (binder.isValid()) {
-				validateAndLogIn(usernameField.getValue(), passwordField.getValue(), rememberMe.getValue());
-			}
+	private void forgotPasswordOnClick() {
+		//remove ENTER key listener for sign in button
+		registration.remove();
+
+		ForgotPasswordDialog dialog = new ForgotPasswordDialog();
+		dialog.addDetachListener((DetachEvent event) -> {
+			registration = loginButton.addClickShortcut(Key.ENTER);
 		});
+		dialog.open();
+	}
 
-		forgotPasswordButton.addClickListener(e -> {
+	private void loginOnClick() {
+		binder.validate();
 
-			//remove ENTER key listener for sign in button
-			registration.remove();
-
-			//open password recovery dialog
-			new ForgotPasswordView(new OperationStatus() {
-				@Override //Window closed -> reattach ENTER key listener for sign in button
-				public void onSuccess(String msg, UIUtils.NotificationType type) {
-					registration = loginButton.addClickShortcut(Key.ENTER);
-				}
-
-				@Override
-				public void onFail(String msg, UIUtils.NotificationType type) {
-
-				}
-			});
-		});
+		if (binder.isValid()) {
+			validateAndLogIn(usernameField.getValue(), passwordField.getValue(), rememberMeCheckBox.getValue());
+		}
 	}
 
 

@@ -1,8 +1,12 @@
-package com.gmail.grigorij.ui.application.views.admin;
+package com.gmail.grigorij.ui.application.views;
 
+import com.gmail.grigorij.ui.application.views.admin.AdminCompanies;
+import com.gmail.grigorij.ui.application.views.admin.AdminInventory;
+import com.gmail.grigorij.ui.application.views.admin.AdminPersonnel;
+import com.gmail.grigorij.ui.application.views.admin.AdminTransactions;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.navigation.bar.AppBar;
-import com.gmail.grigorij.ui.application.views.ApplicationContainerView;
+import com.gmail.grigorij.ui.application.ApplicationContainerView;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -10,7 +14,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.tabs.TabsVariant;
 
 @StyleSheet("context://styles/views/admin.css")
-public class AdminView extends Div {
+public class Admin extends Div {
 
 	private static final String CLASS_NAME = "admin-container";
 
@@ -21,7 +25,7 @@ public class AdminView extends Div {
 	private final ApplicationContainerView menuLayout;
 
 
-	public AdminView(ApplicationContainerView menuLayout) {
+	public Admin(ApplicationContainerView menuLayout) {
 		this.menuLayout = menuLayout;
 
 		addClassName(CLASS_NAME);
@@ -98,7 +102,7 @@ public class AdminView extends Div {
 		return detailsDrawer;
 	}
 
-	DetailsDrawer getDetailsDrawer() {
+	public DetailsDrawer getDetailsDrawer() {
 		return detailsDrawer;
 	}
 }

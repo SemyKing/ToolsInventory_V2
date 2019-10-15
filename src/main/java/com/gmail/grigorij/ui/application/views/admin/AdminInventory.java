@@ -2,20 +2,19 @@ package com.gmail.grigorij.ui.application.views.admin;
 
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
-import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
-import com.gmail.grigorij.ui.components.forms.editable.EditableCategoryForm;
-import com.gmail.grigorij.ui.components.forms.editable.EditableToolForm;
+import com.gmail.grigorij.ui.components.forms.editable.CategoryForm;
+import com.gmail.grigorij.ui.components.forms.editable.ToolForm;
 import com.gmail.grigorij.ui.components.forms.editable.ToolCopyForm;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -25,7 +24,6 @@ import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.utils.AuthenticationService;
-import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
@@ -55,24 +53,23 @@ import java.util.List;
 public class AdminInventory extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-inventory";
-	private final EditableToolForm editableToolForm = new EditableToolForm(this);
-	private final EditableToolForm bulkEditableToolForm = new EditableToolForm(this);
-	private final EditableCategoryForm editableCategoryForm = new EditableCategoryForm();
+	private final ToolForm editableToolForm = new ToolForm(this);
+	private final ToolForm bulkEditableToolForm = new ToolForm(this);
+	private final CategoryForm editableCategoryForm = new CategoryForm();
 	private final ToolCopyForm toolCopyForm = new ToolCopyForm();
-	private final AdminView adminView;
+	private final Admin admin;
 
 	private Grid<InventoryItem> grid;
 	private ListDataProvider<InventoryItem> dataProvider;
 	private List<InventoryItem> selectedTools = null;
 
 	private DetailsDrawer detailsDrawer;
-	private DetailsDrawerHeader detailsDrawerHeader;
 	private Button copyToolButton;
 	private Button editToolButton;
 
 
-	AdminInventory(AdminView adminView) {
-		this.adminView = adminView;
+	public AdminInventory(Admin admin) {
+		this.admin = admin;
 		setClassName(CLASS_NAME);
 
 		add(constructHeader());
@@ -201,7 +198,7 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 	private void constructDetails() {
-		detailsDrawer = adminView.getDetailsDrawer();
+		detailsDrawer = admin.getDetailsDrawer();
 
 		copyToolButton = UIUtils.createButton(VaadinIcon.COPY, ButtonVariant.LUMO_PRIMARY);
 		copyToolButton.addClickListener(e -> constructToolCopyDialog());
@@ -349,12 +346,6 @@ public class AdminInventory extends FlexBoxLayout {
 			return;
 		}
 
-//		if (editedTool.getParentCategory() != null) {
-//			if (editedTool.getParentCategory().equals(InventoryFacade.getInstance().getRootCategory())) {
-//				editedTool.setParentCategory(null);
-//			}
-//		}
-
 		if (editableToolForm.isNew()) {
 			if (InventoryFacade.getInstance().insert(editedTool)) {
 				dataProvider.getItems().add(editedTool);
@@ -430,7 +421,6 @@ public class AdminInventory extends FlexBoxLayout {
 		});
 		dialog.open();
 	}
-
 
 	public void constructCategoryDialog(InventoryItem category) {
 		editableCategoryForm.setCategory(category);

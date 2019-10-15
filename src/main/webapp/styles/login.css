@@ -54,9 +54,15 @@
 
 
 .login-view__logo-wrapper {
+	display: flex;
+	flex-direction: column;
+
 	flex-grow: 1;
 }
 .login-view__logo-bg {
+	display: flex;
+	flex-direction: column;
+
 	text-align: center;
 	padding-top: 10px;
 	padding-bottom: 5px;

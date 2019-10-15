@@ -15,7 +15,7 @@ import com.vaadin.flow.data.converter.StringToBooleanConverter;
 
 import java.util.List;
 
-public class EditableCategoryForm extends FormLayout {
+public class CategoryForm extends FormLayout {
 
 	private Binder<InventoryItem> binder;
 
@@ -29,7 +29,7 @@ public class EditableCategoryForm extends FormLayout {
 	private ComboBox<InventoryItem> parentCategoryComboBox;
 
 
-	public EditableCategoryForm() {
+	public CategoryForm() {
 
 		constructFormItems();
 

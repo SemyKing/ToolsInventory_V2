@@ -11,7 +11,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 
 
-public class EditableLocationForm extends FormLayout {
+public class LocationForm extends FormLayout {
 
 	private Binder<Location> binder;
 	private Location tempLocation;
@@ -19,15 +19,16 @@ public class EditableLocationForm extends FormLayout {
 
 	// FORM ITEMS
 	private TextField nameField;
+	private TextField countryField;
 	private TextField addressLine1Field;
 	private TextField addressLine2Field;
 	private TextField cityField;
 	private TextField postcodeField;
-	private TextField countryField;
-	private Div postcodeCountryDiv;
+
+	private Div postcodeCityDiv;
 
 
-	public EditableLocationForm() {
+	public LocationForm() {
 		constructFormItems();
 
 		constructForm();
@@ -40,7 +41,7 @@ public class EditableLocationForm extends FormLayout {
 		nameField = new TextField("Location Name");
 		nameField.setRequired(true);
 
-		cityField = new TextField("City");
+		countryField = new TextField("Country");
 
 		addressLine1Field = new TextField("Address");
 		addressLine2Field = new TextField("", "Optional");
@@ -48,15 +49,15 @@ public class EditableLocationForm extends FormLayout {
 		postcodeField = new TextField("Postcode");
 		postcodeField.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))"); // 50% for 2 items
 
-		countryField = new TextField("Country");
-		countryField.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
+		cityField = new TextField("City");
+		cityField.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
 
 		//POSTCODE & COUNTRY
-		postcodeCountryDiv = new Div();
-		postcodeCountryDiv.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
-		postcodeCountryDiv.add(postcodeField, countryField);
+		postcodeCityDiv = new Div();
+		postcodeCityDiv.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
+		postcodeCityDiv.add(postcodeField, cityField);
 
-		setColspan(postcodeCountryDiv, 2);
+		setColspan(postcodeCityDiv, 2);
 	}
 
 	private void constructForm() {
@@ -68,7 +69,7 @@ public class EditableLocationForm extends FormLayout {
 		add(cityField);
 		add(addressLine1Field);
 		add(addressLine2Field);
-		add(postcodeCountryDiv);
+		add(postcodeCityDiv);
 	}
 
 	private void constructBinder() {

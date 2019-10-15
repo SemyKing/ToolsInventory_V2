@@ -9,14 +9,14 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 
-public class EditablePersonForm extends FormLayout {
+public class PersonForm extends FormLayout {
 
 	private Binder<Person> binder = new Binder<>(Person.class);
 	private Person person;
 	private boolean isNew;
 	private String initialEmail;
 
-	public EditablePersonForm() {
+	public PersonForm() {
 
 		TextField firstNameField = new TextField("First Name");
 

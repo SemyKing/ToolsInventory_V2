@@ -64,7 +64,7 @@ public class Inventory extends SplitViewFrame {
 	private Button reserveToolButton;
 	private Button reportToolButton;
 
-	Inventory() {
+	public Inventory() {
 		setViewContent(createContent());
 		setViewDetails(createDetailsDrawer());
 	}
@@ -166,7 +166,7 @@ public class Inventory extends SplitViewFrame {
 //						FlexBoxLayout layout = new FlexBoxLayout();
 //						ToolStatus status = tool.getUsageStatus();
 //						if (status != null) {
-//							layout = new CustomBadge(status.getStringValue(), status.getColor(), status.getIcon());
+//							layout = new CustomBadge(status.getName(), status.getColor(), status.getIcon());
 //						}
 //						return layout;
 //					});

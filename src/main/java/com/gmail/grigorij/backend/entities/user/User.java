@@ -1,20 +1,16 @@
 package com.gmail.grigorij.backend.entities.user;
 
 
-import com.gmail.grigorij.backend.entities.EntityPojo;
-import com.gmail.grigorij.backend.enums.permissions.AccessGroup;
-import com.gmail.grigorij.backend.embeddable.AccessRight;
-import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.backend.entities.message.Message;
+import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.entities.company.Company;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -74,13 +70,12 @@ public class User extends EntityPojo {
 	@Embedded
 	private Person person;
 
-
 	@Enumerated( EnumType.STRING )
-	private AccessGroup accessGroup = AccessGroup.VIEWER;
+	private PermissionLevel permissionLevel = PermissionLevel.VIEWER;
 
 	@ElementCollection
 	@Enumerated( EnumType.STRING )
-	private List<AccessRight> accessRights = new ArrayList<>();
+	private List<PermissionTest> permissions = new ArrayList<>();
 
 
 	public User() {}
@@ -121,13 +116,6 @@ public class User extends EntityPojo {
 		this.company = company;
 	}
 
-	public AccessGroup getAccessGroup() {
-		return accessGroup;
-	}
-	public void setAccessGroup(AccessGroup accessGroup) {
-		this.accessGroup = accessGroup;
-	}
-
 	public Location getAddress() {
 		return address;
 	}
@@ -142,19 +130,19 @@ public class User extends EntityPojo {
 		this.person = person;
 	}
 
-
-	public List<AccessRight> getAccessRights() {
-//		List<AccessRight> copyOfAccessRights = new ArrayList<>();
-//		for (AccessRight ar : accessRights) {
-//			copyOfAccessRights.add(new AccessRight(ar));
-//		}
-//		return copyOfAccessRights;
-		return accessRights;
+	public PermissionLevel getPermissionLevel() {
+		return permissionLevel;
 	}
-	public void setAccessRights(List<AccessRight> accessRights) {
-		this.accessRights = accessRights;
+	public void setPermissionLevel(PermissionLevel permissionLevel) {
+		this.permissionLevel = permissionLevel;
 	}
 
+	public List<PermissionTest> getPermissions() {
+		return permissions;
+	}
+	public void setPermissions(List<PermissionTest> permissions) {
+		this.permissions = permissions;
+	}
 
 
 	public String getFullName() {

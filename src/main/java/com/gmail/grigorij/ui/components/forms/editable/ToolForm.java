@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Locale;
 
 
-public class EditableToolForm extends FormLayout {
+public class ToolForm extends FormLayout {
 
 	private final AdminInventory adminInventory;
 
@@ -76,7 +76,7 @@ public class EditableToolForm extends FormLayout {
 	private TextArea additionalInfo;
 
 
-	public EditableToolForm(AdminInventory adminInventory) {
+	public ToolForm(AdminInventory adminInventory) {
 		this.adminInventory = adminInventory;
 
 		constructFormItems();

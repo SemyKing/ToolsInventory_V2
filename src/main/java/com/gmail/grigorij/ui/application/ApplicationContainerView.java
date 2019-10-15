@@ -1,7 +1,8 @@
-package com.gmail.grigorij.ui.application.views;
+package com.gmail.grigorij.ui.application;
 
 import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.MainLayout;
+import com.gmail.grigorij.ui.application.views.*;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.navigation.bar.AppBar;
@@ -10,7 +11,7 @@ import com.gmail.grigorij.ui.components.navigation.drawer.NaviItem;
 import com.gmail.grigorij.ui.components.navigation.drawer.NaviMenu;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.Overflow;
-import com.gmail.grigorij.ui.application.views.admin.AdminView;
+import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -36,6 +37,7 @@ import java.util.List;
 @CssImport("./styles/components/forms.css")
 @CssImport(value = "./styles/components/grid-style.css", themeFor = "vaadin-grid")
 @CssImport(value = "./styles/components/menu-bar-style.css", themeFor = "vaadin-menu-bar")
+@CssImport(value = "./styles/components/dialogs/vaadin-dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
 public class ApplicationContainerView extends FlexBoxLayout implements PageConfigurator {
 
 	private static final Logger log = LoggerFactory.getLogger(ApplicationContainerView.class);
@@ -123,6 +125,8 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		NaviItem inventory = new NaviItem(VaadinIcon.STORAGE, ProjectConstants.INVENTORY);
 		NaviItem messages = new NaviItem(VaadinIcon.ENVELOPES_O, ProjectConstants.MESSAGES);
 		NaviItem transaction = new NaviItem(VaadinIcon.EXCHANGE, ProjectConstants.TRANSACTIONS);
+
+		//
 		NaviItem reporting = new NaviItem(VaadinIcon.CLIPBOARD_TEXT, ProjectConstants.REPORTING);
 
 
@@ -159,7 +163,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		});
 		menu.addNaviItem(reporting);
 
-		if (AuthenticationService.getCurrentSessionUser().getAccessGroup().getPermissionLevel().higherOrEqualsTo(PermissionLevel.COMPANY)) {
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().higherOrEqualsTo(PermissionLevel.COMPANY_ADMIN)) {
 			NaviItem adminItem = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN);
 			menu.addNaviItem(adminItem);
 
@@ -215,7 +219,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		viewContainer.removeAll();
 		appBar.reset();
 
-		viewContainer.add(new AdminView(this));
+		viewContainer.add(new Admin(this));
 
 		selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
 
