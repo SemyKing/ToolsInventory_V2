@@ -6,16 +6,17 @@ import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.utils.css.size.*;
-import com.gmail.grigorij.ui.components.forms.editable.EditableCompanyForm;
+import com.gmail.grigorij.ui.components.forms.editable.CompanyForm;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.contextmenu.MenuItem;
@@ -36,11 +37,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 
-class AdminCompanies extends FlexBoxLayout {
+public class AdminCompanies extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-companies";
-	private final EditableCompanyForm companyForm = new EditableCompanyForm();
-	private final AdminView adminView;
+	private final CompanyForm companyForm = new CompanyForm();
+	private final Admin adminView;
 
 	private Grid<Company> grid;
 	private ListDataProvider<Company> dataProvider;
@@ -49,7 +50,7 @@ class AdminCompanies extends FlexBoxLayout {
 	private boolean entityOldStatus;
 
 
-	AdminCompanies(AdminView adminView) {
+	public AdminCompanies(Admin adminView) {
 		this.adminView = adminView;
 		setClassName(CLASS_NAME);
 
@@ -118,7 +119,12 @@ class AdminCompanies extends FlexBoxLayout {
 			}
 		});
 
-		dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getAllCompanies());
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getAllCompanies());
+		} else {
+			dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getCompanyById(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
+		}
+
 		grid.setDataProvider(dataProvider);
 
 		grid.addColumn(Company::getName)
@@ -150,7 +156,6 @@ class AdminCompanies extends FlexBoxLayout {
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 	}
-
 
 
 	private void filterGrid(String searchString) {
@@ -257,7 +262,8 @@ class AdminCompanies extends FlexBoxLayout {
 	private void confirmAllEmployeesInCompanyStatusChange(Company company) {
 		String status = (company.isDeleted()) ? ProjectConstants.INACTIVE : ProjectConstants.ACTIVE;
 
-		ConfirmDialog dialog = new ConfirmDialog("Would you like to set all employees in " + company.getName()+" as " + status);
+		ConfirmDialog dialog = new ConfirmDialog();
+		dialog.setMessage("Would you like to set all employees in " + company.getName()+" as " + status);
 		dialog.closeOnCancel();
 		dialog.getConfirmButton().addClickListener(e -> {
 

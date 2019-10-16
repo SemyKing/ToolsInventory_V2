@@ -30,24 +30,24 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @PageTitle("Dashboard")
 @CssImport("./styles/views/dashboard.css")
-class Dashboard extends ViewFrame {
+public class Dashboard extends ViewFrame {
 
 	private final static String CLASS_NAME = "dashboard";
 
-	Dashboard() {
+	public Dashboard() {
 		setId("dashboard");
 		setViewContent(createContent());
 	}
 
 	private FlexBoxLayout createContent() {
 
-		if (AuthenticationService.getCurrentSessionUser().getAccessGroup().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM)) {
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			return constructSystemAdminDashBoard();
 		}
-		if (AuthenticationService.getCurrentSessionUser().getAccessGroup().getPermissionLevel().equalsTo(PermissionLevel.COMPANY)) {
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.COMPANY_ADMIN)) {
 			return constructCompanyAdminDashBoard();
 		}
-		if (AuthenticationService.getCurrentSessionUser().getAccessGroup().getPermissionLevel().equalsTo(PermissionLevel.OWN)) {
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.USER)) {
 			return constructEmployeeDashBoard();
 		}
 

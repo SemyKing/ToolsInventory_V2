@@ -40,7 +40,9 @@ import java.util.List;
 import java.util.Locale;
 
 
-public class EditableToolForm extends FormLayout {
+public class ToolForm extends FormLayout {
+
+	private final String CLASS_NAME = "form";
 
 	private final AdminInventory adminInventory;
 
@@ -76,8 +78,10 @@ public class EditableToolForm extends FormLayout {
 	private TextArea additionalInfo;
 
 
-	public EditableToolForm(AdminInventory adminInventory) {
+	public ToolForm(AdminInventory adminInventory) {
 		this.adminInventory = adminInventory;
+
+		addClassName(CLASS_NAME);
 
 		constructFormItems();
 
@@ -195,11 +199,11 @@ public class EditableToolForm extends FormLayout {
 
 		setColspan(toolUsageDiv, 2);
 
-		dateBought = new DatePicker("Valid From");
+		dateBought = new DatePicker("Bought Date");
 		dateBought.setLocale(new Locale("fi"));
 		dateBought.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
 
-		dateNextMaintenance = new DatePicker("Valid Till");
+		dateNextMaintenance = new DatePicker("Next Maintenance");
 		dateNextMaintenance.setLocale(new Locale("fi"));
 		dateNextMaintenance.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
 
@@ -232,7 +236,7 @@ public class EditableToolForm extends FormLayout {
 	}
 
 	private void constructForm() {
-		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
+//		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));

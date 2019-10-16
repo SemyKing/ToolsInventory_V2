@@ -5,6 +5,8 @@ import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -13,9 +15,12 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToBooleanConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class EditableCategoryForm extends FormLayout {
+public class CategoryForm extends FormLayout {
+
+	private final String CLASS_NAME = "form";
 
 	private Binder<InventoryItem> binder;
 
@@ -29,7 +34,8 @@ public class EditableCategoryForm extends FormLayout {
 	private ComboBox<InventoryItem> parentCategoryComboBox;
 
 
-	public EditableCategoryForm() {
+	public CategoryForm() {
+		addClassName(CLASS_NAME);
 
 		constructFormItems();
 
@@ -44,11 +50,15 @@ public class EditableCategoryForm extends FormLayout {
 		nameField.setRequired(true);
 
 		parentCategoryComboBox = new ComboBox<>();
+		parentCategoryComboBox.setItems();
+		parentCategoryComboBox.setLabel("Parent Category");
+		parentCategoryComboBox.setRequired(true);
+		parentCategoryComboBox.setItemLabelGenerator(InventoryItem::getName);
 
 		companyComboBox = new ComboBox<>();
 		companyComboBox.setLabel("Company");
 		companyComboBox.setRequired(true);
-		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
+		companyComboBox.setItems();
 		companyComboBox.setItemLabelGenerator(Company::getName);
 		companyComboBox.addValueChangeListener(e -> {
 			if (e != null) {
@@ -58,11 +68,6 @@ public class EditableCategoryForm extends FormLayout {
 				}
 			}
 		});
-
-		parentCategoryComboBox.setItems();
-		parentCategoryComboBox.setLabel("Parent Category");
-		parentCategoryComboBox.setRequired(true);
-		parentCategoryComboBox.setItemLabelGenerator(InventoryItem::getName);
 	}
 
 	private void constructForm() {
@@ -88,7 +93,20 @@ public class EditableCategoryForm extends FormLayout {
 
 
 	private void initDynamicFormItems() {
+		initialCompany = category.getCompany();
 
+		List<Company> companies = new ArrayList<>(CompanyFacade.getInstance().getAllCompanies());
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
+			long currentUserId = AuthenticationService.getCurrentSessionUser().getId();
+			companies.removeIf(company -> !company.getId().equals(currentUserId));
+
+			if (companies.size() > 1) {
+				System.err.println("COMPANIES LIST SHOULD HAVE ONLY ONE COMPANY FOR NON SYSTEM ADMIN: CATEGORY FORM -> COMPANIES COMBO BOX");
+			}
+		}
+
+		companyComboBox.setItems(companies);
 	}
 
 	private void updateCategoriesComboBoxData(Company company) {
@@ -99,30 +117,27 @@ public class EditableCategoryForm extends FormLayout {
 		When editing Category remove same category from Parent Category -> can't set self as parent
 		 */
 		if (initialCompany != null) {
-			categories.removeIf((InventoryItem category) -> category.equals(this.category));
+			categories.removeIf(category -> category.equals(this.category));
 		}
 		parentCategoryComboBox.setItems(categories);
 	}
 
 
-	public void setCategory(InventoryItem c) {
-		category = c;
+	public void setCategory(InventoryItem category) {
 		isNew = false;
-		binder.removeBean();
 
 		if (category == null) {
-			category = new InventoryItem();
+			this.category = new InventoryItem();
 			isNew = true;
+		} else {
+			this.category = category;
 		}
-		category.setInventoryHierarchyType(InventoryHierarchyType.CATEGORY);
 
-		try {
-			initialCompany = category.getCompany();
+		this.category.setInventoryHierarchyType(InventoryHierarchyType.CATEGORY);
 
-			binder.readBean(category);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		initDynamicFormItems();
+
+		binder.readBean(category);
 	}
 
 	public InventoryItem getCategory() {
@@ -145,6 +160,7 @@ public class EditableCategoryForm extends FormLayout {
 				}
 
 				binder.writeBean(category);
+
 				return category;
 			}
 		} catch (ValidationException e) {

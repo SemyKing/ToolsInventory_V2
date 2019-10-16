@@ -4,12 +4,12 @@ import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
-import com.gmail.grigorij.ui.components.forms.editable.EditableUserForm;
+import com.gmail.grigorij.ui.components.forms.editable.UserForm;
 import com.gmail.grigorij.ui.components.navigation.bar.tab.NaviTab;
 import com.gmail.grigorij.ui.components.navigation.bar.tab.NaviTabs;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.application.views.ApplicationContainerView;
+import com.gmail.grigorij.ui.application.ApplicationContainerView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -128,16 +128,16 @@ public class AppBar extends Composite<FlexLayout> {
         CustomDialog dialog = new CustomDialog();
         dialog.setHeader(UIUtils.createH3Label("Profile"));
 
-        EditableUserForm form = new EditableUserForm();
-        form.setTargetUser(AuthenticationService.getCurrentSessionUser());
+        UserForm form = new UserForm();
+        form.setUser(AuthenticationService.getCurrentSessionUser());
 
         dialog.setContent( form );
 
-        dialog.getCancelButton().addClickListener(e -> dialog.close());
+        dialog.closeOnCancel();
 
         dialog.getConfirmButton().setText("Save");
         dialog.getConfirmButton().addClickListener(e -> {
-            User editedCurrentUser = form.getTargetUser();
+            User editedCurrentUser = form.getUser();
 
             if (editedCurrentUser != null) {
                 if (UserFacade.getInstance().update(editedCurrentUser)) {

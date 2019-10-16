@@ -2,6 +2,7 @@ package com.gmail.grigorij.ui.application.views.admin;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
+import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
@@ -26,11 +27,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 
-class AdminTransactions extends FlexBoxLayout {
+public class AdminTransactions extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-transactions";
 	private final ReadOnlyTransactionForm transactionsForm = new ReadOnlyTransactionForm();
-	private final AdminView adminView;
+	private final Admin admin;
 
 	private DatePicker dateStartField, dateEndField;
 
@@ -40,8 +41,8 @@ class AdminTransactions extends FlexBoxLayout {
 	private DetailsDrawer detailsDrawer;
 
 
-	AdminTransactions(AdminView adminView) {
-		this.adminView = adminView;
+	public AdminTransactions(Admin admin) {
+		this.admin = admin;
 		addClassName(CLASS_NAME);
 
 		add(constructHeader());
@@ -153,7 +154,7 @@ class AdminTransactions extends FlexBoxLayout {
 	}
 
 	private void constructDetails() {
-		detailsDrawer = adminView.getDetailsDrawer();
+		detailsDrawer = admin.getDetailsDrawer();
 
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Transaction Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());

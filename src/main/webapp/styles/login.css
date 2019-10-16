@@ -1,25 +1,16 @@
 /* Log In */
-
-
-/*
-  ##Device = Tablets, Ipads (landscape)
-  ##Screen = B/w 768px to 1024px
-*/
-
-
-
 @media (max-width: 1024px) and (orientation: landscape)  {
     .login-view__wrapper {
         flex-direction: row !important;
         align-items: center;
-
     }
 
-    .login-view__logo-wrapper {
-        width: 70vw !important;
-    }
     .login-view__logo-bg {
         background-image: none !important;
+    }
+
+    .login-view__content {
+        width: 50vw;
     }
 }
 
@@ -31,7 +22,10 @@
 }
 
 .login-view {
+	width: 100%;
+	height: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
 
@@ -41,7 +35,7 @@
 .login-view__wrapper {
     display: flex;
     flex-direction: column;
-    width: 400px;
+    width: 25%;
 
     border-radius: 5px;
 
@@ -52,63 +46,59 @@
     box-shadow: 0px 0px 10px 2px rgba(0,0,0,0.44);
 }
 
+.login-view__content-header {
+    display: flex;
+    flex-direction: column;
 
-.login-view__logo-wrapper {
-	flex-grow: 1;
+    flex-grow: 1;
 }
+
 .login-view__logo-bg {
+	display: flex;
+	flex-direction: column;
+
 	text-align: center;
-	padding-top: 10px;
 	padding-bottom: 5px;
     background-image: linear-gradient(hsla(0, 0%, 0%, 0.5), var(--lumo-shade-10pct));
-	border-radius: 0 0 50% 50%;
+	border-radius: 5px 5px 50% 50%;
 }
-.login-view__logo-bg > h2 {
-	margin-top: 10px;
-}
+
 .login-view__image {
     height: 100px;
 }
 
 
-.login-view__form-wrapper {
-    padding-left: 15px;
-    padding-right: 15px;
+.login-view__content {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+
+    flex-grow: 1;
 }
 
-.login-view__form {
-    padding-left: 15px;
-    padding-right: 15px;
-
+.login-view__content-space-between {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
 }
 
-.login-view__fail-wrapper {
+.login-view__error-wrapper {
     flex-direction: column;
     text-align: center;
-    flex-grow: 1;
-    min-height: 1vw;
 }
-.login-view__fail-wrapper > p {
-    background-color: #964a4621;
-    color: #ff5f57; /*For text elements inside*/
-    border-radius: 5px;
+
+.login-view__error-wrapper:not([visible]) {
+	display: none;
 }
-.login-view__fail-wrapper h5 {
+
+.login-view__error-wrapper h5 {
     color: inherit;
     font-weight: bold;
-
-    padding-top: 10px;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-top: 0px;
-}
-.login-view__fail-wrapper span {
-    color: inherit;
-
-    display: inline-block;
-
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 10px;
 }
 
+.login-view__error-wrapper > p {
+    background-color: #964a4621;
+    color: #ff5f57;
+    border-radius: 5px;
+    margin-bottom: 0;
+}

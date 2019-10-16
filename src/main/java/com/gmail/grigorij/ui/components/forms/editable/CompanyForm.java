@@ -3,9 +3,6 @@ package com.gmail.grigorij.ui.components.forms.editable;
 import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -29,10 +26,12 @@ import com.vaadin.flow.data.binder.ValidationException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EditableCompanyForm extends FormLayout {
+public class CompanyForm extends FormLayout {
 
-	private final EditableLocationForm addressForm = new EditableLocationForm();
-	private final EditablePersonForm contactPersonForm = new EditablePersonForm();
+	private final String CLASS_NAME = "form";
+
+	private final LocationForm addressForm = new LocationForm();
+	private final PersonForm contactPersonForm = new PersonForm();
 
 	private Binder<Company> binder;
 	private Company company;
@@ -51,7 +50,9 @@ public class EditableCompanyForm extends FormLayout {
 	private TextArea additionalInfo;
 
 
-	public EditableCompanyForm() {
+	public CompanyForm() {
+		addClassName(CLASS_NAME);
+
 		constructFormItems();
 
 		constructForm();
@@ -110,7 +111,7 @@ public class EditableCompanyForm extends FormLayout {
 	}
 
 	private void constructForm() {
-		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
+//		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
@@ -179,7 +180,7 @@ public class EditableCompanyForm extends FormLayout {
 
 	private void constructLocationDialog(Location location) {
 
-		EditableLocationForm locationForm = new EditableLocationForm();
+		LocationForm locationForm = new LocationForm();
 		locationForm.setLocation(location);
 
 		CustomDialog dialog = new CustomDialog();

@@ -1,30 +1,26 @@
 package com.gmail.grigorij.backend.enums.permissions;
 
 public enum PermissionLevel {
-	//CAN SEE ONLY OWN DATA
-	OWN(    1,  "Own"),
 
-	//CAN SEE ONLY OWN & COMPANY DATA
-	COMPANY(2,  "Company"),
+	VIEWER("Viewer", 0),
+	USER("User", 1),
+	FOREMAN("Foreman", 2),
+	COMPANY_ADMIN("Company Admin", 3),
+	SYSTEM_ADMIN("System Admin", 99);
 
-	//CAN SEE ALL DATA (ALL COMPANIES & OWN)
-	SYSTEM( 3,  "System");
-
-
-	private final int level;
 	private final String name;
+	private final int level;
 
-	PermissionLevel(int level, String str) {
+	PermissionLevel(String name, int level) {
+		this.name = name;
 		this.level = level;
-		this.name = str;
 	}
 
-	public int getIntegerValue() {
-		return this.level;
-	}
-
-	public String getStringValue() {
+	public String getName() {
 		return this.name;
+	}
+	public int getLevel() {
+		return this.level;
 	}
 
 
@@ -32,34 +28,34 @@ public enum PermissionLevel {
 		if (pl == null) {
 			return false;
 		}
-		return this.getIntegerValue() == pl.getIntegerValue();
+		return this.getLevel() == pl.getLevel();
 	}
 
 	public boolean lowerThan(PermissionLevel pl) {
 		if (pl == null) {
 			return false;
 		}
-		return this.getIntegerValue() < pl.getIntegerValue();
+		return this.getLevel() < pl.getLevel();
 	}
 
 	public boolean lowerOrEqualsTo(PermissionLevel pl) {
 		if (pl == null) {
 			return false;
 		}
-		return this.getIntegerValue() <= pl.getIntegerValue();
+		return this.getLevel() <= pl.getLevel();
 	}
 
 	public boolean higherThan(PermissionLevel pl) {
 		if (pl == null) {
 			return false;
 		}
-		return this.getIntegerValue() > pl.getIntegerValue();
+		return this.getLevel() > pl.getLevel();
 	}
 
 	public boolean higherOrEqualsTo(PermissionLevel pl) {
 		if (pl == null) {
 			return false;
 		}
-		return this.getIntegerValue() >= pl.getIntegerValue();
+		return this.getLevel() >= pl.getLevel();
 	}
 }

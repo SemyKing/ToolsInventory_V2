@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.application.authentication.forgot;
+package com.gmail.grigorij.ui.components.dialogs;
 
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
@@ -10,7 +10,9 @@ import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.size.All;
 import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.vaadin.flow.component.DetachEvent;
@@ -20,53 +22,69 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.EmailValidator;
 
 
-public class ForgotPasswordView {
+public class ForgotPasswordDialog extends CustomDialog {
 
-	private OperationStatus operationStatus;
+	private final static String CLASS_NAME = "forgot-password-dialog";
 
-	public ForgotPasswordView(OperationStatus operationStatus) {
-		this.operationStatus = operationStatus;
-		constructPasswordRecoveryDialog();
+	private FlexBoxLayout content;
+
+	private Binder<Person> binder;
+	private EmailField emailField;
+
+	public ForgotPasswordDialog() {
+		getHeader().add(UIUtils.createH3Label("Forgot Password"));
+		getContent().add(constructContent());
+		setWidth("auto");
+
+		closeOnCancel();
+
+		getConfirmButton().setText("Send");
+		getConfirmButton().addClickListener(e -> {
+			sendOnClick();
+		});
+
+		constructBinder();
 	}
 
-	private void constructPasswordRecoveryDialog() {
-		EmailField emailField = new EmailField("E-mail");
+	private FlexBoxLayout constructContent() {
+		content = new FlexBoxLayout();
+		content.addClassName(CLASS_NAME + "__content");
+
+		emailField = new EmailField("E-mail");
 		emailField.setMinWidth("400px");
+		emailField.setClearButtonVisible(true);
+		emailField.setErrorMessage("Please enter a valid email address");
 
 		//TODO: REMOVE AT PRODUCTION
 		emailField.setValue("gs@mail.com");
 
-		Binder<Person> binder = new Binder<>();
+		content.add(emailField);
+		return content;
+	}
+
+	private void constructBinder() {
+		binder = new Binder<>();
 		binder.forField(emailField)
+				.asRequired()
 				.withValidator(new EmailValidator("This doesn't look like a valid email address"))
 				.bind(Person::getEmail, Person::setEmail);
-
-		CustomDialog dialog = new CustomDialog();
-		dialog.setHeader(UIUtils.createH3Label("Password Recovery"));
-		dialog.setContent(new Span("Enter your email to reset your password"), emailField);
-		dialog.getContent().setPadding(Top.S);
-
-		dialog.getCancelButton().addClickListener(e -> dialog.close());
-
-		dialog.getConfirmButton().setText("Send");
-		dialog.getConfirmButton().addClickListener(e -> {
-			binder.validate();
-			if (binder.isValid()) {
-
-				generateRecoveryLink(emailField.getValue());
-
-				constructRecoveryEmail(emailField.getValue());
-
-				dialog.close();
-				operationStatus.onSuccess("Password recovery dialog closed from confirm button", null);
-			}
-		});
-
-		dialog.addDetachListener((DetachEvent event) -> {
-			operationStatus.onSuccess("Password recovery dialog closed from detach event", null);
-		});
-		dialog.open();
 	}
+
+
+	private void sendOnClick() {
+		binder.validate();
+
+		if (binder.isValid()) {
+			generateRecoveryLink(emailField.getValue());
+
+			constructRecoveryEmail(emailField.getValue());
+
+			this.close();
+		}
+	}
+
+
+
 
 	private void generateRecoveryLink(String emailAddress) {
 		User user = UserFacade.getInstance().getUserByEmail(emailAddress);

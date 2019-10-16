@@ -5,11 +5,11 @@ import '@polymer/polymer/lib/elements/custom-style.js';
 
 	.details-drawer__content {}
 
-	.h4 {
+	.form > .h4 {
     	margin-top: var(--lumo-space-m);
     }
 
-    hr {
+    .form > hr {
         margin-top: var(--lumo-space-s);
         margin-bottom: var(--lumo-space-s);
     }

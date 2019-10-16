@@ -4,22 +4,22 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.utils.css.size.*;
-import com.gmail.grigorij.ui.components.forms.editable.EditableUserForm;
+import com.gmail.grigorij.ui.components.forms.editable.UserForm;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
@@ -34,11 +34,11 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
 
 
-class AdminPersonnel extends FlexBoxLayout {
+public class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
-	private final EditableUserForm userForm = new EditableUserForm();
-	private final AdminView adminView;
+	private final UserForm userForm = new UserForm();
+	private final Admin admin;
 
 	private Grid<User> grid;
 	private ListDataProvider<User> dataProvider;
@@ -46,8 +46,8 @@ class AdminPersonnel extends FlexBoxLayout {
 	private DetailsDrawer detailsDrawer;
 
 
-	AdminPersonnel(AdminView adminView) {
-		this.adminView = adminView;
+	public AdminPersonnel(Admin admin) {
+		this.admin = admin;
 		setClassName(CLASS_NAME);
 
 		add(constructHeader());
@@ -116,7 +116,12 @@ class AdminPersonnel extends FlexBoxLayout {
 			}
 		});
 
-		dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getAllUsers());
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getAllUsers());
+		} else {
+			dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getUsersInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
+		}
+
 		grid.setDataProvider(dataProvider);
 
 		grid.addColumn(user -> (user.getPerson() == null) ? "" : user.getPerson().getFullName())
@@ -135,7 +140,7 @@ class AdminPersonnel extends FlexBoxLayout {
 	}
 
 	private void constructDetails() {
-		detailsDrawer = adminView.getDetailsDrawer();
+		detailsDrawer = admin.getDetailsDrawer();
 
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("User Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
@@ -188,7 +193,7 @@ class AdminPersonnel extends FlexBoxLayout {
 	}
 
 	private void showDetails(User user) {
-		userForm.setTargetUser(user);
+		userForm.setUser(user);
 		detailsDrawer.show();
 	}
 
@@ -198,7 +203,7 @@ class AdminPersonnel extends FlexBoxLayout {
 	}
 
 	private void saveOnClick() {
-		User editedUser = userForm.getTargetUser();
+		User editedUser = userForm.getUser();
 
 		if (editedUser == null) {
 			return;

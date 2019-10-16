@@ -7,7 +7,7 @@ import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.application.views.ApplicationContainerView;
+import com.gmail.grigorij.ui.application.ApplicationContainerView;
 import com.gmail.grigorij.ui.application.authentication.login.LoginView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.OperationStatus;
@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 @CssImport("./styles/global-styles.css")
 @CssImport(value = "./styles/notification-style.css", themeFor = "vaadin-notification-card")
-
 public class MainLayout extends Div {
 
 	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
