@@ -635,7 +635,8 @@ public class Inventory extends SplitViewFrame {
 
 				toolInGrid.setInUseByUser(toolInDB.getInUseByUser()); // VISUAL REFRESH
 
-				ConfirmDialog confirmDialog = new ConfirmDialog("Tool is currently in use. Would you like to reserve it?");
+				ConfirmDialog confirmDialog = new ConfirmDialog();
+				confirmDialog.setMessage("Tool is currently in use. Would you like to reserve it?");
 				confirmDialog.closeOnCancel();
 
 				confirmDialog.getConfirmButton().addClickListener(e -> {

@@ -15,7 +15,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 
-//@CssImport("./styles/components/dialogs/custom-dialog.css")
 @StyleSheet("context://styles/components/dialogs.css")
 public class CustomDialog extends Div {
 
@@ -43,7 +42,6 @@ public class CustomDialog extends Div {
 		confirmButton = UIUtils.createSmallButton("Confirm", ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SUCCESS);
 
 		footer.add(cancelButton, confirmButton);
-		footer.setPadding(Horizontal.M);
 
 		add(header, content, footer);
 

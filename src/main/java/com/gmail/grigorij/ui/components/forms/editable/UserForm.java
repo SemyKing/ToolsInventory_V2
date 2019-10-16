@@ -51,7 +51,7 @@ import java.util.List;
  * Validates all fields and returns null if at least one error, or edited user object if none
  *
  */
-public class EditableUserForm extends FormLayout {
+public class UserForm extends FormLayout {
 
 	private final String CLASS_NAME = "form";
 
@@ -78,7 +78,7 @@ public class EditableUserForm extends FormLayout {
 	private TextArea additionalInfo;
 
 
-	public EditableUserForm() {
+	public UserForm() {
 		addClassName(CLASS_NAME);
 
 		constructFormItems();
@@ -128,7 +128,8 @@ public class EditableUserForm extends FormLayout {
 			if (dataLoaded) {
 				if (!e.getValue().equalsTo(e.getOldValue())) {
 					if (e.getValue().equalsTo(PermissionLevel.VIEWER)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog("Would you like to set default permissions for: " + PermissionLevel.VIEWER.getName());
+						ConfirmDialog confirmDialog = new ConfirmDialog();
+						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.VIEWER.getName());
 						confirmDialog.closeOnCancel();
 						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
 							confirmDialog.close();
@@ -139,7 +140,8 @@ public class EditableUserForm extends FormLayout {
 					}
 
 					if (e.getValue().equalsTo(PermissionLevel.USER)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog("Would you like to set default permissions for: " + PermissionLevel.USER.getName());
+						ConfirmDialog confirmDialog = new ConfirmDialog();
+						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.USER.getName());
 						confirmDialog.closeOnCancel();
 						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
 							confirmDialog.close();
@@ -150,7 +152,8 @@ public class EditableUserForm extends FormLayout {
 					}
 
 					if (e.getValue().equalsTo(PermissionLevel.FOREMAN)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog("Would you like to set default permissions for: " + PermissionLevel.FOREMAN.getName());
+						ConfirmDialog confirmDialog = new ConfirmDialog();
+						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.FOREMAN.getName());
 						confirmDialog.closeOnCancel();
 						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
 							confirmDialog.close();
@@ -161,7 +164,8 @@ public class EditableUserForm extends FormLayout {
 					}
 
 					if (e.getValue().equalsTo(PermissionLevel.COMPANY_ADMIN)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog("Would you like to set default permissions for: " + PermissionLevel.COMPANY_ADMIN.getName());
+						ConfirmDialog confirmDialog = new ConfirmDialog();
+						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.COMPANY_ADMIN.getName());
 						confirmDialog.closeOnCancel();
 						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
 							confirmDialog.close();
@@ -172,7 +176,8 @@ public class EditableUserForm extends FormLayout {
 					}
 
 					if (e.getValue().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog("Would you like to set default permissions for: " + PermissionLevel.SYSTEM_ADMIN.getName());
+						ConfirmDialog confirmDialog = new ConfirmDialog();
+						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.SYSTEM_ADMIN.getName());
 						confirmDialog.closeOnCancel();
 						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
 							confirmDialog.close();
@@ -189,9 +194,7 @@ public class EditableUserForm extends FormLayout {
 
 		editPermissionsButton = UIUtils.createButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
 		editPermissionsButton.addClickListener(e -> {
-			if (e != null) {
-				constructAccessRightsDialog();
-			}
+			constructAccessRightsDialog();
 		});
 		UIUtils.setTooltip("Edit User's Permissions", editPermissionsButton);
 
@@ -213,7 +216,7 @@ public class EditableUserForm extends FormLayout {
 	}
 
 	private void constructForm() {
-		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
+//		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));

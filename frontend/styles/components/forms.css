@@ -3,9 +3,7 @@ import '@polymer/polymer/lib/elements/custom-style.js';
 <custom-style>
 	<style>
 
-	.details-drawer__content {
-
-	}
+	.details-drawer__content {}
 
 	.form > .h4 {
     	margin-top: var(--lumo-space-m);

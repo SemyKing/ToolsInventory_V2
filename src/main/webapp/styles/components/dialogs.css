@@ -7,23 +7,28 @@ import '@polymer/polymer/lib/elements/custom-style.js';
 
     @media(max-width: 719px) {
         .custom-dialog {
-            min-width: 95vw !important;
+        }
+        .custom-dialog__content > .form {
+            width: 100% !important;
+        }
+        .permission-row {
+            flex-direction: column !important;
+            align-items: center !important;
+        }
+        .permission-row__pa {
+            width: 100% !important;
         }
     }
 
-    vaadin-dialog-overlay flow-component-renderer {
-        display: flex;
-    }
+    /*      CUSTOM DIALOG      */
 
     .custom-dialog {
         display: flex;
         flex-direction: column;
 
-        height: 100%;
-        max-height: 100%;
-
-        overflow: hidden;
-        z-index: 0;
+        min-width: 200px;
+		max-width: 95vw;
+	    max-height: 95vh;
     }
 
     .custom-dialog__header {
@@ -43,56 +48,107 @@ import '@polymer/polymer/lib/elements/custom-style.js';
         overflow: auto;
         flex-direction: column;
 
-        padding-top: var(--lumo-space-s);
-        padding-left: var(--lumo-space-m);
-        padding-right: var(--lumo-space-m);
-        padding-bottom: var(--lumo-space-s);
+        padding: var(--lumo-space-s);
         -webkit-overflow-scrolling: touch;
     }
 
     .custom-dialog__footer {
         display: flex;
-        flex-shrink: 0;
+		padding-left: var(--lumo-space-m);
+        padding-right: var(--lumo-space-m);
+        justify-content: space-between;
+        background-color: var(--lumo-contrast-5pct);
+    }
 
+    .custom-dialog__content > .form {
+        width: 50vw;
+    }
+
+
+
+    /*      CONFIRM DIALOG      */
+
+	.confirm-dialog {
+        display: flex;
+        flex-direction: column;
+        max-width: 95vw;
+        max-height: 95vh;
+	}
+
+	.confirm-dialog__header {
+		display: flex;
+		flex-direction: row;
+		flex-shrink: 0;
+
+		padding-top: var(--lumo-space-xs);
+		padding-left: var(--lumo-space-m);
+		padding-right: var(--lumo-space-m);
+		padding-bottom: var(--lumo-space-s);
+		box-shadow: inset 0 -1px var(--lumo-contrast-20pct);
+	}
+
+	.confirm-dialog__content {
+        flex: 1;
+        overflow: auto;
+        flex-direction: column;
+		padding-left: var(--lumo-space-m);
+        padding-right: var(--lumo-space-m);
+        padding-top: var(--lumo-space-s);
+        padding-bottom: var(--lumo-space-s);
+        -webkit-overflow-scrolling: touch;
+	}
+
+	.confirm-dialog__footer {
+        display: flex;
+		padding-left: var(--lumo-space-m);
+        padding-right: var(--lumo-space-m);
         justify-content: space-between;
         background-color: var(--lumo-contrast-5pct);
     }
 
 
 
-    /* PERMISSIONS */
-    .permissions-dialog__content_header {
 
+    /*      FORGOT PASSWORD      */
+
+    .forgot-password-dialog__content {
     }
-    .permissions-dialog__content_header > hr {
-		margin-top: var(--lumo-space-s);
-		margin-bottom: var(--lumo-space-s);
+    .forgot-password-dialog__content > vaadin-email-field{
+		min-width: 30vw;
+		width: 100%;
     }
-    .permissions-dialog__permission-headers {
+
+
+
+
+    /*      PERMISSIONS      */
+
+    .permissions-dialog__content_header {
 		display: flex;
 		flex-direction: row;
     }
-    .permissions-dialog__permission-headers__h1 {
-        width: 168px;
+
+    .permissions-dialog__content_header > .left {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        margin-right: var(--lumo-space-s);
     }
-    .permissions-dialog__permission-headers__h2 {
-		width: 168px;
+
+    .permissions-dialog__content_header > .right {
+        display: flex;
+        flex-direction: column;
     }
-    .permissions-dialog__permission-headers__h3 {
-        width: 70px;
-    }
-    .permissions-dialog__permission-headers__h4 {
-        width: 70px;
-    }
-    .permissions-dialog__permission-headers__h5 {
-        width: 70px;
-    }
-    .permissions-dialog__permission-headers__h6 {
+
+    .permissions-dialog__content_header > hr {
+		margin-top: var(--lumo-space-s);
+		margin-bottom: var(--lumo-space-s);
     }
 
     .permissions-dialog__content {
 		flex-direction: column;
     }
+
 	.permissions-dialog__content_header > .h4 {
 		margin-top: var(--lumo-space-xs);
 	}
@@ -102,23 +158,30 @@ import '@polymer/polymer/lib/elements/custom-style.js';
 		flex-direction: row;
 	    align-items: baseline;
     }
-    .permission-row__operation_target {
+    .permission-row > hr {
+        margin-top: var(--lumo-space-s);
+    }
+
+    .permission-row__ot {
 		display: flex;
 		flex-direction: row;
     }
-    .permission-row__permissions {
+    .permission-row__ot > vaadin-combo-box {
+		margin-right: var(--lumo-space-s);
+    }
+
+    .permission-row__pa {
 		display: flex;
 		flex-direction: row;
+	    align-items: baseline;
     }
-    .permission-row__permissions > vaadin-combo-box {
+    .permission-row__pa > vaadin-combo-box {
 		width: 70px;
+		margin-right: var(--lumo-space-s);
     }
 
-    .permission-row__vis_del {
-
-    }
-    .permission-row__vis_del > vaadin-checkbox {
-		margin-left: var(--lumo-space-m);
+    .permission-row__tvb {
+	    margin-left: auto;
     }
 
 

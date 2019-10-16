@@ -300,7 +300,8 @@ public class Messages extends ViewFrame {
 		}
 
 		if (message.getMessageType().equals(MessageType.TOOL_REQUEST)) {
-			ConfirmDialog dialog = new ConfirmDialog("This action will send a cancel message to sender. Proceed?");
+			ConfirmDialog dialog = new ConfirmDialog();
+			dialog.setMessage("This action will send a cancel message to sender. Proceed?");
 			dialog.closeOnCancel();
 
 			dialog.getConfirmButton().addClickListener(e -> {
@@ -334,7 +335,8 @@ public class Messages extends ViewFrame {
 
 			// USER DIDN'T TAKE THE TOOL -> CONFIRM TOOL RELEASE
 			if (tool.getToolUsageStatus().equals(ToolUsageStatus.RESERVED)) {
-				ConfirmDialog dialog = new ConfirmDialog("This action will mark the tool as " + ToolUsageStatus.FREE.getStringValue() + ". Proceed?");
+				ConfirmDialog dialog = new ConfirmDialog();
+				dialog.setMessage("This action will mark the tool as " + ToolUsageStatus.FREE.getStringValue() + ". Proceed?");
 
 				dialog.closeOnCancel();
 				dialog.getConfirmButton().addClickListener(e -> {

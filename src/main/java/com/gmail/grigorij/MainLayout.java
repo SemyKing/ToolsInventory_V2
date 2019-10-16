@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 @CssImport("./styles/global-styles.css")
 @CssImport(value = "./styles/notification-style.css", themeFor = "vaadin-notification-card")
-
 public class MainLayout extends Div {
 
 	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);

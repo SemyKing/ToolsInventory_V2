@@ -5,6 +5,7 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.application.views.Admin;
@@ -144,11 +145,13 @@ public class AdminInventory extends FlexBoxLayout {
 		grid.setClassName("grid-view");
 		grid.setSizeFull();
 
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllByHierarchyType(InventoryHierarchyType.TOOL));
+		} else {
+			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllToolsInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
+		}
 
-		dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllByHierarchyType(InventoryHierarchyType.TOOL));
 		grid.setDataProvider(dataProvider);
-
-
 		grid.addColumn(InventoryItem::getName).setHeader("Tool")
 				.setAutoWidth(true);
 
@@ -394,13 +397,10 @@ public class AdminInventory extends FlexBoxLayout {
 		CustomDialog dialog = new CustomDialog();
 		dialog.setHeader(UIUtils.createH3Label("Copy Tool Information"));
 
-		if (!toolCopyForm.setOriginalTool(selectedTools.get(0))) {
-			System.out.println("ORIGINAL TOOL NULL");
-			return;
-		}
+		toolCopyForm.setTool(selectedTools.get(0));
 		dialog.setContent(toolCopyForm);
 
-		dialog.getCancelButton().addClickListener(e -> dialog.close());
+		dialog.closeOnCancel();
 
 		dialog.getConfirmButton().setText("Copy");
 		dialog.getConfirmButton().addClickListener(e -> {
@@ -668,7 +668,8 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 	private void confirmBulkDialogClose() {
-		ConfirmDialog dialog = new ConfirmDialog("This action will revert all made changes. Proceed?");
+		ConfirmDialog dialog = new ConfirmDialog();
+		dialog.setMessage("This action will revert all made changes. Proceed?");
 		dialog.closeOnCancel();
 		dialog.getConfirmButton().addClickListener(event -> {
 			bulkTools.clear();

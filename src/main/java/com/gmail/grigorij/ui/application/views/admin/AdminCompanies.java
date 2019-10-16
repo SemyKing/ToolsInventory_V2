@@ -6,6 +6,7 @@ import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.application.views.Admin;
@@ -118,7 +119,12 @@ public class AdminCompanies extends FlexBoxLayout {
 			}
 		});
 
-		dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getAllCompanies());
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getAllCompanies());
+		} else {
+			dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getCompanyById(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
+		}
+
 		grid.setDataProvider(dataProvider);
 
 		grid.addColumn(Company::getName)
@@ -256,7 +262,8 @@ public class AdminCompanies extends FlexBoxLayout {
 	private void confirmAllEmployeesInCompanyStatusChange(Company company) {
 		String status = (company.isDeleted()) ? ProjectConstants.INACTIVE : ProjectConstants.ACTIVE;
 
-		ConfirmDialog dialog = new ConfirmDialog("Would you like to set all employees in " + company.getName()+" as " + status);
+		ConfirmDialog dialog = new ConfirmDialog();
+		dialog.setMessage("Would you like to set all employees in " + company.getName()+" as " + status);
 		dialog.closeOnCancel();
 		dialog.getConfirmButton().addClickListener(e -> {
 

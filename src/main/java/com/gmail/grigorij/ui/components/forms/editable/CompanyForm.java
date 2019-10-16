@@ -28,6 +28,8 @@ import java.util.List;
 
 public class CompanyForm extends FormLayout {
 
+	private final String CLASS_NAME = "form";
+
 	private final LocationForm addressForm = new LocationForm();
 	private final PersonForm contactPersonForm = new PersonForm();
 
@@ -49,6 +51,8 @@ public class CompanyForm extends FormLayout {
 
 
 	public CompanyForm() {
+		addClassName(CLASS_NAME);
+
 		constructFormItems();
 
 		constructForm();
@@ -107,7 +111,7 @@ public class CompanyForm extends FormLayout {
 	}
 
 	private void constructForm() {
-		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
+//		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));

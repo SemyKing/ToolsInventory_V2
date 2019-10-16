@@ -4,6 +4,7 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
 import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.application.views.Admin;
@@ -12,7 +13,7 @@ import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.components.forms.editable.EditableUserForm;
+import com.gmail.grigorij.ui.components.forms.editable.UserForm;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -36,7 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 public class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
-	private final EditableUserForm userForm = new EditableUserForm();
+	private final UserForm userForm = new UserForm();
 	private final Admin admin;
 
 	private Grid<User> grid;
@@ -115,7 +116,12 @@ public class AdminPersonnel extends FlexBoxLayout {
 			}
 		});
 
-		dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getAllUsers());
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getAllUsers());
+		} else {
+			dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getUsersInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
+		}
+
 		grid.setDataProvider(dataProvider);
 
 		grid.addColumn(user -> (user.getPerson() == null) ? "" : user.getPerson().getFullName())

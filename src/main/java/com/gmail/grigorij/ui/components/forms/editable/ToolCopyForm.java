@@ -2,7 +2,6 @@ package com.gmail.grigorij.ui.components.forms.editable;
 
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -13,11 +12,16 @@ import com.vaadin.flow.component.textfield.NumberField;
 
 public class ToolCopyForm extends FormLayout {
 
-	private InventoryItem originalTool;
+	private final String CLASS_NAME = "form";
 
+	private InventoryItem tool;
+	private int numberOfCopies = 1;
+
+
+	//FORM ITEMS
+	private Checkbox allCheckBox;
 	private NumberField numberOfCopiesField;
 	private Checkbox name;
-	private Checkbox qrCode;
 	private Checkbox barcode;
 	private Checkbox sn;
 	private Checkbox manufacturer;
@@ -25,19 +29,28 @@ public class ToolCopyForm extends FormLayout {
 	private Checkbox info;
 	private Checkbox company;
 	private Checkbox category;
-	private Checkbox status;
+	private Checkbox usageStatus;
 	private Checkbox toolUser;
-	private Checkbox toolReserved;
+	private Checkbox toolReservedBy;
 	private Checkbox boughtDate;
 	private Checkbox nextMaintenanceDate;
 	private Checkbox price;
 	private Checkbox guarantee;
 	private Checkbox additionalInfo;
 
-	private int numberOfCopies = 1;
-
 	public ToolCopyForm() {
-		Checkbox allCheckBox = new Checkbox("All");
+		addClassName(CLASS_NAME);
+
+		constructFormItems();
+
+		constructForm();
+
+		constructBinder();
+	}
+
+
+	private void constructFormItems() {
+		allCheckBox = new Checkbox("All");
 		allCheckBox.addValueChangeListener(e -> {
 			if (e != null) {
 				if (e.getValue() != null) {
@@ -51,52 +64,55 @@ public class ToolCopyForm extends FormLayout {
 		numberOfCopiesField.setMax(100);
 		numberOfCopiesField.setHasControls(true);
 		numberOfCopiesField.setStep(1);
-		numberOfCopiesField.setValue(1.00);
-
-		//ALL CHECK BOX & NUMBER OF COPIES FIELD
-		FlexBoxLayout layout = UIUtils.getFormRowLayout(allCheckBox, numberOfCopiesField, true);
+		numberOfCopiesField.setValue(1D);
 
 		name = new Checkbox("Name");
-		qrCode = new Checkbox("QR Code");
 		barcode = new Checkbox("Barcode");
 		sn = new Checkbox("SN");
+		info = new Checkbox("Tool Info");
 		manufacturer = new Checkbox("Manufacturer");
 		model = new Checkbox("Model");
-		info = new Checkbox("Info");
 		company = new Checkbox("Company");
 		category = new Checkbox("Category");
-		status = new Checkbox("status");
-		toolUser = new Checkbox("In Use By");
-		toolReserved = new Checkbox("Reserved By");
+		usageStatus = new Checkbox("Usage Status");
+		toolUser = new Checkbox("Current User");
+		toolReservedBy = new Checkbox("Reserved By User");
 		boughtDate = new Checkbox("Bought Date");
 		nextMaintenanceDate = new Checkbox("Next Maintenance Date");
 		price = new Checkbox("Price");
 		guarantee = new Checkbox("Guarantee");
 		additionalInfo = new Checkbox("Additional Info");
+	}
 
-		allCheckBox.setValue(true);
-
-
-		UIUtils.setColSpan(2, layout);
-
-		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
+	private void constructForm() {
+//		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		add(layout);
-		add(new Hr());
+
+		add(allCheckBox);
+		add(numberOfCopiesField);
+
+		Hr hr = new Hr();
+		setColspan(hr, 2);
+		add(hr);
+
 		add(name);
-		add(qrCode);
 		add(barcode);
 		add(sn);
+		add(info);
 		add(manufacturer);
 		add(model);
-		add(info);
+
+		hr = new Hr();
+		setColspan(hr, 2);
+		add(hr);
+
 		add(company);
 		add(category);
-		add(status);
+		add(usageStatus);
 		add(toolUser);
-		add(toolReserved);
+		add(toolReservedBy);
 		add(boughtDate);
 		add(nextMaintenanceDate);
 		add(price);
@@ -104,9 +120,11 @@ public class ToolCopyForm extends FormLayout {
 		add(additionalInfo);
 	}
 
+	private void constructBinder() {}
+
+
 	private void setAll(boolean b) {
 		name.setValue(b);
-		qrCode.setValue(b);
 		barcode.setValue(b);
 		sn.setValue(b);
 		manufacturer.setValue(b);
@@ -114,9 +132,9 @@ public class ToolCopyForm extends FormLayout {
 		info.setValue(b);
 		company.setValue(b);
 		category.setValue(b);
-		status.setValue(b);
+		usageStatus.setValue(b);
 		toolUser.setValue(b);
-		toolReserved.setValue(b);
+		toolReservedBy.setValue(b);
 		boughtDate.setValue(b);
 		nextMaintenanceDate.setValue(b);
 		price.setValue(b);
@@ -125,13 +143,15 @@ public class ToolCopyForm extends FormLayout {
 	}
 
 
-	public boolean setOriginalTool(InventoryItem originalTool) {
-		if (originalTool == null) {
-			System.err.println("Tool copy, original inventory cannot be NULL");
-			return false;
+	public void setTool(InventoryItem tool) {
+		if (tool == null) {
+			System.err.println("Tool copy, original Tool cannot be NULL");
+			return;
 		}
-		this.originalTool = originalTool;
-		return true;
+
+		this.tool = tool;
+
+		allCheckBox.setValue(true);
 	}
 
 	public InventoryItem getToolCopy() {
@@ -143,61 +163,58 @@ public class ToolCopyForm extends FormLayout {
 			this.numberOfCopies = numberOfCopiesField.getValue().intValue();
 		}
 
-		InventoryItem tool = new InventoryItem();
+		InventoryItem toolCopy = new InventoryItem();
 
 		if (name.getValue()) {
-			tool.setName(originalTool.getName());
-		}
-		if (qrCode.getValue()) {
-			tool.setQrCode(originalTool.getQrCode());
+			toolCopy.setName(tool.getName());
 		}
 		if (barcode.getValue()) {
-			tool.setBarcode(originalTool.getBarcode());
+			toolCopy.setBarcode(tool.getBarcode());
 		}
 		if (sn.getValue()) {
-			tool.setSnCode(originalTool.getSnCode());
+			toolCopy.setSnCode(tool.getSnCode());
 		}
 		if (manufacturer.getValue()) {
-			tool.setManufacturer(originalTool.getManufacturer());
+			toolCopy.setManufacturer(tool.getManufacturer());
 		}
 		if (model.getValue()) {
-			tool.setModel(originalTool.getModel());
+			toolCopy.setModel(tool.getModel());
 		}
 		if (info.getValue()) {
-			tool.setToolInfo(originalTool.getToolInfo());
+			toolCopy.setToolInfo(tool.getToolInfo());
 		}
 		if (company.getValue()) {
-			tool.setCompany(originalTool.getCompany());
+			toolCopy.setCompany(tool.getCompany());
 		}
 		if (category.getValue()) {
-			tool.setParentCategory(originalTool.getParentCategory());
+			toolCopy.setParentCategory(tool.getParentCategory());
 		}
-		if (status.getValue()) {
-			tool.setToolUsageStatus(originalTool.getToolUsageStatus());
+		if (usageStatus.getValue()) {
+			toolCopy.setToolUsageStatus(tool.getToolUsageStatus());
 		}
 		if (toolUser.getValue()) {
-			tool.setInUseByUser(originalTool.getInUseByUser());
+			toolCopy.setInUseByUser(tool.getInUseByUser());
 		}
-		if (toolReserved.getValue()) {
-			tool.setReservedByUser(originalTool.getReservedByUser());
+		if (toolReservedBy.getValue()) {
+			toolCopy.setReservedByUser(tool.getReservedByUser());
 		}
 		if (boughtDate.getValue()) {
-			tool.setDateBought(originalTool.getDateBought());
+			toolCopy.setDateBought(tool.getDateBought());
 		}
 		if (nextMaintenanceDate.getValue()) {
-			tool.setDateNextMaintenance(originalTool.getDateNextMaintenance());
+			toolCopy.setDateNextMaintenance(tool.getDateNextMaintenance());
 		}
 		if (price.getValue()) {
-			tool.setPrice(originalTool.getPrice());
+			toolCopy.setPrice(tool.getPrice());
 		}
 		if (guarantee.getValue()) {
-			tool.setGuarantee_months(originalTool.getGuarantee_months());
+			toolCopy.setGuarantee_months(tool.getGuarantee_months());
 		}
 		if (additionalInfo.getValue()) {
-			tool.setAdditionalInfo(originalTool.getAdditionalInfo());
+			toolCopy.setAdditionalInfo(tool.getAdditionalInfo());
 		}
 
-		return tool;
+		return toolCopy;
 	}
 
 	public int getNumberOfCopies() {

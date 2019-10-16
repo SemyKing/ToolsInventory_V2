@@ -5,30 +5,54 @@ import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 
 public class PersonForm extends FormLayout {
 
+	private final String CLASS_NAME = "form";
+
 	private Binder<Person> binder = new Binder<>(Person.class);
 	private Person person;
 	private boolean isNew;
 	private String initialEmail;
 
+
+	// FORM ITEMS
+	private TextField firstNameField;
+	private TextField lastNameField;
+	private TextField phoneField;
+	private EmailField emailField;
+
+
 	public PersonForm() {
+		addClassName(CLASS_NAME);
 
-		TextField firstNameField = new TextField("First Name");
+		constructFormItems();
 
-		TextField lastNameField = new TextField("Last Name");
+		constructForm();
 
-		TextField phoneField = new TextField("Phone");
+		constructBinder();
+	}
+
+
+	private void constructFormItems() {
+		firstNameField = new TextField("First Name");
+		firstNameField.setRequired(true);
+
+		lastNameField = new TextField("Last Name");
+		lastNameField.setRequired(true);
+
+		phoneField = new TextField("Phone");
 		phoneField.getElement().setAttribute("type", "tel");
 
-		TextField emailField = new TextField("Email");
+		emailField = new EmailField("Email");
+	}
 
-		// Form layout
-		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
+	private void constructForm() {
+//		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
@@ -36,7 +60,9 @@ public class PersonForm extends FormLayout {
 		add(lastNameField);
 		add(phoneField);
 		add(emailField);
+	}
 
+	private void constructBinder() {
 		binder.forField(firstNameField)
 				.bind(Person::getFirstName, Person::setFirstName);
 		binder.forField(lastNameField)
@@ -56,19 +82,27 @@ public class PersonForm extends FormLayout {
 							return true;
 						}
 					}
-				}, "Email already taken")
+				}, "Email address already exists")
 				.bind(Person::getEmail, Person::setEmail);
 	}
 
-	public void setPerson(Person p) {
-		person = p;
+
+	private void initDynamicFormItems() {
+		initialEmail = this.person.getEmail();
+	}
+
+
+	public void setPerson(Person person) {
+		isNew = false;
 
 		if (person == null) {
-			person = new Person();
+			this.person = new Person();
 			isNew = true;
+		} else {
+			this.person = person;
 		}
 
-		initialEmail = person.getEmail();
+		initDynamicFormItems();
 
 		binder.readBean(this.person);
 	}
@@ -76,8 +110,11 @@ public class PersonForm extends FormLayout {
 	public Person getPerson() {
 		try {
 			binder.validate();
+
 			if (binder.isValid()) {
+
 				binder.writeBean(person);
+
 				return person;
 			}
 		} catch (ValidationException e) {
