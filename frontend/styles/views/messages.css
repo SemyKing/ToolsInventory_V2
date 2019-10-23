@@ -1,72 +1,61 @@
-.messages_view__wrapper {
-    height: 100%;
-    margin-left: var(--lumo-space-s);
-    margin-right: var(--lumo-space-s);
-}
-
-.messages_view__header {
-	justify-content: center;
-}
-
-.messages_view__unread_label {
-	text-align: center;
-	margin-top: var(--lumo-space-xs);
-	margin-bottom: var(--lumo-space-xs);
-}
-
-
-.messages_view__message-wrapper {
-	background-color: var(--lumo-success-color-10pct);
-	width: 40%;
-	border-radius: 5px;
-}
-.messages_view__message-wrapper[read] {
-	background-color: var(--lumo-shade-10pct);
-}
-
-.messages_view__message-buttons {
-    margin-left: var(--lumo-space-m);
-}
-
 
 @media (max-width: 1024px) {
-	.messages_view__header {
+	.messages__header {
 		flex-direction: column !important;
+		align-items: center !important;
 	}
-
-	.messages_view__dates {
-		width: 100%  !important;
+	.messages__additional_options {
+		margin-left: 0 !important;
+		width: 100%;
 	}
-	.messages_view__dates > vaadin-date-picker {
-        flex-grow: 1;
-    }
-    .messages_view__new-message-button {
-        flex-grow: 1;
-        margin-left: 0 !important;
-    }
-    .messages_view__show-read-messages-checkbox {
-        flex-grow: 2;
-    }
-
-
-	.messages_view__message-wrapper {
-    	width: 100% !important;
-    	justify-content: space-between;
-    }
-
-	.messages_view__dates_actions {
-		width: 100%  !important;
-		justify-content: space-evenly;
+	.messages__additional_options > .compose-message-button {
+		margin-left: auto !important;
 	}
+}
 
-    .messages_view__message_footer {
-        flex-direction: column !important;
-    }
-    .messages_view__message_footer > label {
-        margin-left: 0 !important;
-    }
+.messages {
+    width: 100%;
+    height: 100%;
+	display: flex;
+	flex-direction: row;
+}
 
-    .messages_view__message-buttons {
-        margin-left: var(--lumo-space-xs) !important;
-    }
+.messages__content-wrapper {
+    width: 100%;
+    height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.messages__header {
+	display: flex;
+	flex-direction: row;
+	margin: 5px 5px 0 5px;
+}
+.messages__header > vaadin-text-field {
+	width: 100%;
+	padding-top: 0 !important;
+}
+
+.messages__header > vaadin-button {
+	margin-left: var(--lumo-space-s);
+}
+
+.messages__additional_options > vaadin-date-picker {
+	max-width: 110px;
+}
+
+.messages__content {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+    margin: 2px 5px 2px 5px;
+}
+
+.messages__details-footer {
+	background-color: var(--lumo-contrast-5pct);
+    width: 100%;
+    justify-content: space-between;
+    padding-left: var(--lumo-space-m);
+    padding-right: var(--lumo-space-m);
 }

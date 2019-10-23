@@ -3,11 +3,11 @@ package com.gmail.grigorij;
 import com.gmail.grigorij.backend.DummyDataGenerator;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.application.views.ApplicationContainerView;
+import com.gmail.grigorij.ui.application.ApplicationContainerView;
 import com.gmail.grigorij.ui.application.authentication.login.LoginView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.OperationStatus;
@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 @CssImport("./styles/global-styles.css")
 @CssImport(value = "./styles/notification-style.css", themeFor = "vaadin-notification-card")
-
 public class MainLayout extends Div {
 
 	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
@@ -60,7 +59,8 @@ public class MainLayout extends Div {
 		VaadinSession.getCurrent().setErrorHandler((ErrorHandler) errorEvent -> {
 			log.error("Uncaught UI exception", errorEvent.getThrowable());
 			System.out.println("-------------CRITICAL UI ERROR-------------");
-			System.out.println(errorEvent.getThrowable());
+//			System.out.println(errorEvent.getThrowable());
+			errorEvent.getThrowable().printStackTrace();
 			UIUtils.showNotification("We are sorry, but an internal error occurred", UIUtils.NotificationType.ERROR);
 		});
 
@@ -68,15 +68,13 @@ public class MainLayout extends Div {
 		if (AuthenticationService.isAuthenticated()) {
 			System.out.println("User authenticated -> construct main menu view");
 
-			Transaction tr = new Transaction();
-			tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-			tr.setTransactionOperation(TransactionType.LOGIN);
-			tr.setTransactionTarget(TransactionTarget.USER);
-			tr.setAdditionalInfo("Login via 'Remember Me'");
+			Transaction transaction = new Transaction();
+			transaction.setUser(AuthenticationService.getCurrentSessionUser());
+			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+			transaction.setOperation(Operation.LOG_IN);
+			TransactionFacade.getInstance().insert(transaction);
 
-			TransactionFacade.getInstance().insert(tr);
-
-			showMainMenuLayout();
+			constructApplication();
 		} else {
 			System.out.println("User not authenticated -> construct login view");
 			showLoginView();
@@ -89,18 +87,23 @@ public class MainLayout extends Div {
 
 		add(new LoginView(new OperationStatus() {
 			@Override
-			public void onSuccess(String msg, UIUtils.NotificationType type) {
-				showMainMenuLayout();
+			public void onSuccess(String msg) {
+				constructApplication();
 			}
 
 			@Override
-			public void onFail(String msg, UIUtils.NotificationType type) {
-				System.out.println(msg);
+			public void onFail() {
 			}
 		}));
 	}
 
-	private void showMainMenuLayout() {
+	private void constructApplication() {
+		Transaction transaction = new Transaction();
+		transaction.setUser(AuthenticationService.getCurrentSessionUser());
+		transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+		transaction.setOperation(Operation.LOG_IN);
+		TransactionFacade.getInstance().insert(transaction);
+
 		this.removeAll();
 
 		add(new ApplicationContainerView(this));

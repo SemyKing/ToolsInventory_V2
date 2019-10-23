@@ -7,12 +7,10 @@ import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
-import com.gmail.grigorij.backend.enums.permissions.AccessGroup;
-import com.gmail.grigorij.backend.enums.permissions.Permission;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,8 +114,10 @@ public class DummyDataGenerator {
 		admin.setThemeVariant(LumoStyles.LIGHT);
 		admin.setAdditionalInfo("System Administrator");
 
-		admin.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.YES, Permission.YES));
-		admin.setAccessGroup(AccessGroup.SYSTEM_ADMIN);
+//		admin.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.YES, Permission.YES));
+//		admin.setAccessGroup(AccessGroup.SYSTEM_ADMIN);
+
+		admin.setPermissionLevel(PermissionLevel.SYSTEM_ADMIN);
 
 		Person adminP = new Person();
 		adminP.setFirstName("Grigorij");
@@ -139,8 +139,11 @@ public class DummyDataGenerator {
 				user.setUsername("user" + compInd + "." + userInd);
 				user.setPassword("password");
 				user.setCompany(company);
-				user.setAccessGroup(AccessGroup.COMPANY_ADMIN);
-				user.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.NO, Permission.YES));
+//				user.setAccessGroup(AccessGroup.COMPANY_ADMIN);
+//				user.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.NO, Permission.YES));
+
+				user.setPermissionLevel(PermissionLevel.USER);
+				user.setPermissions(PermissionFacade.getInstance().getDefaultUserPermissions());
 
 				String r1 = getRandomStrings(1);
 				String r2 = getRandomStrings(1);
@@ -164,8 +167,6 @@ public class DummyDataGenerator {
 				users.add(user);
 			}
 		}
-
-//		System.out.println("\nUSERS: " + users.size());
 
 		for (User user : users) {
 			UserFacade.getInstance().insert(user);
@@ -194,7 +195,7 @@ public class DummyDataGenerator {
 
 					for (int k = 0; k < toolsPerCategory; k++) {
 						InventoryItem cc = new InventoryItem();
-						cc.setToolUsageStatus(ToolUsageStatus.FREE);
+						cc.setUsageStatus(ToolUsageStatus.FREE);
 						cc.setCompany(company);
 						cc.setName("Tool " + toolCounter + " (P: " + categoryCounter + ", SP: " + subCategoryCounter + ")");
 						cc.setManufacturer(RandomStringUtils.randomAlphabetic(5));

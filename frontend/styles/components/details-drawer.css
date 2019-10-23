@@ -39,6 +39,8 @@
     overflow: auto;
     flex-direction: column;
     -webkit-overflow-scrolling: touch;
+    padding-left: var(--lumo-space-s);
+    padding-right: var(--lumo-space-s)
 }
 
 

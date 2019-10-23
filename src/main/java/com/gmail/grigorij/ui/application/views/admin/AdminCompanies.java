@@ -6,16 +6,17 @@ import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.utils.css.size.*;
-import com.gmail.grigorij.ui.components.forms.editable.EditableCompanyForm;
+import com.gmail.grigorij.ui.components.forms.CompanyForm;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.contextmenu.MenuItem;
@@ -36,11 +37,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 
-class AdminCompanies extends FlexBoxLayout {
+public class AdminCompanies extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-companies";
-	private final EditableCompanyForm companyForm = new EditableCompanyForm();
-	private final AdminView adminView;
+	private final CompanyForm companyForm = new CompanyForm();
+	private final Admin adminView;
 
 	private Grid<Company> grid;
 	private ListDataProvider<Company> dataProvider;
@@ -49,7 +50,7 @@ class AdminCompanies extends FlexBoxLayout {
 	private boolean entityOldStatus;
 
 
-	AdminCompanies(AdminView adminView) {
+	public AdminCompanies(Admin adminView) {
 		this.adminView = adminView;
 		setClassName(CLASS_NAME);
 
@@ -79,7 +80,7 @@ class AdminCompanies extends FlexBoxLayout {
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
 
 		menuItem.getSubMenu().addItem("New Company", e -> {
-			grid.select(null);
+			grid.deselectAll();
 			showDetails(null);
 		});
 		menuItem.getSubMenu().add(new Hr());
@@ -111,26 +112,36 @@ class AdminCompanies extends FlexBoxLayout {
 		grid.setClassName("grid-view");
 		grid.setSizeFull();
 		grid.asSingleSelect().addValueChangeListener(e -> {
-			if (grid.asSingleSelect().getValue() != null) {
-				showDetails(grid.asSingleSelect().getValue());
+			Company company = grid.asSingleSelect().getValue();
+
+			if (company != null) {
+				showDetails(company);
 			} else {
 				detailsDrawer.hide();
 			}
 		});
 
-		dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getAllCompanies());
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getAllCompanies());
+		} else {
+			dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getCompanyById(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
+		}
+
 		grid.setDataProvider(dataProvider);
 
 		grid.addColumn(Company::getName)
 				.setHeader("Company Name")
+				.setFlexGrow(1)
 				.setAutoWidth(true);
 
 		grid.addColumn(company -> (company.getContactPerson() == null) ? "" : company.getContactPerson().getFullName())
 				.setHeader("Contact Person")
+				.setFlexGrow(1)
 				.setAutoWidth(true);
 
 		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted())))
 				.setHeader("Active")
+				.setFlexGrow(0)
 				.setAutoWidth(true);
 
 		return grid;
@@ -150,7 +161,6 @@ class AdminCompanies extends FlexBoxLayout {
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 	}
-
 
 
 	private void filterGrid(String searchString) {
@@ -212,32 +222,15 @@ class AdminCompanies extends FlexBoxLayout {
 		if (companyForm.isNew()) {
 			if (CompanyFacade.getInstance().insert(editedCompany)) {
 				dataProvider.getItems().add(editedCompany);
-				grid.select(editedCompany);
 
-				UIUtils.showNotification("Company created successfully", UIUtils.NotificationType.SUCCESS);
-
-				Transaction tr = new Transaction();
-				tr.setTransactionOperation(TransactionType.ADD);
-				tr.setTransactionTarget(TransactionTarget.COMPANY);
-				tr.setCompany(editedCompany);
-				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-				TransactionFacade.getInstance().insert(tr);
-
+				UIUtils.showNotification("Company created", UIUtils.NotificationType.SUCCESS);
 			} else {
 				UIUtils.showNotification("Company insert failed", UIUtils.NotificationType.ERROR);
 				return;
 			}
 		} else {
 			if (CompanyFacade.getInstance().update(editedCompany)) {
-
-				UIUtils.showNotification("Company updated successfully", UIUtils.NotificationType.SUCCESS);
-
-				Transaction tr = new Transaction();
-				tr.setTransactionOperation(TransactionType.EDIT);
-				tr.setTransactionTarget(TransactionTarget.COMPANY);
-				tr.setCompany(editedCompany);
-				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-				TransactionFacade.getInstance().insert(tr);
+				UIUtils.showNotification("Company updated", UIUtils.NotificationType.SUCCESS);
 
 				if ((!entityOldStatus && editedCompany.isDeleted()) || (entityOldStatus && !editedCompany.isDeleted())) {
 					confirmAllEmployeesInCompanyStatusChange(editedCompany);
@@ -246,6 +239,26 @@ class AdminCompanies extends FlexBoxLayout {
 				UIUtils.showNotification("Company update failed", UIUtils.NotificationType.ERROR);
 				return;
 			}
+		}
+
+		Transaction transaction = new Transaction();
+		transaction.setUser(AuthenticationService.getCurrentSessionUser());
+		transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+
+		if (companyForm.isNew()) {
+			transaction.setOperation(Operation.ADD);
+		} else {
+			transaction.setOperation(Operation.EDIT);
+		}
+		transaction.setOperationTarget1(OperationTarget.COMPANY);
+		transaction.setTargetDetails(editedCompany.getName());
+		if (!companyForm.isNew()) {
+			transaction.setChanges(companyForm.getChanges());
+		}
+		TransactionFacade.getInstance().insert(transaction);
+
+		if (companyForm.isNew()) {
+			grid.select(editedCompany);
 		}
 
 		dataProvider.refreshAll();
@@ -257,7 +270,8 @@ class AdminCompanies extends FlexBoxLayout {
 	private void confirmAllEmployeesInCompanyStatusChange(Company company) {
 		String status = (company.isDeleted()) ? ProjectConstants.INACTIVE : ProjectConstants.ACTIVE;
 
-		ConfirmDialog dialog = new ConfirmDialog("Would you like to set all employees in " + company.getName()+" as " + status);
+		ConfirmDialog dialog = new ConfirmDialog();
+		dialog.setMessage("Would you like to set all employees in " + company.getName()+" as " + status);
 		dialog.closeOnCancel();
 		dialog.getConfirmButton().addClickListener(e -> {
 
@@ -269,13 +283,13 @@ class AdminCompanies extends FlexBoxLayout {
 				user.setDeleted(company.isDeleted());
 				if (UserFacade.getInstance().update(user)) {
 
-					Transaction tr = new Transaction();
-					tr.setTransactionOperation(TransactionType.EDIT);
-					tr.setTransactionTarget(TransactionTarget.USER_STATUS);
-					tr.setDestinationUser(user);
-					tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-					tr.setAdditionalInfo("User Status changed to:  " + status);
-					TransactionFacade.getInstance().insert(tr);
+//					Transaction tr = new Transaction();
+//					tr.setTransactionOperation(TransactionType.EDIT);
+//					tr.setTransactionTarget(TransactionTarget.USER_STATUS);
+//					tr.setDestinationUser(user);
+//					tr.setUser(AuthenticationService.getCurrentSessionUser());
+//					tr.setAdditionalInfo("User Status changed to:  " + status);
+//					TransactionFacade.getInstance().insert(tr);
 
 				} else {
 					UIUtils.showNotification("User status change failed for: " + user.getUsername(), UIUtils.NotificationType.ERROR);

@@ -1,10 +1,11 @@
 .grid-view {
-    transition: padding var(--transition-duration-m);
+    transition: padding var(--transition-duration-xs);
     webkit-overflow-scrolling: touch;
+    text-overflow: ellipsis;
 }
 
-vaadin-grid-cell-content {
-	text-overflow: ellipsis;
+[part~="cell"] {
+	font-weight: 500;
 }
 
 ::-webkit-scrollbar {

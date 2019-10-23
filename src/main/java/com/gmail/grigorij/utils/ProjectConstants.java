@@ -44,5 +44,7 @@ public final class ProjectConstants {
 	public static final String CONTAINER_ALIGN_RIGHT = "container-align-right";
 	public static final String CONTAINER_ALIGN_CENTER = "container-align-center";
 
+	public final static String NEW_LINE = "##_NEW_LINE_##";
 
+	public final static String INVISIBLE_ATTR = "invisible";
 }

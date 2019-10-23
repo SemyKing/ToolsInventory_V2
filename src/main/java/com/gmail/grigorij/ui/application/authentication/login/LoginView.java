@@ -3,28 +3,21 @@ package com.gmail.grigorij.ui.application.authentication.login;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
-import com.gmail.grigorij.ui.application.authentication.forgot.ForgotPasswordView;
+import com.gmail.grigorij.ui.components.dialogs.ForgotPasswordDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.css.Display;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.size.Vertical;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.OperationStatus;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -34,29 +27,39 @@ import com.vaadin.flow.router.PageTitle;
  * Log In UI.
  */
 @PageTitle("Login")
-@StyleSheet("context://styles/login.css")
+@StyleSheet("context://styles/views/login.css")
 public class LoginView extends Div {
 
 	private static final String CLASS_NAME = "login-view";
-
-	private FlexBoxLayout loginFailWrapper;
-	private Paragraph loginFailContent;
+	private final OperationStatus operationStatus;
 
 	private TextField usernameField;
 	private PasswordField passwordField;
+	private Checkbox rememberMeCheckBox;
+	private Button loginButton;
+
+	private Div loginErrorLayout;
+	private Paragraph loginFailContent;
 
 	private ShortcutRegistration registration;
-
-
-	private OperationStatus operationStatus;
+	private Binder<User> binder;
 
 
 	public LoginView(OperationStatus operationStatus) {
 		this.operationStatus = operationStatus;
-		setSizeFull();
+
 		setClassName(CLASS_NAME);
 
-        buildUI();
+		Div wrapper = new Div();
+		wrapper.addClassName(CLASS_NAME + "__wrapper");
+
+		wrapper.add(constructContentHeader());
+		wrapper.add(constructContent());
+
+		add(wrapper);
+
+		constructBinder();
+
 		usernameField.focus();
 
 		//TODO:REMOVE AT PRODUCTION
@@ -64,90 +67,85 @@ public class LoginView extends Div {
 		passwordField.setValue("password");
 	}
 
-	private void buildUI() {
+
+	private FlexBoxLayout constructContentHeader() {
+		FlexBoxLayout contentHeader = new FlexBoxLayout();
+		contentHeader.addClassName(CLASS_NAME + "__content-header");
+
 		H2 logoText = new H2(ProjectConstants.PROJECT_NAME_FULL);
 
 		Image logoImage = new Image("/" + ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_FULL_ROUND_SVG,"logo");
 		logoImage.setClassName(CLASS_NAME + "__image");
 
-		FlexBoxLayout oval = new FlexBoxLayout();
-		oval.setClassName(CLASS_NAME + "__logo-bg");
-		oval.setSizeFull();
-		oval.setFlexDirection(FlexDirection.COLUMN);
-		oval.setDisplay(Display.FLEX);
-		oval.add(logoText, logoImage);
+		Div logoBackgroundDiv = new Div();
+		logoBackgroundDiv.setClassName(CLASS_NAME + "__logo-bg");
+		logoBackgroundDiv.add(logoText, logoImage);
 
-		FlexBoxLayout logoWrapper = new FlexBoxLayout();
-		logoWrapper.setClassName(CLASS_NAME + "__logo-wrapper");
-		logoWrapper.setFlexDirection(FlexDirection.COLUMN);
-		logoWrapper.setDisplay(Display.FLEX);
-		logoWrapper.add(oval);
+		contentHeader.add(logoBackgroundDiv);
+
+		return contentHeader;
+	}
+
+
+	private FlexBoxLayout constructContent() {
+		FlexBoxLayout content = new FlexBoxLayout();
+		content.addClassName(CLASS_NAME + "__content");
 
 		usernameField = new TextField("Username");
 		usernameField.setId("username");
-		usernameField.setWidth("100%");
 		usernameField.setRequired(true);
 		usernameField.setPrefixComponent(VaadinIcon.USER.create());
 
+		content.add(usernameField);
+
 		passwordField = new PasswordField("Password");
-		passwordField.setWidth("100%");
 		passwordField.setRequired(true);
 		passwordField.setPrefixComponent(VaadinIcon.LOCK.create());
 
-		Checkbox rememberMe = new Checkbox("Remember me");
+		content.add(passwordField);
+
+		rememberMeCheckBox = new Checkbox("Remember me");
+
 		Button forgotPasswordButton = UIUtils.createButton("Forgot password", ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+		forgotPasswordButton.addClickListener(e -> {
+			forgotPasswordOnClick();
+		});
 
-		FlexBoxLayout flexLayout = new FlexBoxLayout();
-		flexLayout.setWidth("100%");
-		flexLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		flexLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-		flexLayout.setMargin(Vertical.S);
-		flexLayout.add(rememberMe, forgotPasswordButton);
+		Div layout = new Div();
+		layout.addClassName(CLASS_NAME + "__content-space-between");
+		layout.add(rememberMeCheckBox, forgotPasswordButton);
 
-		Button loginButton = UIUtils.createPrimaryButton("LOG IN");
-		loginButton.setWidth("100%");
+		content.add(layout);
+
+		loginButton = UIUtils.createPrimaryButton("LOG IN");
+		loginButton.addClickListener(e -> {
+			loginOnClick();
+		});
+
 		registration = loginButton.addClickShortcut(Key.ENTER);
 
+		content.add(loginButton);
+		content.add(constructLoginErrorLayout());
 
-		//Login Form
-		FormLayout formLayout = new FormLayout();
-		formLayout.addClassNames(LumoStyles.Padding.Bottom.L, LumoStyles.Padding.Horizontal.L, LumoStyles.Padding.Top.S);
-		formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-		formLayout.setClassName(CLASS_NAME + "__form");
-		formLayout.add(usernameField);
-		formLayout.add(passwordField);
-		formLayout.add(flexLayout);
-		formLayout.add(loginButton);
+		return content;
+	}
 
-		loginFailWrapper = new FlexBoxLayout();
-		loginFailWrapper.setWidth("100%");
-		loginFailWrapper.setClassName(CLASS_NAME + "__fail-wrapper");
+	private Div constructLoginErrorLayout() {
+		loginErrorLayout = new Div();
+		loginErrorLayout.setClassName(CLASS_NAME + "__error-wrapper");
 
-		H5 loginFailHeader = new H5();
-		Span loginFailMessage = new Span();
+		loginFailContent = new Paragraph(
+				new H5("Incorrect username or password"),
+				new Span("The username and password you entered do not match our records. Please double-check and try again"));
 
-		loginFailHeader.setText("Incorrect username or password");
-		loginFailMessage.setText("The username and password you entered do not match our records. Please double-check and try again");
+		loginErrorLayout.add(loginFailContent);
+		loginErrorLayout.getElement().setAttribute("visible", false);
 
-		loginFailContent = new Paragraph(loginFailHeader, loginFailMessage);
-		loginFailWrapper.add(loginFailContent);
-		loginFailWrapper.setComponentDisplay(loginFailContent, Display.NONE);
-		loginFailWrapper.setComponentFlexDirection(loginFailContent, FlexDirection.COLUMN);
+		return loginErrorLayout;
+	}
 
-		FlexBoxLayout formAndErrorWrapper = new FlexBoxLayout();
-		formAndErrorWrapper.setFlexDirection(FlexDirection.COLUMN);
-		formAndErrorWrapper.setSizeFull();
-		formAndErrorWrapper.setFlexGrowSelf("1");
-		formAndErrorWrapper.add(formLayout, loginFailWrapper);
-
-		Div viewWrapper = new Div();
-		viewWrapper.addClassName(CLASS_NAME + "__wrapper");
-		viewWrapper.add(logoWrapper, formAndErrorWrapper);
-
-		add(viewWrapper);
-
-
-		Binder<User> binder = new Binder<>(User.class);
+	private void constructBinder() {
+		binder = new Binder<>(User.class);
 		binder.setBean(new User());
 
 		binder.forField(usernameField)
@@ -157,52 +155,45 @@ public class LoginView extends Div {
 		binder.forField(passwordField)
 				.asRequired("Password is required")
 				.bind(User::getPassword, User::setPassword);
+	}
 
 
-		loginButton.addClickListener(e -> {
-			binder.validate();
-			if (binder.isValid()) {
-				validateAndLogIn(usernameField.getValue(), passwordField.getValue(), rememberMe.getValue());
-			}
+	private void forgotPasswordOnClick() {
+		//remove ENTER key listener for sign in button
+		registration.remove();
+
+		ForgotPasswordDialog dialog = new ForgotPasswordDialog();
+		dialog.addDetachListener((DetachEvent event) -> {
+			registration = loginButton.addClickShortcut(Key.ENTER);
 		});
+		dialog.open();
+	}
 
-		forgotPasswordButton.addClickListener(e -> {
+	private void loginOnClick() {
+		binder.validate();
 
-			//remove ENTER key listener for sign in button
-			registration.remove();
-
-			//open password recovery dialog
-			new ForgotPasswordView(new OperationStatus() {
-				@Override //Window closed -> reattach ENTER key listener for sign in button
-				public void onSuccess(String msg, UIUtils.NotificationType type) {
-					registration = loginButton.addClickShortcut(Key.ENTER);
-				}
-
-				@Override
-				public void onFail(String msg, UIUtils.NotificationType type) {
-
-				}
-			});
-		});
+		if (binder.isValid()) {
+			validateAndLogIn(usernameField.getValue(), passwordField.getValue(), rememberMeCheckBox.getValue());
+		}
 	}
 
 
 	private void validateAndLogIn(String username, String password, boolean rememberMe) {
-		loginFailWrapper.setComponentDisplay(loginFailContent, Display.NONE);
+		loginErrorLayout.getElement().setAttribute("visible", false);
 
 		if (AuthenticationService.signIn(username, password, rememberMe)) {
 
-			Transaction tr = new Transaction();
-			tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-			tr.setTransactionOperation(TransactionType.LOGIN);
-			tr.setTransactionTarget(TransactionTarget.USER);
+//			Transaction tr = new Transaction();
+//			tr.setUser(AuthenticationService.getCurrentSessionUser());
+//			tr.setTransactionOperation(TransactionType.LOGIN);
+//			tr.setTransactionTarget(TransactionTarget.USER);
+//
+//			TransactionFacade.getInstance().insert(tr);
 
-			TransactionFacade.getInstance().insert(tr);
-
-			operationStatus.onSuccess("Login successful", null);
+			operationStatus.onSuccess("");
 		} else {
-			loginFailWrapper.setComponentDisplay(loginFailContent, Display.FLEX);
-			operationStatus.onFail("Login fail", null);
+			loginErrorLayout.getElement().setAttribute("visible", true);
+			operationStatus.onFail();
 		}
 	}
 }

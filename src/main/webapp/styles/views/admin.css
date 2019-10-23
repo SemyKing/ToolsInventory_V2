@@ -1,9 +1,11 @@
-@media (max-width: 1024px) and (orientation: landscape)  {
-
-}
-
 @media (max-width: 1024px)  {
-
+	.admin-transactions__header {
+		flex-direction: column !important;
+		align-items: center !important;
+	}
+	.admin-transactions__dates {
+		margin-left: 0 !important;
+	}
 }
 
 /********** MAIN **********/
@@ -132,10 +134,15 @@
 }
 .admin-transactions__header vaadin-text-field {
     width: 100%;
+    padding-top: 0 !important;
 }
 .admin-transactions__header vaadin-menu-bar {
     margin-right: var(--lumo-space-s);
     margin-left: var(--lumo-space-s);
+}
+
+.admin-transactions__dates > vaadin-date-picker {
+	max-width: 110px;
 }
 
 .admin-transactions__content {
