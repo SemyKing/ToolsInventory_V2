@@ -1,10 +1,14 @@
 package com.gmail.grigorij.ui.components.navigation.bar;
 
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
-import com.gmail.grigorij.ui.components.forms.editable.UserForm;
+import com.gmail.grigorij.ui.components.forms.UserForm;
 import com.gmail.grigorij.ui.components.navigation.bar.tab.NaviTab;
 import com.gmail.grigorij.ui.components.navigation.bar.tab.NaviTabs;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -34,7 +38,6 @@ import com.vaadin.flow.component.tabs.TabsVariant;
 import java.util.ArrayList;
 
 
-//@StyleSheet("context://styles/app-bar.css")
 @CssImport("./styles/components/app-bar/app-bar.css")
 @CssImport(value = "./styles/components/app-bar/navi-icon.css", themeFor = "vaadin-button")
 
@@ -128,25 +131,33 @@ public class AppBar extends Composite<FlexLayout> {
         CustomDialog dialog = new CustomDialog();
         dialog.setHeader(UIUtils.createH3Label("Profile"));
 
-        UserForm form = new UserForm();
-        form.setUser(AuthenticationService.getCurrentSessionUser());
+        UserForm userForm = new UserForm();
+        userForm.setUser(AuthenticationService.getCurrentSessionUser());
 
-        dialog.setContent( form );
-
+        dialog.setContent( userForm );
         dialog.closeOnCancel();
 
         dialog.getConfirmButton().setText("Save");
         dialog.getConfirmButton().addClickListener(e -> {
-            User editedCurrentUser = form.getUser();
+            User editedUser = userForm.getUser();
 
-            if (editedCurrentUser != null) {
-                if (UserFacade.getInstance().update(editedCurrentUser)) {
-                    AuthenticationService.setCurrentSessionUser(editedCurrentUser);
+            if (editedUser != null) {
+                if (UserFacade.getInstance().update(editedUser)) {
+                    AuthenticationService.setCurrentSessionUser(editedUser);
                     UIUtils.showNotification("Information saved", UIUtils.NotificationType.SUCCESS);
                 } else {
                     UIUtils.showNotification("Information update failed", UIUtils.NotificationType.ERROR);
                 }
                 dialog.close();
+
+                Transaction transaction = new Transaction();
+                transaction.setUser(AuthenticationService.getCurrentSessionUser());
+                transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+                transaction.setOperation(Operation.EDIT);
+                transaction.setOperationTarget1(OperationTarget.USER);
+                transaction.setTargetDetails(editedUser.getFullName());
+                transaction.setChanges(userForm.getChanges());
+                TransactionFacade.getInstance().insert(transaction);
             }
         });
 

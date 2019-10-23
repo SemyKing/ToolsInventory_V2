@@ -8,6 +8,7 @@
 
     --details-drawer-width: calc(var(--lumo-size-m) * 35);
 
+    --transition-duration-xs: 80ms;
     --transition-duration-s: 160ms;
     --transition-duration-m: 240ms;
     --transition-duration-l: 320ms;

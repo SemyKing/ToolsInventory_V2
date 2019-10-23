@@ -13,12 +13,14 @@ public enum Operation {
 	ADD("Add", PermissionLevel.COMPANY_ADMIN),
 	EDIT("Edit", PermissionLevel.COMPANY_ADMIN),
 	DELETE("Delete", PermissionLevel.SYSTEM_ADMIN),
-	SEND_MESSAGE("Send Message", PermissionLevel.USER),
+	SEND("Send", PermissionLevel.USER),
 	LOG_IN("Log In", PermissionLevel.SYSTEM_ADMIN),
 	LOG_OUT("Log Out", PermissionLevel.SYSTEM_ADMIN),
 	REPORT("Report", PermissionLevel.COMPANY_ADMIN),
 	RESERVE("Reserve", PermissionLevel.COMPANY_ADMIN),
-	TAKE("Take", PermissionLevel.COMPANY_ADMIN);
+	TAKE("Take", PermissionLevel.COMPANY_ADMIN),
+	RETURN("Return", PermissionLevel.COMPANY_ADMIN),
+	CANCEL_RESERVATION("Cancel Reservation", PermissionLevel.COMPANY_ADMIN);
 
 	private final String name;
 	private final PermissionLevel minimalPermissionLevel;

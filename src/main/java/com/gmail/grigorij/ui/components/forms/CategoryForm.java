@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.forms.editable;
+package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
@@ -7,13 +7,11 @@ import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.utils.AuthenticationService;
-import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.converter.StringToBooleanConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +22,7 @@ public class CategoryForm extends FormLayout {
 
 	private Binder<InventoryItem> binder;
 
-	private InventoryItem category;
+	private InventoryItem category, originalCategory;
 	private Company initialCompany;
 	private boolean isNew;
 
@@ -110,7 +108,7 @@ public class CategoryForm extends FormLayout {
 	}
 
 	private void updateCategoriesComboBoxData(Company company) {
-		List<InventoryItem> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
+		List<InventoryItem> categories = InventoryFacade.getInstance().getAllInCompanyByType(company.getId(), InventoryHierarchyType.CATEGORY);
 		categories.add(0, InventoryFacade.getInstance().getRootCategory());
 
 		/*
@@ -136,6 +134,8 @@ public class CategoryForm extends FormLayout {
 		this.category.setInventoryHierarchyType(InventoryHierarchyType.CATEGORY);
 
 		initDynamicFormItems();
+
+		originalCategory = new InventoryItem(this.category);
 
 		binder.readBean(category);
 	}
@@ -172,5 +172,21 @@ public class CategoryForm extends FormLayout {
 
 	public boolean isNew() {
 		return isNew;
+	}
+
+	public List<String> getChanges() {
+		List<String> changes = new ArrayList<>();
+
+		if (!originalCategory.getName().equals(category.getName())) {
+			changes.add("Category name changed from: '" + originalCategory.getName() + "', to: '" + category.getName() + "'");
+		}
+		if (!originalCategory.getCompany().equals(category.getCompany())) {
+			changes.add("Category company changed from: '" + originalCategory.getCompany().getName() + "', to: '" + category.getCompany().getName() + "'");
+		}
+		if (!originalCategory.getParentCategory().equals(category.getParentCategory())) {
+			changes.add("Category parent changed from: '" + originalCategory.getParentCategory().getName() + "', to: '" + category.getParentCategory().getName() + "'");
+		}
+
+		return changes;
 	}
 }

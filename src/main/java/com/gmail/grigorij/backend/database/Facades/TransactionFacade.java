@@ -25,7 +25,19 @@ public class TransactionFacade {
 	private List<Transaction> getAllTransactions() {
 		List<Transaction> transaction;
 		try {
-			transaction = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllTransactions", Transaction.class)
+			transaction = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Transaction.QUERY_ALL, Transaction.class)
+					.getResultList();
+		} catch (NoResultException nre) {
+			transaction = null;
+		}
+		return transaction;
+	}
+
+	private List<Transaction> getAllTransactionsInCompany(long companyId) {
+		List<Transaction> transaction;
+		try {
+			transaction = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Transaction.QUERY_ALL_BY_COMPANY, Transaction.class)
+					.setParameter(Transaction.ID_VAR, companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			transaction = null;
@@ -34,16 +46,16 @@ public class TransactionFacade {
 	}
 
 
-	private List<Transaction> getAllTransactionsInCompany(long companyId) {
-		List<Transaction> transaction;
-		try {
-			transaction = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllTransactionsInCompany", Transaction.class)
-					.setParameter("company_id_var", companyId)
-					.getResultList();
-		} catch (NoResultException nre) {
-			transaction = null;
-		}
-		return transaction;
+	public List<Transaction> getAllTransactionsBetweenDates(LocalDate start, LocalDate end) {
+		List<Transaction> transactions = getAllTransactions();
+
+		return getSortedList(transactions, start, end);
+	}
+
+	public List<Transaction> getAllTransactionsBetweenDatesByCompany(LocalDate start, LocalDate end, long companyId) {
+		List<Transaction> transactions = getAllTransactionsInCompany(companyId);
+
+		return getSortedList(transactions, start, end);
 	}
 
 
@@ -58,20 +70,6 @@ public class TransactionFacade {
 		list.sort(Comparator.comparing(Transaction::getDate));
 
 		return list;
-	}
-
-
-	public List<Transaction> getAllTransactionsBetweenDates(LocalDate start, LocalDate end) {
-		List<Transaction> transactions = getAllTransactions();
-
-		return getSortedList(transactions, start, end);
-	}
-
-
-	public List<Transaction> getAllTransactionsInRangeInCompany(LocalDate start, LocalDate end, long companyId) {
-		List<Transaction> transactions = getAllTransactionsInCompany(companyId);
-
-		return getSortedList(transactions, start, end);
 	}
 
 
@@ -118,7 +116,7 @@ public class TransactionFacade {
 		return true;
 	}
 
-	public boolean remove(Transaction transaction) {
+	private boolean remove(Transaction transaction) {
 		if (transaction == null) {
 			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL TRANSACTION");
 			return false;

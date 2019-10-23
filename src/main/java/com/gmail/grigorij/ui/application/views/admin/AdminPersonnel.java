@@ -4,16 +4,16 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.components.forms.editable.UserForm;
+import com.gmail.grigorij.ui.components.forms.UserForm;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -126,14 +126,17 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 		grid.addColumn(user -> (user.getPerson() == null) ? "" : user.getPerson().getFullName())
 				.setHeader("Employee")
+				.setFlexGrow(1)
 				.setAutoWidth(true);
 
 		grid.addColumn(user -> (user.getCompany() == null) ? "" : user.getCompany().getName())
 				.setHeader("Company")
+				.setFlexGrow(1)
 				.setAutoWidth(true);
 
 		grid.addColumn(new ComponentRenderer<>(selectedUser -> UIUtils.createActiveGridIcon(selectedUser.isDeleted())))
 				.setHeader("Active")
+				.setFlexGrow(0)
 				.setAutoWidth(true);
 
 		return grid;
@@ -211,38 +214,41 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 		if (userForm.isNew()) {
 			if (UserFacade.getInstance().insert(editedUser)) {
-
-				UIUtils.showNotification("User created successfully", UIUtils.NotificationType.SUCCESS);
-
-				Transaction tr = new Transaction();
-				tr.setTransactionOperation(TransactionType.ADD);
-				tr.setTransactionTarget(TransactionTarget.USER);
-				tr.setDestinationUser(editedUser);
-				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-				TransactionFacade.getInstance().insert(tr);
+				UIUtils.showNotification("User created", UIUtils.NotificationType.SUCCESS);
 			} else {
 				UIUtils.showNotification("User insert failed", UIUtils.NotificationType.ERROR);
 				return;
 			}
 		} else {
 			if (UserFacade.getInstance().update(editedUser)) {
-
-				UIUtils.showNotification("User updated successfully", UIUtils.NotificationType.SUCCESS);
-
-				Transaction tr = new Transaction();
-				tr.setTransactionOperation(TransactionType.EDIT);
-				tr.setTransactionTarget(TransactionTarget.USER);
-				tr.setDestinationUser(editedUser);
-				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-				TransactionFacade.getInstance().insert(tr);
+				UIUtils.showNotification("User updated", UIUtils.NotificationType.SUCCESS);
 			} else {
 				UIUtils.showNotification("User update failed", UIUtils.NotificationType.ERROR);
 				return;
 			}
 		}
 
+		Transaction transaction = new Transaction();
+		transaction.setUser(AuthenticationService.getCurrentSessionUser());
+		transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+
+		if (userForm.isNew()) {
+			transaction.setOperation(Operation.ADD);
+		} else {
+			transaction.setOperation(Operation.EDIT);
+		}
+		transaction.setOperationTarget1(OperationTarget.USER);
+		transaction.setTargetDetails(editedUser.getFullName());
+		if (!userForm.isNew()) {
+			transaction.setChanges(userForm.getChanges());
+		}
+		TransactionFacade.getInstance().insert(transaction);
+
+		if (userForm.isNew()) {
+			grid.select(editedUser);
+		}
+
 		dataProvider.refreshAll();
-		grid.select(editedUser);
 	}
 
 	private void importOnClick() {

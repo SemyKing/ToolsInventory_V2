@@ -7,16 +7,8 @@ import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.recoverylink.RecoveryLink;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
-import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.size.All;
-import com.gmail.grigorij.ui.utils.css.size.Top;
-import com.gmail.grigorij.utils.OperationStatus;
-import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.EmailValidator;
@@ -99,12 +91,12 @@ public class ForgotPasswordDialog extends CustomDialog {
 
 		RecoveryLinkFacade.getInstance().insert(link);
 
-		Transaction tr = new Transaction();
-		tr.setTransactionOperation(TransactionType.EDIT);
-		tr.setTransactionTarget(TransactionTarget.USER);
-		tr.setWhoDid(user);
-		tr.setAdditionalInfo("User has requested password reset link. Email: " + emailAddress);
-		TransactionFacade.getInstance().insert(tr);
+//		Transaction tr = new Transaction();
+//		tr.setTransactionOperation(TransactionType.EDIT);
+//		tr.setTransactionTarget(TransactionTarget.USER);
+//		tr.setUser(user);
+//		tr.setAdditionalInfo("User has requested password reset link. Email: " + emailAddress);
+//		TransactionFacade.getInstance().insert(tr);
 
 		UIUtils.showNotification("https://localhost:8443/reset-password/" + link.getToken(), UIUtils.NotificationType.SUCCESS, 0);
 	}

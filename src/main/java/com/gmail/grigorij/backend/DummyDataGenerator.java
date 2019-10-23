@@ -195,7 +195,7 @@ public class DummyDataGenerator {
 
 					for (int k = 0; k < toolsPerCategory; k++) {
 						InventoryItem cc = new InventoryItem();
-						cc.setToolUsageStatus(ToolUsageStatus.FREE);
+						cc.setUsageStatus(ToolUsageStatus.FREE);
 						cc.setCompany(company);
 						cc.setName("Tool " + toolCounter + " (P: " + categoryCounter + ", SP: " + subCategoryCounter + ")");
 						cc.setManufacturer(RandomStringUtils.randomAlphabetic(5));

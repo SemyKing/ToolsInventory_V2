@@ -1,7 +1,5 @@
 package com.gmail.grigorij.backend.enums.permissions;
 
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
-
 public enum PermissionRange {
 
 	OWN("Own", PermissionLevel.USER),

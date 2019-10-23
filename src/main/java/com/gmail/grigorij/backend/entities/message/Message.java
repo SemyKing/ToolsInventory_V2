@@ -1,6 +1,7 @@
 package com.gmail.grigorij.backend.entities.message;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.MessageType;
 
 import javax.persistence.*;
@@ -11,32 +12,26 @@ import java.util.Date;
 @Table(name = "messages")
 
 @NamedQueries({
-		@NamedQuery(
-				name="getAllMessagesForUser",
-				query="SELECT message FROM Message message WHERE message.recipientId = :user_id_var")
+		@NamedQuery(name=Message.QUERY_ALL_BY_USER,
+				query="SELECT message FROM Message message WHERE message.recipientId = :" + Message.ID_VAR)
 })
 public class Message extends EntityPojo {
+
+	public static final String QUERY_ALL = "get_all_messages";
+	public static final String QUERY_ALL_BY_USER = "get_all_messages_by_user";
+
+	public static final String ID_VAR = "id_variable";
 
 	@Enumerated(EnumType.STRING)
 	private MessageType messageType;
 
-	@Column(name = "message_header")
-	private String messageHeader = "";
-
-	@Column(name = "message_text")
-	private String messageText = "";
-
-	private String sender;
-
-	private Long senderId;
-
+	private String subject = "";
+	private String text = "";
+	private String senderString = "";
+	private User senderUser;
 	private Long recipientId;
-
 	private Long toolId;
-
 	private Date date;
-
-	@Column(name = "message_read")
 	private boolean messageRead = false;
 
 
@@ -52,33 +47,33 @@ public class Message extends EntityPojo {
 		this.messageType = messageType;
 	}
 
-	public String getMessageHeader() {
-		return messageHeader;
+	public String getSubject() {
+		return subject;
 	}
-	public void setMessageHeader(String messageHeader) {
-		this.messageHeader = messageHeader;
-	}
-
-	public String getMessageText() {
-		return messageText;
-	}
-	public void setMessageText(String messageText) {
-		this.messageText = messageText;
+	public void setSubject(String subject) {
+		this.subject = subject;
 	}
 
-	public String getSender() {
-		return sender;
+	public String getText() {
+		return text;
 	}
-	public void setSender(String sender) {
-		this.sender = sender;
+	public void setText(String text) {
+		this.text = text;
 	}
 
-	public Long getSenderId() {
-		return senderId;
+	public String getSenderString() {
+		return senderString;
 	}
-	public void setSenderId(Long senderId) {
-		this.senderId = senderId;
+	public void setSenderString(String senderString) {
+		this.senderString = senderString;
 	}
+
+//	public Long getSenderId() {
+//		return senderId;
+//	}
+//	public void setSenderId(Long senderId) {
+//		this.senderId = senderId;
+//	}
 
 	public Long getRecipientId() {
 		return recipientId;
@@ -103,5 +98,13 @@ public class Message extends EntityPojo {
 	}
 	public void setMessageRead(boolean messageRead) {
 		this.messageRead = messageRead;
+	}
+
+	public User getSenderUser() {
+		return senderUser;
+	}
+
+	public void setSenderUser(User senderUser) {
+		this.senderUser = senderUser;
 	}
 }

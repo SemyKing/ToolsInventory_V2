@@ -4,6 +4,7 @@ import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.company.Company;
 
 import javax.persistence.NoResultException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CompanyFacade {
@@ -20,7 +21,7 @@ public class CompanyFacade {
 	public List<Company> getAllCompanies() {
 		List<Company> companies;
 		try {
-			companies = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllCompanies", Company.class)
+			companies = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Company.QUERY_ALL, Company.class)
 					.getResultList();
 		} catch (NoResultException nre) {
 			companies = null;
@@ -28,27 +29,19 @@ public class CompanyFacade {
 		return companies;
 	}
 
-	public Company getCompanyById(long companyId) {
+	public List<Company> getCompanyById(long companyId) {
+		List<Company> companies = new ArrayList<>();
 		Company company;
 		try {
-			company = (Company) DatabaseManager.getInstance().createEntityManager().createNamedQuery("getCompanyById")
-					.setParameter("company_id", companyId)
+			company =  DatabaseManager.getInstance().createEntityManager().createNamedQuery(Company.QUERY_BY_ID, Company.class)
+					.setParameter(Company.ID_VAR, companyId)
 					.getSingleResult();
+
+			companies.add(company);
 		} catch (NoResultException nre) {
-			company = null;
+			companies = null;
 		}
-		return company;
-	}
-
-	public long getCompaniesCount() {
-		Long companiesCount = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getCompaniesCount", Long.class)
-			.getSingleResult();
-
-		if (companiesCount == null) {
-			return 0;
-		} else {
-			return companiesCount;
-		}
+		return companies;
 	}
 
 
@@ -93,7 +86,7 @@ public class CompanyFacade {
 		return true;
 	}
 
-	public boolean remove(Company company) {
+	private boolean remove(Company company) {
 		if (company == null) {
 			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL COMPANY");
 			return false;

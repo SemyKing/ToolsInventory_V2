@@ -62,6 +62,15 @@ public class UIUtils {
 	}
 
 
+	public static String entityStatusToString(boolean status) {
+		if (status) {
+			return "Inactive";
+		} else {
+			return "Active";
+		}
+	}
+
+
 	public static FlexBoxLayout getFormRowLayout(Component c1, Component c2, boolean evenWith) {
 		if (c1 == null) {
 			c1 = createEmptyInvisibleLabel();

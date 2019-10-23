@@ -1,19 +1,25 @@
-package com.gmail.grigorij.ui.components.forms.editable;
+package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
 import com.gmail.grigorij.ui.application.views.admin.AdminInventory;
-import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
+import com.gmail.grigorij.ui.components.dialogs.CameraDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.camera.CameraView;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Right;
+import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.DateConverter;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.UI;
@@ -31,10 +37,10 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -43,14 +49,11 @@ import java.util.Locale;
 public class ToolForm extends FormLayout {
 
 	private final String CLASS_NAME = "form";
-
 	private final AdminInventory adminInventory;
 
 	private Binder<InventoryItem> binder;
-	private InventoryItem tool;
+	private InventoryItem tool, originalTool;
 	private boolean isNew;
-
-	private boolean cameraActive = false;
 
 	// FORM ITEMS
 	private Div entityStatusDiv;
@@ -65,10 +68,12 @@ public class ToolForm extends FormLayout {
 	private ComboBox<Company> companyComboBox;
 	private ComboBox<InventoryItem> categoryComboBox;
 	private FlexBoxLayout categoryLayout;
+	private Div toolUsageDiv;
 	private ComboBox<ToolUsageStatus> toolUsageStatusComboBox;
+	private Div toolUsersDiv;
 	private ComboBox<User> toolCurrentUserComboBox;
 	private ComboBox<User> toolReservedByUserComboBox;
-	private Div toolUsageDiv;
+
 	private TextField priceField;
 	private TextField guaranteeField;
 	private Div priceGuaranteeDiv;
@@ -100,6 +105,13 @@ public class ToolForm extends FormLayout {
 
 		setColspan(entityStatusDiv, 2);
 
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
+			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
+				entityStatusCheckbox.setReadOnly(true);
+				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
+			}
+		}
+
 		nameField = new TextField("Name");
 		nameField.setRequired(true);
 
@@ -107,7 +119,7 @@ public class ToolForm extends FormLayout {
 		barcode.setPrefixComponent(VaadinIcon.BARCODE.create());
 
 		Button scanBarcodeButton = UIUtils.createIconButton(VaadinIcon.CAMERA, ButtonVariant.LUMO_CONTRAST);
-		scanBarcodeButton.addClickListener(e -> constructCodeScanDialog(barcode));
+		scanBarcodeButton.addClickListener(e -> constructCodeScannerDialog(barcode));
 		UIUtils.setTooltip("Scan Barcode with camera", scanBarcodeButton);
 
 		barcodeLayout = new FlexBoxLayout();
@@ -142,6 +154,10 @@ public class ToolForm extends FormLayout {
 		categoryComboBox.setLabel("Parent Category");
 		categoryComboBox.setItemLabelGenerator(InventoryItem::getName);
 		categoryComboBox.setRequired(true);
+		categoryComboBox.addValueChangeListener(e -> {
+			int level = e.getValue().getLevel();
+			tool.setLevel(++level);
+		});
 
 		Button editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
 		editCategoryButton.addClickListener(e -> {
@@ -164,17 +180,22 @@ public class ToolForm extends FormLayout {
 
 		toolUsageStatusComboBox = new ComboBox<>();
 		toolUsageStatusComboBox.setLabel("Usage Status");
-		toolUsageStatusComboBox.setWidth("calc(33% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
 		toolUsageStatusComboBox.setItems(EnumSet.allOf(ToolUsageStatus.class));
-		toolUsageStatusComboBox.setItemLabelGenerator(ToolUsageStatus::getStringValue);
+		toolUsageStatusComboBox.setItemLabelGenerator(ToolUsageStatus::getName);
+
+		toolUsageDiv = new Div();
+		toolUsageDiv.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
+		toolUsageDiv.add(toolUsageStatusComboBox);
+
+		setColspan(toolUsageDiv, 2);
 
 
 		toolCurrentUserComboBox = new ComboBox<>();
 		toolCurrentUserComboBox.setLabel("Current User");
-		toolCurrentUserComboBox.setWidth("calc(33% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
+		toolCurrentUserComboBox.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
 		toolCurrentUserComboBox.setErrorMessage("User Required");
 		toolCurrentUserComboBox.setItems();
-		toolCurrentUserComboBox.setItemLabelGenerator(User::getUsername);
+		toolCurrentUserComboBox.setItemLabelGenerator(User::getFullName);
 		toolCurrentUserComboBox.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
 				toolCurrentUserComboBox.setInvalid(false);
@@ -183,21 +204,22 @@ public class ToolForm extends FormLayout {
 
 		toolReservedByUserComboBox = new ComboBox<>();
 		toolReservedByUserComboBox.setLabel("Reserved By User");
-		toolReservedByUserComboBox.setWidth("calc(33% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
+		toolReservedByUserComboBox.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
 		toolReservedByUserComboBox.setErrorMessage("User Required");
 		toolReservedByUserComboBox.setItems();
-		toolReservedByUserComboBox.setItemLabelGenerator(User::getUsername);
+		toolReservedByUserComboBox.setItemLabelGenerator(User::getFullName);
 		toolReservedByUserComboBox.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
 				toolCurrentUserComboBox.setInvalid(false);
 			}
 		});
 
-		toolUsageDiv = new Div();
-		toolUsageDiv.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
-		toolUsageDiv.add(toolUsageStatusComboBox, toolCurrentUserComboBox, toolReservedByUserComboBox);
+		toolUsersDiv = new Div();
+		toolUsersDiv.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
+		toolUsersDiv.add(toolCurrentUserComboBox, toolReservedByUserComboBox);
 
-		setColspan(toolUsageDiv, 2);
+		setColspan(toolUsersDiv, 2);
+
 
 		dateBought = new DatePicker("Bought Date");
 		dateBought.setLocale(new Locale("fi"));
@@ -209,8 +231,7 @@ public class ToolForm extends FormLayout {
 
 		datesDiv = new Div();
 		datesDiv.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
-		datesDiv.add(dateBought);
-		datesDiv.add(dateNextMaintenance);
+		datesDiv.add(dateBought, dateNextMaintenance);
 
 
 		priceField = new TextField("Price");
@@ -225,8 +246,7 @@ public class ToolForm extends FormLayout {
 
 		priceGuaranteeDiv = new Div();
 		priceGuaranteeDiv.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
-		priceGuaranteeDiv.add(priceField);
-		priceGuaranteeDiv.add(guaranteeField);
+		priceGuaranteeDiv.add(priceField, guaranteeField);
 
 
 		additionalInfo = new TextArea("Additional Info");
@@ -236,7 +256,6 @@ public class ToolForm extends FormLayout {
 	}
 
 	private void constructForm() {
-//		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
@@ -256,7 +275,9 @@ public class ToolForm extends FormLayout {
 
 		add(companyComboBox);
 		add(categoryLayout);
+
 		add(toolUsageDiv);
+		add(toolUsersDiv);
 
 		hr = new Hr();
 		setColspan(hr, 2);
@@ -299,17 +320,18 @@ public class ToolForm extends FormLayout {
 
 		binder.forField(categoryComboBox)
 				.asRequired("Category is required")
+				.withNullRepresentation(InventoryFacade.getInstance().getRootCategory())
 				.bind(InventoryItem::getParentCategory, InventoryItem::setParentCategory);
 
 		binder.forField(toolUsageStatusComboBox)
 				.asRequired("Usage Status is required")
-				.bind(InventoryItem::getToolUsageStatus, InventoryItem::setToolUsageStatus);
+				.bind(InventoryItem::getUsageStatus, InventoryItem::setUsageStatus);
 
 		binder.forField(toolCurrentUserComboBox)
-				.bind(InventoryItem::getInUseByUser, InventoryItem::setInUseByUser);
+				.bind(InventoryItem::getCurrentUser, InventoryItem::setCurrentUser);
 
 		binder.forField(toolReservedByUserComboBox)
-				.bind(InventoryItem::getReservedByUser, InventoryItem::setReservedByUser);
+				.bind(InventoryItem::getReservedUser, InventoryItem::setReservedUser);
 
 		binder.forField(priceField)
 				.withConverter(new StringToDoubleConverter("Price must be a number"))
@@ -343,7 +365,7 @@ public class ToolForm extends FormLayout {
 			toolCurrentUserComboBox.setValue(null);
 			toolReservedByUserComboBox.setValue(null);
 
-			List<InventoryItem> categories = InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId());
+			List<InventoryItem> categories = InventoryFacade.getInstance().getAllInCompanyByType(company.getId(), InventoryHierarchyType.CATEGORY);
 			categories.add(0, InventoryFacade.getInstance().getRootCategory());
 
 			categoryComboBox.setItems(categories);
@@ -353,84 +375,70 @@ public class ToolForm extends FormLayout {
 		}
 	}
 
-	private void constructCodeScanDialog(TextField codeField) {
-
-		CameraView cameraView = new CameraView();
-		cameraView.addClickListener(imageClickEvent -> {
-			if (cameraActive) {
-				cameraView.takePicture();
-			} else {
-				cameraView.showPreview();
-				cameraActive = true;
-			}
-		});
-
-
-		CustomDialog dialog = new CustomDialog();
-		dialog.setCloseOnEsc(false);
-		dialog.setCloseOnOutsideClick(false);
-
-		dialog.setHeader(UIUtils.createH3Label("Code Scanner"));
-
-		dialog.setContent(cameraView);
-
-		dialog.getCancelButton().addClickListener(e -> {
-			cameraView.stop();
-			dialog.close();
-		});
-
-		dialog.getFooter().remove(dialog.getConfirmButton());
-
-		dialog.open();
-
-
-		UIUtils.showNotification("Click on Image to take a picture", UIUtils.NotificationType.INFO);
-
-		cameraView.showPreview();
-		cameraActive = true;
-
-
-		cameraView.onFinished(new OperationStatus() {
+	private void constructCodeScannerDialog(TextField codeField) {
+		CameraDialog cameraDialog = new CameraDialog();
+		cameraDialog.getCameraView().onFinished(new OperationStatus() {
 			@Override
-			public void onSuccess(String msg, UIUtils.NotificationType type) {
+			public void onSuccess(String code) {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
-						UIUtils.showNotification("Code scanned successfully", type, 2000);
+						try {
+							UIUtils.showNotification("Code scanned", UIUtils.NotificationType.SUCCESS, 2000);
 
-						codeField.setValue(msg);
-						cameraView.stop();
-						cameraActive = false;
+							codeField.setValue(code);
+							cameraDialog.stopCamera();
+							cameraDialog.close();
 
-						UI.getCurrent().push();
+							UI.getCurrent().push();
+						} catch (Exception e) {
+							cameraDialog.getCameraView().stop();
+							cameraDialog.close();
+
+							UIUtils.showNotification("We are sorry, but an internal error occurred", UIUtils.NotificationType.ERROR);
+							e.printStackTrace();
+						}
 					});
-
 				}
 			}
 
 			@Override
-			public void onFail(String msg, UIUtils.NotificationType type) {
+			public void onFail() {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
-						UIUtils.showNotification("Code not found", UIUtils.NotificationType.INFO, 2000);
-						UI.getCurrent().push();
+						try {
+							UIUtils.showNotification("Code not found in image", UIUtils.NotificationType.INFO, 2000);
+							UI.getCurrent().push();
+						} catch (Exception e) {
+							cameraDialog.getCameraView().stop();
+							cameraDialog.close();
+
+							UIUtils.showNotification("We are sorry, but an internal error occurred", UIUtils.NotificationType.ERROR);
+							e.printStackTrace();
+						}
 					});
 				}
 			}
 		});
+
+
+		cameraDialog.open();
+		cameraDialog.getCameraView().showPreview();
 	}
 
 
-	public void setTool(InventoryItem t) {
+	public void setTool(InventoryItem tool) {
 		isNew = false;
 
-		if (t == null) {
-			tool = new InventoryItem();
+		if (tool == null) {
+			this.tool = new InventoryItem();
 			isNew = true;
 		} else {
-			tool = t;
+			this.tool = tool;
 		}
 
 		initDynamicFormItems();
+
+		originalTool = new InventoryItem(this.tool);
 
 		binder.readBean(tool);
 	}
@@ -478,6 +486,11 @@ public class ToolForm extends FormLayout {
 
 				binder.writeBean(tool);
 
+				if (tool.getParentCategory().equals(InventoryFacade.getInstance().getRootCategory())) {
+					System.out.println("ROOT PARENT -> NULL");
+					tool.setParentCategory(null);
+				}
+
 				return tool;
 			}
 		} catch (ValidationException e) {
@@ -489,5 +502,76 @@ public class ToolForm extends FormLayout {
 
 	public boolean isNew() {
 		return isNew;
+	}
+
+	public List<String> getChanges() {
+		List<String> changes = new ArrayList<>();
+
+		if (Boolean.compare(originalTool.isDeleted(), tool.isDeleted()) != 0) {
+			changes.add("Status changed from: '" + UIUtils.entityStatusToString(originalTool.isDeleted()) + "', to: '" + UIUtils.entityStatusToString(tool.isDeleted()) + "'");
+		}
+		if (!originalTool.getName().equals(tool.getName())) {
+			changes.add("Name changed from: '" + originalTool.getName() + "', to: '" + tool.getName() + "'");
+		}
+		if (!originalTool.getBarcode().equals(tool.getBarcode())) {
+			changes.add("Barcode changed from: '" + originalTool.getBarcode() + "', to: '" + tool.getBarcode() + "'");
+		}
+		if (!originalTool.getSnCode().equals(tool.getSnCode())) {
+			changes.add("SN changed from: '" + originalTool.getSnCode() + "', to: '" + tool.getSnCode() + "'");
+		}
+		if (!originalTool.getToolInfo().equals(tool.getToolInfo())) {
+			changes.add("Tool info changed from: '" + originalTool.getToolInfo() + "', to: '" + tool.getToolInfo() + "'");
+		}
+		if (!originalTool.getManufacturer().equals(tool.getManufacturer())) {
+			changes.add("Manufacturer changed from: '" + originalTool.getManufacturer() + "', to: '" + tool.getManufacturer() + "'");
+		}
+		if (!originalTool.getModel().equals(tool.getModel())) {
+			changes.add("Model changed from: '" + originalTool.getModel() + "', to: '" + tool.getModel() + "'");
+		}
+		if (!originalTool.getCompany().equals(tool.getCompany())) {
+			changes.add("Tool company changed from: '" + originalTool.getCompany().getName() + "', to: '" + tool.getCompany().getName() + "'");
+		}
+		if (originalTool.getParentCategory() != null || tool.getParentCategory() != null) {
+			changes.add("Tool category changed from: '" +
+					(originalTool.getParentCategory()==null ? "" : originalTool.getParentCategory().getName()) +
+					"', to: '" +
+					(tool.getParentCategory()==null ? "" : tool.getParentCategory().getName()) + "'");
+		}
+		if (!originalTool.getUsageStatus().equals(tool.getUsageStatus())) {
+			changes.add("Usage status changed from: '" + originalTool.getUsageStatus().getName() + "', to: '" + tool.getUsageStatus().getName() + "'");
+		}
+		if (originalTool.getCurrentUser() != null || tool.getCurrentUser() != null) {
+			changes.add("Tool current user changed from: '" +
+					(originalTool.getCurrentUser()==null ? "" : originalTool.getCurrentUser().getFullName()) +
+					"', to: '" +
+					(tool.getCurrentUser()==null ? "" : tool.getCurrentUser().getFullName()) + "'");
+		}
+		if (originalTool.getReservedUser() != null || tool.getReservedUser() != null) {
+			changes.add("Tool reserved user changed from: '" +
+					(originalTool.getReservedUser()==null ? "" : originalTool.getReservedUser().getFullName()) +
+					"', to: '" +
+					(tool.getReservedUser()==null ? "" : tool.getReservedUser().getFullName()) + "'");
+		}
+		if (!originalTool.getPrice().equals(tool.getPrice())) {
+			changes.add("Price changed from: '" + originalTool.getPrice() + "', to: '" + tool.getPrice() + "'");
+		}
+		if (!originalTool.getGuarantee_months().equals(tool.getGuarantee_months())) {
+			changes.add("Guarantee changed from: '" + originalTool.getGuarantee_months() + "', to: '" + tool.getGuarantee_months() + "'");
+		}
+
+		if (originalTool.getDateBought() != null || tool.getDateBought() != null) {
+			changes.add("Date bought changed from: '" +
+					(originalTool.getDateBought()==null ? "" : DateConverter.localDateToString(originalTool.getDateBought())) +
+					"', to: '" +
+					(tool.getDateBought()==null ? "" : DateConverter.localDateToString(tool.getDateBought())) + "'");
+		}
+		if (originalTool.getDateNextMaintenance() != null || tool.getDateNextMaintenance() != null) {
+			changes.add("Next maintenance date changed from: '" +
+					(originalTool.getDateNextMaintenance()==null ? "" : DateConverter.localDateToString(originalTool.getDateNextMaintenance())) +
+					"', to: '" +
+					(tool.getDateNextMaintenance()==null ? "" : DateConverter.localDateToString(tool.getDateNextMaintenance())) + "'");
+		}
+
+		return changes;
 	}
 }

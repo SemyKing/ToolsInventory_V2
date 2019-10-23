@@ -1,13 +1,18 @@
-package com.gmail.grigorij.ui.components.forms.editable;
+package com.gmail.grigorij.ui.components.forms;
 
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.embeddable.Location;
 import com.gmail.grigorij.backend.embeddable.Person;
 import com.gmail.grigorij.backend.entities.company.Company;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Right;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -34,9 +39,8 @@ public class CompanyForm extends FormLayout {
 	private final PersonForm contactPersonForm = new PersonForm();
 
 	private Binder<Company> binder;
-	private Company company;
+	private Company company, originalCompany;
 	private boolean isNew;
-	private boolean originalEntityStatus;
 
 	private List<Location> tempLocations;
 
@@ -69,6 +73,13 @@ public class CompanyForm extends FormLayout {
 		entityStatusDiv.add(entityStatusCheckbox);
 
 		setColspan(entityStatusDiv, 2);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
+			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
+				entityStatusCheckbox.setReadOnly(true);
+				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
+			}
+		}
 
 		nameField = new TextField("Name");
 		nameField.setRequired(true);
@@ -111,7 +122,6 @@ public class CompanyForm extends FormLayout {
 	}
 
 	private void constructForm() {
-//		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
@@ -174,12 +184,9 @@ public class CompanyForm extends FormLayout {
 		}
 
 		companyLocationsComboBox.setItems(tempLocations);
-
-		originalEntityStatus = company.isDeleted();
 	}
 
 	private void constructLocationDialog(Location location) {
-
 		LocationForm locationForm = new LocationForm();
 		locationForm.setLocation(location);
 
@@ -220,6 +227,8 @@ public class CompanyForm extends FormLayout {
 
 		initDynamicFormItems();
 
+		originalCompany = new Company(this.company);
+
 		addressForm.setLocation(this.company.getAddress());
 		contactPersonForm.setPerson(this.company.getContactPerson());
 
@@ -250,7 +259,7 @@ public class CompanyForm extends FormLayout {
 
 				company.setLocations(tempLocations);
 
-				if (originalEntityStatus != company.isDeleted()) {
+				if (Boolean.compare(originalCompany.isDeleted(), company.isDeleted()) != 0) {
 					//TODO: TRANSACTION ENTITY STATUS CHANGE
 				}
 
@@ -263,6 +272,39 @@ public class CompanyForm extends FormLayout {
 		}
 		return null;
 	}
+
+	public List<String> getChanges() {
+		List<String> changes = new ArrayList<>();
+
+		if (Boolean.compare(originalCompany.isDeleted(), company.isDeleted()) != 0) {
+			changes.add("Status changed from: '" + UIUtils.entityStatusToString(originalCompany.isDeleted()) + "', to: '" + UIUtils.entityStatusToString(company.isDeleted()) + "'");
+		}
+		if (!originalCompany.getName().equals(company.getName())) {
+			changes.add("Name changed from: '" + originalCompany.getName() + "', to: '" + company.getName() + "'");
+		}
+		if (!originalCompany.getVat().equals(company.getVat())) {
+			changes.add("VAT changed from: '" + originalCompany.getVat() + "', to: '" + company.getVat() + "'");
+		}
+
+//		if (!originalCompany.getLocations().equals(company.getLocations())) {
+//			changes.add("Locations changed");
+//		}
+
+		List<String> addressChanges = addressForm.getChanges();
+		if (addressChanges.size() > 0) {
+			changes.add("Address changed");
+			changes.addAll(addressChanges);
+		}
+
+		List<String> personChanges = contactPersonForm.getChanges();
+		if (personChanges.size() > 0) {
+			changes.add("Contact Person changed");
+			changes.addAll(personChanges);
+		}
+
+		return changes;
+	}
+
 
 	public boolean isNew() {
 		return isNew;

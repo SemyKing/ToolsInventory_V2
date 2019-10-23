@@ -44,6 +44,9 @@ public class PermissionsDialog extends CustomDialog {
 	public PermissionsDialog(User user) {
 		this.user = user;
 
+		setCloseOnEsc(false);
+		setCloseOnOutsideClick(false);
+
 		systemAdmin = AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN);
 
 		if (!systemAdmin) {

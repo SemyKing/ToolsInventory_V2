@@ -14,6 +14,10 @@ import '@polymer/polymer/lib/elements/custom-style.js';
         margin-bottom: var(--lumo-space-s);
     }
 
+    .form > div[invisible] {
+        display: none !important;
+    }
+
 	.container-space-between {
 		display: flex;
 		flex-direction: row;
