@@ -2,10 +2,9 @@ package com.gmail.grigorij.utils;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.operations.Operation;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
@@ -82,12 +81,11 @@ public class AuthenticationService {
 
 		Broadcaster.removeBroadcasterForUser(getCurrentSessionUser().getId());
 
-		Transaction logOutTransaction = new Transaction();
-		logOutTransaction.setTransactionTarget(TransactionTarget.USER);
-		logOutTransaction.setTransactionOperation(TransactionType.LOGOUT);
-		logOutTransaction.setWhoDid(getCurrentSessionUser());
-
-		TransactionFacade.getInstance().insert(logOutTransaction);
+		Transaction transaction = new Transaction();
+		transaction.setUser(AuthenticationService.getCurrentSessionUser());
+		transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+		transaction.setOperation(Operation.LOG_OUT);
+		TransactionFacade.getInstance().insert(transaction);
 
 		getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
 		UI.getCurrent().getSession().close();

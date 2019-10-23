@@ -1,5 +1,8 @@
 package com.gmail.grigorij.ui.application;
 
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.MainLayout;
 import com.gmail.grigorij.ui.application.views.*;
@@ -125,8 +128,6 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		NaviItem inventory = new NaviItem(VaadinIcon.STORAGE, ProjectConstants.INVENTORY);
 		NaviItem messages = new NaviItem(VaadinIcon.ENVELOPES_O, ProjectConstants.MESSAGES);
 		NaviItem transaction = new NaviItem(VaadinIcon.EXCHANGE, ProjectConstants.TRANSACTIONS);
-
-		//
 		NaviItem reporting = new NaviItem(VaadinIcon.CLIPBOARD_TEXT, ProjectConstants.REPORTING);
 
 
@@ -136,32 +137,53 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		});
 		menu.addNaviItem(dashboard);
 
-		inventory.addClickListener(e-> {
-			naviItemOnClick(inventory);
-			viewContainer.add(new Inventory());
-		});
-		menu.addNaviItem(inventory);
 
-		messages.addClickListener(e-> {
-			naviItemOnClick(messages);
-			viewContainer.add(new Messages());
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.INVENTORY_TAB, null)) {
 
-			notifications.forEach(Notification::close);
-			notifications.clear();
-		});
-		menu.addNaviItem(messages);
+			inventory.addClickListener(e-> {
+				naviItemOnClick(inventory);
+				viewContainer.add(new Inventory());
+			});
+			menu.addNaviItem(inventory);
+		}
 
-		transaction.addClickListener(e-> {
-			naviItemOnClick(transaction);
-			viewContainer.add(new Transactions());
-		});
-		menu.addNaviItem(transaction);
 
-		reporting.addClickListener(e-> {
-			naviItemOnClick(reporting);
-			viewContainer.add(new Reporting());
-		});
-		menu.addNaviItem(reporting);
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.MESSAGES_TAB, null)) {
+
+			messages.addClickListener(e-> {
+				naviItemOnClick(messages);
+				viewContainer.add(new Messages());
+
+				notifications.forEach(Notification::close);
+				notifications.clear();
+			});
+			menu.addNaviItem(messages);
+		}
+
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.TRANSACTIONS_TAB, null)) {
+
+			transaction.addClickListener(e-> {
+				naviItemOnClick(transaction);
+				viewContainer.add(new Transactions());
+			});
+			menu.addNaviItem(transaction);
+		}
+
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.REPORTING_TAB, null)) {
+
+			reporting.addClickListener(e-> {
+				naviItemOnClick(reporting);
+				viewContainer.add(new Reporting());
+			});
+			menu.addNaviItem(reporting);
+		}
+
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().higherOrEqualsTo(PermissionLevel.COMPANY_ADMIN)) {
 			NaviItem adminItem = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN);
@@ -177,7 +199,6 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 			admin_companies.addClickListener(e-> {
 				adminNaviItemOnClick(admin_companies);
 			});
-
 
 			NaviItem admin_personnel = new NaviItem(ProjectConstants.PERSONNEL);
 			menu.addNaviItem(adminItem, admin_personnel);

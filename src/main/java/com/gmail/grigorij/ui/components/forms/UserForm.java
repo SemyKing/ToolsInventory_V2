@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.forms.editable;
+package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
@@ -16,7 +16,6 @@ import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.dialogs.PermissionsDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -59,7 +58,7 @@ public class UserForm extends FormLayout {
 	private final LocationForm addressForm = new LocationForm();
 	private Binder<User> binder;
 
-	private User user;
+	private User user, originalUser;
 	private List<PermissionTest> tempPermissions;
 	private String initialUsername;
 	private boolean isNew;
@@ -92,17 +91,18 @@ public class UserForm extends FormLayout {
 	private void constructFormItems() {
 		entityStatusCheckbox = new Checkbox("Deleted");
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
-			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
-				entityStatusCheckbox.setReadOnly(true);
-			}
-		}
-
 		entityStatusDiv = new Div();
 		entityStatusDiv.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
 		entityStatusDiv.add(entityStatusCheckbox);
 
 		setColspan(entityStatusDiv, 2);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
+			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
+				entityStatusCheckbox.setReadOnly(true);
+				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
+			}
+		}
 
 		usernameField = new TextField("Username");
 		usernameField.setRequired(true);
@@ -216,7 +216,6 @@ public class UserForm extends FormLayout {
 	}
 
 	private void constructForm() {
-//		addClassNames(LumoStyles.Padding.Vertical.S, LumoStyles.Padding.Left.M, LumoStyles.Padding.Right.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
@@ -383,6 +382,8 @@ public class UserForm extends FormLayout {
 
 		initDynamicFormItems();
 
+		originalUser = new User(this.user);
+
 		addressForm.setLocation(this.user.getAddress());
 		personForm.setPerson(this.user.getPerson());
 
@@ -425,5 +426,36 @@ public class UserForm extends FormLayout {
 
 	public boolean isNew() {
 		return isNew;
+	}
+
+	public List<String> getChanges() {
+		List<String> changes = new ArrayList<>();
+
+		if (Boolean.compare(originalUser.isDeleted(), user.isDeleted()) != 0) {
+			changes.add("User status changed from: '" + UIUtils.entityStatusToString(originalUser.isDeleted()) + "', to: '" + UIUtils.entityStatusToString(user.isDeleted()) + "'");
+		}
+		if (!originalUser.getUsername().equals(user.getUsername())) {
+			changes.add("Username changed from: '" + originalUser.getUsername() + "', to: '" + user.getUsername() + "'");
+		}
+		if (!originalUser.getPermissionLevel().equals(user.getPermissionLevel())) {
+			changes.add("Permission level changed from: '" + originalUser.getPermissionLevel().getName() + "', to: '" + user.getPermissionLevel().getName() + "'");
+		}
+		if (!originalUser.getCompany().equals(user.getCompany())) {
+			changes.add("User company changed from: '" + originalUser.getCompany().getName() + "', to: '" + user.getCompany().getName() + "'");
+		}
+
+		List<String> addressChanges = addressForm.getChanges();
+		if (addressChanges.size() > 0) {
+			changes.add("Address changed");
+			changes.addAll(addressChanges);
+		}
+
+		List<String> personChanges = personForm.getChanges();
+		if (personChanges.size() > 0) {
+			changes.add("Personal information changed");
+			changes.addAll(personChanges);
+		}
+
+		return changes;
 	}
 }

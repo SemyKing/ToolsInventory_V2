@@ -36,11 +36,11 @@ public class PermissionFacade {
 				OperationPermission.NO,     // SYSTEM
 				false));
 
-		userPermissions.add(constructPermission(Operation.SEND_MESSAGE, OperationTarget.USER,
-				OperationPermission.YES,    // OWN
-				OperationPermission.YES,    // COMPANY
-				OperationPermission.NO,     // SYSTEM
-				false));
+//		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES,
+//				OperationPermission.NO,    // OWN
+//				OperationPermission.NO,    // COMPANY
+//				OperationPermission.NO,     // SYSTEM
+//				false));
 
 		userPermissions.add(constructPermission(Operation.REPORT, OperationTarget.INVENTORY_TOOL,
 				OperationPermission.YES,    // OWN
@@ -66,6 +66,18 @@ public class PermissionFacade {
 	public List<PermissionTest> getDefaultUserPermissions() {
 		List<PermissionTest> userPermissions = new ArrayList<>();
 
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.INVENTORY_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.MESSAGES_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
 		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.USER,
 				OperationPermission.YES,    // OWN
 				OperationPermission.NO,     // COMPANY
@@ -78,7 +90,7 @@ public class PermissionFacade {
 				OperationPermission.NO,     // SYSTEM
 				false));
 
-		userPermissions.add(constructPermission(Operation.SEND_MESSAGE, OperationTarget.USER,
+		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES_TAB,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
 				OperationPermission.NO,     // SYSTEM
@@ -86,7 +98,7 @@ public class PermissionFacade {
 
 		userPermissions.add(constructPermission(Operation.REPORT, OperationTarget.INVENTORY_TOOL,
 				OperationPermission.YES,    // OWN
-				OperationPermission.NO,     // COMPANY
+				OperationPermission.YES,     // COMPANY
 				OperationPermission.NO,     // SYSTEM
 				false));
 
@@ -108,6 +120,30 @@ public class PermissionFacade {
 	public List<PermissionTest> getDefaultForemanPermissions() {
 		List<PermissionTest> userPermissions = new ArrayList<>();
 
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.INVENTORY_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.MESSAGES_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.TRANSACTIONS_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.REPORTING_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
 		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.USER,
 				OperationPermission.YES,    // OWN
 				OperationPermission.NO,     // COMPANY
@@ -120,7 +156,7 @@ public class PermissionFacade {
 				OperationPermission.NO,     // SYSTEM
 				false));
 
-		userPermissions.add(constructPermission(Operation.SEND_MESSAGE, OperationTarget.USER,
+		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES_TAB,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
 				OperationPermission.NO,     // SYSTEM
@@ -128,7 +164,7 @@ public class PermissionFacade {
 
 		userPermissions.add(constructPermission(Operation.REPORT, OperationTarget.INVENTORY_TOOL,
 				OperationPermission.YES,    // OWN
-				OperationPermission.NO,     // COMPANY
+				OperationPermission.YES,     // COMPANY
 				OperationPermission.NO,     // SYSTEM
 				false));
 
@@ -150,6 +186,31 @@ public class PermissionFacade {
 	public List<PermissionTest> getDefaultCompanyAdminPermissions() {
 		List<PermissionTest> userPermissions = new ArrayList<>();
 
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.INVENTORY_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.MESSAGES_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.TRANSACTIONS_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.REPORTING_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.NO,     // COMPANY
+				OperationPermission.NO,     // SYSTEM
+				false));
+
+
 		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.USER,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
@@ -168,7 +229,7 @@ public class PermissionFacade {
 				OperationPermission.NO,     // SYSTEM
 				true));
 
-		userPermissions.add(constructPermission(Operation.SEND_MESSAGE, OperationTarget.USER,
+		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES_TAB,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
 				OperationPermission.NO,     // SYSTEM
@@ -235,7 +296,7 @@ public class PermissionFacade {
 
 	public boolean isUserAllowedTo(Operation action, OperationTarget target, PermissionRange range) {
 
-		if (action == null || target == null || range == null) {
+		if (action == null || target == null) {
 			return false;
 		}
 
@@ -243,7 +304,9 @@ public class PermissionFacade {
 			if (action.equals(permission.getOperation())) {
 				if (target.equals(permission.getOperationTarget())) {
 
-					if (range.equals(PermissionRange.OWN)) {
+					if (range == null) {
+						return permission.getPermissionOwn().isAllowed() || permission.getPermissionCompany().isAllowed() || permission.getPermissionSystem().isAllowed();
+					} else if (range.equals(PermissionRange.OWN)) {
 						return permission.getPermissionOwn().isAllowed();
 					} else if (range.equals(PermissionRange.COMPANY)) {
 						return permission.getPermissionCompany().isAllowed();

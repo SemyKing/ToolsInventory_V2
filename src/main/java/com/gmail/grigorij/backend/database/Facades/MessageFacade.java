@@ -2,7 +2,6 @@ package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.message.Message;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
 
 import javax.persistence.NoResultException;
 import java.sql.Date;
@@ -22,11 +21,11 @@ public class MessageFacade {
 		return mInstance;
 	}
 
-	private List<Message> getAllMessagesForUser(long userId) {
+	private List<Message> getAllMessagesByUser(long userId) {
 		List<Message> messages;
 		try {
-			messages = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllMessagesForUser", Message.class)
-					.setParameter("user_id_var", userId)
+			messages = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Message.QUERY_ALL_BY_USER, Message.class)
+					.setParameter(Message.ID_VAR, userId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			messages = null;
@@ -48,8 +47,8 @@ public class MessageFacade {
 	}
 
 
-	public List<Message> getAllMessagesBetweenDates(LocalDate start, LocalDate end, long userId) {
-		List<Message> messages = getAllMessagesForUser(userId);
+	public List<Message> getAllMessagesBetweenDatesByUser(LocalDate start, LocalDate end, long userId) {
+		List<Message> messages = getAllMessagesByUser(userId);
 
 		return getSortedList(messages, start, end);
 	}
@@ -97,7 +96,7 @@ public class MessageFacade {
 		return true;
 	}
 
-	public boolean remove(Message message) {
+	private boolean remove(Message message) {
 		if (message == null) {
 			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL MESSAGE");
 			return false;

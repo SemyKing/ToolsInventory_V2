@@ -6,8 +6,6 @@ import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.entities.recoverylink.RecoveryLink;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.Display;
@@ -32,7 +30,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 
 
 @Route(value = "reset-password")
-@StyleSheet("context://styles/password-reset.css")
+@StyleSheet("context://styles/views/password-reset.css")
 public class ResetPasswordView extends FlexBoxLayout implements HasUrlParameter<String> {
 
 	private static final String CLASS_NAME = "password-reset-view";
@@ -176,13 +174,13 @@ public class ResetPasswordView extends FlexBoxLayout implements HasUrlParameter<
 			if (UserFacade.getInstance().update(user)) {
 				UIUtils.showNotification("Password reset", UIUtils.NotificationType.SUCCESS);
 
-				Transaction tr = new Transaction();
-				tr.setTransactionOperation(TransactionType.EDIT);
-				tr.setTransactionTarget(TransactionTarget.USER);
-				tr.setWhoDid(user);
-				tr.setDestinationUser(user);
-				tr.setAdditionalInfo("User has reset the password");
-				TransactionFacade.getInstance().insert(tr);
+//				Transaction tr = new Transaction();
+//				tr.setTransactionOperation(TransactionType.EDIT);
+//				tr.setTransactionTarget(TransactionTarget.USER);
+//				tr.setUser(user);
+//				tr.setDestinationUser(user);
+//				tr.setAdditionalInfo("User has reset the password");
+//				TransactionFacade.getInstance().insert(tr);
 
 				// REMOVE LINK OR SET DELETED?
 				if (!RecoveryLinkFacade.getInstance().remove(link)) {

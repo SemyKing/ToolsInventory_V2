@@ -14,15 +14,18 @@ import java.util.Set;
 @Entity
 @Table(name = "companies")
 @NamedQueries({
-		@NamedQuery(
-				name="getAllCompanies",
+		@NamedQuery(name=Company.QUERY_ALL,
 				query="SELECT company FROM Company company ORDER BY company.name ASC"),
 
-		@NamedQuery(
-				name="getCompanyById",
-				query="SELECT company FROM Company company WHERE company.id = :company_id")
+		@NamedQuery(name=Company.QUERY_BY_ID,
+				query="SELECT company FROM Company company WHERE company.id = :" + Company.ID_VAR)
 })
 public class Company extends EntityPojo {
+
+	public static final String QUERY_ALL = "get_all_companies";
+	public static final String QUERY_BY_ID = "get_company_by_id";
+
+	public static final String ID_VAR = "id_variable";
 
 	@Column(name = "name")
 	private String name = "";
@@ -42,6 +45,13 @@ public class Company extends EntityPojo {
 
 	public Company() {}
 
+	public Company(Company other) {
+		this.name = other.name;
+		this.vat = other.vat;
+		this.address = other.address;
+		this.contactPerson = other.contactPerson;
+		this.locations = other.locations;
+	}
 
 	public String getName() {
 		return name;

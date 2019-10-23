@@ -2,44 +2,55 @@ package com.gmail.grigorij.ui.application.views;
 
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.entities.message.Message;
+import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.enums.MessageType;
 import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
-import com.gmail.grigorij.backend.entities.message.Message;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.camera.CameraView;
-import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
-import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
-import com.gmail.grigorij.ui.components.layouts.SplitViewFrame;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.utils.css.size.*;
-import com.gmail.grigorij.ui.components.forms.readonly.ReadOnlyToolForm;
+import com.gmail.grigorij.ui.components.dialogs.CameraDialog;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
+import com.gmail.grigorij.ui.components.forms.ReadOnlyToolForm;
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
+import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
+import com.gmail.grigorij.utils.DateConverter;
 import com.gmail.grigorij.utils.OperationStatus;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.treegrid.TreeGrid;
+import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.hierarchy.TreeData;
 import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,150 +59,82 @@ import java.util.List;
 
 @PageTitle("Inventory")
 @CssImport("./styles/views/inventory.css")
-public class Inventory extends SplitViewFrame {
+public class Inventory extends Div {
 
 	private static final String CLASS_NAME = "inventory";
+	private final ReadOnlyToolForm toolForm = new ReadOnlyToolForm();
 
-	private ReadOnlyToolForm toolForm = new ReadOnlyToolForm();
+	private Checkbox allToolParametersCheckBox;
 
 	private TreeGrid<InventoryItem> grid;
 	private TreeDataProvider<InventoryItem> dataProvider;
-	private TreeData<InventoryItem> treeData = new TreeData<>();
+
 
 	private DetailsDrawer detailsDrawer;
 
-	private Button takeToolButton;
-	private Button reserveToolButton;
-	private Button reportToolButton;
 
 	public Inventory() {
-		setViewContent(createContent());
-		setViewDetails(createDetailsDrawer());
+		addClassName(CLASS_NAME);
+
+		Div contentWrapper = new Div();
+		contentWrapper.addClassName(CLASS_NAME + "__content-wrapper");
+
+		contentWrapper.add(constructHeader());
+		contentWrapper.add(constructContent());
+
+		add(contentWrapper);
+		add(constructDetails());
 	}
 
-	private FlexBoxLayout createContent() {
-		FlexBoxLayout wrapper = new FlexBoxLayout();
-		wrapper.setClassName(CLASS_NAME + "__wrapper");
-		wrapper.setFlexDirection(FlexDirection.COLUMN);
 
-		//HEADER
-		FlexBoxLayout header = new FlexBoxLayout();
-		header.setClassName(CLASS_NAME + "__header");
-		header.setWidthFull();
-		header.setFlexDirection(FlexDirection.ROW);
-		header.setMargin(Top.S);
+	private Div constructHeader() {
+		Div header = new Div();
+		header.addClassName(CLASS_NAME + "__header");
 
 		TextField searchField = new TextField();
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
-		searchField.setPlaceholder("Search Tools (not implemented yet)");
-
+		searchField.setPlaceholder("Search Tools");
+		searchField.setValueChangeMode(ValueChangeMode.LAZY);
+		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
 		header.add(searchField);
-		header.setComponentMargin(searchField, Right.S);
-		header.setFlexGrow(1, searchField);
 
-		FlexBoxLayout buttons = new FlexBoxLayout();
-		buttons.setClassName(CLASS_NAME + "__header-buttons");
+		Div additionalOptionsDiv = new Div();
+		additionalOptionsDiv.addClassName(CLASS_NAME + "__additional_options");
 
-		Button showMyToolsButton = UIUtils.createButton("My Tools", VaadinIcon.TOOLS, ButtonVariant.LUMO_CONTRAST);
-		showMyToolsButton.addClickListener(e -> constructMyToolsDialog());
+		allToolParametersCheckBox = new Checkbox("All Parameters");
+		additionalOptionsDiv.add(allToolParametersCheckBox);
 
-		header.add(showMyToolsButton);
+		Button myToolsButton = UIUtils.createButton("My Tools", VaadinIcon.TOOLS, ButtonVariant.LUMO_CONTRAST);
+		myToolsButton.addClickListener(e -> constructMyToolsDialog());
+		additionalOptionsDiv.add(myToolsButton);
 
 		Button scanToolButton = UIUtils.createButton("Scan", VaadinIcon.QRCODE, ButtonVariant.LUMO_CONTRAST);
-		scanToolButton.addClickListener(e -> constructScanToolDialog());
+		scanToolButton.addClickListener(e -> constructCodeScannerDialog());
+		additionalOptionsDiv.add(scanToolButton);
 
-		header.add(scanToolButton);
-		header.setComponentMargin(scanToolButton, Left.S);
+		header.add(additionalOptionsDiv);
 
-		wrapper.add(header);
+		return header;
+	}
 
-
-		FlexBoxLayout content = new FlexBoxLayout();
+	private Div constructContent() {
+		Div content = new Div();
 		content.setClassName(CLASS_NAME + "__content");
-		content.setSizeFull();
-		content.setAlignItems(FlexComponent.Alignment.CENTER);
-		content.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
-		content.add(createGrid());
+		// GRID
+		content.add(constructGrid());
 
-		wrapper.add(content);
-		return wrapper;
+		return content;
 	}
 
-	private Component createGrid() {
+	private Grid constructGrid() {
+		grid = new TreeGrid<>();
+		grid.addClassName("grid-view");
+		grid.setSizeFull();
 
-		if (!refreshAllGridItems()) {
-			UIUtils.showNotification("No tools found in your company", UIUtils.NotificationType.INFO);
-			return new Span("No tools found in your company");
-		} else {
-
-			grid = new TreeGrid<>();
-			grid.setSizeFull();
-
-			grid.asSingleSelect().addValueChangeListener(e -> {
-
-				InventoryItem ie = grid.asSingleSelect().getValue();
-
-				if (ie != null) {
-					if (ie.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
-						if (grid.isExpanded(ie)) {
-							grid.collapse(ie);
-						} else {
-							grid.expand(ie);
-						}
-						grid.select(null);
-					} else {
-						showDetails(ie);
-						handleButtonsAvailability(ie);
-					}
-				} else {
-					detailsDrawer.hide();
-					handleButtonsAvailability(null);
-				}
-			});
-
-			grid.setDataProvider(dataProvider);
-
-
-			grid.addHierarchyColumn(InventoryItem::getName)
-					.setHeader("Tools")
-					.setAutoWidth(true);
-
-			grid.addColumn(ie -> (ie.getInventoryHierarchyType().equals(InventoryHierarchyType.TOOL) ? ie.getToolUsageStatus().getStringValue() : ""))
-					.setHeader("Status")
-					.setAutoWidth(true);
-//			ComponentRenderer<FlexBoxLayout, InventoryEntity> toolStatusRenderer = new ComponentRenderer<>(
-//					tool -> {
-//						FlexBoxLayout layout = new FlexBoxLayout();
-//						ToolStatus status = tool.getUsageStatus();
-//						if (status != null) {
-//							layout = new CustomBadge(status.getName(), status.getColor(), status.getIcon());
-//						}
-//						return layout;
-//					});
-//			grid.addColumn(toolStatusRenderer)
-//					.setHeader("Status")
-//					.setWidth(UIUtils.COLUMN_WIDTH_S)
-//					.setFlexGrow(0);
-
-//			for (InventoryEntity rootItem : dataProvider.getTreeData().getRootItems()) {
-//				expandAll(rootItem);
-//			}
-
-			return grid;
-
-		}
-	}
-
-	private boolean refreshAllGridItems() {
 		List<InventoryItem> toolsAndCategories = InventoryFacade.getInstance().getAllInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId());
-
-		if (toolsAndCategories.size() <= 0) {
-			return false;
-		}
-
-		treeData.clear();
+		TreeData<InventoryItem> treeData = new TreeData<>();
 
 		//List must be sorted -> Parent must be added before child
 		toolsAndCategories.sort(Comparator.comparing(InventoryItem::getLevel));
@@ -200,46 +143,121 @@ public class Inventory extends SplitViewFrame {
 			treeData.addItem(item.getParentCategory(), item);
 		});
 
-		if (dataProvider == null) {
-			dataProvider = new TreeDataProvider<>(treeData);
-		} else {
-			dataProvider.refreshAll();
-		}
+		dataProvider = new TreeDataProvider<>(treeData);
 
-		return true;
+		grid.setDataProvider(dataProvider);
+
+		grid.addHierarchyColumn(InventoryItem::getName)
+				.setHeader("Tools")
+				.setSortable(false)
+				.setFlexGrow(3);
+
+		grid.addColumn(new ComponentRenderer<>(this::getUsageStatusSpan))
+				.setHeader("Status")
+				.setWidth("160px")
+				.setFlexGrow(0);
+
+		grid.addComponentColumn(this::getMenuBar)
+				.setHeader("Actions")
+				.setWidth("70px")
+				.setTextAlign(ColumnTextAlign.CENTER)
+				.setFlexGrow(0);
+
+		grid.asSingleSelect().addValueChangeListener(e -> {
+			InventoryItem inventoryItem = grid.asSingleSelect().getValue();
+
+			if (inventoryItem != null) {
+				if (inventoryItem.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
+					if (grid.isExpanded(inventoryItem)) {
+						grid.collapse(inventoryItem);
+					} else {
+						grid.expand(inventoryItem);
+					}
+					grid.deselectAll();
+				} else {
+					showDetails(inventoryItem);
+				}
+			} else {
+				detailsDrawer.hide();
+			}
+		});
+
+		return grid;
 	}
 
+	private Span getUsageStatusSpan(InventoryItem inventoryItem) {
+		Span span = new Span("");
 
-//	private int counter = 0;
-//	/*
-//	RECURSIVE METHOD!
-//	 */
-//	private void expandAll(InventoryEntity gridItem) {
-//
-////		System.out.println("expandAll " + counter);
-//		counter++;
-//
-//		if (gridItem == null) {
-//			return;
-//		}
-//
-//		if (counter >= 10000) {
-//			return;
-//		}
-//
-//		grid.expand(gridItem);
-//
-//		if (gridItem.getChildren().size() > 0) {
-//			for (InventoryEntity item : gridItem.getChildren()) {
-//				expandAll(item);
-//			}
-//		}
-//	}
+		if (inventoryItem.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
+			return span;
+		}
 
-	private DetailsDrawer createDetailsDrawer() {
+		span.getElement().getStyle().set("padding-left", "var(--lumo-space-xs)");
+		span.getElement().getStyle().set("padding-right", "var(--lumo-space-xs)");
+		span.getElement().getStyle().set("border-radius", "4px");
+
+		span.setText(inventoryItem.getUsageStatus().getName());
+		span.getElement().getStyle().set("background-color", inventoryItem.getUsageStatus().getColor());
+		span.getElement().getStyle().set("color", "var(--lumo-header-text-color)");
+
+		return span;
+	}
+
+	private MenuBar getMenuBar(InventoryItem inventoryItem) {
+		MenuBar menuBar = new MenuBar();
+
+		if (inventoryItem.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
+			return menuBar;
+		}
+
+		menuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
+		MenuItem menuItem = menuBar.addItem(new Icon(VaadinIcon.MENU));
+
+		boolean take = false;
+		boolean reserve = false;
+
+		if (PermissionFacade.getInstance().isUserAllowedTo(Operation.TAKE, OperationTarget.INVENTORY_TOOL, PermissionRange.COMPANY) ||
+				AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+
+			menuItem.getSubMenu().addItem("Take", e -> {
+				takeToolOnClick(inventoryItem);
+			});
+			take = true;
+		}
+
+		if (PermissionFacade.getInstance().isUserAllowedTo(Operation.RESERVE, OperationTarget.INVENTORY_TOOL, PermissionRange.COMPANY) ||
+				AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+
+			if (take) {
+				menuItem.getSubMenu().add(new Hr());
+			}
+			menuItem.getSubMenu().addItem("Reserve", e -> {
+				reserveToolOnClick(inventoryItem);
+			});
+			reserve = true;
+		}
+
+		if (PermissionFacade.getInstance().isUserAllowedTo(Operation.REPORT, OperationTarget.INVENTORY_TOOL, PermissionRange.COMPANY) ||
+				AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+
+			if (reserve) {
+				menuItem.getSubMenu().add(new Hr());
+			} else {
+				if (take) {
+					menuItem.getSubMenu().add(new Hr());
+				}
+			}
+			menuItem.getSubMenu().addItem("Report", e -> {
+				reportToolOnClick(inventoryItem);
+			});
+		}
+
+		return menuBar;
+	}
+
+	private DetailsDrawer constructDetails() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 		detailsDrawer.setContent(toolForm);
-		detailsDrawer.setContentPadding(Left.M, Right.S);
 
 		// Header
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Tool Details");
@@ -255,143 +273,205 @@ public class Inventory extends SplitViewFrame {
 
 	private FlexBoxLayout createDetailsFooter() {
 		FlexBoxLayout footer = new FlexBoxLayout();
-		footer.setClassName(CLASS_NAME + "__footer");
-		footer.setWidthFull();
-		footer.setFlexDirection(FlexDirection.ROW);
-		footer.setPadding(Horizontal.S, Vertical.XS);
-		footer.setBackgroundColor(LumoStyles.Color.Contrast._5);
+		footer.setClassName(CLASS_NAME + "__details-footer");
 
-		reportToolButton = UIUtils.createButton("Report", VaadinIcon.EXCLAMATION, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
+		Button closeDetailsButton = UIUtils.createButton("Close", ButtonVariant.LUMO_CONTRAST);
+		closeDetailsButton.addClickListener(e -> closeDetails());
+		footer.add(closeDetailsButton);
+
+
+		Button reportToolButton = UIUtils.createButton("Report", VaadinIcon.EXCLAMATION, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
 		reportToolButton.addClickListener(e -> {
-			if (grid.asSingleSelect().getValue() != null) {
-				reportTool(grid.asSingleSelect().getValue());
+			InventoryItem tool = grid.asSingleSelect().getValue();
+			if (tool != null) {
+				reportToolOnClick(tool);
 			}
 		});
-		reportToolButton.setEnabled(false);
 		footer.add(reportToolButton);
-		footer.setFlexGrow(1, reportToolButton);
 
-
-		reserveToolButton = UIUtils.createButton("Reserve", VaadinIcon.CALENDAR_CLOCK, ButtonVariant.LUMO_CONTRAST);
+		Button reserveToolButton = UIUtils.createButton("Reserve", VaadinIcon.CALENDAR_CLOCK, ButtonVariant.LUMO_CONTRAST);
 		reserveToolButton.addClickListener(e -> {
 			InventoryItem tool = grid.asSingleSelect().getValue();
 			if (tool != null) {
-				reserveTool(tool);
-
-				refreshDetails();
+				reserveToolOnClick(tool);
 			}
 		});
-		reserveToolButton.setEnabled(false);
 		footer.add(reserveToolButton);
-		footer.setComponentMargin(reserveToolButton, Left.S);
-		footer.setFlexGrow(1, reserveToolButton);
 
-
-		takeToolButton = UIUtils.createButton("Take", VaadinIcon.HAND, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+		Button takeToolButton = UIUtils.createButton("Take", VaadinIcon.HAND, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 		takeToolButton.addClickListener(e -> {
 			InventoryItem tool = grid.asSingleSelect().getValue();
 			if (tool != null) {
-
-				takeTool(tool);
-				refreshDetails();
+				takeToolOnClick(tool);
 			}
 		});
-		takeToolButton.setEnabled(false);
 		footer.add(takeToolButton);
-		footer.setComponentMargin(takeToolButton, Left.S);
-		footer.setFlexGrow(1, takeToolButton);
-
-
-		Button closeDetailsButton = UIUtils.createButton("Close", ButtonVariant.LUMO_PRIMARY);
-		closeDetailsButton.addClickListener(e -> {
-			closeDetails();
-		});
-		footer.add(closeDetailsButton);
-		footer.setComponentMargin(closeDetailsButton, Left.S);
-		footer.setFlexGrow(1, closeDetailsButton);
 
 		return footer;
 	}
 
-	private void showDetails(InventoryItem tool) {
-		if (tool != null) {
-			if (tool.getInventoryHierarchyType() != null) {
-				if (tool.getInventoryHierarchyType().equals(InventoryHierarchyType.TOOL)) {
 
-					toolForm.setTool(tool);
-					detailsDrawer.show();
+	private void filterGrid(String searchString) {
+		dataProvider.clearFilters();
 
-//					UIUtils.updateFormSize(toolForm);
-				}
-			}
+		if (searchString.length() <= 0) {
+			return;
 		}
+
+		final String mainSearchString = searchString.trim();
+
+		if (mainSearchString.contains("+")) {
+			String[] searchParams = mainSearchString.split("\\+");
+
+			dataProvider.addFilter(
+					tool -> {
+						boolean res = true;
+						for (String sParam : searchParams) {
+							res =  matchesFilter(tool, sParam);
+
+							if (!res) {
+								break;
+							}
+						}
+						return res;
+					}
+			);
+		} else {
+			dataProvider.addFilter(
+					tool -> matchesFilter(tool, mainSearchString)
+			);
+		}
+
+
 	}
 
-	private void refreshDetails() {
-		dataProvider.refreshAll();
+	private boolean matchesFilter(InventoryItem item, String filter) {
+		if (item.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
+			grid.expand(item);
+		}
 
-		if (detailsDrawer.isOpen()) {
-			detailsDrawer.hide();
+		System.out.println(allToolParametersCheckBox.getValue());
 
-			InventoryItem tool = grid.asSingleSelect().getValue();
-
-			if (tool != null) {
-				if (tool.getInventoryHierarchyType().equals(InventoryHierarchyType.TOOL)) {
-					handleButtonsAvailability(tool);
-
-					showDetails(tool);
-				}
+		if (!allToolParametersCheckBox.getValue()) {
+			if (StringUtils.containsIgnoreCase(item.getName(), filter)) {
+				return true;
 			}
+		} else {
+			if (StringUtils.containsIgnoreCase(item.getName(), filter) ||
+						StringUtils.containsIgnoreCase(item.getBarcode(), filter) ||
+						StringUtils.containsIgnoreCase(item.getSnCode(), filter) ||
+						StringUtils.containsIgnoreCase(item.getToolInfo(), filter) ||
+						StringUtils.containsIgnoreCase(item.getManufacturer(), filter) ||
+						StringUtils.containsIgnoreCase(item.getModel(), filter) ||
+						StringUtils.containsIgnoreCase((item.getUsageStatus() == null) ? "" : item.getUsageStatus().getName(), filter) ||
+						StringUtils.containsIgnoreCase((item.getCurrentUser() == null) ? "" : item.getCurrentUser().getFullName(), filter) ||
+						StringUtils.containsIgnoreCase((item.getReservedUser() == null) ? "" : item.getReservedUser().getFullName(), filter) ||
+						StringUtils.containsIgnoreCase((item.getDateBought() == null) ? "" : DateConverter.localDateToString(item.getDateBought()), filter) ||
+						StringUtils.containsIgnoreCase((item.getDateNextMaintenance() == null) ? "" : DateConverter.localDateToString(item.getDateNextMaintenance()), filter) ||
+						StringUtils.containsIgnoreCase(String.valueOf(item.getPrice()), filter) ||
+						StringUtils.containsIgnoreCase(String.valueOf(item.getGuarantee_months()), filter)) {
+				return true;
+			}
+		}
+
+		return item.getChildren().stream().anyMatch(child -> matchesFilter(child, filter));
+	}
+
+	private void showDetails(InventoryItem tool) {
+		if (tool != null) {
+			toolForm.setTool(tool);
+			detailsDrawer.show();
 		}
 	}
 
 	private void closeDetails() {
 		detailsDrawer.hide();
-		grid.select(null);
+		grid.deselectAll();
 	}
 
 
-	private List<InventoryItem> mySelectedTools;
-
+	/**
+	 * Dialog with Grid containing all Tools user has in use / reserved with ability to return / cancel reservation
+	 */
 	private void constructMyToolsDialog() {
-
 		List<InventoryItem> allMyTools = new ArrayList<>();
+		List<InventoryItem> selectedTools = new ArrayList<>();
 
-		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsInUseByUser(AuthenticationService.getCurrentSessionUser().getId()));
-		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsReservedByUser(AuthenticationService.getCurrentSessionUser().getId()));
+		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByCurrentUser(AuthenticationService.getCurrentSessionUser().getId()));
+		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByReservedUser(AuthenticationService.getCurrentSessionUser().getId()));
 
 		if (allMyTools.size() <= 0) {
 			UIUtils.showNotification("You don't have any tools", UIUtils.NotificationType.INFO);
 			return;
 		}
 
+		ListDataProvider<InventoryItem> myToolsDataProvider = DataProvider.ofCollection(allMyTools);
+
 		CustomDialog dialog = new CustomDialog();
 		dialog.setHeader(UIUtils.createH3Label("My Tools"));
 
 		Grid<InventoryItem> myToolsGrid = new Grid<>();
-		myToolsGrid.setMinWidth("400px");
+		myToolsGrid.setClassName("grid-view");
+		myToolsGrid.setClassName("my-tools-grid");
 
 		myToolsGrid.addColumn(InventoryItem::getName)
 				.setHeader("Tool Name")
 				.setAutoWidth(true);
 
 		myToolsGrid.addColumn(tool -> {
-					if (tool.getInUseByUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-						return ToolUsageStatus.IN_USE.getStringValue();
+					if (tool.getCurrentUser() != null) {
+						if (tool.getCurrentUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+							return ToolUsageStatus.IN_USE.getName();
+						}
 					}
-					if (tool.getReservedByUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-						return ToolUsageStatus.RESERVED.getStringValue();
+					if (tool.getReservedUser() != null) {
+						if (tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+							return ToolUsageStatus.RESERVED.getName();
+						}
 					}
+
 					return "";
 				})
 				.setHeader("Status")
 				.setAutoWidth(true);
 
+		myToolsGrid.addComponentColumn(tool -> {
+					Button returnToolButton = UIUtils.createButton("", ButtonVariant.LUMO_PRIMARY);
+					if (tool.getCurrentUser() != null) {
+						if (tool.getCurrentUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+							returnToolButton.setText("Return");
+						}
+					}
+					if (tool.getReservedUser() != null) {
+						if (tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+							returnToolButton.setText("Cancel");
+						}
+					}
+
+					returnToolButton.addClickListener(e -> {
+						selectedTools.clear();
+						selectedTools.add(tool);
+
+						returnToolOnClick(selectedTools);
+
+						if (myToolsDataProvider.getItems().size() > 1) {
+							myToolsDataProvider.getItems().removeIf(item -> item.getId().equals(tool.getId()));
+							myToolsDataProvider.refreshAll();
+						} else {
+							dialog.close();
+						}
+					});
+					return returnToolButton;
+				})
+				.setAutoWidth(true);
+
 		myToolsGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-		myToolsGrid.setItems(allMyTools);
+		myToolsGrid.setDataProvider(myToolsDataProvider);
 
 		myToolsGrid.addSelectionListener(event -> {
-			mySelectedTools = new ArrayList<>(event.getAllSelectedItems());
+			selectedTools.clear();
+			selectedTools.addAll(event.getAllSelectedItems());
+
 			dialog.getConfirmButton().setEnabled(false);
 
 			if (event.getAllSelectedItems().size() > 0) {
@@ -405,373 +485,372 @@ public class Inventory extends SplitViewFrame {
 		dialog.getContent().setPadding(Horizontal.XS);
 
 		dialog.getCancelButton().addClickListener(closeEvent -> {
-			if (mySelectedTools != null) {
-				mySelectedTools.clear();
-			}
 			dialog.close();
 		});
 
-		dialog.getConfirmButton().setText("Return / Cancel Reservation");
+		dialog.getConfirmButton().setText("Return / Cancel Selected");
 		dialog.getConfirmButton().addClickListener(returnToolEvent -> {
+			returnToolOnClick(selectedTools);
 
-			boolean errorOccurred = false;
-
-			for (InventoryItem tool : mySelectedTools) {
-				if (tool == null) {
-					System.err.println("USER: " + AuthenticationService.getCurrentSessionUser().getFullName() + " IS TRYING TO RETURN / CANCEL RESERVATION FOR NULL TOOL");
-					return;
+			if (selectedTools.size() < myToolsDataProvider.getItems().size()) {
+				for (InventoryItem tool : selectedTools) {
+					myToolsDataProvider.getItems().removeIf(item -> item.getId().equals(tool.getId()));
 				}
-
-				ToolUsageStatus originalToolStatus = tool.getToolUsageStatus();
-
-
-				// TOOL IN USE BY USER
-				if (tool.getInUseByUser() != null) {
-					if (tool.getInUseByUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-
-						// TOOL IS RESERVED BY OTHER USER
-						if (tool.getReservedByUser() != null) {
-							tool.setToolUsageStatus(ToolUsageStatus.RESERVED);
-
-							Message message = new Message();
-							message.setMessageType(MessageType.TOOL_FREE);
-							message.setMessageHeader("Tool is free and reserved for you");
-							message.setMessageText("Tool: " + tool.getName());
-							message.setSender("SYSTEM");
-							message.setRecipientId(tool.getReservedByUser().getId());
-							message.setToolId(tool.getId());
-
-							MessageFacade.getInstance().insert(message);
-
-							Broadcaster.broadcastToUser(tool.getReservedByUser().getId(), "You have new message");
-						} else {
-							tool.setToolUsageStatus(ToolUsageStatus.FREE);
-						}
-
-						tool.setInUseByUser(null);
-					}
-				}
-
-				// TOOL IS RESERVED BY USER
-				if (tool.getReservedByUser() != null) {
-					if (tool.getReservedByUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-						tool.setToolUsageStatus(ToolUsageStatus.IN_USE);
-						tool.setReservedByUser(null);
-					}
-				}
-
-
-				if (!InventoryFacade.getInstance().update(tool)) {
-					errorOccurred = true;
-					System.err.println("ERROR UPDATING TOOL, ID: " + tool.getId());
-				}
-
-				Transaction tr = new Transaction();
-				tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
-				tr.setTransactionOperation(TransactionType.EDIT);
-				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-				tr.setInventoryEntity(tool);
-
-				if (originalToolStatus.equals(ToolUsageStatus.IN_USE_AND_RESERVED) || originalToolStatus.equals(ToolUsageStatus.IN_USE)) {
-					tr.setAdditionalInfo("User returned tool, new status:  " + tool.getToolUsageStatus().getStringValue());
-				} else {
-					tr.setAdditionalInfo("User cancelled tool reservation, new status:  " + tool.getToolUsageStatus().getStringValue());
-				}
-
-				TransactionFacade.getInstance().insert(tr);
-			}
-			dialog.close();
-
-			refreshAllGridItems();
-
-			if (!errorOccurred) {
-				UIUtils.showNotification("Action successful", UIUtils.NotificationType.SUCCESS, 2000);
-			}
-		});
-
-		dialog.open();
-	}
-
-
-	private boolean cameraActive;
-
-	private void constructScanToolDialog() {
-		CustomDialog dialog = new CustomDialog();
-		dialog.setCloseOnEsc(false);
-		dialog.setCloseOnOutsideClick(false);
-
-		dialog.setHeader(UIUtils.createH3Label("Scan Code"));
-
-		CameraView cameraView = new CameraView();
-		cameraView.addClickListener(imageClickEvent -> {
-			if (cameraActive) {
-				cameraView.takePicture();
+				myToolsDataProvider.refreshAll();
 			} else {
-				cameraView.showPreview();
-				cameraActive = true;
+				dialog.close();
 			}
-		});
-
-		dialog.setContent(cameraView);
-
-		dialog.setCancelButton(null);
-
-		dialog.getConfirmButton().setText("Close");
-		dialog.getConfirmButton().addClickListener(e -> {
-			cameraView.stop();
-			dialog.close();
 		});
 
 		dialog.open();
-
-		UIUtils.showNotification("Click on Image to take a picture", UIUtils.NotificationType.INFO);
-
-		cameraView.showPreview();
-		cameraActive = true;
-
-
-		cameraView.onFinished(new OperationStatus() {
-			@Override
-			public void onSuccess(String msg, UIUtils.NotificationType type) {
-				if (UI.getCurrent() != null) {
-					UI.getCurrent().access(() -> {
-						UIUtils.showNotification("Code scanned, searching for tool...", type, 2000);
-
-						cameraView.stop();
-						cameraActive = false;
-
-						UI.getCurrent().push();
-
-						InventoryItem tool = getToolFromDataBaseByCode(msg);
-						if (tool == null) {
-							UIUtils.showNotification("Tool not found", UIUtils.NotificationType.INFO);
-						} else {
-							UIUtils.showNotification("Tool found", UIUtils.NotificationType.SUCCESS, 3000);
-
-							handleButtonsAvailability(tool);
-							showDetails(tool);
-						}
-
-						dialog.close();
-						UI.getCurrent().push();
-					});
-				}
-			}
-
-			@Override
-			public void onFail(String msg, UIUtils.NotificationType type) {
-				if (UI.getCurrent() != null) {
-					UI.getCurrent().access(() -> {
-						UIUtils.showNotification(msg, UIUtils.NotificationType.INFO, 2000);
-						UI.getCurrent().push();
-					});
-				}
-			}
-		});
 	}
 
 
-	private void handleButtonsAvailability(InventoryItem tool) {
-		takeToolButton.setEnabled(false);
-		reserveToolButton.setEnabled(false);
+	/**
+	 * Dialog with camera controls for scanning codes
+	 */
+	private void constructCodeScannerDialog() {
 
+		CameraDialog cameraDialog = new CameraDialog();
+
+
+			cameraDialog.getCameraView().onFinished(new OperationStatus() {
+				@Override
+				public void onSuccess(String code) {
+					if (UI.getCurrent() != null) {
+						UI.getCurrent().access(() -> {
+							try {
+								UIUtils.showNotification("Code scanned, searching for tool...", UIUtils.NotificationType.INFO);
+								cameraDialog.stopCamera();
+								UI.getCurrent().push();
+
+								InventoryItem tool = InventoryFacade.getInstance().getToolByCode(code);
+								if (tool == null) {
+									UIUtils.showNotification("Tool not found", UIUtils.NotificationType.INFO);
+								} else {
+									UIUtils.showNotification("Tool found", UIUtils.NotificationType.SUCCESS, 3000);
+									showDetails(tool);
+								}
+
+								cameraDialog.close();
+								UI.getCurrent().push();
+							} catch (Exception e) {
+								cameraDialog.getCameraView().stop();
+								cameraDialog.close();
+
+								UIUtils.showNotification("We are sorry, but an internal error occurred", UIUtils.NotificationType.ERROR);
+								e.printStackTrace();
+							}
+						});
+					}
+				}
+
+				@Override
+				public void onFail() {
+					if (UI.getCurrent() != null) {
+						UI.getCurrent().access(() -> {
+							try {
+								UIUtils.showNotification("Code not found in image", UIUtils.NotificationType.INFO, 2000);
+								UI.getCurrent().push();
+							} catch (Exception e) {
+								cameraDialog.getCameraView().stop();
+								cameraDialog.close();
+
+								UIUtils.showNotification("We are sorry, but an internal error occurred", UIUtils.NotificationType.ERROR);
+								e.printStackTrace();
+							}
+						});
+					}
+				}
+			});
+
+
+		cameraDialog.open();
+		cameraDialog.getCameraView().showPreview();
+	}
+
+
+	/**
+	 * TAKE TOOL
+	 */
+	private void takeToolOnClick(InventoryItem tool) {
 		if (tool == null) {
 			return;
 		}
 
-		if (tool.getToolUsageStatus().equals(ToolUsageStatus.IN_USE)) {
-			if (!tool.getInUseByUser().equals(AuthenticationService.getCurrentSessionUser())) {
-				reserveToolButton.setEnabled(true);
-			}
-		}
+		InventoryItem toolFromDB = InventoryFacade.getInstance().getById(tool.getId());
 
-		if (tool.getToolUsageStatus().equals(ToolUsageStatus.FREE)) {
-			takeToolButton.setEnabled(true);
-		}
-	}
-
-
-	private void takeTool(InventoryItem toolInGrid) {
-
-		//Get tool with latest information from database
-		InventoryItem toolInDB = getToolFromDataBase(toolInGrid, true);
-
-		if (toolInDB == null) {
+		if (toolFromDB == null) {
+			UIUtils.showNotification("Error retrieving tool from database", UIUtils.NotificationType.ERROR);
 			return;
 		}
 
-		// TAKE TOOL IF IT IS FREE
-		if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.FREE)) {
-			toolInDB.setInUseByUser(AuthenticationService.getCurrentSessionUser());
-			toolInDB.setToolUsageStatus(ToolUsageStatus.IN_USE);
+		copyToolParameters(tool, toolFromDB);
 
-			toolInGrid.setInUseByUser(AuthenticationService.getCurrentSessionUser());
-			toolInGrid.setToolUsageStatus(ToolUsageStatus.IN_USE);
+		if (tool.getReservedUser() != null) {
 
-			if (InventoryFacade.getInstance().update(toolInDB)) {
-
-				Transaction tr = new Transaction();
-				tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
-				tr.setTransactionOperation(TransactionType.EDIT);
-				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-				tr.setInventoryEntity(toolInDB);
-				tr.setAdditionalInfo("User took the tool. Status change from:  " + ToolUsageStatus.FREE.getStringValue() + "  to:  " + ToolUsageStatus.IN_USE.getStringValue());
-
-				TransactionFacade.getInstance().insert(tr);
-
-				UIUtils.showNotification("Tool taken successfully", UIUtils.NotificationType.SUCCESS);
-			} else {
-				UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
-			}
-
-		// TOOL NOT FREE
-		} else {
-			if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.RESERVED) || toolInDB.getToolUsageStatus().equals(ToolUsageStatus.IN_USE_AND_RESERVED)) {
-				UIUtils.showNotification("Tool is reserved by another user", UIUtils.NotificationType.INFO);
+			// RESERVED BY OTHER USER
+			if (!tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+				UIUtils.showNotification("Tool is currently reserved", UIUtils.NotificationType.INFO);
+				dataProvider.refreshItem(tool);
 				return;
 			}
 
-			if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.IN_USE)) {
-
-				toolInGrid.setInUseByUser(toolInDB.getInUseByUser()); // VISUAL REFRESH
-
-				ConfirmDialog confirmDialog = new ConfirmDialog();
-				confirmDialog.setMessage("Tool is currently in use. Would you like to reserve it?");
-				confirmDialog.closeOnCancel();
-
-				confirmDialog.getConfirmButton().addClickListener(e -> {
-					toolInDB.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-					toolInDB.setToolUsageStatus(ToolUsageStatus.IN_USE_AND_RESERVED);
-
-					toolInGrid.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-					toolInGrid.setToolUsageStatus(ToolUsageStatus.IN_USE_AND_RESERVED);
-
-					if (InventoryFacade.getInstance().update(toolInDB)) {
-
-						Transaction tr = new Transaction();
-						tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
-						tr.setTransactionOperation(TransactionType.EDIT);
-						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-						tr.setInventoryEntity(toolInDB);
-						tr.setAdditionalInfo("User reserved tool.\nStatus change from:  " + ToolUsageStatus.IN_USE.getStringValue() + "  to:  " + ToolUsageStatus.IN_USE_AND_RESERVED.getStringValue());
-
-						TransactionFacade.getInstance().insert(tr);
-
-						UIUtils.showNotification("Tool reserved", UIUtils.NotificationType.SUCCESS);
-					} else {
-						UIUtils.showNotification("Tool reserve failed", UIUtils.NotificationType.ERROR);
-					}
-
-					confirmDialog.close();
-					refreshDetails();
-				});
-				confirmDialog.open();
-			}
-		}
-	}
-
-	private void reserveTool(InventoryItem toolInGrid) {
-
-		//Get tool with latest information from database
-		InventoryItem toolInDB = getToolFromDataBase(toolInGrid, true);
-
-		if (toolInDB == null) {
-			return;
+			// RESERVED BY CURRENT USER
+			tool.setReservedUser(null);
 		}
 
-		if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.RESERVED) || toolInDB.getToolUsageStatus().equals(ToolUsageStatus.IN_USE_AND_RESERVED)) {
-			UIUtils.showNotification("Tool is reserved by another user", UIUtils.NotificationType.INFO);
-			return;
-		}
+		if (tool.getCurrentUser() == null) {
 
-		// FREE
-		if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.FREE)) {
-			toolInDB.setInUseByUser(AuthenticationService.getCurrentSessionUser());
-			toolInDB.setToolUsageStatus(ToolUsageStatus.IN_USE);
+			tool.setCurrentUser(AuthenticationService.getCurrentSessionUser());
+			tool.setUsageStatus(ToolUsageStatus.IN_USE);
 
-			toolInGrid.setInUseByUser(AuthenticationService.getCurrentSessionUser());
-			toolInGrid.setToolUsageStatus(ToolUsageStatus.IN_USE);
+			if (InventoryFacade.getInstance().update(tool)) {
 
-			if (InventoryFacade.getInstance().update(toolInDB)) {
+				Transaction transaction = new Transaction();
+				transaction.setUser(AuthenticationService.getCurrentSessionUser());
+				transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+				transaction.setOperation(Operation.TAKE);
+				transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
+				transaction.setTargetDetails(tool.getName());
+				TransactionFacade.getInstance().insert(transaction);
 
-				Transaction tr = new Transaction();
-				tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
-				tr.setTransactionOperation(TransactionType.EDIT);
-				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-				tr.setInventoryEntity(toolInDB);
-				tr.setAdditionalInfo("User took the tool.\nStatus changed from:  " + ToolUsageStatus.FREE.getStringValue() + "  to:  " + ToolUsageStatus.IN_USE.getStringValue());
-
-				TransactionFacade.getInstance().insert(tr);
-
-				UIUtils.showNotification("Tool taken successfully (it was " + ToolUsageStatus.FREE.getStringValue() + ")", UIUtils.NotificationType.SUCCESS);
+				dataProvider.refreshItem(tool);
+				UIUtils.showNotification("Tool taken", UIUtils.NotificationType.SUCCESS, 2000);
 			} else {
 				UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
 			}
+		} else {
+			UIUtils.showNotification("Tool is currently in use", UIUtils.NotificationType.INFO);
+			dataProvider.refreshItem(tool);
+		}
+	}
 
+
+	/**
+	 * RESERVE TOOL
+	 */
+	private void reserveToolOnClick(InventoryItem tool) {
+		if (tool == null) {
 			return;
 		}
 
-		// IN USE
-		if (toolInDB.getToolUsageStatus().equals(ToolUsageStatus.IN_USE)) {
-			toolInDB.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-			toolInDB.setToolUsageStatus(ToolUsageStatus.IN_USE_AND_RESERVED);
+		InventoryItem toolFromDB = InventoryFacade.getInstance().getById(tool.getId());
 
-			toolInGrid.setReservedByUser(AuthenticationService.getCurrentSessionUser());
-			toolInGrid.setToolUsageStatus(ToolUsageStatus.IN_USE_AND_RESERVED);
+		if (toolFromDB == null) {
+			UIUtils.showNotification("Error retrieving tool from database", UIUtils.NotificationType.ERROR);
+			return;
+		}
 
-			if (InventoryFacade.getInstance().update(toolInDB)) {
+		copyToolParameters(tool, toolFromDB);
 
-				Transaction tr = new Transaction();
-				tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
-				tr.setTransactionOperation(TransactionType.EDIT);
-				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-				tr.setInventoryEntity(toolInDB);
-				tr.setAdditionalInfo("User reserved the tool. Status changed from:  " + ToolUsageStatus.IN_USE.getStringValue() + "  to:  " + ToolUsageStatus.IN_USE_AND_RESERVED.getStringValue());
+		if (toolFromDB.getReservedUser() == null) {
 
-				TransactionFacade.getInstance().insert(tr);
+			if (toolFromDB.getCurrentUser() != null) {
+				if (tool.getCurrentUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+					UIUtils.showNotification("You cannot reserve the tool you already have", UIUtils.NotificationType.INFO);
+					dataProvider.refreshItem(tool);
+					return;
+				}
 
-				UIUtils.showNotification("Tool reserved successfully", UIUtils.NotificationType.SUCCESS);
+				tool.setUsageStatus(ToolUsageStatus.IN_USE_AND_RESERVED);
+			} else {
+				tool.setUsageStatus(ToolUsageStatus.RESERVED);
+			}
+
+			tool.setReservedUser(AuthenticationService.getCurrentSessionUser());
+
+
+			if (InventoryFacade.getInstance().update(tool)) {
+
+				Transaction transaction = new Transaction();
+				transaction.setUser(AuthenticationService.getCurrentSessionUser());
+				transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+				transaction.setOperation(Operation.RESERVE);
+				transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
+				transaction.setTargetDetails(tool.getName());
+				TransactionFacade.getInstance().insert(transaction);
+
+				dataProvider.refreshItem(tool);
+				UIUtils.showNotification("Tool reserved", UIUtils.NotificationType.SUCCESS, 2000);
 			} else {
 				UIUtils.showNotification("Tool reserve failed", UIUtils.NotificationType.ERROR);
 			}
+		} else {
+			UIUtils.showNotification("Tool is currently reserved", UIUtils.NotificationType.INFO);
+			dataProvider.refreshItem(tool);
 		}
 	}
 
-	private void reportTool(InventoryItem t) {
-		System.out.println("Reporting Tool: " + t.getName());
 
-		InventoryItem tool = getToolFromDataBase(t, false);
+	/**
+	 * REPORT TOOL
+	 */
+	private void reportToolOnClick(InventoryItem tool) {
+		if (tool == null) {
+			return;
+		}
+
+		InventoryItem toolFromDB = InventoryFacade.getInstance().getById(tool.getId());
+
+		//TODO: DIALOG WITH REPORTS FOR tool
 	}
 
-	private InventoryItem getToolFromDataBase(InventoryItem t, boolean checkStatus) {
 
-		//GET TOOL FROM DATABASE FOR LATEST STATUS
-		InventoryItem tool = InventoryFacade.getInstance().getToolById(t.getId());
+	/**
+	 * RETURN TOOL
+	 */
+	private void returnToolOnClick(List<InventoryItem> userSelectedTools) {
 
-		if (tool == null) {
-			UIUtils.showNotification("Problem occurred retrieving tool from Database", UIUtils.NotificationType.ERROR);
-			System.err.println("GOT NULL TOOL ENTITY FROM DATABASE");
+		if (userSelectedTools == null) {
+			return;
+		}
+
+		if (userSelectedTools.size() <= 0) {
+			return;
+		}
+
+		List<InventoryItem> tools = new ArrayList<>();
+
+		// RECURSIVELY FIND TOOL FROM DATA PROVIDER TREE DATA
+		for (InventoryItem userSelectedItem : userSelectedTools) {
+			for (InventoryItem rootItem : dataProvider.getTreeData().getRootItems()) {
+				InventoryItem item = getItemFromDataProviderRecursively(rootItem, userSelectedItem.getId());
+
+				if (item != null) {
+					tools.add(item);
+					break;
+				}
+			}
+		}
+
+
+		for (InventoryItem tool : tools) {
+
+			copyToolParameters(tool, InventoryFacade.getInstance().getById(tool.getId()));
+
+			if (tool.getCurrentUser() != null) {
+
+				// USER RETURNING TOOL
+				if (tool.getCurrentUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+
+					// TOOL IS RESERVED BY OTHER USER
+					if (tool.getReservedUser() != null) {
+						tool.setUsageStatus(ToolUsageStatus.RESERVED);
+					} else {
+						tool.setUsageStatus(ToolUsageStatus.FREE);
+					}
+					tool.setCurrentUser(null);
+
+					if (InventoryFacade.getInstance().update(tool)) {
+
+						Transaction transaction = new Transaction();
+						transaction.setUser(AuthenticationService.getCurrentSessionUser());
+						transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+						transaction.setOperation(Operation.RETURN);
+						transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
+						transaction.setTargetDetails(tool.getName());
+						TransactionFacade.getInstance().insert(transaction);
+
+						// TOOL IS RESERVED BY OTHER USER
+						if (tool.getReservedUser() != null) {
+							Message message = new Message();
+							message.setMessageType(MessageType.TOOL_FREE);
+							message.setSubject("Tool is free");
+							message.setText(tool.getName() + " is now free and reserved for you");
+							message.setToolId(tool.getId());
+							message.setRecipientId(tool.getReservedUser().getId());
+							message.setSenderString("SYSTEM");
+							MessageFacade.getInstance().insert(message);
+
+							Broadcaster.broadcastToUser(tool.getReservedUser().getId(), "You have new message");
+						}
+					}
+				}
+			}
+
+
+			if (tool.getReservedUser() != null) {
+
+				// USER CANCELLING TOOL RESERVATION
+				if (tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+
+					if (tool.getCurrentUser() != null) {
+						tool.setUsageStatus(ToolUsageStatus.IN_USE);
+					} else {
+						tool.setUsageStatus(ToolUsageStatus.FREE);
+					}
+					tool.setReservedUser(null);
+
+					if (InventoryFacade.getInstance().update(tool)) {
+
+						Transaction transaction = new Transaction();
+						transaction.setUser(AuthenticationService.getCurrentSessionUser());
+						transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+						transaction.setOperation(Operation.CANCEL_RESERVATION);
+						transaction.setTargetDetails(tool.getName());
+						TransactionFacade.getInstance().insert(transaction);
+					}
+				}
+			}
+
+			dataProvider.refreshItem(tool);
+		}
+	}
+
+
+	private void copyToolParameters(InventoryItem destinationTool, InventoryItem sourceTool) {
+		destinationTool.setParentCategory(sourceTool.getParentCategory());
+		destinationTool.setChildren(sourceTool.getChildren());
+		destinationTool.setInventoryHierarchyType(sourceTool.getInventoryHierarchyType());
+		destinationTool.setName(sourceTool.getName());
+		destinationTool.setQrCode(sourceTool.getQrCode());
+		destinationTool.setSerialNumber(sourceTool.getSerialNumber());
+		destinationTool.setSnCode(sourceTool.getSnCode());
+		destinationTool.setRfCode(sourceTool.getRfCode());
+		destinationTool.setBarcode(sourceTool.getBarcode());
+		destinationTool.setManufacturer(sourceTool.getManufacturer());
+		destinationTool.setModel(sourceTool.getModel());
+		destinationTool.setToolInfo(sourceTool.getToolInfo());
+		destinationTool.setPersonal(sourceTool.isPersonal());
+		destinationTool.setReported(sourceTool.isReported());
+		destinationTool.setUsageStatus(sourceTool.getUsageStatus());
+		destinationTool.setCurrentUser(sourceTool.getCurrentUser());
+		destinationTool.setReservedUser(sourceTool.getReservedUser());
+		destinationTool.setCompany(sourceTool.getCompany());
+		destinationTool.setDateBought(sourceTool.getDateBought());
+		destinationTool.setDateNextMaintenance(sourceTool.getDateNextMaintenance());
+		destinationTool.setPrice(sourceTool.getPrice());
+		destinationTool.setGuarantee_months(sourceTool.getGuarantee_months());
+		destinationTool.setCurrentLocation(sourceTool.getCurrentLocation());
+	}
+
+
+	/**
+	 * Recursive search method
+	 * @param item return item from memory data provider if id's match
+	 * @param id item's id to search for
+	 * @return null if item is null else item from memory
+	 */
+	private InventoryItem getItemFromDataProviderRecursively(InventoryItem item, long id) {
+		if (item == null) {
 			return null;
 		}
 
-		if (checkStatus) {
-			if (tool.getToolUsageStatus().equals(ToolUsageStatus.BROKEN)) {
-				UIUtils.showNotification("Tool was reported " + ToolUsageStatus.BROKEN.getStringValue() + ", operation cancelled", UIUtils.NotificationType.INFO);
-				return null;
-			}
+		if (item.getId().equals(id)) {
+			return item;
+		}
 
-			if (tool.getToolUsageStatus().equals(ToolUsageStatus.LOST)) {
-				UIUtils.showNotification("Tool was reported " + ToolUsageStatus.LOST.getStringValue() + ", operation cancelled", UIUtils.NotificationType.INFO);
-				return null;
+		if (item.getChildren().size() > 0) {
+			for (InventoryItem child : item.getChildren()) {
+				InventoryItem temp = getItemFromDataProviderRecursively(child, id);
+
+				if (temp != null) {
+					return temp;
+				}
 			}
 		}
 
-		return tool;
-	}
-
-
-	//TODO: LIMIT SEARCH IN USERS COMPANY
-	private InventoryItem getToolFromDataBaseByCode(String code) {
-		return InventoryFacade.getInstance().getToolByCode(code);
+		return null;
 	}
 }

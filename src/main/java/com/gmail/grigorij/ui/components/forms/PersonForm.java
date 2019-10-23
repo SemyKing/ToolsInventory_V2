@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.forms.editable;
+package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.embeddable.Person;
@@ -10,12 +10,15 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PersonForm extends FormLayout {
 
 	private final String CLASS_NAME = "form";
 
 	private Binder<Person> binder = new Binder<>(Person.class);
-	private Person person;
+	private Person person, originalPerson;
 	private boolean isNew;
 	private String initialEmail;
 
@@ -52,7 +55,6 @@ public class PersonForm extends FormLayout {
 	}
 
 	private void constructForm() {
-//		addClassNames(LumoStyles.Padding.Bottom.S, LumoStyles.Padding.Top.S);
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
@@ -104,6 +106,8 @@ public class PersonForm extends FormLayout {
 
 		initDynamicFormItems();
 
+		originalPerson = new Person(this.person);
+
 		binder.readBean(this.person);
 	}
 
@@ -122,5 +126,24 @@ public class PersonForm extends FormLayout {
 			return null;
 		}
 		return null;
+	}
+
+	public List<String> getChanges() {
+		List<String> changes = new ArrayList<>();
+
+		if (!originalPerson.getFirstName().equals(person.getFirstName())) {
+			changes.add("First Name changed from: '" + originalPerson.getFirstName() + "', to: '" + person.getFirstName() + "'");
+		}
+		if (!originalPerson.getLastName().equals(person.getLastName())) {
+			changes.add("Last Name changed from: '" + originalPerson.getLastName() + "', to: '" + person.getLastName() + "'");
+		}
+		if (!originalPerson.getPhoneNumber().equals(person.getPhoneNumber())) {
+			changes.add("Phone Number changed from: '" + originalPerson.getPhoneNumber() + "', to: '" + person.getPhoneNumber() + "'");
+		}
+		if (!originalPerson.getEmail().equals(person.getEmail())) {
+			changes.add("Email changed from: '" + originalPerson.getEmail() + "', to: '" + person.getEmail() + "'");
+		}
+
+		return changes;
 	}
 }

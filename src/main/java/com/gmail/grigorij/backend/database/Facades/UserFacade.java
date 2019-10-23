@@ -2,6 +2,7 @@ package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ public class UserFacade {
 	public List<User> getAllUsers() {
 		List<User> users;
 		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getAllUsers", User.class)
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_ALL, User.class)
 					.getResultList();
 		} catch (NoResultException nre) {
 			users = null;
@@ -33,8 +34,8 @@ public class UserFacade {
 	public List<User> getUsersInCompany(long companyId) {
 		List<User> users;
 		try {
-			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUsersInCompany", User.class)
-					.setParameter("id_var", companyId)
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_ALL_BY_COMPANY, User.class)
+					.setParameter(User.ID_VAR, companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			users = null;
@@ -45,8 +46,8 @@ public class UserFacade {
 	public User getUserById(Long id) {
 		User user;
 		try {
-			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserById", User.class)
-					.setParameter("id_var", id)
+			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_BY_ID, User.class)
+					.setParameter(User.ID_VAR, id)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
@@ -57,8 +58,8 @@ public class UserFacade {
 	public User getUserByUsername(String username) {
 		User user;
 		try {
-			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByUsername", User.class)
-					.setParameter("username_var", username)
+			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_BY_USERNAME, User.class)
+					.setParameter(User.VAR1, username)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
@@ -69,9 +70,9 @@ public class UserFacade {
 	public User getUserByUsernameAndPassword(String username, String password) {
 		User user;
 		try {
-			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByUsernameAndPassword", User.class)
-					.setParameter("username_var", username)
-					.setParameter("password_var", password)
+			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_BY_USERNAME_AND_PASSWORD, User.class)
+					.setParameter(User.VAR1, username)
+					.setParameter(User.VAR2, password)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
@@ -82,13 +83,25 @@ public class UserFacade {
 	public User getUserByEmail(String email) {
 		User user;
 		try {
-			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getUserByEmail", User.class)
-					.setParameter("email_var", email)
+			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_BY_EMAIL, User.class)
+					.setParameter(User.VAR1, email)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			user = null;
 		}
 		return user;
+	}
+
+	public List<User> getSystemAdmins() {
+		List<User> users;
+		try {
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_ALL_BY_PERMISSION_LEVEL, User.class)
+					.setParameter(User.VAR1, PermissionLevel.SYSTEM_ADMIN)
+					.getResultList();
+		} catch (NoResultException nre) {
+			users = null;
+		}
+		return users;
 	}
 
 
@@ -169,7 +182,7 @@ public class UserFacade {
 		return true;
 	}
 
-	public boolean remove(User user) {
+	private boolean remove(User user) {
 		if (user == null) {
 			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL USER");
 			return false;

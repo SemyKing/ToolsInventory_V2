@@ -3,8 +3,6 @@ package com.gmail.grigorij.ui.application.authentication.login;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
 import com.gmail.grigorij.ui.components.dialogs.ForgotPasswordDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -29,7 +27,7 @@ import com.vaadin.flow.router.PageTitle;
  * Log In UI.
  */
 @PageTitle("Login")
-@StyleSheet("context://styles/login.css")
+@StyleSheet("context://styles/views/login.css")
 public class LoginView extends Div {
 
 	private static final String CLASS_NAME = "login-view";
@@ -185,17 +183,17 @@ public class LoginView extends Div {
 
 		if (AuthenticationService.signIn(username, password, rememberMe)) {
 
-			Transaction tr = new Transaction();
-			tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-			tr.setTransactionOperation(TransactionType.LOGIN);
-			tr.setTransactionTarget(TransactionTarget.USER);
+//			Transaction tr = new Transaction();
+//			tr.setUser(AuthenticationService.getCurrentSessionUser());
+//			tr.setTransactionOperation(TransactionType.LOGIN);
+//			tr.setTransactionTarget(TransactionTarget.USER);
+//
+//			TransactionFacade.getInstance().insert(tr);
 
-			TransactionFacade.getInstance().insert(tr);
-
-			operationStatus.onSuccess("Login successful", null);
+			operationStatus.onSuccess("");
 		} else {
 			loginErrorLayout.getElement().setAttribute("visible", true);
-			operationStatus.onFail("Login fail", null);
+			operationStatus.onFail();
 		}
 	}
 }

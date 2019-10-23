@@ -7,6 +7,7 @@ import '@polymer/polymer/lib/elements/custom-style.js';
 
     @media(max-width: 719px) {
         .custom-dialog {
+            min-width: 95vw !important;
         }
         .custom-dialog__content > .form {
             width: 100% !important;
@@ -26,7 +27,7 @@ import '@polymer/polymer/lib/elements/custom-style.js';
         display: flex;
         flex-direction: column;
 
-        min-width: 200px;
+        min-width: 400px;
 		max-width: 95vw;
 	    max-height: 95vh;
     }
@@ -182,6 +183,17 @@ import '@polymer/polymer/lib/elements/custom-style.js';
 
     .permission-row__tvb {
 	    margin-left: auto;
+    }
+
+
+    /*      MESSAGES      */
+
+    .messages__message_a_u_i_c {
+        display: flex;
+        align-items: baseline;
+    }
+    .messages__message_a_u_i_c > vaadin-combo-box {
+       flex-grow: 1;
     }
 
 

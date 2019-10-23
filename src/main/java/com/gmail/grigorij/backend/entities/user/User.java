@@ -15,38 +15,49 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @NamedQueries({
-		@NamedQuery(
-				name="getUserByUsernameAndPassword",
-				query="SELECT user FROM User user WHERE" +
-						" user.username = :username_var AND" +
-						" user.password = :password_var"),
+		@NamedQuery(name = User.QUERY_ALL,
+				query = "SELECT user FROM User user ORDER BY user.username ASC"),
 
-		@NamedQuery(
-				name="getUserByUsername",
-				query="SELECT user FROM User user WHERE" +
-						" user.username = :username_var ORDER BY user.username ASC"),
+		@NamedQuery(name = User.QUERY_BY_ID,
+				query = "SELECT user FROM User user WHERE" +
+						" user.id = :" + User.ID_VAR),
 
-		@NamedQuery(
-				name="getAllUsers",
-				query="SELECT user FROM User user ORDER BY user.username ASC"),
-
-		@NamedQuery(
-				name="getUsersInCompany",
-				query="SELECT user FROM User user WHERE" +
-						" user.company.id = :id_var"),
-
-		@NamedQuery(
-				name="getUserById",
-				query="SELECT user FROM User user WHERE" +
-						" user.id = :id_var"),
-
-		@NamedQuery(
-				name="getUserByEmail",
-				query="SELECT user FROM User user WHERE" +
+		@NamedQuery(name = User.QUERY_BY_EMAIL,
+				query = "SELECT user FROM User user WHERE" +
 						" user.person IS NOT NULL AND" +
-						" user.person.email = :email_var")
+						" user.person.email = :" + User.VAR1),
+
+		@NamedQuery(name = User.QUERY_BY_USERNAME,
+				query = "SELECT user FROM User user WHERE" +
+						" user.username = :" + User.VAR1),
+
+		@NamedQuery(name = User.QUERY_BY_USERNAME_AND_PASSWORD,
+				query = "SELECT user FROM User user WHERE" +
+						" user.username = :" + User.VAR1 + " AND" +
+						" user.password = :" + User.VAR2),
+
+		@NamedQuery(name = User.QUERY_ALL_BY_COMPANY,
+				query = "SELECT user FROM User user WHERE" +
+						" user.company.id = :" + User.ID_VAR),
+
+		@NamedQuery(name = User.QUERY_ALL_BY_PERMISSION_LEVEL,
+				query = "SELECT user FROM User user WHERE" +
+						" user.permissionLevel = :" + User.VAR1)
 })
 public class User extends EntityPojo {
+
+	public static final String QUERY_ALL = "get_all_users";
+	public static final String QUERY_BY_ID = "get_user_by_id";
+	public static final String QUERY_BY_EMAIL = "get_user_by_email";
+	public static final String QUERY_BY_USERNAME = "get_user_by_username";
+	public static final String QUERY_BY_USERNAME_AND_PASSWORD = "get_user_by_username_and_password";
+	public static final String QUERY_ALL_BY_COMPANY = "get_users_by_company";
+	public static final String QUERY_ALL_BY_PERMISSION_LEVEL = "get_users_by_permission_level";
+
+	public static final String ID_VAR = "id_variable";
+	public static final String VAR1 = "variable1";
+	public static final String VAR2 = "variable2";
+
 
 	@Column(name = "username")
 	private String username;
@@ -70,20 +81,33 @@ public class User extends EntityPojo {
 	@Embedded
 	private Person person;
 
-	@Enumerated( EnumType.STRING )
+	@Enumerated(EnumType.STRING)
 	private PermissionLevel permissionLevel = PermissionLevel.VIEWER;
 
 	@ElementCollection
-	@Enumerated( EnumType.STRING )
+	@Enumerated(EnumType.STRING)
 	private List<PermissionTest> permissions = new ArrayList<>();
 
 
-	public User() {}
+	public User() {
+	}
 
+	public User(User other) {
+		this.username = other.username;
+		this.password = other.password;
+		this.themeVariant = other.themeVariant;
+		this.locale = other.locale;
+		this.company = other.company;
+		this.address = other.address;
+		this.person = other.person;
+		this.permissionLevel = other.permissionLevel;
+		this.permissions = other.permissions;
+	}
 
 	public String getUsername() {
 		return username;
 	}
+
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -91,6 +115,7 @@ public class User extends EntityPojo {
 	public String getPassword() {
 		return password;
 	}
+
 	public void setPassword(String password) {
 		this.password = password;
 	}
@@ -98,6 +123,7 @@ public class User extends EntityPojo {
 	public String getThemeVariant() {
 		return themeVariant;
 	}
+
 	public void setThemeVariant(String themeVariant) {
 		this.themeVariant = themeVariant;
 	}
@@ -105,6 +131,7 @@ public class User extends EntityPojo {
 	public String getLocale() {
 		return locale;
 	}
+
 	public void setLocale(String locale) {
 		this.locale = locale;
 	}
@@ -112,6 +139,7 @@ public class User extends EntityPojo {
 	public Company getCompany() {
 		return company;
 	}
+
 	public void setCompany(Company company) {
 		this.company = company;
 	}
@@ -119,6 +147,7 @@ public class User extends EntityPojo {
 	public Location getAddress() {
 		return address;
 	}
+
 	public void setAddress(Location address) {
 		this.address = address;
 	}
@@ -126,6 +155,7 @@ public class User extends EntityPojo {
 	public Person getPerson() {
 		return person;
 	}
+
 	public void setPerson(Person person) {
 		this.person = person;
 	}
@@ -133,6 +163,7 @@ public class User extends EntityPojo {
 	public PermissionLevel getPermissionLevel() {
 		return permissionLevel;
 	}
+
 	public void setPermissionLevel(PermissionLevel permissionLevel) {
 		this.permissionLevel = permissionLevel;
 	}
@@ -140,24 +171,28 @@ public class User extends EntityPojo {
 	public List<PermissionTest> getPermissions() {
 		return permissions;
 	}
+
 	public void setPermissions(List<PermissionTest> permissions) {
 		this.permissions = permissions;
 	}
 
 
 	public String getFullName() {
-		if (this.person == null) {
+		if (person == null) {
 			return "";
 		} else {
-			return this.person.getFullName();
+			if (person.getFullName().length() <= 0) {
+				return username;
+			}
+			return person.getFullName();
 		}
 	}
 
 	public String getInitials() {
-		if (this.person == null) {
+		if (person == null) {
 			return "";
 		} else {
-			return this.person.getInitials();
+			return person.getInitials();
 		}
 	}
 }

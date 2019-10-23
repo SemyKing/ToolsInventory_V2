@@ -1,25 +1,24 @@
 package com.gmail.grigorij.ui.application.views;
 
-import com.gmail.grigorij.backend.database.facades.InventoryFacade;
-import com.gmail.grigorij.backend.database.facades.MessageFacade;
-import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.backend.database.facades.*;
+import com.gmail.grigorij.backend.entities.company.Company;
 import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.entities.message.Message;
 import com.gmail.grigorij.backend.entities.transaction.Transaction;
 import com.gmail.grigorij.backend.entities.user.User;
 import com.gmail.grigorij.backend.enums.MessageType;
 import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
+import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
+import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
+import com.gmail.grigorij.ui.components.forms.MessageForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
-import com.gmail.grigorij.ui.components.layouts.ViewFrame;
-import com.gmail.grigorij.ui.utils.css.Display;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
+import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.*;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
@@ -30,13 +29,19 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -52,455 +57,473 @@ import java.util.Locale;
 
 @PageTitle("Messages")
 @CssImport("./styles/views/messages.css")
-public class Messages extends ViewFrame {
+public class Messages extends Div {
 
-	private static final String CLASS_NAME = "messages_view";
-	private static final String READ = "read";
-
-	private List<Message> messages;
-	private FlexBoxLayout contentLayout;
+	private static final String CLASS_NAME = "messages";
+	private final MessageForm messageForm = new MessageForm();
 
 	private DatePicker dateStartField, dateEndField;
 
-	private Label unreadMessagesLabel;
-	private boolean showReadMessages = true;
+	private Grid<Message> grid;
+	private ListDataProvider<Message> dataProvider;
+
+	private DetailsDrawer detailsDrawer;
+
 
 	public Messages() {
-		setViewContent(createContent());
+		addClassName(CLASS_NAME);
+
+		Div contentWrapper = new Div();
+		contentWrapper.addClassName(CLASS_NAME + "__content-wrapper");
+
+		contentWrapper.add(constructHeader());
+		contentWrapper.add(constructContent());
+
+		add(contentWrapper);
+		add(constructDetails());
 	}
 
 
-	private FlexBoxLayout createContent() {
-		//HEADER
-		FlexBoxLayout header = new FlexBoxLayout();
-		header.setClassName(CLASS_NAME + "__header");
-		header.setFlexDirection(FlexDirection.ROW);
-		header.setAlignItems(FlexComponent.Alignment.BASELINE);
-		header.setWidthFull();
+	private Div constructHeader() {
+		Div header = new Div();
+		header.addClassName(CLASS_NAME + "__header");
 
-		FlexBoxLayout datesLayout = new FlexBoxLayout();
-		datesLayout.addClassName(CLASS_NAME + "__dates");
-		datesLayout.setFlexDirection(FlexDirection.ROW);
-		datesLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+		TextField searchField = new TextField("Search");
+		searchField.setClearButtonVisible(true);
+		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
+		searchField.setPlaceholder("Search Messages");
+		searchField.setValueChangeMode(ValueChangeMode.LAZY);
+		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
+
+		header.add(searchField);
+
+		FlexBoxLayout additionalOptionsDiv = new FlexBoxLayout();
+		additionalOptionsDiv.addClassName(CLASS_NAME + "__additional_options");
+		additionalOptionsDiv.setAlignItems(FlexComponent.Alignment.BASELINE);
+		additionalOptionsDiv.setMargin(Left.S);
+
 
 		dateStartField = new DatePicker();
 		dateStartField.setLabel("Start Date");
-		dateStartField.setPlaceholder("Start Date");
 		dateStartField.setLocale(new Locale("fi"));
 		dateStartField.setValue(LocalDate.now());
+		dateStartField.setRequired(true);
+		dateStartField.setErrorMessage("Invalid Date");
+		dateStartField.addValueChangeListener(e -> {
+			dateStartField.setInvalid(false);
+		});
 
-		datesLayout.add(dateStartField);
+		additionalOptionsDiv.add(dateStartField);
+		additionalOptionsDiv.setComponentMargin(dateStartField, Right.S);
 
 		dateEndField = new DatePicker();
 		dateEndField.setLabel("End Date");
-		dateEndField.setPlaceholder("End Date");
 		dateEndField.setLocale(new Locale("fi"));
 		dateEndField.setValue(LocalDate.now());
-
-		datesLayout.add(dateEndField);
-		datesLayout.setComponentMargin(dateEndField, Horizontal.S);
-
-		Button applyDates = UIUtils.createButton("Apply", ButtonVariant.LUMO_PRIMARY);
-		applyDates.addClickListener(e -> {
-			getMessagesBetweenDates();
-			showMessages();
+		dateEndField.setRequired(true);
+		dateEndField.setErrorMessage("Invalid Date");
+		dateEndField.addValueChangeListener(e -> {
+			dateEndField.setInvalid(false);
 		});
 
-		datesLayout.add(applyDates);
+		additionalOptionsDiv.add(dateEndField);
+		additionalOptionsDiv.setComponentMargin(dateEndField, Right.S);
+
+		Button applyDatesButton = UIUtils.createButton("Apply", ButtonVariant.LUMO_CONTRAST);
+		applyDatesButton.addClickListener(e -> getMessagesBetweenDates());
+
+		additionalOptionsDiv.add(applyDatesButton);
+		additionalOptionsDiv.setComponentMargin(applyDatesButton, Right.S);
+
+		Button composeMessageButton = UIUtils.createButton("Compose", VaadinIcon.ENVELOPE , ButtonVariant.LUMO_PRIMARY);
+		composeMessageButton.addClassName("compose-message-button");
+		composeMessageButton.addClickListener(e -> constructMessageDialog(null, ""));
 
 
-		FlexBoxLayout datesActionsLayout = new FlexBoxLayout();
-		datesActionsLayout.addClassName(CLASS_NAME + "__dates_actions");
-		datesActionsLayout.setFlexDirection(FlexDirection.ROW);
-		datesActionsLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
+		if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.SEND, OperationTarget.MESSAGES_TAB, PermissionRange.COMPANY)) {
+				composeMessageButton.setEnabled(false);
+			}
+		}
 
+		additionalOptionsDiv.add(composeMessageButton);
 
-		Button newMessage = UIUtils.createIconButton("Message", VaadinIcon.ENVELOPE, ButtonVariant.LUMO_CONTRAST);
-		newMessage.setClassName(CLASS_NAME + "__new-message-button");
-		newMessage.addClickListener(e -> {
-			constructNewMessageDialog(false, null);
-		});
-		datesActionsLayout.add(newMessage);
-		datesActionsLayout.setComponentMargin(newMessage, Horizontal.S);
+		header.add(additionalOptionsDiv);
 
-		Checkbox showReadCheckbox = new Checkbox("Show Read Messages");
-		showReadCheckbox.setClassName(CLASS_NAME + "__show-read-messages-checkbox");
-		showReadCheckbox.setValue(true);
-		showReadCheckbox.addClickListener(e -> {
-			showReadMessages = showReadCheckbox.getValue();
-			showMessages();
-		});
-		datesActionsLayout.add(showReadCheckbox);
-		datesActionsLayout.setComponentMargin(showReadCheckbox, Left.S);
-
-		header.add(datesLayout);
-		header.add(datesActionsLayout);
-
-
-		//CONTENT
-		contentLayout = new FlexBoxLayout();
-		contentLayout.setSizeFull();
-		contentLayout.addClassName(CLASS_NAME + "__content");
-		contentLayout.setFlexDirection(FlexDirection.COLUMN);
-		contentLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-
-		unreadMessagesLabel = UIUtils.createH4Label("");
-		unreadMessagesLabel.addClassName(CLASS_NAME + "__unread_label");
-
-		FlexBoxLayout contentWrapperLayout = new FlexBoxLayout();
-		contentWrapperLayout.addClassName(CLASS_NAME + "__wrapper");
-		contentWrapperLayout.setFlexDirection(FlexDirection.COLUMN);
-
-		contentWrapperLayout.add(header);
-		contentWrapperLayout.add(unreadMessagesLabel);
-		contentWrapperLayout.add(contentLayout);
-
-		getMessagesBetweenDates();
-
-		showMessages();
-
-		return contentWrapperLayout;
+		return header;
 	}
 
+	private Div constructContent() {
+		Div content = new Div();
+		content.setClassName(CLASS_NAME + "__content");
+
+		// GRID
+		content.add(constructGrid());
+
+		return content;
+	}
+
+	private Grid constructGrid() {
+		grid = new Grid<>();
+		grid.setClassName("grid-view");
+		grid.setSizeFull();
+		grid.asSingleSelect().addValueChangeListener(e -> {
+			if (grid.asSingleSelect().getValue() != null) {
+				showDetails(grid.asSingleSelect().getValue());
+			} else {
+				detailsDrawer.hide();
+			}
+		});
+
+		dataProvider = DataProvider.ofCollection(MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId()));
+		grid.setDataProvider(dataProvider);
+
+		// READ
+		grid.addComponentColumn(msg -> {
+					Icon icon;
+
+					if (msg.isMessageRead()) {
+						icon = new Icon(VaadinIcon.ENVELOPE_OPEN);
+						icon.setColor("var(--lumo-header-text-color)");
+					} else {
+						icon = new Icon(VaadinIcon.ENVELOPE);
+						icon.setColor(LumoStyles.Color.Primary._100);
+					}
+					return icon;
+				})
+				.setAutoWidth(true)
+				.setFlexGrow(0);
+
+		grid.addColumn(msg -> {
+					if (msg.getSenderUser() == null) {
+						return msg.getSenderString();
+					} else {
+						return UserFacade.getInstance().getUserById(msg.getSenderUser().getId()).getFullName();
+					}
+				})
+				.setHeader("Sender")
+				.setAutoWidth(true)
+				.setFlexGrow(0);
+
+		grid.addColumn(Message::getSubject)
+				.setHeader("Subject")
+				.setWidth("200px")
+				.setFlexGrow(0);
+
+		grid.addColumn(Message::getText)
+				.setHeader("Message")
+				.setFlexGrow(1);
+
+		grid.addColumn(msg -> {
+					try {
+						if (msg.getDate() == null) {
+							return "";
+						} else {
+							return DateConverter.dateToStringWithTime(msg.getDate());
+						}
+					} catch (Exception e) {
+						return "";
+					}
+				})
+				.setHeader("Received")
+				.setAutoWidth(true)
+				.setTextAlign(ColumnTextAlign.END)
+				.setFlexGrow(0);
+
+		return grid;
+	}
+
+	private DetailsDrawer constructDetails() {
+		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
+		detailsDrawer.setContent(messageForm);
+
+		// Header
+		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Message Details");
+		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
+
+		detailsDrawer.setHeader(detailsDrawerHeader);
+
+		// Footer
+		detailsDrawer.setFooter(createDetailsFooter());
+
+		return detailsDrawer;
+	}
+
+	private FlexBoxLayout createDetailsFooter() {
+		FlexBoxLayout footer = new FlexBoxLayout();
+		footer.setClassName(CLASS_NAME + "__details-footer");
+
+		Button closeDetailsButton = UIUtils.createButton("Close", ButtonVariant.LUMO_CONTRAST);
+		closeDetailsButton.addClickListener(e -> closeDetails());
+		footer.add(closeDetailsButton);
+
+		Button takeToolButton = UIUtils.createButton("Take Tool", VaadinIcon.HAND, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+		takeToolButton.addClickListener(e -> {
+			Message message = grid.asSingleSelect().getValue();
+			if (message != null) {
+				takeTool(message);
+			}
+		});
+		footer.add(takeToolButton);
+
+		Button replyButton = UIUtils.createButton("Reply", VaadinIcon.REPLY, ButtonVariant.LUMO_PRIMARY);
+		replyButton.addClickListener(reply -> {
+			Message message = grid.asSingleSelect().getValue();
+			if (message != null) {
+				if (message.getSenderUser() == null) {
+					UIUtils.showNotification("Cannot reply to: " + message.getSenderString(), UIUtils.NotificationType.INFO);
+				} else {
+					constructMessageDialog(message.getSenderUser(), message.getSubject());
+				}
+			}
+		});
+		footer.add(replyButton);
+
+
+		return footer;
+	}
+
+
+	private void filterGrid(String searchString) {
+		dataProvider.clearFilters();
+		final String mainSearchString = searchString.trim();
+
+		if (mainSearchString.contains("+")) {
+			String[] searchParams = mainSearchString.split("\\+");
+
+			dataProvider.addFilter(
+					message -> {
+						boolean res = true;
+						for (String sParam : searchParams) {
+							res =  StringUtils.containsIgnoreCase(message.getSubject(), sParam) ||
+									StringUtils.containsIgnoreCase(message.getText(), sParam) ||
+									StringUtils.containsIgnoreCase((message.getSenderUser() == null) ? "" : message.getSenderUser().getFullName(), sParam) ||
+									StringUtils.containsIgnoreCase((message.getDate() == null) ? "" : DateConverter.dateToStringWithTime(message.getDate()), sParam);
+							if (!res)
+								break;
+						}
+						return res;
+					}
+			);
+		} else {
+			dataProvider.addFilter(
+					message -> StringUtils.containsIgnoreCase(message.getSubject(), mainSearchString)  ||
+							StringUtils.containsIgnoreCase(message.getText(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((message.getSenderUser() == null) ? "" : message.getSenderUser().getFullName(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((message.getDate() == null) ? "" : DateConverter.dateToStringWithTime(message.getDate()), mainSearchString)
+			);
+		}
+	}
+
+	private void showDetails(Message message) {
+		messageForm.setMessage(message);
+		detailsDrawer.show();
+
+		if (!message.isMessageRead()) {
+			message.setMessageRead(true);
+
+			MessageFacade.getInstance().update(message);
+
+			dataProvider.refreshItem(message);
+		}
+	}
+
+	private void closeDetails() {
+		detailsDrawer.hide();
+		grid.deselectAll();
+	}
+
+
 	private void getMessagesBetweenDates() {
-		//Handle errors
-		if (dateStartField.isInvalid()) {
-			UIUtils.showNotification("Invalid Start Date", UIUtils.NotificationType.INFO);
-			dateStartField.focus();
+		if (dateStartField.getValue() == null || dateStartField.isInvalid()) {
+			dateStartField.setInvalid(true);
 			return;
 		}
-
-		if (dateEndField.isInvalid()) {
-			UIUtils.showNotification("Invalid End Date", UIUtils.NotificationType.INFO);
-			dateEndField.focus();
+		if (dateEndField.getValue() == null || dateEndField.isInvalid()) {
+			dateEndField.setInvalid(true);
 			return;
 		}
-
 		if (dateStartField.getValue().isAfter(dateEndField.getValue())) {
 			UIUtils.showNotification("Start Date cannot be after End Date", UIUtils.NotificationType.INFO);
 			return;
 		}
 
-		messages = MessageFacade.getInstance().getAllMessagesBetweenDates(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId());
-
+		List<Message> messages = MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId());
 		messages.sort(Comparator.comparing(Message::getDate).reversed());
 
-		handleUnreadMessagesCount();
+		dataProvider.getItems().clear();
+		dataProvider.getItems().addAll(messages);
+
+		dataProvider.refreshAll();
 	}
 
-	private void showMessages() {
-		contentLayout.removeAll();
-
-		for (Message message : messages) {
-			if (message.isMessageRead()) {
-				if (showReadMessages) {
-					contentLayout.add(constructMessageLayout(message));
-				}
-			} else {
-				contentLayout.add(constructMessageLayout(message));
-			}
-		}
-	}
-
-	private void handleUnreadMessagesCount() {
-		int unreadMessagesCount = 0;
-
-		for (Message message : messages) {
-			if (!message.isMessageRead()) {
-				unreadMessagesCount++;
-			}
-		}
-		unreadMessagesLabel.setText(unreadMessagesCount + " unread message(s)");
-	}
-
-
-	private FlexBoxLayout constructMessageLayout(Message message) {
-		FlexBoxLayout messageWrapper = new FlexBoxLayout();
-		messageWrapper.addClassName(CLASS_NAME + "__message-wrapper");
-		messageWrapper.setFlexDirection(FlexDirection.ROW);
-		messageWrapper.setDisplay(Display.FLEX);
-		messageWrapper.setMargin(Top.M);
-		messageWrapper.setPadding(Right.XS);
-
-		messageWrapper.getElement().setAttribute(READ, message.isMessageRead());
-
-
-		FlexBoxLayout messageContentLayout = new FlexBoxLayout();
-		messageContentLayout.addClassName(CLASS_NAME + "__message-content");
-		messageContentLayout.setFlexDirection(FlexDirection.COLUMN);
-		messageContentLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-		messageContentLayout.setMargin(Horizontal.XS);
-		messageContentLayout.setMargin(Vertical.XS);
-		messageContentLayout.setWidthFull();
-
-		messageContentLayout.add(UIUtils.createH4Label(message.getMessageHeader()));
-		messageContentLayout.add(new Span(message.getMessageText()));
-
-		messageWrapper.add(messageContentLayout);
-
-		FlexBoxLayout messageFooterLayout = new FlexBoxLayout();
-		messageFooterLayout.addClassName(CLASS_NAME + "__message_footer");
-		messageFooterLayout.setFlexDirection(FlexDirection.ROW);
-
-		User senderUser = UserFacade.getInstance().getUserById(message.getSenderId());
-		String sender = (senderUser == null) ? message.getSender() : senderUser.getFullName();
-
-		messageFooterLayout.add(UIUtils.createH6Label("From: " + sender));
-
-		Label dateLabel = UIUtils.createH6Label("Sent: " + DateConverter.toStringDateWithTime(message.getDate()));
-		messageFooterLayout.setComponentMargin(dateLabel, Left.AUTO);
-		messageFooterLayout.add(dateLabel);
-
-		messageContentLayout.add(messageFooterLayout);
-
-		if (!message.isMessageRead()) {
-
-			FlexBoxLayout messageButtonsLayout = new FlexBoxLayout();
-			messageButtonsLayout.addClassName(CLASS_NAME + "__message-buttons");
-			messageButtonsLayout.setFlexDirection(FlexDirection.COLUMN);
-			messageButtonsLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-
-			Button dismissButton = UIUtils.createSmallButton("Dismiss", VaadinIcon.CLOSE, ButtonVariant.LUMO_CONTRAST);
-			dismissButton.addClickListener(e -> {
-				confirmMarkMessageAsRead(message, messageWrapper);
-			});
-			messageButtonsLayout.add(dismissButton);
-
-			if (message.getMessageType().equals(MessageType.SIMPLE_MESSAGE) || message.getMessageType().equals(MessageType.TOOL_REQUEST)) {
-				Button replyButton = UIUtils.createSmallButton("Reply", VaadinIcon.REPLY, ButtonVariant.LUMO_PRIMARY);
-				replyButton.addClickListener(e -> {
-					constructNewMessageDialog(true, message);
-
-					confirmMarkMessageAsRead(message, messageWrapper);
-				});
-				messageButtonsLayout.add(replyButton);
-			}
-
-			if (message.getMessageType().equals(MessageType.TOOL_FREE)) {
-				Button takeToolButton = UIUtils.createSmallButton("Take Tool", VaadinIcon.HAND, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
-				takeToolButton.addClickListener(e -> {
-					takeTool(message.getToolId());
-
-					confirmMarkMessageAsRead(message, messageWrapper);
-				});
-				messageButtonsLayout.add(takeToolButton);
-			}
-
-			messageWrapper.add(messageButtonsLayout);
-		}
-
-		return messageWrapper;
-	}
-
-	private void confirmMarkMessageAsRead(Message message, FlexBoxLayout messageWrapper) {
-
-		if (message.getMessageType().equals(MessageType.SIMPLE_MESSAGE)) {
-			markMessageAsRead(message, messageWrapper);
-			return;
-		}
-
-		if (message.getMessageType().equals(MessageType.TOOL_REQUEST)) {
-			ConfirmDialog dialog = new ConfirmDialog();
-			dialog.setMessage("This action will send a cancel message to sender. Proceed?");
-			dialog.closeOnCancel();
-
-			dialog.getConfirmButton().addClickListener(e -> {
-				dialog.close();
-
-				markMessageAsRead(message, messageWrapper);
-
-				Message cancelRequestMessage = new Message();
-				cancelRequestMessage.setMessageType(MessageType.SIMPLE_MESSAGE);
-				cancelRequestMessage.setMessageHeader("Your tool request has been cancelled.");
-				cancelRequestMessage.setMessageText("Tool: "+ InventoryFacade.getInstance().getToolById(message.getToolId()).getName());
-				cancelRequestMessage.setSenderId(AuthenticationService.getCurrentSessionUser().getId());
-				cancelRequestMessage.setRecipientId(message.getSenderId());
-
-				MessageFacade.getInstance().insert(cancelRequestMessage);
-
-				Broadcaster.broadcastToUser(message.getSenderId(), "You have new message");
-			});
-
-			dialog.open();
-			return;
-		}
-
-		if (message.getToolId() != null) {
-			InventoryItem tool = InventoryFacade.getInstance().getToolById(message.getToolId());
-
-			// USER TOOK THE TOOL
-			if (tool.getToolUsageStatus().equals(ToolUsageStatus.IN_USE)) {
-				markMessageAsRead(message, messageWrapper);
-			}
-
-			// USER DIDN'T TAKE THE TOOL -> CONFIRM TOOL RELEASE
-			if (tool.getToolUsageStatus().equals(ToolUsageStatus.RESERVED)) {
-				ConfirmDialog dialog = new ConfirmDialog();
-				dialog.setMessage("This action will mark the tool as " + ToolUsageStatus.FREE.getStringValue() + ". Proceed?");
-
-				dialog.closeOnCancel();
-				dialog.getConfirmButton().addClickListener(e -> {
-					dialog.close();
-
-					tool.setToolUsageStatus(ToolUsageStatus.FREE);
-					tool.setReservedByUser(null);
-
-					if (InventoryFacade.getInstance().update(tool)) {
-
-						Transaction tr = new Transaction();
-						tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
-						tr.setTransactionOperation(TransactionType.EDIT);
-						tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-						tr.setInventoryEntity(tool);
-						tr.setAdditionalInfo("User released the tool.\nTool Status changed from: " + ToolUsageStatus.RESERVED.getStringValue() + " to: " + ToolUsageStatus.FREE.getStringValue());
-
-						TransactionFacade.getInstance().insert(tr);
-
-						UIUtils.showNotification("Tool released", UIUtils.NotificationType.SUCCESS);
-					} else {
-						UIUtils.showNotification("Tool release failed", UIUtils.NotificationType.ERROR);
-					}
-
-					markMessageAsRead(message, messageWrapper);
-				});
-
-				dialog.open();
-			}
-
-		} else {
-			markMessageAsRead(message, messageWrapper);
-		}
-	}
-
-	private void markMessageAsRead(Message message, FlexBoxLayout messageWrapper) {
-		message.setMessageRead(true);
-		messageWrapper.getElement().setAttribute(READ, true);
-
-		MessageFacade.getInstance().update(message);
-
-		showMessages();
-
-		handleUnreadMessagesCount();
-	}
-
-
-	private void constructNewMessageDialog(boolean isReply, Message originalMessage) {
-		CustomDialog dialog = new CustomDialog();
-		dialog.setCloseOnEsc(false);
-		dialog.setCloseOnOutsideClick(false);
-
-
-		ComboBox<User> recipientComboBox = new ComboBox<>("Recipient");
+	private void constructMessageDialog(User recipient, String RE_subject) {
+		ComboBox<User> recipientComboBox = new ComboBox<>();
+		recipientComboBox.setLabel("Recipient");
 		recipientComboBox.setItems();
 		recipientComboBox.setItemLabelGenerator(User::getFullName);
-		recipientComboBox.setRequired(true);
 
-		if (isReply) {
-			recipientComboBox.setValue(UserFacade.getInstance().getUserById(originalMessage.getSenderId()));
-			recipientComboBox.setEnabled(false);
+		if (recipient != null) {
+			recipientComboBox.setValue(recipient);
+			recipientComboBox.setReadOnly(true);
 		} else {
 			List<User> recipients;
-
 			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 				recipients = UserFacade.getInstance().getAllUsers();
 			} else {
 				recipients = UserFacade.getInstance().getUsersInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId());
+
+				// ADD SYSTEM ADMINS FOR CONTACTING
+				List<User> systemAdmins = UserFacade.getInstance().getSystemAdmins();
+
+				for (User sysAdmin : systemAdmins) {
+					recipients.add(0, sysAdmin);
+				}
 			}
 
-//			recipients.remove(AuthenticationService.getCurrentSessionUser());
 			recipientComboBox.setItems(recipients);
+			recipientComboBox.setRequired(true);
 		}
 
 
-		TextField titleField = new TextField("Title");
-//		titleField.setMinWidth("400px");
+		Div messageAllUsersDiv = null;
+		Checkbox useCompanyRecipients = new Checkbox("Use This");
+		ComboBox<Company> allUsersInCompany = new ComboBox<>();
+		boolean system_admin = false;
 
-		if (isReply) {
-			titleField.setValue("RE: " + originalMessage.getMessageHeader());
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			messageAllUsersDiv = new Div();
+			messageAllUsersDiv.addClassName(CLASS_NAME + "__message_a_u_i_c");
+
+			allUsersInCompany.setLabel("All Recipients In");
+			allUsersInCompany.setItems(CompanyFacade.getInstance().getAllCompanies());
+			allUsersInCompany.setItemLabelGenerator(Company::getName);
+			allUsersInCompany.setReadOnly(true);
+
+			useCompanyRecipients.addValueChangeListener(cb -> {
+				allUsersInCompany.setReadOnly(!cb.getValue());
+				recipientComboBox.setReadOnly(cb.getValue());
+			});
+
+			messageAllUsersDiv.add(allUsersInCompany);
+			messageAllUsersDiv.add(useCompanyRecipients);
+
+			system_admin = true;
 		}
 
-		TextArea messageField = new TextArea("Message");
-		messageField.setRequired(true);
-		messageField.setWidthFull();
-		messageField.setMinHeight("300px");
-
-		if (isReply) {
-			dialog.setHeader(UIUtils.createH3Label("Reply Message"));
-		} else {
-			dialog.setHeader(UIUtils.createH3Label("New Message"));
+		TextArea subjectField = new TextArea("Subject");
+		subjectField.setRequired(true);
+		if (RE_subject.length() > 0) {
+			subjectField.setValue("RE: " + RE_subject);
 		}
 
+		TextArea messageArea = new TextArea("Message");
+		messageArea.setRequired(true);
 
-		dialog.getContent().add(recipientComboBox, titleField, messageField);
-		dialog.getCancelButton().addClickListener(e -> dialog.close());
 
+		// DIALOG
+		CustomDialog dialog = new CustomDialog();
+		dialog.setHeader(UIUtils.createH3Label("Compose Message"));
+		dialog.setCloseOnOutsideClick(false);
+		dialog.setCloseOnEsc(false);
+
+		dialog.getContent().add(recipientComboBox);
+		if (system_admin) {
+			dialog.getContent().add(messageAllUsersDiv);
+		}
+		dialog.getContent().add(subjectField);
+		dialog.getContent().add(messageArea);
+
+		dialog.closeOnCancel();
 		dialog.getConfirmButton().setText("Send");
-		dialog.getConfirmButton().addClickListener(e -> {
 
-			if (recipientComboBox.getValue() == null) {
-				recipientComboBox.setInvalid(true);
-				recipientComboBox.setErrorMessage("Select Recipient");
+
+		dialog.getConfirmButton().addClickListener(send -> {
+
+			if (subjectField.getValue().length() > 255) {
+				UIUtils.showNotification("Maximum amount of characters for Subject is 255", UIUtils.NotificationType.WARNING);
+				return;
+			}
+			if (messageArea.getValue().length() > 255) {
+				UIUtils.showNotification("Maximum amount of characters for Message is 255", UIUtils.NotificationType.WARNING);
 				return;
 			}
 
-			if (messageField.getValue().length() <= 0) {
-				messageField.setInvalid(true);
-				messageField.setErrorMessage("Cannot send empty message");
-				return;
-			}
+			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+				if (useCompanyRecipients.getValue()) {
+					List<User> recipients = UserFacade.getInstance().getUsersInCompany(allUsersInCompany.getValue().getId());
 
-			Message message = new Message();
-			message.setSenderId(AuthenticationService.getCurrentSessionUser().getId());
-			message.setMessageType(MessageType.SIMPLE_MESSAGE);
-			message.setRecipientId(recipientComboBox.getValue().getId());
+					for (User user : recipients) {
+						sendMessage(user.getId(), subjectField.getValue(), messageArea.getValue());
+						dialog.close();
+					}
+				} else {
+					if (recipientComboBox.getValue() == null) {
+						UIUtils.showNotification("Select Recipient", UIUtils.NotificationType.INFO);
+						return;
+					}
 
-			message.setMessageHeader(titleField.getValue());
-			message.setMessageText(messageField.getValue());
-
-			if (MessageFacade.getInstance().insert(message)) {
-
-				Transaction tr = new Transaction();
-				tr.setTransactionOperation(TransactionType.SEND);
-				tr.setTransactionTarget(TransactionTarget.MESSAGE);
-				tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-				tr.setDestinationUser(recipientComboBox.getValue());
-				tr.setAdditionalInfo("User sent message");
-
-				TransactionFacade.getInstance().insert(tr);
-
-				UIUtils.showNotification("Message sent", UIUtils.NotificationType.SUCCESS);
+					sendMessage(recipientComboBox.getValue().getId(), subjectField.getValue(), messageArea.getValue());
+					dialog.close();
+				}
 			} else {
-				UIUtils.showNotification("Message send error", UIUtils.NotificationType.ERROR);
+				if (recipientComboBox.getValue() == null) {
+					UIUtils.showNotification("Select Recipient", UIUtils.NotificationType.INFO);
+					return;
+				}
+
+				sendMessage(recipientComboBox.getValue().getId(), subjectField.getValue(), messageArea.getValue());
+				dialog.close();
 			}
-
-			Broadcaster.broadcastToUser(recipientComboBox.getValue().getId(), "You have new message");
-
-			dialog.close();
 		});
 
 		dialog.open();
 	}
 
+	private void sendMessage(long recipientId, String subject, String text) {
+		Message message = new Message();
+		message.setMessageType(MessageType.SIMPLE_MESSAGE);
+		message.setRecipientId(recipientId);
+		message.setSenderUser(AuthenticationService.getCurrentSessionUser());
+		message.setSubject(subject);
+		message.setText(text);
 
-	private void takeTool(Long toolId) {
-		InventoryItem tool = InventoryFacade.getInstance().getToolById(toolId);
+		if (MessageFacade.getInstance().insert(message)) {
+			UIUtils.showNotification("Message sent", UIUtils.NotificationType.SUCCESS);
 
-		tool.setInUseByUser(AuthenticationService.getCurrentSessionUser());
-		tool.setReservedByUser(null);
-		tool.setToolUsageStatus(ToolUsageStatus.IN_USE);
+			Broadcaster.broadcastToUser(recipientId, "You have new message");
+		} else {
+			UIUtils.showNotification("Message sending failed", UIUtils.NotificationType.ERROR);
+		}
+	}
+
+	private void takeTool(Message message) {
+		if (message == null || message.getToolId() == null) {
+			UIUtils.showNotification("No Tool in message", UIUtils.NotificationType.INFO);
+			return;
+		}
+
+		InventoryItem tool = InventoryFacade.getInstance().getById(message.getToolId());
+
+		tool.setCurrentUser(AuthenticationService.getCurrentSessionUser());
+		tool.setReservedUser(null);
+		tool.setUsageStatus(ToolUsageStatus.IN_USE);
 
 		if (InventoryFacade.getInstance().update(tool)) {
 
-			Transaction tr = new Transaction();
-			tr.setTransactionTarget(TransactionTarget.TOOL_STATUS);
-			tr.setTransactionOperation(TransactionType.EDIT);
-			tr.setWhoDid(AuthenticationService.getCurrentSessionUser());
-			tr.setInventoryEntity(tool);
-			tr.setAdditionalInfo("User took the tool.\nTool Status changed from: " + ToolUsageStatus.FREE.getStringValue() + " to: " + ToolUsageStatus.IN_USE.getStringValue());
-
-			TransactionFacade.getInstance().insert(tr);
+			Transaction transaction = new Transaction();
+			transaction.setUser(AuthenticationService.getCurrentSessionUser());
+			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+			transaction.setOperation(Operation.TAKE);
+			transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
+			transaction.setTargetDetails(tool.getName());
+			TransactionFacade.getInstance().insert(transaction);
 
 			UIUtils.showNotification("Tool taken", UIUtils.NotificationType.SUCCESS);
+
+
+			message.setToolId(null);
+			MessageFacade.getInstance().update(message);
 		} else {
 			UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
 		}

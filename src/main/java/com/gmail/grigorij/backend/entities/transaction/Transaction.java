@@ -2,47 +2,52 @@ package com.gmail.grigorij.backend.entities.transaction;
 
 import com.gmail.grigorij.backend.entities.EntityPojo;
 import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.transactions.TransactionTarget;
-import com.gmail.grigorij.backend.enums.transactions.TransactionType;
+import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.enums.operations.OperationTarget;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table( name = "transactions")
 @NamedQueries({
 
-		@NamedQuery(name="getAllTransactions",
+		@NamedQuery(name=Transaction.QUERY_ALL,
 				query="SELECT transaction FROM Transaction transaction"),
 
-		@NamedQuery(name="getAllTransactionsInCompany",
+		@NamedQuery(name=Transaction.QUERY_ALL_BY_COMPANY,
 				query="SELECT transaction FROM Transaction transaction WHERE" +
-						" Transaction.company IS NOT NULL AND" +
-						" Transaction.company.id = :company_id_var")
+						" Transaction.company.id = :" + Transaction.ID_VAR)
 })
 public class Transaction extends EntityPojo {
 
-	@Enumerated( EnumType.STRING )
-	private TransactionType transactionOperation;
+	public static final String QUERY_ALL = "get_all_transactions";
+	public static final String QUERY_ALL_BY_COMPANY = "get_all_transactions_by_company";
 
-	@Enumerated( EnumType.STRING )
-	private TransactionTarget transactionTarget;
+	public static final String ID_VAR = "id_variable";
+
 
 	private Date date;
 
-	private String fullName;
+	@Enumerated( EnumType.STRING )
+	private Operation operation;
 
-	private String shortName;
+	@Enumerated( EnumType.STRING )
+	private OperationTarget operationTarget1;
 
-	private User whoDid;
+	@Enumerated( EnumType.STRING )
+	private OperationTarget operationTarget2;
 
-	private User destinationUser;
+	private User user;
 
 	private Company company;
 
-	private InventoryItem inventoryEntity;
+	private List<String> changes = new ArrayList<>();
+
+	private String targetDetails = "";
 
 
 	public Transaction() {
@@ -50,94 +55,86 @@ public class Transaction extends EntityPojo {
 	}
 
 
-
-	public TransactionType getTransactionOperation() {
-		return transactionOperation;
-	}
-
-	public void setTransactionOperation(TransactionType transactionOperation) {
-		this.transactionOperation = transactionOperation;
-
-		if (this.transactionOperation != null) {
-			if (transactionTarget != null) {
-				setNames();
-			}
-		}
-	}
-
-	public TransactionTarget getTransactionTarget() {
-		return transactionTarget;
-	}
-
-	public void setTransactionTarget(TransactionTarget transactionTarget) {
-		this.transactionTarget = transactionTarget;
-
-		if (this.transactionTarget != null) {
-			if (transactionOperation != null) {
-				setNames();
-			}
-		}
-	}
-
 	public Date getDate() {
 		return date;
 	}
-
-	public void setDate(Date date) {
+	private void setDate(Date date) {
 		this.date = date;
 	}
 
-	public User getWhoDid() {
-		return whoDid;
+	public Operation getOperation() {
+		return operation;
+	}
+	public void setOperation(Operation operation) {
+		this.operation = operation;
 	}
 
-	public void setWhoDid(User whoDid) {
-		this.whoDid = whoDid;
+	public OperationTarget getOperationTarget1() {
+		return operationTarget1;
+	}
+	public void setOperationTarget1(OperationTarget operationTarget1) {
+		this.operationTarget1 = operationTarget1;
 	}
 
-	public User getDestinationUser() {
-		return destinationUser;
+	public OperationTarget getOperationTarget2() {
+		return operationTarget2;
+	}
+	public void setOperationTarget2(OperationTarget operationTarget2) {
+		this.operationTarget2 = operationTarget2;
 	}
 
-	public void setDestinationUser(User destinationUser) {
-		this.destinationUser = destinationUser;
+	public User getUser() {
+		return user;
+	}
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 	public Company getCompany() {
 		return company;
 	}
-
 	public void setCompany(Company company) {
 		this.company = company;
 	}
 
-	public InventoryItem getInventoryEntity() {
-		return inventoryEntity;
+	public List<String> getChanges() {
+		return changes;
+	}
+	public void setChanges(List<String> changes) {
+		this.changes = changes;
+	}
+	public void addChange(String change) {
+		changes.add(change);
 	}
 
-	public void setInventoryEntity(InventoryItem inventoryEntity) {
-		this.inventoryEntity = inventoryEntity;
+	public String getTargetDetails() {
+		return targetDetails;
+	}
+	public void setTargetDetails(String targetDetails) {
+		this.targetDetails = targetDetails;
 	}
 
-	public String getFullName() {
-		return fullName;
-	}
+	public String getDescription(boolean withTargetDetails) {
+		StringBuilder stringBuilder = new StringBuilder();
 
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
+		if (operation != null) {
+			stringBuilder.append(operation.getName());
+			stringBuilder.append(" ");
+		}
+		if (operationTarget1 != null) {
+			stringBuilder.append(operationTarget1.getName());
+			stringBuilder.append(" ");
+		}
+		if (operationTarget2 != null) {
+			stringBuilder.append(operationTarget2.getName());
+			stringBuilder.append(" ");
+		}
 
-	public String getShortName() {
-		return shortName;
-	}
-
-	public void setShortName(String shortName) {
-		this.shortName = shortName;
-	}
+		if (withTargetDetails) {
+			stringBuilder.append(targetDetails);
+		}
 
 
-	private void setNames() {
-		this.fullName = TransactionName.getTransactionFullName(transactionOperation, transactionTarget);
-		this.shortName = TransactionName.getTransactionShortName(transactionOperation, transactionTarget);
+		return stringBuilder.toString();
 	}
 }
