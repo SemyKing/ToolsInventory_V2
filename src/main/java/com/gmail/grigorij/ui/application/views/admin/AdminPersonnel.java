@@ -1,12 +1,14 @@
 package com.gmail.grigorij.ui.application.views.admin;
 
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
@@ -75,18 +77,30 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
 
-		menuItem.getSubMenu().addItem("New User", e -> {
-			grid.select(null);
-			showDetails(null);
-		});
-		menuItem.getSubMenu().add(new Hr());
-		menuItem.getSubMenu().addItem("Import", e -> {
-			importOnClick();
-		});
-		menuItem.getSubMenu().add(new Hr());
-		menuItem.getSubMenu().addItem("Export", e -> {
-			exportOnClick();
-		});
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.USER, null)) {
+			menuItem.getSubMenu().addItem("New User", e -> {
+				grid.select(null);
+				showDetails(null);
+			});
+			menuItem.getSubMenu().add(new Hr());
+		}
+
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.IMPORT, OperationTarget.USER, null)) {
+			menuItem.getSubMenu().addItem("Import", e -> {
+				importOnClick();
+			});
+			menuItem.getSubMenu().add(new Hr());
+		}
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EXPORT, OperationTarget.USER, null)) {
+			menuItem.getSubMenu().addItem("Export", e -> {
+				exportOnClick();
+			});
+		}
 
 		header.add(actionsMenuBar);
 
@@ -152,7 +166,14 @@ public class AdminPersonnel extends FlexBoxLayout {
 		detailsDrawer.setContent(userForm);
 
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
-		detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
+		detailsDrawerFooter.getSave().setEnabled(false);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.USER, PermissionRange.COMPANY)) {
+			detailsDrawerFooter.getSave().setEnabled(true);
+			detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
+		}
+
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 	}
@@ -214,6 +235,8 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 		if (userForm.isNew()) {
 			if (UserFacade.getInstance().insert(editedUser)) {
+				dataProvider.getItems().add(editedUser);
+
 				UIUtils.showNotification("User created", UIUtils.NotificationType.SUCCESS);
 			} else {
 				UIUtils.showNotification("User insert failed", UIUtils.NotificationType.ERROR);

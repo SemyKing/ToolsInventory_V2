@@ -1,14 +1,12 @@
-package com.gmail.grigorij.backend.entities.company;
+package com.gmail.grigorij.backend.database.entities;
 
-import com.gmail.grigorij.backend.entities.EntityPojo;
-import com.gmail.grigorij.backend.embeddable.Location;
-import com.gmail.grigorij.backend.embeddable.Person;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
+import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 @Entity
@@ -18,14 +16,12 @@ import java.util.Set;
 				query="SELECT company FROM Company company ORDER BY company.name ASC"),
 
 		@NamedQuery(name=Company.QUERY_BY_ID,
-				query="SELECT company FROM Company company WHERE company.id = :" + Company.ID_VAR)
+				query="SELECT company FROM Company company WHERE company.id = :" + ProjectConstants.ID_VAR)
 })
 public class Company extends EntityPojo {
 
 	public static final String QUERY_ALL = "get_all_companies";
 	public static final String QUERY_BY_ID = "get_company_by_id";
-
-	public static final String ID_VAR = "id_variable";
 
 	@Column(name = "name")
 	private String name = "";

@@ -2,10 +2,10 @@ package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -56,7 +56,7 @@ public class CategoryForm extends FormLayout {
 		companyComboBox = new ComboBox<>();
 		companyComboBox.setLabel("Company");
 		companyComboBox.setRequired(true);
-		companyComboBox.setItems();
+		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
 		companyComboBox.setItemLabelGenerator(Company::getName);
 		companyComboBox.addValueChangeListener(e -> {
 			if (e != null) {
@@ -93,18 +93,14 @@ public class CategoryForm extends FormLayout {
 	private void initDynamicFormItems() {
 		initialCompany = category.getCompany();
 
-		List<Company> companies = new ArrayList<>(CompanyFacade.getInstance().getAllCompanies());
-
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
-			long currentUserId = AuthenticationService.getCurrentSessionUser().getId();
-			companies.removeIf(company -> !company.getId().equals(currentUserId));
-
-			if (companies.size() > 1) {
-				System.err.println("COMPANIES LIST SHOULD HAVE ONLY ONE COMPANY FOR NON SYSTEM ADMIN: CATEGORY FORM -> COMPANIES COMBO BOX");
-			}
+		if (isNew) {
+			companyComboBox.setValue(AuthenticationService.getCurrentSessionUser().getCompany());
 		}
+		companyComboBox.setReadOnly(true);
 
-		companyComboBox.setItems(companies);
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			companyComboBox.setReadOnly(false);
+		}
 	}
 
 	private void updateCategoriesComboBoxData(Company company) {

@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.enums.inventory;
+package com.gmail.grigorij.backend.database.enums.inventory;
 
 public enum ToolUsageStatus {
 

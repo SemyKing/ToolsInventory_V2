@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.embeddable;
+package com.gmail.grigorij.backend.database.entities.embeddable;
 
 import javax.persistence.AttributeOverride;
 import javax.persistence.Column;

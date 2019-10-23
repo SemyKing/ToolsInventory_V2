@@ -1,15 +1,15 @@
-package com.gmail.grigorij.backend.entities.user;
+package com.gmail.grigorij.backend.database.entities.embeddable;
 
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationPermission;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationPermission;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 
 @Embeddable
-public class PermissionTest {
+public class Permission {
 
 	@Enumerated( EnumType.STRING )
 	private Operation operation;
@@ -29,9 +29,9 @@ public class PermissionTest {
 	private boolean visible = false;
 
 
-	public PermissionTest() {}
+	public Permission() {}
 
-	public PermissionTest(PermissionTest other) {
+	public Permission(Permission other) {
 		this.operation = other.operation;
 		this.operationTarget = other.operationTarget;
 		this.permissionOwn = other.permissionOwn;

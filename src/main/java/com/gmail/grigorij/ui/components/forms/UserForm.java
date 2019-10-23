@@ -3,15 +3,15 @@ package com.gmail.grigorij.ui.components.forms;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.embeddable.Location;
-import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.user.PermissionTest;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.dialogs.PermissionsDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
@@ -59,7 +59,7 @@ public class UserForm extends FormLayout {
 	private Binder<User> binder;
 
 	private User user, originalUser;
-	private List<PermissionTest> tempPermissions;
+	private List<Permission> tempPermissions;
 	private String initialUsername;
 	private boolean isNew;
 
@@ -295,8 +295,8 @@ public class UserForm extends FormLayout {
 		initialUsername = user.getUsername();
 		tempPermissions = new ArrayList<>();
 
-		for (PermissionTest permission : user.getPermissions()) {
-			tempPermissions.add(new PermissionTest(permission));
+		for (Permission permission : user.getPermissions()) {
+			tempPermissions.add(new Permission(permission));
 		}
 
 		List<PermissionLevel> levels = new ArrayList<>(EnumSet.allOf(PermissionLevel.class));
@@ -356,7 +356,7 @@ public class UserForm extends FormLayout {
 		dialog.constructView();
 
 		dialog.getConfirmButton().addClickListener(saveOnClick -> {
-			List<PermissionTest> permissions = dialog.getPermissions();
+			List<Permission> permissions = dialog.getPermissions();
 			if (permissions != null) {
 				tempPermissions = permissions;
 				dialog.close();
@@ -389,6 +389,10 @@ public class UserForm extends FormLayout {
 
 		binder.readBean(this.user);
 		dataLoaded = true;
+
+		if (isNew) {
+			companyComboBox.setValue(AuthenticationService.getCurrentSessionUser().getCompany());
+		}
 	}
 
 	public User getUser() {

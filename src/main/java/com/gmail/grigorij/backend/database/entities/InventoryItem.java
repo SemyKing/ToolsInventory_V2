@@ -1,12 +1,10 @@
-package com.gmail.grigorij.backend.entities.inventory;
+package com.gmail.grigorij.backend.database.entities;
 
-import com.gmail.grigorij.backend.embeddable.Location;
-import com.gmail.grigorij.backend.entities.EntityPojo;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
-import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.ui.application.views.Inventory;
+import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -34,32 +32,32 @@ import java.util.*;
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_TYPE,
 				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.inventoryHierarchyType = :" + InventoryItem.VAR),
+						" ie.inventoryHierarchyType = :" + ProjectConstants.VAR1),
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_COMPANY,
 				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.company.id = :" + InventoryItem.ID_VAR),
+						" ie.company.id = :" + ProjectConstants.ID_VAR),
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_COMPANY_BY_TYPE,
 				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.company.id = :" + InventoryItem.ID_VAR + " AND" +
-						" ie.inventoryHierarchyType = :" + InventoryItem.VAR),
+						" ie.company.id = :" + ProjectConstants.ID_VAR + " AND" +
+						" ie.inventoryHierarchyType = :" + ProjectConstants.VAR1),
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_CURRENT_USER,
 				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.currentUser.id = :" + InventoryItem.ID_VAR),
+						" ie.currentUser.id = :" + ProjectConstants.ID_VAR),
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_RESERVED_USER,
 				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.reservedUser.id = :" + InventoryItem.ID_VAR),
+						" ie.reservedUser.id = :" + ProjectConstants.ID_VAR),
 
 		@NamedQuery(name = InventoryItem.QUERY_BY_ID,
 				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.id = :" + InventoryItem.ID_VAR),
+						" ie.id = :" + ProjectConstants.ID_VAR),
 
 		@NamedQuery(name = InventoryItem.QUERY_BY_CODE_VAR,
 				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.qrCode = :" + InventoryItem.VAR + " OR ie.barcode = :" + InventoryItem.VAR)
+						" ie.serialNumber = :" + ProjectConstants.VAR1 + " OR ie.barcode = :" + ProjectConstants.VAR1)
 })
 public class InventoryItem extends EntityPojo {
 
@@ -75,8 +73,6 @@ public class InventoryItem extends EntityPojo {
 	public static final String QUERY_BY_ID = "get_inventory_item_by_id";
 	public static final String QUERY_BY_CODE_VAR = "get_inventory_items_by_code";
 
-	public static final String ID_VAR = "id_variable";
-	public static final String VAR = "variable";
 
 
 	/*
@@ -103,10 +99,8 @@ public class InventoryItem extends EntityPojo {
 
 
 	private String name = "";
-	private String qrCode = "";
 	private String serialNumber = "";
-	private String snCode = "";
-	private String rfCode = "";
+	private String RF_Code = "";
 	private String barcode = "";
 	private String manufacturer = "";
 	private String model = "";
@@ -149,10 +143,8 @@ public class InventoryItem extends EntityPojo {
 		this.level = other.level;
 		this.inventoryHierarchyType = other.inventoryHierarchyType;
 		this.name = other.name;
-		this.qrCode = other.qrCode;
 		this.serialNumber = other.serialNumber;
-		this.snCode = other.snCode;
-		this.rfCode = other.rfCode;
+		this.RF_Code = other.RF_Code;
 		this.barcode = other.barcode;
 		this.manufacturer = other.manufacturer;
 		this.model = other.model;
@@ -174,7 +166,6 @@ public class InventoryItem extends EntityPojo {
 	public InventoryItem getParentCategory() {
 		return parentCategory;
 	}
-
 	public void setParentCategory(InventoryItem parentCategory) {
 		this.parentCategory = parentCategory;
 	}
@@ -182,7 +173,6 @@ public class InventoryItem extends EntityPojo {
 	public Set<InventoryItem> getChildren() {
 		return children;
 	}
-
 	public void setChildren(Set<InventoryItem> children) {
 		if (children != null) {
 			if (children.size() > 0) {
@@ -204,7 +194,6 @@ public class InventoryItem extends EntityPojo {
 	public String getName() {
 		return name;
 	}
-
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -212,7 +201,6 @@ public class InventoryItem extends EntityPojo {
 	public String getManufacturer() {
 		return manufacturer;
 	}
-
 	public void setManufacturer(String manufacturer) {
 		this.manufacturer = manufacturer;
 	}
@@ -220,7 +208,6 @@ public class InventoryItem extends EntityPojo {
 	public String getModel() {
 		return model;
 	}
-
 	public void setModel(String model) {
 		this.model = model;
 	}
@@ -228,7 +215,6 @@ public class InventoryItem extends EntityPojo {
 	public String getToolInfo() {
 		return toolInfo;
 	}
-
 	public void setToolInfo(String toolInfo) {
 		this.toolInfo = toolInfo;
 	}
@@ -236,7 +222,6 @@ public class InventoryItem extends EntityPojo {
 	public ToolUsageStatus getUsageStatus() {
 		return usageStatus;
 	}
-
 	public void setUsageStatus(ToolUsageStatus usageStatus) {
 		this.usageStatus = usageStatus;
 	}
@@ -244,23 +229,13 @@ public class InventoryItem extends EntityPojo {
 	public boolean isPersonal() {
 		return personal;
 	}
-
 	public void setPersonal(boolean personal) {
 		this.personal = personal;
-	}
-
-	public String getSnCode() {
-		return snCode;
-	}
-
-	public void setSnCode(String snCode) {
-		this.snCode = snCode;
 	}
 
 	public String getBarcode() {
 		return barcode;
 	}
-
 	public void setBarcode(String barcode) {
 		this.barcode = barcode;
 	}
@@ -268,7 +243,6 @@ public class InventoryItem extends EntityPojo {
 	public LocalDate getDateBought() {
 		return dateBought;
 	}
-
 	public void setDateBought(LocalDate dateBought) {
 		this.dateBought = dateBought;
 	}
@@ -276,7 +250,6 @@ public class InventoryItem extends EntityPojo {
 	public LocalDate getDateNextMaintenance() {
 		return dateNextMaintenance;
 	}
-
 	public void setDateNextMaintenance(LocalDate dateNextMaintenance) {
 		this.dateNextMaintenance = dateNextMaintenance;
 	}
@@ -284,7 +257,6 @@ public class InventoryItem extends EntityPojo {
 	public Double getPrice() {
 		return price;
 	}
-
 	public void setPrice(Double price) {
 		this.price = price;
 	}
@@ -292,7 +264,6 @@ public class InventoryItem extends EntityPojo {
 	public Integer getGuarantee_months() {
 		return guarantee_months;
 	}
-
 	public void setGuarantee_months(Integer guarantee_months) {
 		this.guarantee_months = guarantee_months;
 	}
@@ -300,7 +271,6 @@ public class InventoryItem extends EntityPojo {
 	public Location getCurrentLocation() {
 		return (this.currentLocation == null) ? new Location() : currentLocation;
 	}
-
 	public void setCurrentLocation(Location currentLocation) {
 		this.currentLocation = currentLocation;
 	}
@@ -308,7 +278,6 @@ public class InventoryItem extends EntityPojo {
 	public int getLevel() {
 		return level;
 	}
-
 	public void setLevel(int level) {
 		this.level = level;
 	}
@@ -316,7 +285,6 @@ public class InventoryItem extends EntityPojo {
 	public InventoryHierarchyType getInventoryHierarchyType() {
 		return inventoryHierarchyType;
 	}
-
 	public void setInventoryHierarchyType(InventoryHierarchyType inventoryHierarchyType) {
 		this.inventoryHierarchyType = inventoryHierarchyType;
 	}
@@ -324,23 +292,20 @@ public class InventoryItem extends EntityPojo {
 	public String getSerialNumber() {
 		return serialNumber;
 	}
-
 	public void setSerialNumber(String serialNumber) {
 		this.serialNumber = serialNumber;
 	}
 
-	public String getRfCode() {
-		return rfCode;
+	public String getRF_Code() {
+		return RF_Code;
 	}
-
-	public void setRfCode(String rfCode) {
-		this.rfCode = rfCode;
+	public void setRF_Code(String RF_Code) {
+		this.RF_Code = RF_Code;
 	}
 
 	public User getCurrentUser() {
 		return currentUser;
 	}
-
 	public void setCurrentUser(User currentUser) {
 		this.currentUser = currentUser;
 	}
@@ -348,7 +313,6 @@ public class InventoryItem extends EntityPojo {
 	public User getReservedUser() {
 		return reservedUser;
 	}
-
 	public void setReservedUser(User reservedUser) {
 		this.reservedUser = reservedUser;
 	}
@@ -356,38 +320,14 @@ public class InventoryItem extends EntityPojo {
 	public Company getCompany() {
 		return company;
 	}
-
 	public void setCompany(Company company) {
 		this.company = company;
-	}
-
-	public String getQrCode() {
-		return qrCode;
-	}
-
-	public void setQrCode(String qrCode) {
-		this.qrCode = qrCode;
 	}
 
 	public boolean isReported() {
 		return reported;
 	}
-
 	public void setReported(boolean reported) {
 		this.reported = reported;
 	}
-
-	//	@Override
-//	public String toString() {
-//		StringBuilder sb = new StringBuilder();
-//		sb.append("\nName: ").append(this.name);
-//		sb.append("\nCompany: ").append(this.company.getName());
-//		sb.append("\nHierarchyType ").append(this.inventoryHierarchyType.toString());
-//
-//		if (this.parentCategory != null) {
-//			sb.append("\nParent Info: ").append(this.parentCategory);
-//		}
-//
-//		return sb.toString();
-//	}
 }

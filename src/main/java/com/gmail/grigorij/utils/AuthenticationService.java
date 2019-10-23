@@ -2,9 +2,9 @@ package com.gmail.grigorij.utils;
 
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;

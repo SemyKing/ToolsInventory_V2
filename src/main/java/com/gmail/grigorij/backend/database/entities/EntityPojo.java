@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.entities;
+package com.gmail.grigorij.backend.database.entities;
 
 import javax.persistence.*;
 

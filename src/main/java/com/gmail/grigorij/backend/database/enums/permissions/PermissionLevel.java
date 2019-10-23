@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.enums.permissions;
+package com.gmail.grigorij.backend.database.enums.permissions;
 
 public enum PermissionLevel {
 
@@ -6,7 +6,9 @@ public enum PermissionLevel {
 	USER("User", 1),
 	FOREMAN("Foreman", 2),
 	COMPANY_ADMIN("Company Admin", 3),
-	SYSTEM_ADMIN("System Admin", 99);
+	SYSTEM_ADMIN("System Admin", 99),
+	FOR_TRANSACTIONS("System Admin", 999);
+
 
 	private final String name;
 	private final int level;

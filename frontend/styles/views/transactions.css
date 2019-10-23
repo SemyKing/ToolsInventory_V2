@@ -1,59 +1,50 @@
 
 @media (max-width: 1024px) {
-	.messages__header {
+	.transactions__header {
 		flex-direction: column !important;
 		align-items: center !important;
 	}
-	.messages__additional_options {
+	.transactions__additional_options {
 		margin-left: 0 !important;
-		width: 100%;
-	}
-	.messages__additional_options > .compose-message-button {
-		margin-left: auto !important;
 	}
 }
 
-.messages {
+.transactions {
     width: 100%;
     height: 100%;
 	display: flex;
 	flex-direction: row;
 }
 
-.messages__content-wrapper {
+.transactions__content-wrapper {
     width: 100%;
     height: 100%;
 	display: flex;
 	flex-direction: column;
 }
 
-.messages__header {
+.transactions__header {
 	display: flex;
 	flex-direction: row;
 	margin: 5px 5px 0 5px;
-    align-items: baseline;
 }
-.messages__header > vaadin-text-field {
+.transactions__header > vaadin-text-field {
 	width: 100%;
 	padding-top: 0 !important;
 }
 
-.messages__header > vaadin-button {
-	margin-left: var(--lumo-space-s);
-}
-
-.messages__additional_options > vaadin-date-picker {
+.transactions__additional_options > vaadin-date-picker {
 	max-width: 110px;
 }
 
-.messages__content {
+.transactions__content {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
     margin: 2px 5px 2px 5px;
 }
 
-.messages__details-footer {
+.transactions__details-footer {
 	background-color: var(--lumo-contrast-5pct);
     width: 100%;
     justify-content: space-between;

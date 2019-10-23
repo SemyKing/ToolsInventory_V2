@@ -1,10 +1,10 @@
 package com.gmail.grigorij.backend.database.facades;
 
-import com.gmail.grigorij.backend.entities.user.PermissionTest;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationPermission;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationPermission;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.utils.AuthenticationService;
 
 import java.util.ArrayList;
@@ -21,8 +21,8 @@ public class PermissionFacade {
 		return mInstance;
 	}
 
-	public List<PermissionTest> getDefaultViewerPermissions() {
-		List<PermissionTest> userPermissions = new ArrayList<>();
+	public List<Permission> getDefaultViewerPermissions() {
+		List<Permission> userPermissions = new ArrayList<>();
 
 		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.USER,
 				OperationPermission.YES,    // OWN
@@ -63,8 +63,8 @@ public class PermissionFacade {
 		return userPermissions;
 	}
 
-	public List<PermissionTest> getDefaultUserPermissions() {
-		List<PermissionTest> userPermissions = new ArrayList<>();
+	public List<Permission> getDefaultUserPermissions() {
+		List<Permission> userPermissions = new ArrayList<>();
 
 		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.INVENTORY_TAB,
 				OperationPermission.YES,    // OWN
@@ -117,8 +117,8 @@ public class PermissionFacade {
 		return userPermissions;
 	}
 
-	public List<PermissionTest> getDefaultForemanPermissions() {
-		List<PermissionTest> userPermissions = new ArrayList<>();
+	public List<Permission> getDefaultForemanPermissions() {
+		List<Permission> userPermissions = new ArrayList<>();
 
 		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.INVENTORY_TAB,
 				OperationPermission.YES,    // OWN
@@ -183,8 +183,8 @@ public class PermissionFacade {
 		return userPermissions;
 	}
 
-	public List<PermissionTest> getDefaultCompanyAdminPermissions() {
-		List<PermissionTest> userPermissions = new ArrayList<>();
+	public List<Permission> getDefaultCompanyAdminPermissions() {
+		List<Permission> userPermissions = new ArrayList<>();
 
 		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.INVENTORY_TAB,
 				OperationPermission.YES,    // OWN
@@ -281,9 +281,9 @@ public class PermissionFacade {
 	}
 
 
-	private PermissionTest constructPermission(Operation action, OperationTarget target,
-	                                           OperationPermission own, OperationPermission company, OperationPermission system, boolean visible) {
-		PermissionTest permissionTest = new PermissionTest();
+	private Permission constructPermission(Operation action, OperationTarget target,
+	                                       OperationPermission own, OperationPermission company, OperationPermission system, boolean visible) {
+		Permission permissionTest = new Permission();
 		permissionTest.setOperation(action);
 		permissionTest.setOperationTarget(target);
 		permissionTest.setPermissionOwn(own);
@@ -300,7 +300,7 @@ public class PermissionFacade {
 			return false;
 		}
 
-		for (PermissionTest permission : AuthenticationService.getCurrentSessionUser().getPermissions()) {
+		for (Permission permission : AuthenticationService.getCurrentSessionUser().getPermissions()) {
 			if (action.equals(permission.getOperation())) {
 				if (target.equals(permission.getOperationTarget())) {
 

@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.enums;
+package com.gmail.grigorij.backend.database.enums;
 
 public enum MessageType {
 	TOOL_FREE,

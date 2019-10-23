@@ -1,13 +1,13 @@
 package com.gmail.grigorij.backend;
 
 import com.gmail.grigorij.backend.database.facades.*;
-import com.gmail.grigorij.backend.embeddable.Location;
-import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -114,16 +114,13 @@ public class DummyDataGenerator {
 		admin.setThemeVariant(LumoStyles.LIGHT);
 		admin.setAdditionalInfo("System Administrator");
 
-//		admin.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.YES, Permission.YES));
-//		admin.setAccessGroup(AccessGroup.SYSTEM_ADMIN);
-
 		admin.setPermissionLevel(PermissionLevel.SYSTEM_ADMIN);
 
 		Person adminP = new Person();
 		adminP.setFirstName("Grigorij");
 		adminP.setLastName("Semykin");
 		adminP.setPhoneNumber("046123456");
-		adminP.setEmail("gs@mail.com");
+		adminP.setEmail("oriel.muaaz@thtt.us");
 
 		admin.setPerson(adminP);
 
@@ -201,13 +198,9 @@ public class DummyDataGenerator {
 						cc.setManufacturer(RandomStringUtils.randomAlphabetic(5));
 						cc.setModel(RandomStringUtils.randomNumeric(10));
 						cc.setToolInfo(RandomStringUtils.randomAlphabetic(10));
-						cc.setSnCode(RandomStringUtils.randomNumeric(7));
+						cc.setSerialNumber(RandomStringUtils.randomNumeric(7));
 						cc.setBarcode(RandomStringUtils.randomNumeric(10));
 						cc.setPrice(999.93);
-
-//						cc.setDateBought(new Date(100, 12, 31));
-//						cc.setDateNextMaintenance(new Date(102, 1, 1));
-
 						cc.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
 
 						cc.setParentCategory(c);

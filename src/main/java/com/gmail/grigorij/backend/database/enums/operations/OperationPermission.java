@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.enums.operations;
+package com.gmail.grigorij.backend.database.enums.operations;
 
 public enum OperationPermission {
 

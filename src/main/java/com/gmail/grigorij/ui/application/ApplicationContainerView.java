@@ -1,9 +1,9 @@
 package com.gmail.grigorij.ui.application;
 
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.MainLayout;
 import com.gmail.grigorij.ui.application.views.*;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -39,6 +39,7 @@ import java.util.List;
 @CssImport("./styles/lumo/lumo-styles.css")
 @CssImport("./styles/components/forms.css")
 @CssImport(value = "./styles/components/grid-style.css", themeFor = "vaadin-grid")
+@CssImport(value = "./styles/components/date-picker-style.css", themeFor = "vaadin-date-picker")
 @CssImport(value = "./styles/components/menu-bar-style.css", themeFor = "vaadin-menu-bar")
 @CssImport(value = "./styles/components/dialogs/vaadin-dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
 public class ApplicationContainerView extends FlexBoxLayout implements PageConfigurator {

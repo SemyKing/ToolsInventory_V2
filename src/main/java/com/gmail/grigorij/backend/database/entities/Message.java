@@ -1,8 +1,7 @@
-package com.gmail.grigorij.backend.entities.message;
+package com.gmail.grigorij.backend.database.entities;
 
-import com.gmail.grigorij.backend.entities.EntityPojo;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.MessageType;
+import com.gmail.grigorij.backend.database.enums.MessageType;
+import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -13,14 +12,13 @@ import java.util.Date;
 
 @NamedQueries({
 		@NamedQuery(name=Message.QUERY_ALL_BY_USER,
-				query="SELECT message FROM Message message WHERE message.recipientId = :" + Message.ID_VAR)
+				query="SELECT message FROM Message message WHERE message.recipientId = :" + ProjectConstants.ID_VAR)
 })
 public class Message extends EntityPojo {
 
 	public static final String QUERY_ALL = "get_all_messages";
 	public static final String QUERY_ALL_BY_USER = "get_all_messages_by_user";
 
-	public static final String ID_VAR = "id_variable";
 
 	@Enumerated(EnumType.STRING)
 	private MessageType messageType;

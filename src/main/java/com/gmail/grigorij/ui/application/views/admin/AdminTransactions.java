@@ -1,7 +1,12 @@
 package com.gmail.grigorij.ui.application.views.admin;
 
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
+import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
@@ -11,6 +16,7 @@ import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.ui.utils.css.size.Left;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.DateConverter;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -165,8 +171,14 @@ public class AdminTransactions extends FlexBoxLayout {
 		detailsDrawer.setContent(transactionsForm);
 
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
+		detailsDrawerFooter.getSave().setEnabled(false);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.TRANSACTIONS_TAB, null)) {
+			detailsDrawerFooter.getSave().setEnabled(true);
+			detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
+		}
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
-		detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
 
 		detailsDrawer.setFooter(detailsDrawerFooter);
 	}
@@ -238,11 +250,6 @@ public class AdminTransactions extends FlexBoxLayout {
 	}
 
 	private void showDetails(Transaction transaction) {
-		if (transaction == null) {
-			UIUtils.showNotification("Cannot show details of NULL Transaction", UIUtils.NotificationType.ERROR);
-			return;
-		}
-
 		transactionsForm.setTransaction(transaction);
 		detailsDrawer.show();
 	}

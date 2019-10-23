@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.DateConverter;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -77,7 +77,7 @@ public class ReadOnlyToolForm extends FormLayout {
 
 		snField = new TextField("SN");
 		snField.setReadOnly(true);
-		sn = new ReadOnlyHasValue<>(tool -> snField.setValue(tool.getSnCode()));
+		sn = new ReadOnlyHasValue<>(tool -> snField.setValue(tool.getSerialNumber()));
 
 		toolInfoField = new TextField("Tool Info");
 		toolInfoField.setReadOnly(true);

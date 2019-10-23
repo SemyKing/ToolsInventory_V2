@@ -1,13 +1,13 @@
 package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
-import com.gmail.grigorij.backend.embeddable.Location;
-import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -98,10 +98,24 @@ public class CompanyForm extends FormLayout {
 				companyLocationsComboBox.setValue(null);
 			}
 		});
+		companyLocationsComboBox.setReadOnly(true);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.LOCATIONS, null)) {
+			companyLocationsComboBox.setReadOnly(false);
+		}
+
 
 		Button newLocationButton = UIUtils.createIconButton(VaadinIcon.FILE_ADD, ButtonVariant.LUMO_CONTRAST);
 		UIUtils.setTooltip("Add New Location", newLocationButton);
 		newLocationButton.addClickListener(e -> constructLocationDialog(null));
+		newLocationButton.setEnabled(false);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.LOCATIONS, null)) {
+			newLocationButton.setEnabled(true);
+		}
+
 
 		//LOCATION & NEW LOCATION BUTTON
 		locationsLayout = new FlexBoxLayout();
@@ -198,19 +212,27 @@ public class CompanyForm extends FormLayout {
 		dialog.getCancelButton().addClickListener(e -> dialog.close());
 
 		dialog.getConfirmButton().setText("Save");
-		dialog.getConfirmButton().addClickListener(e -> {
+		dialog.getConfirmButton().setEnabled(false);
 
-			Location editedLocation = locationForm.getLocation();
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.LOCATIONS, null)) {
 
-			if (editedLocation != null) {
-				if (locationForm.isNew()) {
-					tempLocations.add(editedLocation);
+			dialog.getConfirmButton().setEnabled(true);
+			dialog.getConfirmButton().addClickListener(e -> {
+
+				Location editedLocation = locationForm.getLocation();
+
+				if (editedLocation != null) {
+					if (locationForm.isNew()) {
+						tempLocations.add(editedLocation);
+					}
+					companyLocationsComboBox.setItems(tempLocations);
+
+					dialog.close();
 				}
-				companyLocationsComboBox.setItems(tempLocations);
+			});
+		}
 
-				dialog.close();
-			}
-		});
 		dialog.open();
 	}
 

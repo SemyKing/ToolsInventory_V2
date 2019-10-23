@@ -1,13 +1,11 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.entities.message.Message;
-import com.gmail.grigorij.ui.application.views.Messages;
+import com.gmail.grigorij.backend.database.entities.Message;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ReadOnlyHasValue;
-import com.vaadin.flow.data.binder.ValidationException;
 
 
 public class MessageForm extends FormLayout {

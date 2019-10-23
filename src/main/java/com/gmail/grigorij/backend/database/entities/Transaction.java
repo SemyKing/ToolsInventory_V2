@@ -1,10 +1,8 @@
-package com.gmail.grigorij.backend.entities.transaction;
+package com.gmail.grigorij.backend.database.entities;
 
-import com.gmail.grigorij.backend.entities.EntityPojo;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -20,14 +18,12 @@ import java.util.List;
 
 		@NamedQuery(name=Transaction.QUERY_ALL_BY_COMPANY,
 				query="SELECT transaction FROM Transaction transaction WHERE" +
-						" Transaction.company.id = :" + Transaction.ID_VAR)
+						" Transaction.company.id = :" + ProjectConstants.ID_VAR)
 })
 public class Transaction extends EntityPojo {
 
 	public static final String QUERY_ALL = "get_all_transactions";
 	public static final String QUERY_ALL_BY_COMPANY = "get_all_transactions_by_company";
-
-	public static final String ID_VAR = "id_variable";
 
 
 	private Date date;

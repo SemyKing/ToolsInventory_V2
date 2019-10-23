@@ -1,8 +1,8 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
@@ -46,7 +46,7 @@ public class InventoryFacade {
 		List<InventoryItem> tools;
 		try {
 			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_TYPE, InventoryItem.class)
-					.setParameter(InventoryItem.VAR, type)
+					.setParameter(ProjectConstants.VAR1, type)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -58,7 +58,7 @@ public class InventoryFacade {
 		List<InventoryItem> allInCompany;
 		try {
 			allInCompany = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_COMPANY, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, companyId)
+					.setParameter(ProjectConstants.ID_VAR, companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			allInCompany = null;
@@ -70,8 +70,8 @@ public class InventoryFacade {
 		List<InventoryItem> categories;
 		try {
 			categories = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_COMPANY_BY_TYPE, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, companyId)
-					.setParameter(InventoryItem.VAR, type)
+					.setParameter(ProjectConstants.ID_VAR, companyId)
+					.setParameter(ProjectConstants.VAR1, type)
 					.getResultList();
 		} catch (NoResultException nre) {
 			categories = null;
@@ -83,7 +83,7 @@ public class InventoryFacade {
 		List<InventoryItem> tools;
 		try {
 			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_CURRENT_USER, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, userId)
+					.setParameter(ProjectConstants.ID_VAR, userId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -95,7 +95,7 @@ public class InventoryFacade {
 		List<InventoryItem> tools;
 		try {
 			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_RESERVED_USER, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, userId)
+					.setParameter(ProjectConstants.ID_VAR, userId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -108,7 +108,7 @@ public class InventoryFacade {
 		InventoryItem tool;
 		try {
 			tool = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_BY_ID, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, id)
+					.setParameter(ProjectConstants.ID_VAR, id)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			tool = null;

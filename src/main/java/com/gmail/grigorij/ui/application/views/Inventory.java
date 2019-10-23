@@ -4,16 +4,16 @@ import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.entities.message.Message;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.enums.MessageType;
-import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
-import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.Message;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.enums.MessageType;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.dialogs.CameraDialog;
@@ -359,7 +359,7 @@ public class Inventory extends Div {
 		} else {
 			if (StringUtils.containsIgnoreCase(item.getName(), filter) ||
 						StringUtils.containsIgnoreCase(item.getBarcode(), filter) ||
-						StringUtils.containsIgnoreCase(item.getSnCode(), filter) ||
+						StringUtils.containsIgnoreCase(item.getSerialNumber(), filter) ||
 						StringUtils.containsIgnoreCase(item.getToolInfo(), filter) ||
 						StringUtils.containsIgnoreCase(item.getManufacturer(), filter) ||
 						StringUtils.containsIgnoreCase(item.getModel(), filter) ||
@@ -804,10 +804,9 @@ public class Inventory extends Div {
 		destinationTool.setChildren(sourceTool.getChildren());
 		destinationTool.setInventoryHierarchyType(sourceTool.getInventoryHierarchyType());
 		destinationTool.setName(sourceTool.getName());
-		destinationTool.setQrCode(sourceTool.getQrCode());
 		destinationTool.setSerialNumber(sourceTool.getSerialNumber());
-		destinationTool.setSnCode(sourceTool.getSnCode());
-		destinationTool.setRfCode(sourceTool.getRfCode());
+		destinationTool.setSerialNumber(sourceTool.getSerialNumber());
+		destinationTool.setRF_Code(sourceTool.getRF_Code());
 		destinationTool.setBarcode(sourceTool.getBarcode());
 		destinationTool.setManufacturer(sourceTool.getManufacturer());
 		destinationTool.setModel(sourceTool.getModel());

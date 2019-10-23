@@ -1,14 +1,15 @@
 package com.gmail.grigorij.ui.application.views.admin;
 
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.application.views.Admin;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
@@ -79,18 +80,29 @@ public class AdminCompanies extends FlexBoxLayout {
 
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
 
-		menuItem.getSubMenu().addItem("New Company", e -> {
-			grid.deselectAll();
-			showDetails(null);
-		});
-		menuItem.getSubMenu().add(new Hr());
-		menuItem.getSubMenu().addItem("Import", e -> {
-			importCompanies();
-		});
-		menuItem.getSubMenu().add(new Hr());
-		menuItem.getSubMenu().addItem("Export", e -> {
-			exportCompanies();
-		});
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.COMPANY, null)) {
+			menuItem.getSubMenu().addItem("New Company", e -> {
+				grid.deselectAll();
+				showDetails(null);
+			});
+			menuItem.getSubMenu().add(new Hr());
+		}
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.IMPORT, OperationTarget.COMPANY, null)) {
+			menuItem.getSubMenu().addItem("Import", e -> {
+				importCompanies();
+			});
+			menuItem.getSubMenu().add(new Hr());
+		}
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EXPORT, OperationTarget.COMPANY, null)) {
+			menuItem.getSubMenu().addItem("Export", e -> {
+				exportCompanies();
+			});
+		}
 
 		header.add(actionsMenuBar);
 
@@ -157,7 +169,14 @@ public class AdminCompanies extends FlexBoxLayout {
 		detailsDrawer.setContent(companyForm);
 
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
-		detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
+		detailsDrawerFooter.getSave().setEnabled(false);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.COMPANY, null)) {
+			detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
+			detailsDrawerFooter.getSave().setEnabled(true);
+		}
+
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 	}

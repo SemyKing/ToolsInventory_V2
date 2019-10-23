@@ -1,4 +1,4 @@
-package com.gmail.grigorij.backend.enums.permissions;
+package com.gmail.grigorij.backend.database.enums.permissions;
 
 public enum PermissionRange {
 

@@ -1,8 +1,6 @@
 package com.gmail.grigorij.ui.application.authentication.login;
 
-import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.ui.components.dialogs.ForgotPasswordDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;

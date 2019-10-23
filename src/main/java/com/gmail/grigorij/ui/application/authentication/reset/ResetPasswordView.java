@@ -1,11 +1,13 @@
 package com.gmail.grigorij.ui.application.authentication.reset;
 
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.recoverylink.RecoveryLink;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.database.entities.RecoveryLink;
+import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.css.Display;
@@ -14,10 +16,12 @@ import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.utils.ProjectConstants;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -31,51 +35,40 @@ import com.vaadin.flow.theme.lumo.Lumo;
 
 @Route(value = "reset-password")
 @StyleSheet("context://styles/views/password-reset.css")
-public class ResetPasswordView extends FlexBoxLayout implements HasUrlParameter<String> {
+public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 
 	private static final String CLASS_NAME = "password-reset-view";
 
-	private FlexBoxLayout formLayout;
+	private Div content;
 	private RecoveryLink link;
 
 	public ResetPasswordView() {
-		setSizeFull();
 		setClassName(CLASS_NAME);
-		setJustifyContentMode(JustifyContentMode.CENTER);
+
+		Div wrapperDiv = new Div();
+		wrapperDiv.addClassName(CLASS_NAME+"__wrapper");
 
 		Image logoImage = new Image("/" + ProjectConstants.IMAGES_PATH + ProjectConstants.LOGO_FULL_ROUND_SVG,"logo");
 		logoImage.setClassName(CLASS_NAME + "__image");
 
 		H2 logoText = new H2(ProjectConstants.PROJECT_NAME_FULL);
 
-		FlexBoxLayout logoWrapper = new FlexBoxLayout();
+		Div logoWrapper = new Div();
 		logoWrapper.setClassName(CLASS_NAME + "__logo-wrapper");
-		logoWrapper.setFlexDirection(FlexDirection.ROW);
-		logoWrapper.setDisplay(Display.FLEX);
-		logoWrapper.add(logoImage, logoText);
-		logoWrapper.setComponentMargin(logoImage, Right.L);
+		logoWrapper.add(logoText, logoImage);
 
+		wrapperDiv.add(logoWrapper);
 
-		FlexBoxLayout wrapper = new FlexBoxLayout();
-		wrapper.setClassName(CLASS_NAME + "__form-wrapper");
-		wrapper.setDisplay(Display.FLEX);
+		content = new Div();
+		content.setClassName(CLASS_NAME + "__content");
 
-		formLayout = new FlexBoxLayout();
-		formLayout.setClassName(CLASS_NAME + "__form-layout");
-		formLayout.setFlexDirection(FlexDirection.COLUMN);
-		formLayout.setDisplay(Display.FLEX);
+		wrapperDiv.add(content);
 
-		formLayout.add(logoWrapper);
-
-
-		wrapper.add(formLayout);
-
-		add(wrapper);
+		add(wrapperDiv);
 	}
 
 	@Override
 	public void setParameter(BeforeEvent event, String tokenParameter) {
-
 		tokenParameter = tokenParameter.replaceAll("[^a-zA-Z]", "");
 
 		if (tokenParameter.length() < ProjectConstants.RECOVERY_TOKEN_LENGTH || tokenParameter.length() > ProjectConstants.RECOVERY_TOKEN_LENGTH) {
@@ -108,34 +101,38 @@ public class ResetPasswordView extends FlexBoxLayout implements HasUrlParameter<
 		}
 	}
 
+
 	private void showTokenInvalid() {
 		Span message = new Span("Password reset link is invalid or has expired");
-		message.getElement().getStyle().set("font-size", "25px");
+		message.addClassName(CLASS_NAME + "__exp-link");
 
-		formLayout.add(message);
+		content.removeAll();
+		content.add(message);
 	}
 
 	private void showPasswordReset() {
-		formLayout.add(UIUtils.createH3Label("Reset Password"));
+		content.removeAll();
+		content.add(UIUtils.createH3Label("Reset Password"));
 
 		PasswordField passwordField1 = new PasswordField("New Password");
-		passwordField1.setWidthFull();
 		passwordField1.setRequired(true);
 		passwordField1.setPrefixComponent(VaadinIcon.LOCK.create());
 
+		content.add(passwordField1);
+
 		PasswordField passwordField2 = new PasswordField("Repeat Password");
-		passwordField2.setWidthFull();
 		passwordField2.setRequired(true);
 		passwordField2.setPrefixComponent(VaadinIcon.LOCK.create());
 
-		Button resetPasswordButton = UIUtils.createButton("Reset Password", ButtonVariant.LUMO_PRIMARY);
-		resetPasswordButton.setWidthFull();
-		resetPasswordButton.addClickListener(resetEvent -> {
+		content.add(passwordField2);
+
+		Button savePasswordButton = UIUtils.createButton("Save Password", ButtonVariant.LUMO_PRIMARY);
+		savePasswordButton.addClickShortcut(Key.ENTER);
+		savePasswordButton.addClickListener(resetEvent -> {
 			validatePasswords(passwordField1, passwordField2);
 		});
 
-		formLayout.add(passwordField1, passwordField2, resetPasswordButton);
-		formLayout.setComponentMargin(resetPasswordButton, Top.M);
+		content.add(savePasswordButton);
 	}
 
 	private void validatePasswords(PasswordField p1, PasswordField p2) {
@@ -164,27 +161,29 @@ public class ResetPasswordView extends FlexBoxLayout implements HasUrlParameter<
 	}
 
 	private void resetPassword(String newPassword) {
-		User user = UserFacade.getInstance().getUserByEmail(link.getEmail());
+		User user = link.getUser();
 
 		if (user == null) {
-			UIUtils.showNotification("User is NULL", UIUtils.NotificationType.WARNING);
+			System.err.println("USER IS NULL IN RECOVERYLINK -> PASSWORD RECOVERY");
+			UIUtils.showNotification("Error occurred, please contact System Administrator", UIUtils.NotificationType.ERROR);
 		} else {
-
 			user.setPassword(newPassword);
+
 			if (UserFacade.getInstance().update(user)) {
 				UIUtils.showNotification("Password reset", UIUtils.NotificationType.SUCCESS);
 
-//				Transaction tr = new Transaction();
-//				tr.setTransactionOperation(TransactionType.EDIT);
-//				tr.setTransactionTarget(TransactionTarget.USER);
-//				tr.setUser(user);
-//				tr.setDestinationUser(user);
-//				tr.setAdditionalInfo("User has reset the password");
-//				TransactionFacade.getInstance().insert(tr);
+				Transaction transaction = new Transaction();
+				transaction.setUser(user);
+				transaction.setCompany(user.getCompany());
+				transaction.setOperation(Operation.CHANGE);
+				transaction.setOperationTarget1(OperationTarget.PASSWORD);
+				TransactionFacade.getInstance().insert(transaction);
 
-				// REMOVE LINK OR SET DELETED?
 				if (!RecoveryLinkFacade.getInstance().remove(link)) {
 					System.err.println("Error removing RecoveryLink");
+
+					link.setDeleted(true);
+					RecoveryLinkFacade.getInstance().update(link);
 				}
 
 				if (UI.getCurrent() != null) {

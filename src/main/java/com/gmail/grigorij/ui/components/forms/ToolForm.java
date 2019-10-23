@@ -4,15 +4,15 @@ import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
-import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.ui.application.views.admin.AdminInventory;
 import com.gmail.grigorij.ui.components.dialogs.CameraDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
@@ -61,7 +61,7 @@ public class ToolForm extends FormLayout {
 	private TextField nameField;
 	private TextField barcode;
 	private FlexBoxLayout barcodeLayout;
-	private TextField snCode;
+	private TextField serialNumber;
 	private TextField toolInfo;
 	private TextField manufacturer;
 	private TextField model;
@@ -129,7 +129,7 @@ public class ToolForm extends FormLayout {
 		barcodeLayout.setComponentMargin(barcode, Right.S);
 
 
-		snCode = new TextField("SN");
+		serialNumber = new TextField("Serial Number");
 		toolInfo = new TextField("Tool Info");
 		manufacturer = new TextField("Manufacturer");
 		model = new TextField("Model");
@@ -155,8 +155,10 @@ public class ToolForm extends FormLayout {
 		categoryComboBox.setItemLabelGenerator(InventoryItem::getName);
 		categoryComboBox.setRequired(true);
 		categoryComboBox.addValueChangeListener(e -> {
-			int level = e.getValue().getLevel();
-			tool.setLevel(++level);
+			if (e.getValue() != null) {
+				int level = e.getValue().getLevel();
+				tool.setLevel(++level);
+			}
 		});
 
 		Button editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
@@ -259,12 +261,10 @@ public class ToolForm extends FormLayout {
 		setResponsiveSteps(
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
-
-
 		add(entityStatusDiv);
 		add(nameField);
 		add(barcodeLayout);
-		add(snCode);
+		add(serialNumber);
 		add(toolInfo);
 		add(manufacturer);
 		add(model);
@@ -302,8 +302,8 @@ public class ToolForm extends FormLayout {
 		binder.forField(barcode)
 				.bind(InventoryItem::getBarcode, InventoryItem::setBarcode);
 
-		binder.forField(snCode)
-				.bind(InventoryItem::getSnCode, InventoryItem::setSnCode);
+		binder.forField(serialNumber)
+				.bind(InventoryItem::getSerialNumber, InventoryItem::setSerialNumber);
 
 		binder.forField(toolInfo)
 				.bind(InventoryItem::getToolInfo, InventoryItem::setToolInfo);
@@ -355,6 +355,12 @@ public class ToolForm extends FormLayout {
 
 
 	private void initDynamicFormItems() {
+		companyComboBox.setReadOnly(true);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			companyComboBox.setReadOnly(false);
+		}
+
 		updateComboBoxes(tool.getCompany());
 	}
 
@@ -440,7 +446,11 @@ public class ToolForm extends FormLayout {
 
 		originalTool = new InventoryItem(this.tool);
 
-		binder.readBean(tool);
+		binder.readBean(this.tool);
+
+		if (isNew) {
+			companyComboBox.setValue(AuthenticationService.getCurrentSessionUser().getCompany());
+		}
 	}
 
 	public InventoryItem getTool() {
@@ -516,8 +526,8 @@ public class ToolForm extends FormLayout {
 		if (!originalTool.getBarcode().equals(tool.getBarcode())) {
 			changes.add("Barcode changed from: '" + originalTool.getBarcode() + "', to: '" + tool.getBarcode() + "'");
 		}
-		if (!originalTool.getSnCode().equals(tool.getSnCode())) {
-			changes.add("SN changed from: '" + originalTool.getSnCode() + "', to: '" + tool.getSnCode() + "'");
+		if (!originalTool.getSerialNumber().equals(tool.getSerialNumber())) {
+			changes.add("SN changed from: '" + originalTool.getSerialNumber() + "', to: '" + tool.getSerialNumber() + "'");
 		}
 		if (!originalTool.getToolInfo().equals(tool.getToolInfo())) {
 			changes.add("Tool info changed from: '" + originalTool.getToolInfo() + "', to: '" + tool.getToolInfo() + "'");

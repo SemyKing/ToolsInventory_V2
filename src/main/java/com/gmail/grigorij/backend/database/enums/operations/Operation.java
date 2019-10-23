@@ -1,6 +1,6 @@
-package com.gmail.grigorij.backend.enums.operations;
+package com.gmail.grigorij.backend.database.enums.operations;
 
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 
 /**
  * PermissionLevel is used for Access Rights management.
@@ -10,17 +10,25 @@ import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
 public enum Operation {
 
 	VIEW("View", PermissionLevel.USER),
+	SEND("Send", PermissionLevel.USER),
+
 	ADD("Add", PermissionLevel.COMPANY_ADMIN),
 	EDIT("Edit", PermissionLevel.COMPANY_ADMIN),
-	DELETE("Delete", PermissionLevel.SYSTEM_ADMIN),
-	SEND("Send", PermissionLevel.USER),
-	LOG_IN("Log In", PermissionLevel.SYSTEM_ADMIN),
-	LOG_OUT("Log Out", PermissionLevel.SYSTEM_ADMIN),
+	COPY("Copy", PermissionLevel.COMPANY_ADMIN),
+	IMPORT("Import", PermissionLevel.COMPANY_ADMIN),
+	EXPORT("Export", PermissionLevel.COMPANY_ADMIN),
 	REPORT("Report", PermissionLevel.COMPANY_ADMIN),
 	RESERVE("Reserve", PermissionLevel.COMPANY_ADMIN),
 	TAKE("Take", PermissionLevel.COMPANY_ADMIN),
-	RETURN("Return", PermissionLevel.COMPANY_ADMIN),
-	CANCEL_RESERVATION("Cancel Reservation", PermissionLevel.COMPANY_ADMIN);
+
+	DELETE("Delete", PermissionLevel.SYSTEM_ADMIN),
+
+	LOG_IN("Log In", PermissionLevel.FOR_TRANSACTIONS),
+	LOG_OUT("Log Out", PermissionLevel.FOR_TRANSACTIONS),
+	RETURN("Return", PermissionLevel.FOR_TRANSACTIONS),
+	CANCEL_RESERVATION("Cancel Reservation", PermissionLevel.FOR_TRANSACTIONS),
+	REQUEST("Request", PermissionLevel.FOR_TRANSACTIONS),
+	CHANGE("Change", PermissionLevel.FOR_TRANSACTIONS);
 
 	private final String name;
 	private final PermissionLevel minimalPermissionLevel;
