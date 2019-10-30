@@ -34,6 +34,12 @@ public class PermissionsDialog extends CustomDialog {
 	private List<Permission> permissions = new ArrayList<>();
 	private List<PermissionRowLayout> permissionRows = new ArrayList<>();
 
+	// FOR TRANSACTION CHANGES
+	private List<PermissionRowLayout> addedPermissions = new ArrayList<>();
+
+
+	private List<String> changes = new ArrayList<>();
+
 	private FlexBoxLayout content;
 	private Div contentHeader;
 
@@ -60,10 +66,14 @@ public class PermissionsDialog extends CustomDialog {
 
 		if (!self) { // CANNOT ADD PERMISSIONS TO SELF
 			if (systemAdmin || PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
-				Button addPermissionButton = UIUtils.createButton("Add Permission");
+				Button addPermissionButton = UIUtils.createButton("Add Permission", ButtonVariant.LUMO_PRIMARY);
+				addPermissionButton.getElement().getStyle().set("min-height", "31.5px");
 				addPermissionButton.addClickListener(e -> {
-					content.add(constructPermissionRow(null));
+					PermissionRowLayout permissionRow = constructPermissionRow(null);
+					content.add(permissionRow);
 					content.add(new Hr());
+
+					addedPermissions.add(permissionRow);
 				});
 
 				getContent().add(addPermissionButton);
@@ -240,6 +250,9 @@ public class PermissionsDialog extends CustomDialog {
 				}
 				permissionRows.remove(permissionRow);
 				dialog.close();
+
+				addedPermissions.removeIf(pr -> pr.equals(permissionRow));
+				changes.add("Deleted Permission: " + permissionRow.getOperationComboBox().getValue() + " " + permissionRow.getTargetComboBox().getValue());
 			});
 			dialog.open();
 		});
@@ -348,6 +361,16 @@ public class PermissionsDialog extends CustomDialog {
 		}
 
 		return true;
+	}
+
+	public List<String> getChanges() {
+		for (PermissionRowLayout permissionRow : addedPermissions) {
+			changes.add("Added Permission: " + permissionRow.getOperationComboBox().getValue().getName() + " " + permissionRow.getTargetComboBox().getValue().getName() +
+							" Own: " + permissionRow.getPermissionOwnComboBox().getValue().getName() +
+							" Company: " + permissionRow.getPermissionCompanyComboBox().getValue().getName());
+		}
+
+		return changes;
 	}
 
 

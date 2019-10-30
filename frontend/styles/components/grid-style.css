@@ -1,12 +1,17 @@
 .grid-view {
     transition: padding var(--transition-duration-xs);
     webkit-overflow-scrolling: touch;
-    text-overflow: ellipsis;
 }
 
 [part~="cell"] {
 	font-weight: 500;
+
 }
+
+[part~="cell"] ::slotted(vaadin-grid-cell-content) {
+    padding: 0 var(--lumo-space-xs) !important;
+}
+
 
 ::-webkit-scrollbar {
     width: var(--lumo-space-s);

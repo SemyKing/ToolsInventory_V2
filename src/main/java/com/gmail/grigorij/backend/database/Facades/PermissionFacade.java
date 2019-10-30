@@ -90,7 +90,7 @@ public class PermissionFacade {
 				OperationPermission.NO,     // SYSTEM
 				false));
 
-		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES_TAB,
+		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
 				OperationPermission.NO,     // SYSTEM
@@ -156,7 +156,7 @@ public class PermissionFacade {
 				OperationPermission.NO,     // SYSTEM
 				false));
 
-		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES_TAB,
+		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
 				OperationPermission.NO,     // SYSTEM
@@ -229,7 +229,7 @@ public class PermissionFacade {
 				OperationPermission.NO,     // SYSTEM
 				true));
 
-		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES_TAB,
+		userPermissions.add(constructPermission(Operation.SEND, OperationTarget.MESSAGES,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
 				OperationPermission.NO,     // SYSTEM

@@ -13,6 +13,8 @@
     --transition-duration-m: 240ms;
     --transition-duration-l: 320ms;
 
+	--date-picker-width: 130px;
+
     --custom-shadow: 0 2px 6px -1px var(--lumo-shade-40pct), 0 1px 20px -4px;
 }
 @media (max-width: 479px) {

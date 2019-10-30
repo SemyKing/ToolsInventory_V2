@@ -1,11 +1,9 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.InventoryFacade;
-import com.gmail.grigorij.backend.database.facades.PermissionFacade;
-import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
@@ -50,6 +48,7 @@ public class ToolForm extends FormLayout {
 
 	private final String CLASS_NAME = "form";
 	private final AdminInventory adminInventory;
+	private final CategoryForm categoryForm = new CategoryForm();
 
 	private Binder<InventoryItem> binder;
 	private InventoryItem tool, originalTool;
@@ -68,7 +67,8 @@ public class ToolForm extends FormLayout {
 	private ComboBox<Company> companyComboBox;
 	private ComboBox<InventoryItem> categoryComboBox;
 	private FlexBoxLayout categoryLayout;
-	private Div toolUsageDiv;
+	private Div locationAndUsageDiv;
+	private ComboBox<Location> locationComboBox;
 	private ComboBox<ToolUsageStatus> toolUsageStatusComboBox;
 	private Div toolUsersDiv;
 	private ComboBox<User> toolCurrentUserComboBox;
@@ -180,16 +180,24 @@ public class ToolForm extends FormLayout {
 		categoryLayout.setComponentMargin(categoryComboBox, Right.S);
 
 
+		locationComboBox = new ComboBox<>();
+		locationComboBox.setLabel("Location");
+		locationComboBox.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
+		locationComboBox.setItems(AuthenticationService.getCurrentSessionUser().getCompany().getLocations());
+		locationComboBox.setItemLabelGenerator(Location::getName);
+//		locationComboBox.setRequired(true);
+
 		toolUsageStatusComboBox = new ComboBox<>();
 		toolUsageStatusComboBox.setLabel("Usage Status");
+		toolUsageStatusComboBox.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
 		toolUsageStatusComboBox.setItems(EnumSet.allOf(ToolUsageStatus.class));
 		toolUsageStatusComboBox.setItemLabelGenerator(ToolUsageStatus::getName);
 
-		toolUsageDiv = new Div();
-		toolUsageDiv.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
-		toolUsageDiv.add(toolUsageStatusComboBox);
+		locationAndUsageDiv = new Div();
+		locationAndUsageDiv.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
+		locationAndUsageDiv.add(locationComboBox, toolUsageStatusComboBox);
 
-		setColspan(toolUsageDiv, 2);
+		setColspan(locationAndUsageDiv, 2);
 
 
 		toolCurrentUserComboBox = new ComboBox<>();
@@ -276,7 +284,7 @@ public class ToolForm extends FormLayout {
 		add(companyComboBox);
 		add(categoryLayout);
 
-		add(toolUsageDiv);
+		add(locationAndUsageDiv);
 		add(toolUsersDiv);
 
 		hr = new Hr();
@@ -322,6 +330,10 @@ public class ToolForm extends FormLayout {
 				.asRequired("Category is required")
 				.withNullRepresentation(InventoryFacade.getInstance().getRootCategory())
 				.bind(InventoryItem::getParentCategory, InventoryItem::setParentCategory);
+
+		binder.forField(locationComboBox)
+//				.asRequired("Usage Status is required")
+				.bind(InventoryItem::getCurrentLocation, InventoryItem::setCurrentLocation);
 
 		binder.forField(toolUsageStatusComboBox)
 				.asRequired("Usage Status is required")
@@ -375,6 +387,7 @@ public class ToolForm extends FormLayout {
 			categories.add(0, InventoryFacade.getInstance().getRootCategory());
 
 			categoryComboBox.setItems(categories);
+			categoryComboBox.setValue(InventoryFacade.getInstance().getRootCategory());
 
 			toolCurrentUserComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
 			toolReservedByUserComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
@@ -496,10 +509,11 @@ public class ToolForm extends FormLayout {
 
 				binder.writeBean(tool);
 
-				if (tool.getParentCategory().equals(InventoryFacade.getInstance().getRootCategory())) {
-					System.out.println("ROOT PARENT -> NULL");
-					tool.setParentCategory(null);
-				}
+//				if (tool.getParentCategory() != null) {
+//					if (tool.getParentCategory().equals(InventoryFacade.getInstance().getRootCategory())) {
+//						tool.setParentCategory(null);
+//					}
+//				}
 
 				return tool;
 			}

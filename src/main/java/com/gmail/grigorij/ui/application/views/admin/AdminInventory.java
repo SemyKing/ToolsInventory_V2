@@ -3,7 +3,7 @@ package com.gmail.grigorij.ui.application.views.admin;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
@@ -243,7 +243,7 @@ public class AdminInventory extends FlexBoxLayout {
 		detailsDrawerFooter.getSave().setEnabled(false);
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.COMPANY, null)) {
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.INVENTORY_TOOL, null)) {
 			detailsDrawerFooter.getSave().addClickListener(e -> toolSaveOnClick());
 			detailsDrawerFooter.getSave().setEnabled(true);
 		}
@@ -293,8 +293,6 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 	private void showToolDetails(InventoryItem tool) {
-//		copyToolButton.setEnabled( tool != null );
-
 		toolForm.setTool(tool);
 		detailsDrawer.show();
 	}
@@ -334,12 +332,6 @@ public class AdminInventory extends FlexBoxLayout {
 			return;
 		}
 
-		if (editedCategory.getParentCategory() != null) {
-			if (editedCategory.getParentCategory().equals(InventoryFacade.getInstance().getRootCategory())) {
-				editedCategory.setParentCategory(null);
-			}
-		}
-
 		if (categoryForm.isNew()) {
 			if (InventoryFacade.getInstance().insert(editedCategory)) {
 				UIUtils.showNotification("Category created", UIUtils.NotificationType.SUCCESS);
@@ -351,7 +343,7 @@ public class AdminInventory extends FlexBoxLayout {
 			if (InventoryFacade.getInstance().update(editedCategory)) {
 				UIUtils.showNotification("Category updated", UIUtils.NotificationType.SUCCESS);
 			} else {
-				UIUtils.showNotification("Category updated failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Category update failed", UIUtils.NotificationType.ERROR);
 				return;
 			}
 		}
@@ -429,6 +421,11 @@ public class AdminInventory extends FlexBoxLayout {
 
 
 	private void constructToolCopyDialog() {
+		if (selectedTools == null || selectedTools.get(0) == null) {
+			UIUtils.showNotification("Cannot copy this tool", UIUtils.NotificationType.INFO);
+			return;
+		}
+
 		CustomDialog dialog = new CustomDialog();
 		dialog.setHeader(UIUtils.createH3Label("Copy Tool Information"));
 
@@ -535,6 +532,7 @@ public class AdminInventory extends FlexBoxLayout {
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
 				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.INVENTORY_TOOL, null)) {
 
+			bulkEditDialog.getConfirmButton().setEnabled(true);
 			bulkEditDialog.getConfirmButton().addClickListener(confirmEvent -> {
 
 				boolean error = false;
@@ -563,7 +561,7 @@ public class AdminInventory extends FlexBoxLayout {
 						if (error) {
 							UIUtils.showNotification("Tools Update Error", UIUtils.NotificationType.ERROR);
 						} else {
-							UIUtils.showNotification("Tools Updated successful", UIUtils.NotificationType.SUCCESS);
+							UIUtils.showNotification("Tools Updated", UIUtils.NotificationType.SUCCESS);
 						}
 					} else {    // COPY TOOLS
 						for (InventoryItem tool : bulkTools) {
@@ -585,7 +583,7 @@ public class AdminInventory extends FlexBoxLayout {
 						if (error) {
 							UIUtils.showNotification("Tools Insert Error", UIUtils.NotificationType.ERROR);
 						} else {
-							UIUtils.showNotification("Tools Inserted Successful", UIUtils.NotificationType.SUCCESS);
+							UIUtils.showNotification("Tools Created", UIUtils.NotificationType.SUCCESS);
 						}
 					}
 

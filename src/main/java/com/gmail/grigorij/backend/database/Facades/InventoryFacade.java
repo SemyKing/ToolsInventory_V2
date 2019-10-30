@@ -1,7 +1,7 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.utils.ProjectConstants;
 
@@ -16,6 +16,7 @@ public class InventoryFacade {
 	private static InventoryFacade mInstance;
 	private InventoryFacade() {
 		rootCategory = new InventoryItem();
+		rootCategory.setId(-2L);
 		rootCategory.setName(ProjectConstants.ROOT_CATEGORY);
 		rootCategory.setInventoryHierarchyType(InventoryHierarchyType.CATEGORY);
 	}
@@ -79,7 +80,7 @@ public class InventoryFacade {
 		return categories;
 	}
 
-	public List<InventoryItem> getAllToolsByCurrentUser(long userId) {
+	public List<InventoryItem> getAllToolsByCurrentUserId(long userId) {
 		List<InventoryItem> tools;
 		try {
 			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_CURRENT_USER, InventoryItem.class)
@@ -91,7 +92,7 @@ public class InventoryFacade {
 		return tools;
 	}
 
-	public List<InventoryItem> getAllToolsByReservedUser(long userId) {
+	public List<InventoryItem> getAllToolsByReservedUserId(long userId) {
 		List<InventoryItem> tools;
 		try {
 			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_RESERVED_USER, InventoryItem.class)
@@ -116,12 +117,25 @@ public class InventoryFacade {
 		return tool;
 	}
 
+
+	public List<InventoryItem> getAllByParentId(long id) {
+		List<InventoryItem> items;
+		try {
+			items = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_PARENT_ID, InventoryItem.class)
+					.setParameter(ProjectConstants.ID_VAR, id)
+					.getResultList();
+		} catch (NoResultException nre) {
+			items = null;
+		}
+		return items;
+	}
+
 	// TODO: LIST OF TOOLS IF MULTIPLE
 	public InventoryItem getToolByCode(String code) {
 		InventoryItem tool;
 		try {
-			tool = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getToolByCode", InventoryItem.class)
-					.setParameter("code_var", code)
+			tool = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_BY_CODE_VAR, InventoryItem.class)
+					.setParameter(ProjectConstants.VAR1, code)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			tool = null;

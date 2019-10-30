@@ -67,3 +67,12 @@
 .my-tools-grid {
 	min-width: 60vw;
 }
+.location-selection-layout {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+    justify-content: center;
+}
+.location-selection-layout > vaadin-combo-box {
+	width: 50%
+}

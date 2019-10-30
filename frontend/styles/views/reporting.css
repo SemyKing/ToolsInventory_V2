@@ -1,1 +1,63 @@
 
+@media (max-width: 1024px) {
+	.reporting__header {
+		flex-direction: column !important;
+	}
+	.reporting__header > vaadin-text-field {
+    	width: 100%;
+    }
+	.reporting__additional_options {
+		display: flex;
+        width: 100%;
+	}
+	.reporting__additional_options > vaadin-checkbox {
+		margin-right: auto;
+	}
+}
+
+.reporting {
+    width: 100%;
+    height: 100%;
+	display: flex;
+	flex-direction: row;
+}
+
+.reporting__content-wrapper {
+    width: 100%;
+    height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.reporting__header {
+	display: flex;
+	flex-direction: row;
+	margin: 5px 5px 0 5px;
+    align-items: center;
+}
+.reporting__header > vaadin-text-field {
+	flex-grow: 1;
+}
+
+.reporting__additional_options {
+    display: flex;
+    align-items: center;
+}
+.reporting__additional_options > vaadin-button {
+	margin-left: var(--lumo-space-s);
+}
+
+.reporting__content {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+    margin: 2px 5px 2px 5px;
+}
+
+.reporting__details-footer {
+	background-color: var(--lumo-contrast-5pct);
+    width: 100%;
+    justify-content: space-between;
+    padding-left: var(--lumo-space-m);
+    padding-right: var(--lumo-space-m);
+}

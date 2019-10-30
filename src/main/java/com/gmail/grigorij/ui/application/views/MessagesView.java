@@ -2,12 +2,9 @@ package com.gmail.grigorij.ui.application.views;
 
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
 import com.gmail.grigorij.backend.database.entities.Message;
-import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.MessageType;
-import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
@@ -40,7 +37,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.PageTitle;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
@@ -49,18 +45,11 @@ import java.util.List;
 import java.util.Locale;
 
 
-/**
- * User receives Message when:
- * - The tool that user has reserved becomes Free
- * - Other user sends a simple Message
- */
-
-@PageTitle("Messages")
 @CssImport("./styles/views/messages.css")
-public class Messages extends Div {
+public class MessagesView extends Div {
 
 	private static final String CLASS_NAME = "messages";
-	private final MessageForm messageForm = new MessageForm();
+	private final MessageForm messageForm = new MessageForm(this);
 
 	private DatePicker dateStartField, dateEndField;
 
@@ -70,7 +59,7 @@ public class Messages extends Div {
 	private DetailsDrawer detailsDrawer;
 
 
-	public Messages() {
+	public MessagesView() {
 		addClassName(CLASS_NAME);
 
 		Div contentWrapper = new Div();
@@ -141,7 +130,7 @@ public class Messages extends Div {
 
 
 		if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.SEND, OperationTarget.MESSAGES_TAB, PermissionRange.COMPANY)) {
+			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.SEND, OperationTarget.MESSAGES, PermissionRange.COMPANY)) {
 				composeMessageButton.setEnabled(false);
 			}
 		}
@@ -167,6 +156,7 @@ public class Messages extends Div {
 		grid = new Grid<>();
 		grid.setClassName("grid-view");
 		grid.setSizeFull();
+
 		grid.asSingleSelect().addValueChangeListener(e -> {
 			if (grid.asSingleSelect().getValue() != null) {
 				showDetails(grid.asSingleSelect().getValue());
@@ -257,15 +247,6 @@ public class Messages extends Div {
 		closeDetailsButton.addClickListener(e -> closeDetails());
 		footer.add(closeDetailsButton);
 
-		Button takeToolButton = UIUtils.createButton("Take Tool", VaadinIcon.HAND, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
-		takeToolButton.addClickListener(e -> {
-			Message message = grid.asSingleSelect().getValue();
-			if (message != null) {
-				takeTool(message);
-			}
-		});
-		footer.add(takeToolButton);
-
 		Button replyButton = UIUtils.createButton("Reply", VaadinIcon.REPLY, ButtonVariant.LUMO_PRIMARY);
 		replyButton.addClickListener(reply -> {
 			Message message = grid.asSingleSelect().getValue();
@@ -328,7 +309,7 @@ public class Messages extends Div {
 		}
 	}
 
-	private void closeDetails() {
+	public void closeDetails() {
 		detailsDrawer.hide();
 		grid.deselectAll();
 	}
@@ -494,38 +475,6 @@ public class Messages extends Div {
 			Broadcaster.broadcastToUser(recipientId, "You have new message");
 		} else {
 			UIUtils.showNotification("Message sending failed", UIUtils.NotificationType.ERROR);
-		}
-	}
-
-	private void takeTool(Message message) {
-		if (message == null || message.getToolId() == null) {
-			UIUtils.showNotification("No Tool in message", UIUtils.NotificationType.INFO);
-			return;
-		}
-
-		InventoryItem tool = InventoryFacade.getInstance().getById(message.getToolId());
-
-		tool.setCurrentUser(AuthenticationService.getCurrentSessionUser());
-		tool.setReservedUser(null);
-		tool.setUsageStatus(ToolUsageStatus.IN_USE);
-
-		if (InventoryFacade.getInstance().update(tool)) {
-
-			Transaction transaction = new Transaction();
-			transaction.setUser(AuthenticationService.getCurrentSessionUser());
-			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-			transaction.setOperation(Operation.TAKE);
-			transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
-			transaction.setTargetDetails(tool.getName());
-			TransactionFacade.getInstance().insert(transaction);
-
-			UIUtils.showNotification("Tool taken", UIUtils.NotificationType.SUCCESS);
-
-
-			message.setToolId(null);
-			MessageFacade.getInstance().update(message);
-		} else {
-			UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
 		}
 	}
 }

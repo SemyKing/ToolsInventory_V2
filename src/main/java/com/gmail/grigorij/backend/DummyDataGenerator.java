@@ -4,7 +4,7 @@ import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.Person;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
@@ -26,6 +26,7 @@ public class DummyDataGenerator {
 	private int toolCategoriesCount = 5;
 	private int subCategories = 2;
 	private int toolsPerCategory = toolsCount / toolCategoriesCount;
+
 
 	private List<Company> companies = new ArrayList<>();
 	private List<User> users = new ArrayList<>();
@@ -64,6 +65,16 @@ public class DummyDataGenerator {
 		companyLocation.setCountry("Finland");
 		companyLocation.setCity("Vantaa");
 		companyLocation.setPostcode("01530");
+
+
+		Location dummy_location = new Location();
+		dummy_location.setName("dummy location");
+		dummy_location.setAddressLine1("dummy location");
+		dummy_location.setCountry("dummy location");
+		dummy_location.setCity("dummy location");
+		dummy_location.setPostcode("dummy location");
+
+		administrationCompany.getLocations().add(dummy_location);
 
 		administrationCompany.setAddress(companyLocation);
 		administrationCompany.setContactPerson(contactPerson);
@@ -117,14 +128,19 @@ public class DummyDataGenerator {
 		admin.setPermissionLevel(PermissionLevel.SYSTEM_ADMIN);
 
 		Person adminP = new Person();
-		adminP.setFirstName("Grigorij");
-		adminP.setLastName("Semykin");
+		adminP.setFirstName("System");
+		adminP.setLastName("Admin");
 		adminP.setPhoneNumber("046123456");
 		adminP.setEmail("oriel.muaaz@thtt.us");
 
 		admin.setPerson(adminP);
 
 		users.add(admin);
+
+		// UNCOMMENT -> ONLY SYSTEM ADMIN IN ADMINISTRATION COMPANY
+
+//		long id = companies.get(0).getId();
+//		companies.removeIf(company -> company.getId().equals(id));
 
 		for (int compInd = 0; compInd < companies.size(); compInd++) {
 
@@ -136,8 +152,6 @@ public class DummyDataGenerator {
 				user.setUsername("user" + compInd + "." + userInd);
 				user.setPassword("password");
 				user.setCompany(company);
-//				user.setAccessGroup(AccessGroup.COMPANY_ADMIN);
-//				user.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.NO, Permission.YES));
 
 				user.setPermissionLevel(PermissionLevel.USER);
 				user.setPermissions(PermissionFacade.getInstance().getDefaultUserPermissions());
@@ -200,6 +214,7 @@ public class DummyDataGenerator {
 						cc.setToolInfo(RandomStringUtils.randomAlphabetic(10));
 						cc.setSerialNumber(RandomStringUtils.randomNumeric(7));
 						cc.setBarcode(RandomStringUtils.randomNumeric(10));
+						cc.setCurrentLocation(company.getLocations().get(0));
 						cc.setPrice(999.93);
 						cc.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
 
@@ -222,6 +237,7 @@ public class DummyDataGenerator {
 			InventoryFacade.getInstance().insert(ie);
 		}
 	}
+
 
 	private String getRandomStrings(int count) {
 		return RandomStringUtils.randomAlphabetic(count).toUpperCase();

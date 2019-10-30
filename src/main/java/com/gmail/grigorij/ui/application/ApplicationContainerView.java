@@ -134,7 +134,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 		dashboard.addClickListener(e-> {
 			naviItemOnClick(dashboard);
-			viewContainer.add(new Dashboard());
+			viewContainer.add(new DashboardView());
 		});
 		menu.addNaviItem(dashboard);
 
@@ -144,7 +144,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 			inventory.addClickListener(e-> {
 				naviItemOnClick(inventory);
-				viewContainer.add(new Inventory());
+				viewContainer.add(new InventoryView());
 			});
 			menu.addNaviItem(inventory);
 		}
@@ -155,7 +155,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 			messages.addClickListener(e-> {
 				naviItemOnClick(messages);
-				viewContainer.add(new Messages());
+				viewContainer.add(new MessagesView());
 
 				notifications.forEach(Notification::close);
 				notifications.clear();
@@ -169,7 +169,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 			transaction.addClickListener(e-> {
 				naviItemOnClick(transaction);
-				viewContainer.add(new Transactions());
+				viewContainer.add(new TransactionsView());
 			});
 			menu.addNaviItem(transaction);
 		}
@@ -180,7 +180,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 			reporting.addClickListener(e-> {
 				naviItemOnClick(reporting);
-				viewContainer.add(new Reporting());
+				viewContainer.add(new ReportingView());
 			});
 			menu.addNaviItem(reporting);
 		}
@@ -225,7 +225,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 		//Open Dashboard view
 		naviItemOnClick(dashboard);
-		viewContainer.add(new Dashboard());
+		viewContainer.add(new DashboardView());
 	}
 
 	private void naviItemOnClick(NaviItem naviItem) {

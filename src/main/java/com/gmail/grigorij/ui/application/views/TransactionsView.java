@@ -39,8 +39,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 
+
 @CssImport("./styles/views/transactions.css")
-public class Transactions extends Div {
+public class TransactionsView extends Div {
 
 	private static final String CLASS_NAME = "transactions";
 	private final TransactionForm transactionsForm = new TransactionForm();
@@ -53,7 +54,7 @@ public class Transactions extends Div {
 	private DetailsDrawer detailsDrawer;
 
 
-	public Transactions() {
+	public TransactionsView() {
 		addClassName(CLASS_NAME);
 
 		Div contentWrapper = new Div();

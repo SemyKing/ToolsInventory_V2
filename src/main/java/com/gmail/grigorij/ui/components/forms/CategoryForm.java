@@ -3,7 +3,7 @@ package com.gmail.grigorij.ui.components.forms;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.utils.AuthenticationService;
@@ -23,7 +23,7 @@ public class CategoryForm extends FormLayout {
 	private Binder<InventoryItem> binder;
 
 	private InventoryItem category, originalCategory;
-	private Company initialCompany;
+//	private long initialCompanyId = -1L;
 	private boolean isNew;
 
 	// FORM ITEMS
@@ -66,6 +66,11 @@ public class CategoryForm extends FormLayout {
 				}
 			}
 		});
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
+			companyComboBox.setReadOnly(true);
+			companyComboBox.getElement().getStyle().set("display", "none");
+		}
 	}
 
 	private void constructForm() {
@@ -86,20 +91,20 @@ public class CategoryForm extends FormLayout {
 				.bind(InventoryItem::getCompany, InventoryItem::setCompany);
 		binder.forField(parentCategoryComboBox)
 				.asRequired("Parent Category is required")
+				.withNullRepresentation(InventoryFacade.getInstance().getRootCategory())
 				.bind(InventoryItem::getParentCategory, InventoryItem::setParentCategory);
 	}
 
 
 	private void initDynamicFormItems() {
-		initialCompany = category.getCompany();
-
-		if (isNew) {
-			companyComboBox.setValue(AuthenticationService.getCurrentSessionUser().getCompany());
-		}
 		companyComboBox.setReadOnly(true);
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			companyComboBox.setReadOnly(false);
+		if (isNew) {
+			category.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+
+			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+				companyComboBox.setReadOnly(false);
+			}
 		}
 	}
 
@@ -110,9 +115,8 @@ public class CategoryForm extends FormLayout {
 		/*
 		When editing Category remove same category from Parent Category -> can't set self as parent
 		 */
-		if (initialCompany != null) {
-			categories.removeIf(category -> category.equals(this.category));
-		}
+		categories.removeIf(category -> category.getId().equals(this.category.getId()));
+
 		parentCategoryComboBox.setItems(categories);
 	}
 
@@ -131,9 +135,9 @@ public class CategoryForm extends FormLayout {
 
 		initDynamicFormItems();
 
-		originalCategory = new InventoryItem(this.category);
-
 		binder.readBean(category);
+
+		originalCategory = new InventoryItem(this.category);
 	}
 
 	public InventoryItem getCategory() {
@@ -145,15 +149,16 @@ public class CategoryForm extends FormLayout {
 				/*
 				If category's company was changed, it must also be changed for all category children
 				 */
-				if (initialCompany != category.getCompany()) {
-					for (InventoryItem ie : category.getChildren()) {
-						ie.setCompany(category.getCompany());
-					}
-				}
 
-				if (category.getParentCategory().equals(InventoryFacade.getInstance().getRootCategory())) {
-					category.setParentCategory(null);
-				}
+//				NO COMPANY CHANGING.
+
+//				if (initialCompanyId != category.getCompany().getId()) {
+//					for (InventoryItem child : InventoryFacade.getInstance().getAllByParentId(category.getId())) {
+//						child.setCompany(category.getCompany());
+//
+//						InventoryFacade.getInstance().update(child);
+//					}
+//				}
 
 				binder.writeBean(category);
 
@@ -179,8 +184,12 @@ public class CategoryForm extends FormLayout {
 		if (!originalCategory.getCompany().equals(category.getCompany())) {
 			changes.add("Category company changed from: '" + originalCategory.getCompany().getName() + "', to: '" + category.getCompany().getName() + "'");
 		}
-		if (!originalCategory.getParentCategory().equals(category.getParentCategory())) {
-			changes.add("Category parent changed from: '" + originalCategory.getParentCategory().getName() + "', to: '" + category.getParentCategory().getName() + "'");
+
+		if (originalCategory.getParentCategory() != null || category.getParentCategory() != null) {
+			changes.add("Category parent changed from: '" +
+					(originalCategory.getParentCategory()==null ? "" : originalCategory.getParentCategory().getName()) +
+					"', to: '" +
+					(category.getParentCategory()==null ? "" : category.getParentCategory().getName()) + "'");
 		}
 
 		return changes;

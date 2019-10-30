@@ -1,8 +1,13 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
+import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
+import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.DateConverter;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
@@ -14,6 +19,7 @@ public class ReadOnlyToolForm extends FormLayout {
 
 	private final String CLASS_NAME = "form";
 
+	private InventoryItem tool;
 	private Binder<InventoryItem> binder;
 
 	// FORM ITEMS
@@ -23,6 +29,7 @@ public class ReadOnlyToolForm extends FormLayout {
 	private TextField toolInfoField;
 	private TextField manufacturerField;
 	private TextField modelField;
+	private TextField currentLocationField;
 	private TextField categoryField;
 	private TextField usageStatusField;
 	private Div toolUsersDiv;
@@ -36,6 +43,10 @@ public class ReadOnlyToolForm extends FormLayout {
 	private TextField guaranteeField;
 	private TextField additionalInfoField;
 
+	private FlexBoxLayout reportsLayout;
+	private TextField reportsField;
+	private Button reportsButton;
+
 
 	// BINDER ITEMS
 	private ReadOnlyHasValue<InventoryItem> name;
@@ -44,6 +55,7 @@ public class ReadOnlyToolForm extends FormLayout {
 	private ReadOnlyHasValue<InventoryItem> toolInfo;
 	private ReadOnlyHasValue<InventoryItem> manufacturer;
 	private ReadOnlyHasValue<InventoryItem> model;
+	private ReadOnlyHasValue<InventoryItem> currentLocation;
 	private ReadOnlyHasValue<InventoryItem> category;
 	private ReadOnlyHasValue<InventoryItem> usageStatus;
 	private ReadOnlyHasValue<InventoryItem> currentUser;
@@ -91,6 +103,14 @@ public class ReadOnlyToolForm extends FormLayout {
 		modelField.setReadOnly(true);
 		model = new ReadOnlyHasValue<>(tool -> modelField.setValue( tool.getModel() ));
 
+
+		currentLocationField = new TextField("Current Location");
+		currentLocationField.setReadOnly(true);
+		currentLocation = new ReadOnlyHasValue<>(tool -> {
+			currentLocationField.setValue((tool.getCurrentLocation() == null) ? "" : tool.getCurrentLocation().getName());
+		});
+
+		setColspan(currentLocationField, 2);
 
 		categoryField = new TextField("Category");
 		categoryField.setReadOnly(true);
@@ -170,6 +190,25 @@ public class ReadOnlyToolForm extends FormLayout {
 		additionalInfo = new ReadOnlyHasValue<>(tool -> additionalInfoField.setValue(tool.getAdditionalInfo()));
 
 		setColspan(additionalInfoField, 2);
+
+
+		reportsField = new TextField("Reports");
+		reportsField.setReadOnly(true);
+
+		reportsButton = UIUtils.createButton("Show Reports", ButtonVariant.LUMO_CONTRAST);
+		reportsButton.addClickListener(e -> constructReportsDialog());
+
+		//REPORTS LAYOUT
+		reportsLayout = new FlexBoxLayout();
+		reportsLayout.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
+		reportsLayout.add(reportsField, reportsButton);
+		reportsLayout.setFlexGrow("1", reportsField);
+		reportsLayout.setComponentMargin(reportsField, Right.S);
+
+		setColspan(reportsLayout, 2);
+	}
+
+	private void constructReportsDialog() {
 	}
 
 	private void constructForm() {
@@ -187,6 +226,7 @@ public class ReadOnlyToolForm extends FormLayout {
 		setColspan(hr, 2);
 		add(hr);
 
+		add(currentLocationField);
 		add(categoryField);
 		add(usageStatusField);
 		add(toolUsersDiv);
@@ -214,6 +254,8 @@ public class ReadOnlyToolForm extends FormLayout {
 				.bind(tool -> tool, null);
 		binder.forField(model)
 				.bind(tool -> tool, null);
+		binder.forField(currentLocation)
+				.bind(tool -> tool, null);
 		binder.forField(category)
 				.bind(tool -> tool, null);
 		binder.forField(currentUser)
@@ -235,7 +277,14 @@ public class ReadOnlyToolForm extends FormLayout {
 	}
 
 
+	private void initDynamicFormItems() {
+
+	}
+
+
 	public void setTool(InventoryItem tool) {
+		this.tool = tool;
 		binder.readBean(tool);
+		initDynamicFormItems();
 	}
 }

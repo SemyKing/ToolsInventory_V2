@@ -142,7 +142,7 @@
 }
 
 .admin-transactions__dates > vaadin-date-picker {
-	max-width: 110px;
+	max-width: var(--date-picker-width);
 }
 
 .admin-transactions__content {

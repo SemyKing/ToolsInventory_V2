@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -58,6 +58,7 @@ public class ToolCopyForm extends FormLayout {
 		});
 
 		numberOfCopiesField = new NumberField("Number of copies");
+		numberOfCopiesField.setWidth("120px");
 		numberOfCopiesField.setMin(1);
 		numberOfCopiesField.setMax(100);
 		numberOfCopiesField.setHasControls(true);

@@ -4,7 +4,7 @@ import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
@@ -22,19 +22,17 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.router.PageTitle;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 
-@PageTitle("Dashboard")
 @CssImport("./styles/views/dashboard.css")
-public class Dashboard extends ViewFrame {
+public class DashboardView extends ViewFrame {
 
 	private final static String CLASS_NAME = "dashboard";
 
-	public Dashboard() {
+	public DashboardView() {
 		setId("dashboard");
 		setViewContent(createContent());
 	}

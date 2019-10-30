@@ -1,7 +1,9 @@
 package com.gmail.grigorij.ui.components.forms;
 
+import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.Person;
@@ -100,7 +102,8 @@ public class UserForm extends FormLayout {
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
 			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
 				entityStatusCheckbox.setReadOnly(true);
-				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
+//				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
+				entityStatusDiv.getElement().getStyle().set("display", "none");
 			}
 		}
 
@@ -355,6 +358,7 @@ public class UserForm extends FormLayout {
 		dialog.getHeader().add(UIUtils.createH3Label("Permissions Details"));
 		dialog.constructView();
 
+
 		dialog.getConfirmButton().addClickListener(saveOnClick -> {
 			List<Permission> permissions = dialog.getPermissions();
 			if (permissions != null) {
@@ -362,8 +366,30 @@ public class UserForm extends FormLayout {
 				dialog.close();
 
 				UIUtils.showNotification("Permissions Edited", UIUtils.NotificationType.SUCCESS, 1000);
+
+				Transaction transaction = new Transaction();
+				transaction.setUser(AuthenticationService.getCurrentSessionUser());
+				transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+				transaction.setOperation(Operation.EDIT);
+				transaction.setOperationTarget1(OperationTarget.PERMISSIONS);
+				transaction.setTargetDetails(user.getFullName());
+				transaction.setChanges(dialog.getChanges());
+				TransactionFacade.getInstance().insert(transaction);
+
 			}
 		});
+		dialog.getConfirmButton().setEnabled(false);
+
+		if (AuthenticationService.getCurrentSessionUser().getId().equals(user.getId())) {
+			if (PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.OWN)) {
+				dialog.getConfirmButton().setEnabled(true);
+			}
+		} else {
+			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+					PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
+				dialog.getConfirmButton().setEnabled(true);
+			}
+		}
 
 		dialog.open();
 	}

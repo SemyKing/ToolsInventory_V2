@@ -43,7 +43,7 @@
 }
 
 .messages__additional_options > vaadin-date-picker {
-	max-width: 110px;
+	max-width: var(--date-picker-width);
 }
 
 .messages__content {

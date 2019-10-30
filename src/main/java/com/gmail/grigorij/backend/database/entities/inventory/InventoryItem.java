@@ -1,9 +1,14 @@
-package com.gmail.grigorij.backend.database.entities;
+package com.gmail.grigorij.backend.database.entities.inventory;
 
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.EntityPojo;
+import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.ToolReport;
 import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
 import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
-import com.gmail.grigorij.ui.application.views.Inventory;
+import com.gmail.grigorij.backend.database.facades.InventoryFacade;
+import com.gmail.grigorij.ui.application.views.InventoryView;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.*;
@@ -18,7 +23,7 @@ import java.util.*;
  * <p>
  * Used by a TreeGrid in
  *
- * @see Inventory
+ * @see InventoryView
  * <p>
  * <p>
  * {@link #inventoryHierarchyType} defines if entity is a Category or a Tool
@@ -28,36 +33,40 @@ import java.util.*;
 @NamedQueries({
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL,
-				query = "SELECT ie FROM InventoryItem ie"),
+				query = "SELECT item FROM InventoryItem item"),
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_TYPE,
-				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.inventoryHierarchyType = :" + ProjectConstants.VAR1),
+				query = "SELECT item FROM InventoryItem item WHERE" +
+						" item.inventoryHierarchyType = :" + ProjectConstants.VAR1),
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_COMPANY,
-				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.company.id = :" + ProjectConstants.ID_VAR),
+				query = "SELECT item FROM InventoryItem item WHERE" +
+						" item.company.id = :" + ProjectConstants.ID_VAR),
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_COMPANY_BY_TYPE,
-				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.company.id = :" + ProjectConstants.ID_VAR + " AND" +
-						" ie.inventoryHierarchyType = :" + ProjectConstants.VAR1),
+				query = "SELECT item FROM InventoryItem item WHERE" +
+						" item.company.id = :" + ProjectConstants.ID_VAR + " AND" +
+						" item.inventoryHierarchyType = :" + ProjectConstants.VAR1),
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_CURRENT_USER,
-				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.currentUser.id = :" + ProjectConstants.ID_VAR),
+				query = "SELECT item FROM InventoryItem item WHERE" +
+						" item.currentUser.id = :" + ProjectConstants.ID_VAR),
 
 		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_RESERVED_USER,
-				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.reservedUser.id = :" + ProjectConstants.ID_VAR),
+				query = "SELECT item FROM InventoryItem item WHERE" +
+						" item.reservedUser.id = :" + ProjectConstants.ID_VAR),
 
 		@NamedQuery(name = InventoryItem.QUERY_BY_ID,
-				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.id = :" + ProjectConstants.ID_VAR),
+				query = "SELECT item FROM InventoryItem item WHERE" +
+						" item.id = :" + ProjectConstants.ID_VAR),
+
+		@NamedQuery(name = InventoryItem.QUERY_ALL_BY_PARENT_ID,
+				query = "SELECT item FROM InventoryItem item WHERE" +
+						" item.parentCategory.id = :" + ProjectConstants.ID_VAR),
 
 		@NamedQuery(name = InventoryItem.QUERY_BY_CODE_VAR,
-				query = "SELECT ie FROM InventoryItem ie WHERE" +
-						" ie.serialNumber = :" + ProjectConstants.VAR1 + " OR ie.barcode = :" + ProjectConstants.VAR1)
+				query = "SELECT item FROM InventoryItem item WHERE" +
+						" item.serialNumber = :" + ProjectConstants.VAR1 + " OR item.barcode = :" + ProjectConstants.VAR1)
 })
 public class InventoryItem extends EntityPojo {
 
@@ -71,6 +80,7 @@ public class InventoryItem extends EntityPojo {
 	public static final String QUERY_ALL_BY_RESERVED_USER = "get_all_by_inventory_items_reserved_user";
 
 	public static final String QUERY_BY_ID = "get_inventory_item_by_id";
+	public static final String QUERY_ALL_BY_PARENT_ID = "get_all_inventory_item_by_parent_id";
 	public static final String QUERY_BY_CODE_VAR = "get_inventory_items_by_code";
 
 
@@ -131,11 +141,13 @@ public class InventoryItem extends EntityPojo {
 	private Location currentLocation;
 
 
+	private List<ToolReport> reports = new ArrayList<>();
+
+
 	//TODO: Last known GeoLocation
 
 
-	public InventoryItem() {
-	}
+	public InventoryItem() {}
 
 	public InventoryItem(InventoryItem other) {
 		this.parentCategory = other.parentCategory;
@@ -160,6 +172,7 @@ public class InventoryItem extends EntityPojo {
 		this.price = other.price;
 		this.guarantee_months = other.guarantee_months;
 		this.currentLocation = other.currentLocation;
+		this.reports = other.reports;
 	}
 
 
@@ -167,24 +180,22 @@ public class InventoryItem extends EntityPojo {
 		return parentCategory;
 	}
 	public void setParentCategory(InventoryItem parentCategory) {
-		this.parentCategory = parentCategory;
-	}
 
-	public Set<InventoryItem> getChildren() {
-		return children;
-	}
-	public void setChildren(Set<InventoryItem> children) {
-		if (children != null) {
-			if (children.size() > 0) {
-				for (InventoryItem child : children) {
-					child.setLevel((this.level + 1));
-				}
+		if (parentCategory == null) {
+			this.parentCategory = null;
+			this.setLevel(1);
+		} else {
+			if (parentCategory.equals(InventoryFacade.getInstance().getRootCategory())) {
+				this.parentCategory = null;
+				this.setLevel(1);
+			} else {
+				this.parentCategory = parentCategory;
+				this.setLevel((parentCategory.getLevel() + 1));
 			}
 		}
-		this.inventoryHierarchyType = InventoryHierarchyType.CATEGORY;
-		this.children = children;
 	}
 
+	// FOR DUMMY DATA
 	public void addChild(InventoryItem ie) {
 		ie.setLevel((this.level + 1));
 		this.inventoryHierarchyType = InventoryHierarchyType.CATEGORY;
@@ -324,10 +335,21 @@ public class InventoryItem extends EntityPojo {
 		this.company = company;
 	}
 
-	public boolean isReported() {
-		return reported;
+	public List<ToolReport> getReports() {
+		return reports;
 	}
-	public void setReported(boolean reported) {
-		this.reported = reported;
+	public void setReports(List<ToolReport> reports) {
+		this.reports = reports;
+	}
+
+
+	public String getCurrentLocationName() {
+		String location = "";
+
+		if (currentLocation != null) {
+			location = currentLocation.getName();
+		}
+
+		return location;
 	}
 }
