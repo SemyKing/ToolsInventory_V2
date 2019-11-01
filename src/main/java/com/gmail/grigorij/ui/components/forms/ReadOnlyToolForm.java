@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Right;
@@ -115,7 +115,7 @@ public class ReadOnlyToolForm extends FormLayout {
 		categoryField = new TextField("Category");
 		categoryField.setReadOnly(true);
 		category = new ReadOnlyHasValue<>(tool -> {
-			categoryField.setValue((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName());
+			categoryField.setValue((tool.getParent() == null) ? "" : tool.getParent().getName());
 		});
 
 		usageStatusField = new TextField("Status");

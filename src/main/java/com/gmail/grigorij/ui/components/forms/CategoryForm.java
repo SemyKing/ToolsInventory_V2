@@ -3,8 +3,8 @@ package com.gmail.grigorij.ui.components.forms;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -92,7 +92,7 @@ public class CategoryForm extends FormLayout {
 		binder.forField(parentCategoryComboBox)
 				.asRequired("Parent Category is required")
 				.withNullRepresentation(InventoryFacade.getInstance().getRootCategory())
-				.bind(InventoryItem::getParentCategory, InventoryItem::setParentCategory);
+				.bind(InventoryItem::getParent, InventoryItem::setParent);
 	}
 
 
@@ -109,7 +109,7 @@ public class CategoryForm extends FormLayout {
 	}
 
 	private void updateCategoriesComboBoxData(Company company) {
-		List<InventoryItem> categories = InventoryFacade.getInstance().getAllInCompanyByType(company.getId(), InventoryHierarchyType.CATEGORY);
+		List<InventoryItem> categories = InventoryFacade.getInstance().getAllInCompanyByType(company.getId(), InventoryItemType.CATEGORY);
 		categories.add(0, InventoryFacade.getInstance().getRootCategory());
 
 		/*
@@ -131,7 +131,7 @@ public class CategoryForm extends FormLayout {
 			this.category = category;
 		}
 
-		this.category.setInventoryHierarchyType(InventoryHierarchyType.CATEGORY);
+		this.category.setInventoryItemType(InventoryItemType.CATEGORY);
 
 		initDynamicFormItems();
 
@@ -185,11 +185,11 @@ public class CategoryForm extends FormLayout {
 			changes.add("Category company changed from: '" + originalCategory.getCompany().getName() + "', to: '" + category.getCompany().getName() + "'");
 		}
 
-		if (originalCategory.getParentCategory() != null || category.getParentCategory() != null) {
+		if (originalCategory.getParent() != null || category.getParent() != null) {
 			changes.add("Category parent changed from: '" +
-					(originalCategory.getParentCategory()==null ? "" : originalCategory.getParentCategory().getName()) +
+					(originalCategory.getParent()==null ? "" : originalCategory.getParent().getName()) +
 					"', to: '" +
-					(category.getParentCategory()==null ? "" : category.getParentCategory().getName()) + "'");
+					(category.getParent()==null ? "" : category.getParent().getName()) + "'");
 		}
 
 		return changes;

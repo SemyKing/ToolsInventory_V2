@@ -24,6 +24,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -31,6 +32,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -92,37 +95,16 @@ public class MessagesView extends Div {
 		additionalOptionsDiv.setMargin(Left.S);
 
 
-		dateStartField = new DatePicker();
-		dateStartField.setLabel("Start Date");
-		dateStartField.setLocale(new Locale("fi"));
-		dateStartField.setValue(LocalDate.now());
-		dateStartField.setRequired(true);
-		dateStartField.setErrorMessage("Invalid Date");
-		dateStartField.addValueChangeListener(e -> {
-			dateStartField.setInvalid(false);
-		});
 
-		additionalOptionsDiv.add(dateStartField);
-		additionalOptionsDiv.setComponentMargin(dateStartField, Right.S);
+		// DATES FILTER
+		Div menuBarIconDiv = new Div();
+		menuBarIconDiv.addClassName(CLASS_NAME + "__menu-bar-icon-div");
+		menuBarIconDiv.add(new Icon(VaadinIcon.CALENDAR));
 
-		dateEndField = new DatePicker();
-		dateEndField.setLabel("End Date");
-		dateEndField.setLocale(new Locale("fi"));
-		dateEndField.setValue(LocalDate.now());
-		dateEndField.setRequired(true);
-		dateEndField.setErrorMessage("Invalid Date");
-		dateEndField.addValueChangeListener(e -> {
-			dateEndField.setInvalid(false);
-		});
-
-		additionalOptionsDiv.add(dateEndField);
-		additionalOptionsDiv.setComponentMargin(dateEndField, Right.S);
-
-		Button applyDatesButton = UIUtils.createButton("Apply", ButtonVariant.LUMO_CONTRAST);
-		applyDatesButton.addClickListener(e -> getMessagesBetweenDates());
-
-		additionalOptionsDiv.add(applyDatesButton);
-		additionalOptionsDiv.setComponentMargin(applyDatesButton, Right.S);
+		MenuBar menuBar = new MenuBar();
+		menuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_CONTRAST);
+		MenuItem mainMenu = menuBar.addItem(menuBarIconDiv);
+		mainMenu.getSubMenu().add(constructDatesFilterLayout());
 
 		Button composeMessageButton = UIUtils.createButton("Compose", VaadinIcon.ENVELOPE , ButtonVariant.LUMO_PRIMARY);
 		composeMessageButton.addClassName("compose-message-button");
@@ -135,11 +117,53 @@ public class MessagesView extends Div {
 			}
 		}
 
+		additionalOptionsDiv.add(menuBar);
 		additionalOptionsDiv.add(composeMessageButton);
 
 		header.add(additionalOptionsDiv);
 
 		return header;
+	}
+
+	private Div constructDatesFilterLayout() {
+		Div datesFilterDiv = new Div();
+		datesFilterDiv.addClassName(CLASS_NAME + "__dates-filter");
+
+		Div datesDiv = new Div();
+		datesDiv.addClassName(CLASS_NAME + "__dates");
+
+		dateStartField = new DatePicker();
+		dateStartField.setLabel("Start Date");
+		dateStartField.setLocale(new Locale("fi"));
+		dateStartField.setValue(LocalDate.now());
+		dateStartField.setRequired(true);
+		dateStartField.setErrorMessage("Invalid Date");
+		dateStartField.addValueChangeListener(e -> {
+			dateStartField.setInvalid(false);
+		});
+
+		datesDiv.add(dateStartField);
+
+		dateEndField = new DatePicker();
+		dateEndField.setLabel("End Date");
+		dateEndField.setLocale(new Locale("fi"));
+		dateEndField.setValue(LocalDate.now());
+		dateEndField.setRequired(true);
+		dateEndField.setErrorMessage("Invalid Date");
+		dateEndField.addValueChangeListener(e -> {
+			dateEndField.setInvalid(false);
+		});
+
+		datesDiv.add(dateEndField);
+
+		datesFilterDiv.add(datesDiv);
+
+		Button applyDatesButton = UIUtils.createButton("Apply", ButtonVariant.LUMO_PRIMARY);
+		applyDatesButton.addClickListener(e -> getMessagesBetweenDates());
+
+		datesFilterDiv.add(applyDatesButton);
+
+		return datesFilterDiv;
 	}
 
 	private Div constructContent() {

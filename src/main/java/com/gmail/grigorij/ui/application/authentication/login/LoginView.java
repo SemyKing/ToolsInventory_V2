@@ -181,13 +181,6 @@ public class LoginView extends Div {
 
 		if (AuthenticationService.signIn(username, password, rememberMe)) {
 
-//			Transaction tr = new Transaction();
-//			tr.setUser(AuthenticationService.getCurrentSessionUser());
-//			tr.setTransactionOperation(TransactionType.LOGIN);
-//			tr.setTransactionTarget(TransactionTarget.USER);
-//
-//			TransactionFacade.getInstance().insert(tr);
-
 			operationStatus.onSuccess("");
 		} else {
 			loginErrorLayout.getElement().setAttribute("visible", true);

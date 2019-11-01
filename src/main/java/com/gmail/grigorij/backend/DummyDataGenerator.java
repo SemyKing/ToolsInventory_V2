@@ -1,10 +1,11 @@
 package com.gmail.grigorij.backend;
 
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.Person;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
@@ -192,35 +193,34 @@ public class DummyDataGenerator {
 
 		for (Company company : companies) {
 			for (int i = 0; i < toolCategoriesCount; i++) {
-				InventoryItem p = new InventoryItem();
-				p.setName("Category " + categoryCounter);
-				p.setCompany(company);
+				InventoryItem rootCategory = new InventoryItem();
+				rootCategory.setInventoryItemType(InventoryItemType.CATEGORY);
+				rootCategory.setName("Category " + categoryCounter);
+				rootCategory.setCompany(company);
 
 				for (int j = 0; j < subCategories; j++) {
-					InventoryItem c = new InventoryItem();
-					c.setName("Sub Category " + subCategoryCounter + " (P: " + categoryCounter + ")");
-					c.setParentCategory(p);
-					c.setCompany(company);
-
-					p.addChild(c);
+					InventoryItem subCategory = new InventoryItem();
+					subCategory.setInventoryItemType(InventoryItemType.CATEGORY);
+					subCategory.setName("Sub Category " + subCategoryCounter + " (P: " + categoryCounter + ")");
+					subCategory.setParent(rootCategory);
+					subCategory.setCompany(company);
 
 					for (int k = 0; k < toolsPerCategory; k++) {
-						InventoryItem cc = new InventoryItem();
-						cc.setUsageStatus(ToolUsageStatus.FREE);
-						cc.setCompany(company);
-						cc.setName("Tool " + toolCounter + " (P: " + categoryCounter + ", SP: " + subCategoryCounter + ")");
-						cc.setManufacturer(RandomStringUtils.randomAlphabetic(5));
-						cc.setModel(RandomStringUtils.randomNumeric(10));
-						cc.setToolInfo(RandomStringUtils.randomAlphabetic(10));
-						cc.setSerialNumber(RandomStringUtils.randomNumeric(7));
-						cc.setBarcode(RandomStringUtils.randomNumeric(10));
-						cc.setCurrentLocation(company.getLocations().get(0));
-						cc.setPrice(999.93);
-						cc.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
+						InventoryItem tool = new InventoryItem();
+						tool.setInventoryItemType(InventoryItemType.TOOL);
+						tool.setName("Tool " + toolCounter + " (P: " + categoryCounter + ", SP: " + subCategoryCounter + ")");
+						tool.setCompany(company);
+						tool.setParent(subCategory);
 
-						cc.setParentCategory(c);
-
-						c.addChild(cc);
+						tool.setUsageStatus(ToolUsageStatus.FREE);
+						tool.setManufacturer(RandomStringUtils.randomAlphabetic(5));
+						tool.setModel(RandomStringUtils.randomNumeric(10));
+						tool.setToolInfo(RandomStringUtils.randomAlphabetic(10));
+						tool.setSerialNumber(RandomStringUtils.randomNumeric(7));
+						tool.setBarcode(RandomStringUtils.randomNumeric(10));
+						tool.setCurrentLocation(company.getLocations().get(0));
+						tool.setPrice(999.93);
+						tool.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
 
 						toolCounter++;
 					}
@@ -228,7 +228,7 @@ public class DummyDataGenerator {
 					subCategoryCounter++;
 				}
 
-				tools.add(p);
+				tools.add(rootCategory);
 				categoryCounter++;
 			}
 		}

@@ -85,23 +85,25 @@ public class AppBar extends Composite<FlexLayout> {
     }
 
     private void initUserInfo() {
+        User currentUser = AuthenticationService.getCurrentSessionUser();
+
         Div userInfoContainer = new Div();
         userInfoContainer.addClassName(CLASS_NAME + "__user_info_container");
 
         Div userInfo = new Div();
         userInfo.addClassName(CLASS_NAME + "__user_info");
 
-        Span userFullName = new Span(AuthenticationService.getCurrentSessionUser().getFullName());
+        Span userFullName = new Span(currentUser.getFullName());
         userFullName.addClassName(CLASS_NAME + "__user_info_full_name");
         userInfo.add(userFullName);
 
-        Span userCompanyName = new Span(AuthenticationService.getCurrentSessionUser().getCompany().getName());
+        Span userCompanyName = new Span(currentUser.getCompany().getName());
         userCompanyName.addClassName(CLASS_NAME + "__user_info_company");
         userInfo.add(userCompanyName);
 
 
         userInfoContainer.add(userInfo);
-        userInfoContainer.add(UIUtils.createInitials(AuthenticationService.getCurrentSessionUser().getInitials()));
+        userInfoContainer.add(UIUtils.createInitials(currentUser.getInitials()));
 
 
         userInfoMenuBar = new MenuBar();
@@ -117,8 +119,9 @@ public class AppBar extends Composite<FlexLayout> {
             themeVariant = (themeVariant.equals(LumoStyles.DARK)) ? LumoStyles.LIGHT : LumoStyles.DARK;
             menuLayout.setThemeVariant(themeVariant);
 
-            AuthenticationService.getCurrentSessionUser().setThemeVariant(themeVariant);
-            UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
+            User user = AuthenticationService.getCurrentSessionUser();
+            user.setThemeVariant(themeVariant);
+            UserFacade.getInstance().update(user);
         });
         userMenuItem.getSubMenu().add(new Hr());
         userMenuItem.getSubMenu().addItem("Sign Out", e -> {
@@ -143,7 +146,9 @@ public class AppBar extends Composite<FlexLayout> {
 
             if (editedUser != null) {
                 if (UserFacade.getInstance().update(editedUser)) {
-                    AuthenticationService.setCurrentSessionUser(editedUser);
+//                    AuthenticationService.setCurrentSessionUser(editedUser);
+
+
                     UIUtils.showNotification("Information saved", UIUtils.NotificationType.SUCCESS);
                 } else {
                     UIUtils.showNotification("Information update failed", UIUtils.NotificationType.ERROR);

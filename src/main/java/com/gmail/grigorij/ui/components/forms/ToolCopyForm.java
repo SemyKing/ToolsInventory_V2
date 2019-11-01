@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -186,7 +186,7 @@ public class ToolCopyForm extends FormLayout {
 			toolCopy.setCompany(tool.getCompany());
 		}
 		if (category.getValue()) {
-			toolCopy.setParentCategory(tool.getParentCategory());
+			toolCopy.setParent(tool.getParent());
 		}
 		if (usageStatus.getValue()) {
 			toolCopy.setUsageStatus(tool.getUsageStatus());

@@ -1,8 +1,8 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
@@ -18,7 +18,7 @@ public class InventoryFacade {
 		rootCategory = new InventoryItem();
 		rootCategory.setId(-2L);
 		rootCategory.setName(ProjectConstants.ROOT_CATEGORY);
-		rootCategory.setInventoryHierarchyType(InventoryHierarchyType.CATEGORY);
+		rootCategory.setInventoryItemType(InventoryItemType.CATEGORY);
 	}
 	public static InventoryFacade getInstance() {
 		if (mInstance == null) {
@@ -43,7 +43,7 @@ public class InventoryFacade {
 //		return all;
 //	}
 
-	public List<InventoryItem> getAllByHierarchyType(InventoryHierarchyType type) {
+	public List<InventoryItem> getAllByItemTypeType(InventoryItemType type) {
 		List<InventoryItem> tools;
 		try {
 			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_TYPE, InventoryItem.class)
@@ -67,7 +67,7 @@ public class InventoryFacade {
 		return allInCompany;
 	}
 
-	public List<InventoryItem> getAllInCompanyByType(long companyId, InventoryHierarchyType type) {
+	public List<InventoryItem> getAllInCompanyByType(long companyId, InventoryItemType type) {
 		List<InventoryItem> categories;
 		try {
 			categories = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_COMPANY_BY_TYPE, InventoryItem.class)
@@ -118,17 +118,17 @@ public class InventoryFacade {
 	}
 
 
-	public List<InventoryItem> getAllByParentId(long id) {
-		List<InventoryItem> items;
-		try {
-			items = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_PARENT_ID, InventoryItem.class)
-					.setParameter(ProjectConstants.ID_VAR, id)
-					.getResultList();
-		} catch (NoResultException nre) {
-			items = null;
-		}
-		return items;
-	}
+//	public List<InventoryItem> getAllByParentId(long id) {
+//		List<InventoryItem> items;
+//		try {
+//			items = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_PARENT_ID, InventoryItem.class)
+//					.setParameter(ProjectConstants.ID_VAR, id)
+//					.getResultList();
+//		} catch (NoResultException nre) {
+//			items = null;
+//		}
+//		return items;
+//	}
 
 	// TODO: LIST OF TOOLS IF MULTIPLE
 	public InventoryItem getToolByCode(String code) {
@@ -145,10 +145,10 @@ public class InventoryFacade {
 
 	// LOCAL HELPER
 	private String getItemType(InventoryItem item) {
-		if (item.getInventoryHierarchyType() == null) {
+		if (item.getInventoryItemType() == null) {
 			return "NULL INVENTORY_HIERARCHY_TYPE";
 		}
-		return item.getInventoryHierarchyType().toString().toUpperCase();
+		return item.getInventoryItemType().toString().toUpperCase();
 	}
 
 

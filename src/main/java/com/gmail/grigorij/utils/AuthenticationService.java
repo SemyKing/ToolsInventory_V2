@@ -37,15 +37,15 @@ public class AuthenticationService {
 	}
 
 	public static User getCurrentSessionUser() {
-		return (User) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA);
+		return UserFacade.getInstance().getUserById((Long) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA));
 	}
 
-	public static void setCurrentSessionUser(User user) {
-		if (user == null) {
+	private static void setCurrentSessionUser(Long userId) {
+		if (userId == null) {
 			return;
 		}
 		getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
-		getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, user);
+		getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, userId);
 	}
 
 	public static boolean signIn(String username, String password, boolean rememberMe) {
@@ -117,7 +117,7 @@ public class AuthenticationService {
 			}
 		}
 
-		setCurrentSessionUser(user);
+		setCurrentSessionUser(user.getId());
 
 		return true;
 	}

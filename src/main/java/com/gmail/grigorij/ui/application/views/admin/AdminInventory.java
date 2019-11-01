@@ -3,9 +3,9 @@ package com.gmail.grigorij.ui.application.views.admin;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
 import com.gmail.grigorij.backend.database.entities.Transaction;
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
@@ -162,9 +162,9 @@ public class AdminInventory extends FlexBoxLayout {
 		grid.setSizeFull();
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllByHierarchyType(InventoryHierarchyType.TOOL));
+			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllByItemTypeType(InventoryItemType.TOOL));
 		} else {
-			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllInCompanyByType(AuthenticationService.getCurrentSessionUser().getCompany().getId(), InventoryHierarchyType.TOOL));
+			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllInCompanyByType(AuthenticationService.getCurrentSessionUser().getCompany().getId(), InventoryItemType.TOOL));
 		}
 
 		grid.setDataProvider(dataProvider);
@@ -172,7 +172,7 @@ public class AdminInventory extends FlexBoxLayout {
 				.setFlexGrow(1)
 				.setAutoWidth(true);
 
-		grid.addColumn(tool -> (tool.getParentCategory() == null) ? InventoryFacade.getInstance().getRootCategory().getName() : tool.getParentCategory().getName())
+		grid.addColumn(tool -> (tool.getParent() == null) ? InventoryFacade.getInstance().getRootCategory().getName() : tool.getParent().getName())
 				.setHeader("Category")
 				.setAutoWidth(true);
 
@@ -268,7 +268,7 @@ public class AdminInventory extends FlexBoxLayout {
 							res =  StringUtils.containsIgnoreCase(tool.getName(), sParam) ||
 									StringUtils.containsIgnoreCase((tool.getCurrentUser() == null) ? "" : tool.getCurrentUser().getUsername(), sParam) ||
 									StringUtils.containsIgnoreCase((tool.getReservedUser() == null) ? "" : tool.getReservedUser().getUsername(), sParam) ||
-									StringUtils.containsIgnoreCase((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName(), sParam) ||
+									StringUtils.containsIgnoreCase((tool.getParent() == null) ? "" : tool.getParent().getName(), sParam) ||
 									StringUtils.containsIgnoreCase((tool.getCompany() == null) ? "" : tool.getCompany().getName(), sParam) ||
 									StringUtils.containsIgnoreCase((tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getName(), sParam);
 
@@ -285,7 +285,7 @@ public class AdminInventory extends FlexBoxLayout {
 					tool -> StringUtils.containsIgnoreCase(tool.getName(), mainSearchString)  ||
 							StringUtils.containsIgnoreCase((tool.getCurrentUser() == null) ? "" : tool.getCurrentUser().getUsername(), mainSearchString) ||
 							StringUtils.containsIgnoreCase((tool.getReservedUser() == null) ? "" : tool.getReservedUser().getUsername(), mainSearchString) ||
-							StringUtils.containsIgnoreCase((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName(), mainSearchString) ||
+							StringUtils.containsIgnoreCase((tool.getParent() == null) ? "" : tool.getParent().getName(), mainSearchString) ||
 							StringUtils.containsIgnoreCase((tool.getCompany() == null) ? "" : tool.getCompany().getName(), mainSearchString) ||
 							StringUtils.containsIgnoreCase((tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getName(), mainSearchString)
 			);

@@ -42,8 +42,8 @@
 	margin-left: var(--lumo-space-s);
 }
 
-.messages__additional_options > vaadin-date-picker {
-	max-width: var(--date-picker-width);
+.messages__additional_options > vaadin-menu-bar {
+	padding-right: var(--lumo-space-s);
 }
 
 .messages__content {
@@ -59,4 +59,17 @@
     justify-content: space-between;
     padding-left: var(--lumo-space-m);
     padding-right: var(--lumo-space-m);
+}
+
+
+/* DATES FILTER */
+
+.messages__dates-filter {
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+}
+.messages__dates {
+	display: flex;
+	flex-direction: row;
 }

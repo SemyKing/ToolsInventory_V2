@@ -3,9 +3,9 @@ package com.gmail.grigorij.ui.components.forms;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
 import com.gmail.grigorij.backend.database.entities.User;
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
 import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
@@ -156,7 +156,7 @@ public class ToolForm extends FormLayout {
 		categoryComboBox.setRequired(true);
 		categoryComboBox.addValueChangeListener(e -> {
 			if (e.getValue() != null) {
-				int level = e.getValue().getLevel();
+				long level = e.getValue().getLevel();
 				tool.setLevel(++level);
 			}
 		});
@@ -181,11 +181,10 @@ public class ToolForm extends FormLayout {
 
 
 		locationComboBox = new ComboBox<>();
-		locationComboBox.setLabel("Location");
+		locationComboBox.setLabel("Current Location");
 		locationComboBox.setWidth("calc(50% - (0.5 * var(--vaadin-form-layout-column-spacing)))");
-		locationComboBox.setItems(AuthenticationService.getCurrentSessionUser().getCompany().getLocations());
+		locationComboBox.setItems();
 		locationComboBox.setItemLabelGenerator(Location::getName);
-//		locationComboBox.setRequired(true);
 
 		toolUsageStatusComboBox = new ComboBox<>();
 		toolUsageStatusComboBox.setLabel("Usage Status");
@@ -329,10 +328,9 @@ public class ToolForm extends FormLayout {
 		binder.forField(categoryComboBox)
 				.asRequired("Category is required")
 				.withNullRepresentation(InventoryFacade.getInstance().getRootCategory())
-				.bind(InventoryItem::getParentCategory, InventoryItem::setParentCategory);
+				.bind(InventoryItem::getParent, InventoryItem::setParent);
 
 		binder.forField(locationComboBox)
-//				.asRequired("Usage Status is required")
 				.bind(InventoryItem::getCurrentLocation, InventoryItem::setCurrentLocation);
 
 		binder.forField(toolUsageStatusComboBox)
@@ -374,6 +372,10 @@ public class ToolForm extends FormLayout {
 		}
 
 		updateComboBoxes(tool.getCompany());
+
+		if (tool.getCompany() != null) {
+			locationComboBox.setItems(tool.getCompany().getLocations());
+		}
 	}
 
 	private void updateComboBoxes(Company company) {
@@ -383,7 +385,7 @@ public class ToolForm extends FormLayout {
 			toolCurrentUserComboBox.setValue(null);
 			toolReservedByUserComboBox.setValue(null);
 
-			List<InventoryItem> categories = InventoryFacade.getInstance().getAllInCompanyByType(company.getId(), InventoryHierarchyType.CATEGORY);
+			List<InventoryItem> categories = InventoryFacade.getInstance().getAllInCompanyByType(company.getId(), InventoryItemType.CATEGORY);
 			categories.add(0, InventoryFacade.getInstance().getRootCategory());
 
 			categoryComboBox.setItems(categories);
@@ -454,6 +456,8 @@ public class ToolForm extends FormLayout {
 		} else {
 			this.tool = tool;
 		}
+
+		this.tool.setInventoryItemType(InventoryItemType.TOOL);
 
 		initDynamicFormItems();
 
@@ -555,11 +559,11 @@ public class ToolForm extends FormLayout {
 		if (!originalTool.getCompany().equals(tool.getCompany())) {
 			changes.add("Tool company changed from: '" + originalTool.getCompany().getName() + "', to: '" + tool.getCompany().getName() + "'");
 		}
-		if (originalTool.getParentCategory() != null || tool.getParentCategory() != null) {
+		if (originalTool.getParent() != null || tool.getParent() != null) {
 			changes.add("Tool category changed from: '" +
-					(originalTool.getParentCategory()==null ? "" : originalTool.getParentCategory().getName()) +
+					(originalTool.getParent()==null ? "" : originalTool.getParent().getName()) +
 					"', to: '" +
-					(tool.getParentCategory()==null ? "" : tool.getParentCategory().getName()) + "'");
+					(tool.getParent()==null ? "" : tool.getParent().getName()) + "'");
 		}
 		if (!originalTool.getUsageStatus().equals(tool.getUsageStatus())) {
 			changes.add("Usage status changed from: '" + originalTool.getUsageStatus().getName() + "', to: '" + tool.getUsageStatus().getName() + "'");

@@ -4,11 +4,11 @@ import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.database.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.InventoryItem;
 import com.gmail.grigorij.backend.database.entities.Message;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.enums.MessageType;
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
 import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
@@ -142,7 +142,7 @@ public class InventoryView extends Div {
 		toolsAndCategories.sort(Comparator.comparing(InventoryItem::getLevel));
 
 		toolsAndCategories.forEach(item -> {
-			treeData.addItem(item.getParentCategory(), item);
+			treeData.addItem(item.getParent(), item);
 		});
 
 		dataProvider = new TreeDataProvider<>(treeData);
@@ -175,7 +175,7 @@ public class InventoryView extends Div {
 			InventoryItem inventoryItem = grid.asSingleSelect().getValue();
 
 			if (inventoryItem != null) {
-				if (inventoryItem.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
+				if (inventoryItem.getInventoryItemType().equals(InventoryItemType.CATEGORY)) {
 					if (grid.isExpanded(inventoryItem)) {
 						grid.collapse(inventoryItem);
 					} else {
@@ -204,7 +204,7 @@ public class InventoryView extends Div {
 	private Span getUsageStatusSpan(InventoryItem inventoryItem) {
 		Span span = new Span("");
 
-		if (inventoryItem.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
+		if (inventoryItem.getInventoryItemType().equals(InventoryItemType.CATEGORY)) {
 			return span;
 		}
 
@@ -357,14 +357,12 @@ public class InventoryView extends Div {
 					tool -> matchesFilter(tool, mainSearchString)
 			);
 		}
-
-
 	}
 
 	private boolean matchesFilter(InventoryItem item, String filter) {
-		if (item.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
-			grid.expand(item);
-		}
+//		if (item.getInventoryItemType().equals(InventoryItemType.CATEGORY)) {
+//			grid.expand(item);
+//		}
 
 		if (!allToolParametersCheckBox.getValue()) {
 			if (StringUtils.containsIgnoreCase(item.getName(), filter)) {
@@ -384,12 +382,13 @@ public class InventoryView extends Div {
 						StringUtils.containsIgnoreCase((item.getDateNextMaintenance() == null) ? "" : DateConverter.localDateToString(item.getDateNextMaintenance()), filter) ||
 						StringUtils.containsIgnoreCase(String.valueOf(item.getPrice()), filter) ||
 						StringUtils.containsIgnoreCase(String.valueOf(item.getGuarantee_months()), filter)) {
+
+
 				return true;
 			}
 		}
 
-		return InventoryFacade.getInstance().getAllByParentId(item.getId()).stream().anyMatch(child -> matchesFilter(child, filter));
-//		return item.getChildren().stream().anyMatch(child -> matchesFilter(child, filter));
+		return item.getChildren().stream().anyMatch(child -> matchesFilter(child, filter));
 	}
 
 
@@ -859,8 +858,8 @@ public class InventoryView extends Div {
 
 
 	private void copyToolParameters(InventoryItem destinationTool, InventoryItem sourceTool) {
-		destinationTool.setParentCategory(sourceTool.getParentCategory());
-		destinationTool.setInventoryHierarchyType(sourceTool.getInventoryHierarchyType());
+		destinationTool.setParent(sourceTool.getParent());
+		destinationTool.setInventoryItemType(sourceTool.getInventoryItemType());
 		destinationTool.setName(sourceTool.getName());
 		destinationTool.setSerialNumber(sourceTool.getSerialNumber());
 		destinationTool.setSerialNumber(sourceTool.getSerialNumber());

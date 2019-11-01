@@ -75,7 +75,7 @@ public class CompanyForm extends FormLayout {
 		setColspan(entityStatusDiv, 2);
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
-			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
+			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.COMPANY, PermissionRange.COMPANY)) {
 				entityStatusCheckbox.setReadOnly(true);
 				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
 			}
@@ -215,7 +215,7 @@ public class CompanyForm extends FormLayout {
 		dialog.getConfirmButton().setEnabled(false);
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.LOCATIONS, null)) {
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.LOCATIONS, null)) {
 
 			dialog.getConfirmButton().setEnabled(true);
 			dialog.getConfirmButton().addClickListener(e -> {
@@ -278,13 +278,7 @@ public class CompanyForm extends FormLayout {
 				} else {
 					company.setContactPerson(contactPerson);
 				}
-
 				company.setLocations(tempLocations);
-
-				if (Boolean.compare(originalCompany.isDeleted(), company.isDeleted()) != 0) {
-					//TODO: TRANSACTION ENTITY STATUS CHANGE
-				}
-
 				binder.writeBean(company);
 				return company;
 			}
@@ -300,6 +294,8 @@ public class CompanyForm extends FormLayout {
 
 		if (Boolean.compare(originalCompany.isDeleted(), company.isDeleted()) != 0) {
 			changes.add("Status changed from: '" + UIUtils.entityStatusToString(originalCompany.isDeleted()) + "', to: '" + UIUtils.entityStatusToString(company.isDeleted()) + "'");
+
+			//TODO: TRANSACTION ENTITY STATUS CHANGE
 		}
 		if (!originalCompany.getName().equals(company.getName())) {
 			changes.add("Name changed from: '" + originalCompany.getName() + "', to: '" + company.getName() + "'");
