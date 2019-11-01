@@ -4,9 +4,8 @@ import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.User;
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.components.DashboardItem;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
@@ -65,7 +64,7 @@ public class DashboardView extends ViewFrame {
 
 		List<Company> companies = CompanyFacade.getInstance().getAllCompanies();
 		List<User> users = UserFacade.getInstance().getAllUsers();
-		List<InventoryItem> tools = InventoryFacade.getInstance().getAllByItemTypeType(InventoryItemType.TOOL);
+		List<Tool> tools = InventoryFacade.getInstance().getAllTools();
 
 
 		// 1st ROW

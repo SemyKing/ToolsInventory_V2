@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Right;
@@ -19,8 +19,8 @@ public class ReadOnlyToolForm extends FormLayout {
 
 	private final String CLASS_NAME = "form";
 
-	private InventoryItem tool;
-	private Binder<InventoryItem> binder;
+	private Tool tool;
+	private Binder<Tool> binder;
 
 	// FORM ITEMS
 	private TextField nameField;
@@ -49,22 +49,22 @@ public class ReadOnlyToolForm extends FormLayout {
 
 
 	// BINDER ITEMS
-	private ReadOnlyHasValue<InventoryItem> name;
-	private ReadOnlyHasValue<InventoryItem> barcode;
-	private ReadOnlyHasValue<InventoryItem> sn;
-	private ReadOnlyHasValue<InventoryItem> toolInfo;
-	private ReadOnlyHasValue<InventoryItem> manufacturer;
-	private ReadOnlyHasValue<InventoryItem> model;
-	private ReadOnlyHasValue<InventoryItem> currentLocation;
-	private ReadOnlyHasValue<InventoryItem> category;
-	private ReadOnlyHasValue<InventoryItem> usageStatus;
-	private ReadOnlyHasValue<InventoryItem> currentUser;
-	private ReadOnlyHasValue<InventoryItem> reservedBy;
-	private ReadOnlyHasValue<InventoryItem> dateBought;
-	private ReadOnlyHasValue<InventoryItem> dateNextMaintenance;
-	private ReadOnlyHasValue<InventoryItem> price;
-	private ReadOnlyHasValue<InventoryItem> guarantee;
-	private ReadOnlyHasValue<InventoryItem> additionalInfo;
+	private ReadOnlyHasValue<Tool> name;
+	private ReadOnlyHasValue<Tool> barcode;
+	private ReadOnlyHasValue<Tool> sn;
+	private ReadOnlyHasValue<Tool> toolInfo;
+	private ReadOnlyHasValue<Tool> manufacturer;
+	private ReadOnlyHasValue<Tool> model;
+	private ReadOnlyHasValue<Tool> currentLocation;
+	private ReadOnlyHasValue<Tool> category;
+	private ReadOnlyHasValue<Tool> usageStatus;
+	private ReadOnlyHasValue<Tool> currentUser;
+	private ReadOnlyHasValue<Tool> reservedBy;
+	private ReadOnlyHasValue<Tool> dateBought;
+	private ReadOnlyHasValue<Tool> dateNextMaintenance;
+	private ReadOnlyHasValue<Tool> price;
+	private ReadOnlyHasValue<Tool> guarantee;
+	private ReadOnlyHasValue<Tool> additionalInfo;
 
 
 	public ReadOnlyToolForm() {
@@ -115,7 +115,7 @@ public class ReadOnlyToolForm extends FormLayout {
 		categoryField = new TextField("Category");
 		categoryField.setReadOnly(true);
 		category = new ReadOnlyHasValue<>(tool -> {
-			categoryField.setValue((tool.getParent() == null) ? "" : tool.getParent().getName());
+			categoryField.setValue(tool.getCategoryString());
 		});
 
 		usageStatusField = new TextField("Status");
@@ -241,7 +241,7 @@ public class ReadOnlyToolForm extends FormLayout {
 	}
 
 	private void constructBinder() {
-		binder = new Binder<>(InventoryItem.class);
+		binder = new Binder<>(Tool.class);
 		binder.forField(name)
 				.bind(tool -> tool, null);
 		binder.forField(barcode)
@@ -282,7 +282,7 @@ public class ReadOnlyToolForm extends FormLayout {
 	}
 
 
-	public void setTool(InventoryItem tool) {
+	public void setTool(Tool tool) {
 		this.tool = tool;
 		binder.readBean(tool);
 		initDynamicFormItems();

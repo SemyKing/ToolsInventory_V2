@@ -54,7 +54,12 @@ public class MessagesView extends Div {
 	private static final String CLASS_NAME = "messages";
 	private final MessageForm messageForm = new MessageForm(this);
 
+	private TextField searchField;
+	private Div filtersDiv;
 	private DatePicker dateStartField, dateEndField;
+	private Checkbox showReadMessagesCheckbox;
+
+	private boolean filtersVisible = false;
 
 	private Grid<Message> grid;
 	private ListDataProvider<Message> dataProvider;
@@ -73,6 +78,8 @@ public class MessagesView extends Div {
 
 		add(contentWrapper);
 		add(constructDetails());
+
+		toggleFilters();
 	}
 
 
@@ -80,36 +87,28 @@ public class MessagesView extends Div {
 		Div header = new Div();
 		header.addClassName(CLASS_NAME + "__header");
 
-		TextField searchField = new TextField("Search");
+		Div headerTopDiv = new Div();
+		headerTopDiv.addClassName(CLASS_NAME + "__header-top");
+		header.add(headerTopDiv);
+
+		Button toggleFiltersButton = UIUtils.createButton("Filters", VaadinIcon.FILTER, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+		toggleFiltersButton.addClassName("dynamic-label-button");
+		toggleFiltersButton.addClickListener(e -> toggleFilters());
+		headerTopDiv.add(toggleFiltersButton);
+
+		searchField = new TextField();
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Messages");
 		searchField.setValueChangeMode(ValueChangeMode.LAZY);
-		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
-
-		header.add(searchField);
-
-		FlexBoxLayout additionalOptionsDiv = new FlexBoxLayout();
-		additionalOptionsDiv.addClassName(CLASS_NAME + "__additional_options");
-		additionalOptionsDiv.setAlignItems(FlexComponent.Alignment.BASELINE);
-		additionalOptionsDiv.setMargin(Left.S);
+		searchField.addValueChangeListener(event -> applyFilters());
+		headerTopDiv.add(searchField);
 
 
-
-		// DATES FILTER
-		Div menuBarIconDiv = new Div();
-		menuBarIconDiv.addClassName(CLASS_NAME + "__menu-bar-icon-div");
-		menuBarIconDiv.add(new Icon(VaadinIcon.CALENDAR));
-
-		MenuBar menuBar = new MenuBar();
-		menuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_CONTRAST);
-		MenuItem mainMenu = menuBar.addItem(menuBarIconDiv);
-		mainMenu.getSubMenu().add(constructDatesFilterLayout());
-
-		Button composeMessageButton = UIUtils.createButton("Compose", VaadinIcon.ENVELOPE , ButtonVariant.LUMO_PRIMARY);
-		composeMessageButton.addClassName("compose-message-button");
+		Button composeMessageButton = UIUtils.createButton("Compose", VaadinIcon.ENVELOPE , ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+		composeMessageButton.addClassName("dynamic-label-button");
 		composeMessageButton.addClickListener(e -> constructMessageDialog(null, ""));
-
+		headerTopDiv.add(composeMessageButton);
 
 		if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.SEND, OperationTarget.MESSAGES, PermissionRange.COMPANY)) {
@@ -117,20 +116,19 @@ public class MessagesView extends Div {
 			}
 		}
 
-		additionalOptionsDiv.add(menuBar);
-		additionalOptionsDiv.add(composeMessageButton);
+		header.add(headerTopDiv);
 
-		header.add(additionalOptionsDiv);
+		Div headerBottomDiv = new Div();
+		headerBottomDiv.addClassName(CLASS_NAME + "__header-bottom");
+		headerBottomDiv.add(constructMessagesFilterLayout());
+		header.add(headerBottomDiv);
 
 		return header;
 	}
 
-	private Div constructDatesFilterLayout() {
-		Div datesFilterDiv = new Div();
-		datesFilterDiv.addClassName(CLASS_NAME + "__dates-filter");
-
-		Div datesDiv = new Div();
-		datesDiv.addClassName(CLASS_NAME + "__dates");
+	private Div constructMessagesFilterLayout() {
+		filtersDiv = new Div();
+		filtersDiv.addClassName(CLASS_NAME + "__filters");
 
 		dateStartField = new DatePicker();
 		dateStartField.setLabel("Start Date");
@@ -140,9 +138,10 @@ public class MessagesView extends Div {
 		dateStartField.setErrorMessage("Invalid Date");
 		dateStartField.addValueChangeListener(e -> {
 			dateStartField.setInvalid(false);
-		});
 
-		datesDiv.add(dateStartField);
+			applyFilters();
+		});
+		filtersDiv.add(dateStartField);
 
 		dateEndField = new DatePicker();
 		dateEndField.setLabel("End Date");
@@ -152,18 +151,17 @@ public class MessagesView extends Div {
 		dateEndField.setErrorMessage("Invalid Date");
 		dateEndField.addValueChangeListener(e -> {
 			dateEndField.setInvalid(false);
+
+			applyFilters();
 		});
+		filtersDiv.add(dateEndField);
 
-		datesDiv.add(dateEndField);
+		showReadMessagesCheckbox = new Checkbox("Show Read Messages");
+		showReadMessagesCheckbox.setValue(true);
+		showReadMessagesCheckbox.addValueChangeListener(e -> applyFilters());
+		filtersDiv.add(showReadMessagesCheckbox);
 
-		datesFilterDiv.add(datesDiv);
-
-		Button applyDatesButton = UIUtils.createButton("Apply", ButtonVariant.LUMO_PRIMARY);
-		applyDatesButton.addClickListener(e -> getMessagesBetweenDates());
-
-		datesFilterDiv.add(applyDatesButton);
-
-		return datesFilterDiv;
+		return filtersDiv;
 	}
 
 	private Div constructContent() {
@@ -267,11 +265,11 @@ public class MessagesView extends Div {
 		FlexBoxLayout footer = new FlexBoxLayout();
 		footer.setClassName(CLASS_NAME + "__details-footer");
 
-		Button closeDetailsButton = UIUtils.createButton("Close", ButtonVariant.LUMO_CONTRAST);
+		Button closeDetailsButton = UIUtils.createButton("Close", ButtonVariant.LUMO_PRIMARY);
 		closeDetailsButton.addClickListener(e -> closeDetails());
 		footer.add(closeDetailsButton);
 
-		Button replyButton = UIUtils.createButton("Reply", VaadinIcon.REPLY, ButtonVariant.LUMO_PRIMARY);
+		Button replyButton = UIUtils.createButton("Reply", VaadinIcon.REPLY, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
 		replyButton.addClickListener(reply -> {
 			Message message = grid.asSingleSelect().getValue();
 			if (message != null) {
@@ -289,8 +287,67 @@ public class MessagesView extends Div {
 	}
 
 
-	private void filterGrid(String searchString) {
+	private void toggleFilters() {
+		if (dateStartField.isInvalid() || dateEndField.isInvalid()) {
+			return;
+		}
+
+		filtersDiv.getElement().setAttribute("hidden", !filtersVisible);
+		filtersVisible = !filtersVisible;
+	}
+
+	private void applyFilters() {
 		dataProvider.clearFilters();
+
+		if (dateStartField.isInvalid() || dateEndField.isInvalid()) {
+			return;
+		}
+
+		try {
+			DateConverter.localDateToString(dateStartField.getValue());
+		} catch (Exception e) {
+			dateStartField.setInvalid(true);
+
+			if (!filtersVisible) {
+				toggleFilters();
+			}
+
+			return;
+		}
+
+		try {
+			DateConverter.localDateToString(dateEndField.getValue());
+		} catch (Exception e) {
+			dateEndField.setInvalid(true);
+
+			if (!filtersVisible) {
+				toggleFilters();
+			}
+
+			return;
+		}
+
+		if (dateStartField.getValue().isAfter(dateEndField.getValue())) {
+			UIUtils.showNotification("Start Date cannot be after End Date", UIUtils.NotificationType.INFO);
+			return;
+		}
+
+		getMessagesBetweenDates();
+
+		dataProvider.addFilter(message -> {
+			if (!message.isMessageRead()) {
+				return true;
+			} else {
+				return message.isMessageRead() == showReadMessagesCheckbox.getValue();
+			}
+		});
+
+		filterGrid(searchField.getValue());
+	}
+
+
+	private void filterGrid(String searchString) {
+
 		final String mainSearchString = searchString.trim();
 
 		if (mainSearchString.contains("+")) {
@@ -340,19 +397,6 @@ public class MessagesView extends Div {
 
 
 	private void getMessagesBetweenDates() {
-		if (dateStartField.getValue() == null || dateStartField.isInvalid()) {
-			dateStartField.setInvalid(true);
-			return;
-		}
-		if (dateEndField.getValue() == null || dateEndField.isInvalid()) {
-			dateEndField.setInvalid(true);
-			return;
-		}
-		if (dateStartField.getValue().isAfter(dateEndField.getValue())) {
-			UIUtils.showNotification("Start Date cannot be after End Date", UIUtils.NotificationType.INFO);
-			return;
-		}
-
 		List<Message> messages = MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId());
 		messages.sort(Comparator.comparing(Message::getDate).reversed());
 

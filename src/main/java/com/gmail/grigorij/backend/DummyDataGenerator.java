@@ -1,13 +1,13 @@
 package com.gmail.grigorij.backend;
 
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
+import com.gmail.grigorij.backend.database.entities.Category;
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.Person;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.User;
-import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -22,16 +22,13 @@ public class DummyDataGenerator {
 
 	private int companiesCount = 3; //excluding 1st company: ADMINISTRATION
 	private int usersPerCompany = 10;
-
-	private int toolsCount = 10;
-	private int toolCategoriesCount = 5;
-	private int subCategories = 2;
-	private int toolsPerCategory = toolsCount / toolCategoriesCount;
+	private int toolsPerCategoryCount = 20;
+	private int categoriesCount = 5;
 
 
 	private List<Company> companies = new ArrayList<>();
 	private List<User> users = new ArrayList<>();
-	private List<InventoryItem> tools = new ArrayList<>();
+	private List<Tool> tools = new ArrayList<>();
 
 
 	public DummyDataGenerator() {
@@ -187,53 +184,46 @@ public class DummyDataGenerator {
 
 	@SuppressWarnings( "deprecation" )
 	private void generateTools() {
-		int categoryCounter = 1;
-		int subCategoryCounter = 1;
+
 		int toolCounter = 1;
+		int categoryCounter = 1;
 
 		for (Company company : companies) {
-			for (int i = 0; i < toolCategoriesCount; i++) {
-				InventoryItem rootCategory = new InventoryItem();
-				rootCategory.setInventoryItemType(InventoryItemType.CATEGORY);
-				rootCategory.setName("Category " + categoryCounter);
-				rootCategory.setCompany(company);
 
-				for (int j = 0; j < subCategories; j++) {
-					InventoryItem subCategory = new InventoryItem();
-					subCategory.setInventoryItemType(InventoryItemType.CATEGORY);
-					subCategory.setName("Sub Category " + subCategoryCounter + " (P: " + categoryCounter + ")");
-					subCategory.setParent(rootCategory);
-					subCategory.setCompany(company);
+			for (int i = 0; i < categoriesCount; i++) {
+				Category category = new Category();
+				category.setName("Category " + categoryCounter);
+				category.setCompany(company);
 
-					for (int k = 0; k < toolsPerCategory; k++) {
-						InventoryItem tool = new InventoryItem();
-						tool.setInventoryItemType(InventoryItemType.TOOL);
-						tool.setName("Tool " + toolCounter + " (P: " + categoryCounter + ", SP: " + subCategoryCounter + ")");
-						tool.setCompany(company);
-						tool.setParent(subCategory);
+				InventoryFacade.getInstance().insert(category);
 
-						tool.setUsageStatus(ToolUsageStatus.FREE);
-						tool.setManufacturer(RandomStringUtils.randomAlphabetic(5));
-						tool.setModel(RandomStringUtils.randomNumeric(10));
-						tool.setToolInfo(RandomStringUtils.randomAlphabetic(10));
-						tool.setSerialNumber(RandomStringUtils.randomNumeric(7));
-						tool.setBarcode(RandomStringUtils.randomNumeric(10));
-						tool.setCurrentLocation(company.getLocations().get(0));
-						tool.setPrice(999.93);
-						tool.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
-
-						toolCounter++;
-					}
-
-					subCategoryCounter++;
-				}
-
-				tools.add(rootCategory);
 				categoryCounter++;
+
+				for (int j = 0; j < toolsPerCategoryCount; j++) {
+
+					Tool tool = new Tool();
+					tool.setName("Tool " + toolCounter);
+					tool.setCompany(company);
+					tool.setUsageStatus(ToolUsageStatus.FREE);
+					tool.setManufacturer(RandomStringUtils.randomAlphabetic(5));
+					tool.setModel(RandomStringUtils.randomNumeric(10));
+					tool.setToolInfo(RandomStringUtils.randomAlphabetic(10));
+					tool.setSerialNumber(RandomStringUtils.randomNumeric(7));
+					tool.setBarcode(RandomStringUtils.randomNumeric(10));
+					tool.setCurrentLocation(company.getLocations().get(0));
+					tool.setPrice(999.93);
+					tool.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
+
+					tool.setCategory(category);
+
+					tools.add(tool);
+
+					toolCounter++;
+				}
 			}
 		}
 
-		for (InventoryItem ie : tools) {
+		for (Tool ie : tools) {
 			InventoryFacade.getInstance().insert(ie);
 		}
 	}

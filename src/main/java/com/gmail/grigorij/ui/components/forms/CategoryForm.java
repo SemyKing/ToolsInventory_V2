@@ -1,16 +1,14 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.InventoryFacade;
+import com.gmail.grigorij.backend.database.entities.Category;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
-import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ReadOnlyHasValue;
 import com.vaadin.flow.data.binder.ValidationException;
 
 import java.util.ArrayList;
@@ -20,16 +18,16 @@ public class CategoryForm extends FormLayout {
 
 	private final String CLASS_NAME = "form";
 
-	private Binder<InventoryItem> binder;
+	private Binder<Category> binder;
 
-	private InventoryItem category, originalCategory;
-//	private long initialCompanyId = -1L;
+	private Category category, originalCategory;
 	private boolean isNew;
 
 	// FORM ITEMS
 	private TextField nameField;
-	private ComboBox<Company> companyComboBox;
-	private ComboBox<InventoryItem> parentCategoryComboBox;
+	private TextField companyField;
+
+	private ReadOnlyHasValue<Category> company;
 
 
 	public CategoryForm() {
@@ -47,119 +45,60 @@ public class CategoryForm extends FormLayout {
 		nameField = new TextField("Name");
 		nameField.setRequired(true);
 
-		parentCategoryComboBox = new ComboBox<>();
-		parentCategoryComboBox.setItems();
-		parentCategoryComboBox.setLabel("Parent Category");
-		parentCategoryComboBox.setRequired(true);
-		parentCategoryComboBox.setItemLabelGenerator(InventoryItem::getName);
-
-		companyComboBox = new ComboBox<>();
-		companyComboBox.setLabel("Company");
-		companyComboBox.setRequired(true);
-		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
-		companyComboBox.setItemLabelGenerator(Company::getName);
-		companyComboBox.addValueChangeListener(e -> {
-			if (e != null) {
-				if (e.getValue() != null) {
-					parentCategoryComboBox.setValue(null);
-					updateCategoriesComboBoxData(e.getValue());
-				}
-			}
+		companyField = new TextField("Company");
+		companyField.setReadOnly(true);
+		company = new ReadOnlyHasValue<>(category -> {
+			companyField.setValue(category.getCompany() == null ? "" : category.getCompany().getName());
 		});
-
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
-			companyComboBox.setReadOnly(true);
-			companyComboBox.getElement().getStyle().set("display", "none");
-		}
 	}
 
 	private void constructForm() {
 		setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP));
 		add(nameField);
-		add(companyComboBox);
-		add(parentCategoryComboBox);
+		add(companyField);
 	}
 
 	private void constructBinder() {
-		binder = new Binder<>(InventoryItem.class);
+		binder = new Binder<>(Category.class);
 
 		binder.forField(nameField)
 				.asRequired("Name is required")
-				.bind(InventoryItem::getName, InventoryItem::setName);
-		binder.forField(companyComboBox)
-				.asRequired("Company is required")
-				.bind(InventoryItem::getCompany, InventoryItem::setCompany);
-		binder.forField(parentCategoryComboBox)
-				.asRequired("Parent Category is required")
-				.withNullRepresentation(InventoryFacade.getInstance().getRootCategory())
-				.bind(InventoryItem::getParent, InventoryItem::setParent);
+				.bind(Category::getName, Category::setName);
+		binder.forField(company)
+				.bind(category -> category, null);
 	}
 
 
 	private void initDynamicFormItems() {
-		companyComboBox.setReadOnly(true);
-
 		if (isNew) {
+			companyField.setValue(AuthenticationService.getCurrentSessionUser().getCompany().getName());
 			category.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-
-			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-				companyComboBox.setReadOnly(false);
-			}
 		}
 	}
 
-	private void updateCategoriesComboBoxData(Company company) {
-		List<InventoryItem> categories = InventoryFacade.getInstance().getAllInCompanyByType(company.getId(), InventoryItemType.CATEGORY);
-		categories.add(0, InventoryFacade.getInstance().getRootCategory());
 
-		/*
-		When editing Category remove same category from Parent Category -> can't set self as parent
-		 */
-		categories.removeIf(category -> category.getId().equals(this.category.getId()));
-
-		parentCategoryComboBox.setItems(categories);
-	}
-
-
-	public void setCategory(InventoryItem category) {
+	public void setCategory(Category category) {
 		isNew = false;
 
 		if (category == null) {
-			this.category = new InventoryItem();
+			this.category = new Category();
 			isNew = true;
 		} else {
 			this.category = category;
 		}
 
-		this.category.setInventoryItemType(InventoryItemType.CATEGORY);
+		originalCategory = new Category(this.category);
+
+		binder.readBean(this.category);
 
 		initDynamicFormItems();
-
-		binder.readBean(category);
-
-		originalCategory = new InventoryItem(this.category);
 	}
 
-	public InventoryItem getCategory() {
+	public Category getCategory() {
 		try {
 			binder.validate();
 
 			if (binder.isValid()) {
-
-				/*
-				If category's company was changed, it must also be changed for all category children
-				 */
-
-//				NO COMPANY CHANGING.
-
-//				if (initialCompanyId != category.getCompany().getId()) {
-//					for (InventoryItem child : InventoryFacade.getInstance().getAllByParentId(category.getId())) {
-//						child.setCompany(category.getCompany());
-//
-//						InventoryFacade.getInstance().update(child);
-//					}
-//				}
-
 				binder.writeBean(category);
 
 				return category;
@@ -181,15 +120,8 @@ public class CategoryForm extends FormLayout {
 		if (!originalCategory.getName().equals(category.getName())) {
 			changes.add("Category name changed from: '" + originalCategory.getName() + "', to: '" + category.getName() + "'");
 		}
-		if (!originalCategory.getCompany().equals(category.getCompany())) {
+		if (!originalCategory.getCompanyString().equals(category.getCompanyString())) {
 			changes.add("Category company changed from: '" + originalCategory.getCompany().getName() + "', to: '" + category.getCompany().getName() + "'");
-		}
-
-		if (originalCategory.getParent() != null || category.getParent() != null) {
-			changes.add("Category parent changed from: '" +
-					(originalCategory.getParent()==null ? "" : originalCategory.getParent().getName()) +
-					"', to: '" +
-					(category.getParent()==null ? "" : category.getParent().getName()) + "'");
 		}
 
 		return changes;

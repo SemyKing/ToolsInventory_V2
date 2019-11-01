@@ -29,22 +29,34 @@
 
 .messages__header {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	margin: 5px 5px 0 5px;
     align-items: baseline;
 }
-.messages__header > vaadin-text-field {
+
+.messages__header-top {
 	width: 100%;
-	padding-top: 0 !important;
+	display: flex;
+    flex-direction: row;
+    align-items: baseline;
 }
-
-.messages__header > vaadin-button {
+.messages__header-top > vaadin-text-field {
+	flex-grow: 1;
 	margin-left: var(--lumo-space-s);
+	margin-right: var(--lumo-space-s);
 }
 
-.messages__additional_options > vaadin-menu-bar {
-	padding-right: var(--lumo-space-s);
+.messages__header-bottom {
+	width: 100%;
+	display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: center;
 }
+.messages__filters > vaadin-date-picker:not(:last-child) {
+	margin-right: var(--lumo-space-s);
+}
+
 
 .messages__content {
 	display: flex;
@@ -59,17 +71,4 @@
     justify-content: space-between;
     padding-left: var(--lumo-space-m);
     padding-right: var(--lumo-space-m);
-}
-
-
-/* DATES FILTER */
-
-.messages__dates-filter {
-	display: flex;
-	flex-direction: column;
-	padding: 0;
-}
-.messages__dates {
-	display: flex;
-	flex-direction: row;
 }

@@ -1,12 +1,12 @@
 package com.gmail.grigorij.ui.components.forms;
 
+import com.gmail.grigorij.backend.database.entities.Category;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.User;
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
-import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
@@ -48,10 +48,9 @@ public class ToolForm extends FormLayout {
 
 	private final String CLASS_NAME = "form";
 	private final AdminInventory adminInventory;
-	private final CategoryForm categoryForm = new CategoryForm();
 
-	private Binder<InventoryItem> binder;
-	private InventoryItem tool, originalTool;
+	private Binder<Tool> binder;
+	private Tool tool, originalTool;
 	private boolean isNew;
 
 	// FORM ITEMS
@@ -65,7 +64,7 @@ public class ToolForm extends FormLayout {
 	private TextField manufacturer;
 	private TextField model;
 	private ComboBox<Company> companyComboBox;
-	private ComboBox<InventoryItem> categoryComboBox;
+	private ComboBox<Category> categoryComboBox;
 	private FlexBoxLayout categoryLayout;
 	private Div locationAndUsageDiv;
 	private ComboBox<Location> locationComboBox;
@@ -138,39 +137,29 @@ public class ToolForm extends FormLayout {
 		companyComboBox = new ComboBox<>();
 		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
 		companyComboBox.setItemLabelGenerator(Company::getName);
-		companyComboBox.setLabel("Company (Owner)");
+		companyComboBox.setLabel("Company");
 		companyComboBox.setRequired(true);
 		companyComboBox.addValueChangeListener(e -> {
-			if (e != null) {
-				if (e.getValue() != null) {
-					updateComboBoxes(e.getValue());
-				}
+			if (e.getValue() != null) {
+				updateComboBoxes(e.getValue());
 			}
 		});
 
 
 		categoryComboBox = new ComboBox<>();
 		categoryComboBox.setItems();
-		categoryComboBox.setLabel("Parent Category");
-		categoryComboBox.setItemLabelGenerator(InventoryItem::getName);
+		categoryComboBox.setLabel("Category");
+		categoryComboBox.setItemLabelGenerator(Category::getName);
 		categoryComboBox.setRequired(true);
-		categoryComboBox.addValueChangeListener(e -> {
-			if (e.getValue() != null) {
-				long level = e.getValue().getLevel();
-				tool.setLevel(++level);
-			}
-		});
 
-		Button editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
+		Button editCategoryButton = UIUtils.createButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
 		editCategoryButton.addClickListener(e -> {
-			InventoryItem selectedCategory = categoryComboBox.getValue();
+			Category selectedCategory = categoryComboBox.getValue();
 			if (selectedCategory != null) {
-				if (!selectedCategory.equals(InventoryFacade.getInstance().getRootCategory())) {
-					adminInventory.constructCategoryDialog(selectedCategory);
-				}
+				adminInventory.constructCategoryDialog(selectedCategory);
 			}
 		});
-		UIUtils.setTooltip("Edit selected category", editCategoryButton);
+		UIUtils.setTooltip("Edit category", editCategoryButton);
 
 
 		categoryLayout = new FlexBoxLayout();
@@ -297,70 +286,69 @@ public class ToolForm extends FormLayout {
 	}
 
 	private void constructBinder() {
-		binder = new Binder<>(InventoryItem.class);
+		binder = new Binder<>(Tool.class);
 
 		binder.forField(entityStatusCheckbox)
-				.bind(InventoryItem::isDeleted, InventoryItem::setDeleted);
+				.bind(Tool::isDeleted, Tool::setDeleted);
 
 		binder.forField(nameField)
 				.asRequired("Name is required")
-				.bind(InventoryItem::getName, InventoryItem::setName);
+				.bind(Tool::getName, Tool::setName);
 
 		binder.forField(barcode)
-				.bind(InventoryItem::getBarcode, InventoryItem::setBarcode);
+				.bind(Tool::getBarcode, Tool::setBarcode);
 
 		binder.forField(serialNumber)
-				.bind(InventoryItem::getSerialNumber, InventoryItem::setSerialNumber);
+				.bind(Tool::getSerialNumber, Tool::setSerialNumber);
 
 		binder.forField(toolInfo)
-				.bind(InventoryItem::getToolInfo, InventoryItem::setToolInfo);
+				.bind(Tool::getToolInfo, Tool::setToolInfo);
 
 		binder.forField(manufacturer)
-				.bind(InventoryItem::getManufacturer, InventoryItem::setManufacturer);
+				.bind(Tool::getManufacturer, Tool::setManufacturer);
 
 		binder.forField(model)
-				.bind(InventoryItem::getModel, InventoryItem::setModel);
+				.bind(Tool::getModel, Tool::setModel);
 
 		binder.forField(companyComboBox)
 				.asRequired("Company is required")
-				.bind(InventoryItem::getCompany, InventoryItem::setCompany);
+				.bind(Tool::getCompany, Tool::setCompany);
 
 		binder.forField(categoryComboBox)
 				.asRequired("Category is required")
-				.withNullRepresentation(InventoryFacade.getInstance().getRootCategory())
-				.bind(InventoryItem::getParent, InventoryItem::setParent);
+				.bind(Tool::getCategory, Tool::setCategory);
 
 		binder.forField(locationComboBox)
-				.bind(InventoryItem::getCurrentLocation, InventoryItem::setCurrentLocation);
+				.bind(Tool::getCurrentLocation, Tool::setCurrentLocation);
 
 		binder.forField(toolUsageStatusComboBox)
 				.asRequired("Usage Status is required")
-				.bind(InventoryItem::getUsageStatus, InventoryItem::setUsageStatus);
+				.bind(Tool::getUsageStatus, Tool::setUsageStatus);
 
 		binder.forField(toolCurrentUserComboBox)
-				.bind(InventoryItem::getCurrentUser, InventoryItem::setCurrentUser);
+				.bind(Tool::getCurrentUser, Tool::setCurrentUser);
 
 		binder.forField(toolReservedByUserComboBox)
-				.bind(InventoryItem::getReservedUser, InventoryItem::setReservedUser);
+				.bind(Tool::getReservedUser, Tool::setReservedUser);
 
 		binder.forField(priceField)
 				.withConverter(new StringToDoubleConverter("Price must be a number"))
-				.withNullRepresentation(0.00)
-				.bind(InventoryItem::getPrice, InventoryItem::setPrice);
+//				.withNullRepresentation(0.00)
+				.bind(Tool::getPrice, Tool::setPrice);
 
 		binder.forField(guaranteeField)
 				.withConverter(new StringToIntegerConverter("Guarantee must be a number"))
-				.withNullRepresentation(0)
-				.bind(InventoryItem::getGuarantee_months, InventoryItem::setGuarantee_months);
+//				.withNullRepresentation(0)
+				.bind(Tool::getGuarantee_months, Tool::setGuarantee_months);
 
 		binder.forField(dateBought)
-				.bind(InventoryItem::getDateBought, InventoryItem::setDateBought);
+				.bind(Tool::getDateBought, Tool::setDateBought);
 
 		binder.forField(dateNextMaintenance)
-				.bind(InventoryItem::getDateNextMaintenance, InventoryItem::setDateNextMaintenance);
+				.bind(Tool::getDateNextMaintenance, Tool::setDateNextMaintenance);
 
 		binder.forField(additionalInfo)
-				.bind(InventoryItem::getAdditionalInfo, InventoryItem::setAdditionalInfo);
+				.bind(Tool::getAdditionalInfo, Tool::setAdditionalInfo);
 	}
 
 
@@ -372,10 +360,6 @@ public class ToolForm extends FormLayout {
 		}
 
 		updateComboBoxes(tool.getCompany());
-
-		if (tool.getCompany() != null) {
-			locationComboBox.setItems(tool.getCompany().getLocations());
-		}
 	}
 
 	private void updateComboBoxes(Company company) {
@@ -385,14 +369,10 @@ public class ToolForm extends FormLayout {
 			toolCurrentUserComboBox.setValue(null);
 			toolReservedByUserComboBox.setValue(null);
 
-			List<InventoryItem> categories = InventoryFacade.getInstance().getAllInCompanyByType(company.getId(), InventoryItemType.CATEGORY);
-			categories.add(0, InventoryFacade.getInstance().getRootCategory());
-
-			categoryComboBox.setItems(categories);
-			categoryComboBox.setValue(InventoryFacade.getInstance().getRootCategory());
-
+			categoryComboBox.setItems(InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId()));
 			toolCurrentUserComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
 			toolReservedByUserComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
+			locationComboBox.setItems(company.getLocations());
 		}
 	}
 
@@ -447,21 +427,19 @@ public class ToolForm extends FormLayout {
 	}
 
 
-	public void setTool(InventoryItem tool) {
+	public void setTool(Tool tool) {
 		isNew = false;
 
 		if (tool == null) {
-			this.tool = new InventoryItem();
+			this.tool = new Tool();
 			isNew = true;
 		} else {
 			this.tool = tool;
 		}
 
-		this.tool.setInventoryItemType(InventoryItemType.TOOL);
-
 		initDynamicFormItems();
 
-		originalTool = new InventoryItem(this.tool);
+		originalTool = new Tool(this.tool);
 
 		binder.readBean(this.tool);
 
@@ -470,7 +448,7 @@ public class ToolForm extends FormLayout {
 		}
 	}
 
-	public InventoryItem getTool() {
+	public Tool getTool() {
 		try {
 			binder.validate();
 
@@ -556,16 +534,15 @@ public class ToolForm extends FormLayout {
 		if (!originalTool.getModel().equals(tool.getModel())) {
 			changes.add("Model changed from: '" + originalTool.getModel() + "', to: '" + tool.getModel() + "'");
 		}
-		if (!originalTool.getCompany().equals(tool.getCompany())) {
+		if (!originalTool.getCompanyString().equals(tool.getCompanyString())) {
 			changes.add("Tool company changed from: '" + originalTool.getCompany().getName() + "', to: '" + tool.getCompany().getName() + "'");
 		}
-		if (originalTool.getParent() != null || tool.getParent() != null) {
+		if (!originalTool.getCategoryString().equals(tool.getCategoryString())) {
 			changes.add("Tool category changed from: '" +
-					(originalTool.getParent()==null ? "" : originalTool.getParent().getName()) +
-					"', to: '" +
-					(tool.getParent()==null ? "" : tool.getParent().getName()) + "'");
+					originalTool.getCategoryString() + "', to: '" +
+					tool.getCategoryString() + "'");
 		}
-		if (!originalTool.getUsageStatus().equals(tool.getUsageStatus())) {
+		if (!originalTool.getUsageStatusString().equals(tool.getUsageStatusString())) {
 			changes.add("Usage status changed from: '" + originalTool.getUsageStatus().getName() + "', to: '" + tool.getUsageStatus().getName() + "'");
 		}
 		if (originalTool.getCurrentUser() != null || tool.getCurrentUser() != null) {

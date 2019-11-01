@@ -73,7 +73,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 		header.add(searchField);
 
 		MenuBar actionsMenuBar = new MenuBar();
-		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_CONTRAST);
+		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_PRIMARY, MenuBarVariant.LUMO_ICON);
 
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
 

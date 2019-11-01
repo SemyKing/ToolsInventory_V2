@@ -1,6 +1,6 @@
 package com.gmail.grigorij.backend.database.entities.embeddable;
 
-import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
 
 import javax.persistence.*;
 import java.util.Date;

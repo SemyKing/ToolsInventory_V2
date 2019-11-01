@@ -1,9 +1,9 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Message;
 import com.gmail.grigorij.backend.database.entities.Transaction;
-import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
@@ -128,7 +128,7 @@ public class MessageForm extends FormLayout {
 		}
 
 		if (message.getToolId() != null) {
-			InventoryItem tool = InventoryFacade.getInstance().getById(message.getToolId());
+			Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
 
 			toolNameField.setValue(tool.getName());
 
@@ -174,7 +174,7 @@ public class MessageForm extends FormLayout {
 			return;
 		}
 
-		InventoryItem tool = InventoryFacade.getInstance().getById(message.getToolId());
+		Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
 
 		tool.setReservedUser(null);
 		tool.setUsageStatus(ToolUsageStatus.FREE);
@@ -204,7 +204,7 @@ public class MessageForm extends FormLayout {
 			return;
 		}
 
-		InventoryItem tool = InventoryFacade.getInstance().getById(message.getToolId());
+		Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
 
 		tool.setCurrentUser(AuthenticationService.getCurrentSessionUser());
 		tool.setReservedUser(null);

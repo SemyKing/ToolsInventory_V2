@@ -40,6 +40,7 @@ import java.util.List;
 @CssImport("./styles/components/forms.css")
 @CssImport(value = "./styles/components/grid-style.css", themeFor = "vaadin-grid")
 @CssImport(value = "./styles/components/date-picker-style.css", themeFor = "vaadin-date-picker")
+@CssImport(value = "./styles/components/button-style.css", themeFor = "vaadin-button")
 @CssImport(value = "./styles/components/menu-bar-style.css", themeFor = "vaadin-menu-bar")
 @CssImport(value = "./styles/components/dialogs/vaadin-dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
 public class ApplicationContainerView extends FlexBoxLayout implements PageConfigurator {

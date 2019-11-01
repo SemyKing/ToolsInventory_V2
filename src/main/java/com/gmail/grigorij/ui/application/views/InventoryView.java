@@ -1,15 +1,15 @@
 package com.gmail.grigorij.ui.application.views;
 
+import com.gmail.grigorij.backend.database.entities.Category;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.database.entities.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Message;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.enums.MessageType;
-import com.gmail.grigorij.backend.database.enums.inventory.InventoryItemType;
-import com.gmail.grigorij.backend.database.enums.inventory.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
@@ -29,24 +29,27 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.component.treegrid.TreeGrid;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.provider.hierarchy.TreeData;
-import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 
 
 @CssImport("./styles/views/inventory.css")
@@ -55,11 +58,17 @@ public class InventoryView extends Div {
 	private static final String CLASS_NAME = "inventory";
 	private final ReadOnlyToolForm toolForm = new ReadOnlyToolForm();
 
-	private Checkbox allToolParametersCheckBox;
+	private TextField searchField;
+	private Div filtersDiv;
+	private ComboBox<Category> categoryComboBox;
+	private ComboBox<ToolUsageStatus> usageStatusComboBox;
+	private ComboBox<Location> currentLocationComboBox;
 
-	private TreeGrid<InventoryItem> grid;
-	private TreeDataProvider<InventoryItem> dataProvider;
+	private boolean filtersVisible = false;
 
+
+	private Grid<Tool> grid;
+	private ListDataProvider<Tool> dataProvider;
 
 	private DetailsDrawer detailsDrawer;
 
@@ -75,6 +84,8 @@ public class InventoryView extends Div {
 
 		add(contentWrapper);
 		add(constructDetails());
+
+		toggleFilters();
 	}
 
 
@@ -82,42 +93,73 @@ public class InventoryView extends Div {
 		Div header = new Div();
 		header.addClassName(CLASS_NAME + "__header");
 
-		TextField searchField = new TextField();
+		Div headerTopDiv = new Div();
+		headerTopDiv.addClassName(CLASS_NAME + "__header-top");
+		header.add(headerTopDiv);
+
+		Button toggleFiltersButton = UIUtils.createButton("Filters", VaadinIcon.FILTER, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+		toggleFiltersButton.addClassName("dynamic-label-button");
+		toggleFiltersButton.addClickListener(e -> toggleFilters());
+		headerTopDiv.add(toggleFiltersButton);
+
+
+		searchField = new TextField();
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
-		searchField.setPlaceholder("Search By Tool Name");
+		searchField.setPlaceholder("Search Tools");
 		searchField.setValueChangeMode(ValueChangeMode.LAZY);
-		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
-		header.add(searchField);
+		searchField.addValueChangeListener(event -> applyFilters());
+		headerTopDiv.add(searchField);
 
-		Div additionalOptionsDiv = new Div();
-		additionalOptionsDiv.addClassName(CLASS_NAME + "__additional_options");
-
-		allToolParametersCheckBox = new Checkbox("All Parameters");
-		allToolParametersCheckBox.addValueChangeListener(e -> {
-			if (allToolParametersCheckBox.getValue()) {
-				searchField.setPlaceholder("Search By All Tool Parameters");
-			} else {
-				searchField.setPlaceholder("Search By Tool Name");
-			}
-
-			if (searchField.getValue().length() > 0) {
-				filterGrid(searchField.getValue());
-			}
-		});
-		additionalOptionsDiv.add(allToolParametersCheckBox);
-
-		Button myToolsButton = UIUtils.createButton("My Tools", VaadinIcon.TOOLS, ButtonVariant.LUMO_CONTRAST);
+		Button myToolsButton = UIUtils.createButton("My Tools", VaadinIcon.TOOLS, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+		myToolsButton.addClassName("dynamic-label-button");
 		myToolsButton.addClickListener(e -> constructMyToolsDialog());
-		additionalOptionsDiv.add(myToolsButton);
+		headerTopDiv.add(myToolsButton);
 
-		Button scanToolButton = UIUtils.createButton("Scan", VaadinIcon.CAMERA, ButtonVariant.LUMO_CONTRAST);
+		Button scanToolButton = UIUtils.createButton("Scan Code", VaadinIcon.CAMERA, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+		scanToolButton.addClassName("dynamic-label-button");
 		scanToolButton.addClickListener(e -> constructCodeScannerDialog());
-		additionalOptionsDiv.add(scanToolButton);
+		headerTopDiv.add(scanToolButton);
 
-		header.add(additionalOptionsDiv);
+		Div headerBottomDiv = new Div();
+		headerBottomDiv.addClassName(CLASS_NAME + "__header-bottom");
+		headerBottomDiv.add(constructToolsFilterLayout());
+		header.add(headerBottomDiv);
 
 		return header;
+	}
+
+	private Div constructToolsFilterLayout() {
+		filtersDiv = new Div();
+		filtersDiv.addClassName(CLASS_NAME + "__filters");
+
+		categoryComboBox = new ComboBox<>();
+		categoryComboBox.setLabel("Category");
+		categoryComboBox.setClearButtonVisible(true);
+		categoryComboBox.setItems(InventoryFacade.getInstance().getAllCategoriesInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
+		categoryComboBox.setItemLabelGenerator(Category::getName);
+		categoryComboBox.addValueChangeListener(e -> applyFilters());
+
+		filtersDiv.add(categoryComboBox);
+
+		usageStatusComboBox = new ComboBox<>();
+		usageStatusComboBox.setLabel("Status");
+		usageStatusComboBox.setClearButtonVisible(true);
+		usageStatusComboBox.setItems(EnumSet.allOf(ToolUsageStatus.class));
+		usageStatusComboBox.setItemLabelGenerator(ToolUsageStatus::getName);
+		usageStatusComboBox.addValueChangeListener(e -> applyFilters());
+
+		filtersDiv.add(usageStatusComboBox);
+
+		currentLocationComboBox = new ComboBox<>();
+		currentLocationComboBox.setLabel("Current Location");
+		currentLocationComboBox.setClearButtonVisible(true);
+		currentLocationComboBox.setItems(AuthenticationService.getCurrentSessionUser().getCompany().getLocations());
+		currentLocationComboBox.setItemLabelGenerator(Location::getName);
+		currentLocationComboBox.addValueChangeListener(e -> applyFilters());
+
+		filtersDiv.add(currentLocationComboBox);
+		return filtersDiv;
 	}
 
 	private Div constructContent() {
@@ -131,35 +173,24 @@ public class InventoryView extends Div {
 	}
 
 	private Grid constructGrid() {
-		grid = new TreeGrid<>();
+		grid = new Grid<>();
 		grid.addClassName("grid-view");
 		grid.setSizeFull();
 
-		List<InventoryItem> toolsAndCategories = InventoryFacade.getInstance().getAllInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId());
-		TreeData<InventoryItem> treeData = new TreeData<>();
-
-		//List must be sorted -> Parent must be added before child
-		toolsAndCategories.sort(Comparator.comparing(InventoryItem::getLevel));
-
-		toolsAndCategories.forEach(item -> {
-			treeData.addItem(item.getParent(), item);
-		});
-
-		dataProvider = new TreeDataProvider<>(treeData);
+		dataProvider = new ListDataProvider<>(InventoryFacade.getInstance().getAllToolsInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
 
 		grid.setDataProvider(dataProvider);
 
-		grid.addHierarchyColumn(InventoryItem::getName)
-				.setHeader("Tools")
-				.setSortable(false)
+		grid.addColumn(Tool::getName)
+				.setHeader("Tool")
 				.setAutoWidth(true);
 
-		grid.addColumn(new ComponentRenderer<>(this::getUsageStatusSpan))
+		grid.addColumn(Tool::getUsageStatusString)
 				.setHeader("Status")
 				.setAutoWidth(true);
 
-		grid.addColumn(InventoryItem::getCurrentLocationName)
-				.setHeader("Location")
+		grid.addColumn(Tool::getCurrentLocationString)
+				.setHeader("Current Location")
 				.setAutoWidth(true);
 
 
@@ -172,51 +203,17 @@ public class InventoryView extends Div {
 //				.setFlexGrow(0);
 
 		grid.asSingleSelect().addValueChangeListener(e -> {
-			InventoryItem inventoryItem = grid.asSingleSelect().getValue();
+			Tool tool = grid.asSingleSelect().getValue();
 
-			if (inventoryItem != null) {
-				if (inventoryItem.getInventoryItemType().equals(InventoryItemType.CATEGORY)) {
-					if (grid.isExpanded(inventoryItem)) {
-						grid.collapse(inventoryItem);
-					} else {
-						grid.expand(inventoryItem);
-					}
-					grid.deselectAll();
-				} else {
-					showDetails(inventoryItem);
-				}
+			if (tool != null) {
+				showDetails(tool);
 			} else {
 				detailsDrawer.hide();
 				grid.deselectAll();
 			}
 		});
 
-		grid.addExpandListener(e -> {
-			grid.recalculateColumnWidths();
-		});
-		grid.addCollapseListener(e -> {
-			grid.recalculateColumnWidths();
-		});
-
 		return grid;
-	}
-
-	private Span getUsageStatusSpan(InventoryItem inventoryItem) {
-		Span span = new Span("");
-
-		if (inventoryItem.getInventoryItemType().equals(InventoryItemType.CATEGORY)) {
-			return span;
-		}
-
-		span.getElement().getStyle().set("padding-left", "var(--lumo-space-xs)");
-		span.getElement().getStyle().set("padding-right", "var(--lumo-space-xs)");
-		span.getElement().getStyle().set("border-radius", "4px");
-
-		span.setText(inventoryItem.getUsageStatus().getName());
-		span.getElement().getStyle().set("background-color", inventoryItem.getUsageStatus().getColor());
-		span.getElement().getStyle().set("color", "var(--lumo-header-text-color)");
-
-		return span;
 	}
 
 //	private MenuBar getMenuBar(InventoryItem inventoryItem) {
@@ -291,14 +288,14 @@ public class InventoryView extends Div {
 		FlexBoxLayout footer = new FlexBoxLayout();
 		footer.setClassName(CLASS_NAME + "__details-footer");
 
-		Button closeDetailsButton = UIUtils.createButton("Close", ButtonVariant.LUMO_CONTRAST);
+		Button closeDetailsButton = UIUtils.createButton("Close", ButtonVariant.LUMO_PRIMARY);
 		closeDetailsButton.addClickListener(e -> closeDetails());
 		footer.add(closeDetailsButton);
 
 
 		Button reportToolButton = UIUtils.createButton("Report", VaadinIcon.EXCLAMATION, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
 		reportToolButton.addClickListener(e -> {
-			InventoryItem tool = grid.asSingleSelect().getValue();
+			Tool tool = grid.asSingleSelect().getValue();
 			if (tool != null) {
 				reportToolOnClick(tool);
 			}
@@ -307,7 +304,7 @@ public class InventoryView extends Div {
 
 		Button reserveToolButton = UIUtils.createButton("Reserve", VaadinIcon.CALENDAR_CLOCK, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_CONTRAST);
 		reserveToolButton.addClickListener(e -> {
-			InventoryItem tool = grid.asSingleSelect().getValue();
+			Tool tool = grid.asSingleSelect().getValue();
 			if (tool != null) {
 				reserveToolOnClick(tool);
 			}
@@ -316,7 +313,7 @@ public class InventoryView extends Div {
 
 		Button takeToolButton = UIUtils.createButton("Take", VaadinIcon.HAND, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
 		takeToolButton.addClickListener(e -> {
-			InventoryItem tool = grid.asSingleSelect().getValue();
+			Tool tool = grid.asSingleSelect().getValue();
 			if (tool != null) {
 				takeToolOnClick(tool);
 			}
@@ -327,8 +324,30 @@ public class InventoryView extends Div {
 	}
 
 
-	private void filterGrid(String searchString) {
+	private void toggleFilters() {
+		filtersDiv.getElement().setAttribute("hidden", !filtersVisible);
+		filtersVisible = !filtersVisible;
+	}
+
+	private void applyFilters() {
 		dataProvider.clearFilters();
+
+		if (categoryComboBox.getValue() != null) {
+			dataProvider.addFilter(tool -> tool.getCategoryString().equals(categoryComboBox.getValue().getName()));
+		}
+
+		if (usageStatusComboBox.getValue() != null) {
+			dataProvider.addFilter(tool -> tool.getUsageStatusString().equals(usageStatusComboBox.getValue().getName()));
+		}
+
+		if (currentLocationComboBox.getValue() != null) {
+			dataProvider.addFilter(tool -> tool.getCurrentLocationString().equals(currentLocationComboBox.getValue().getName()));
+		}
+
+		filterGrid(searchField.getValue());
+	}
+
+	private void filterGrid(String searchString) {
 
 		if (searchString.length() <= 0) {
 			return;
@@ -359,40 +378,24 @@ public class InventoryView extends Div {
 		}
 	}
 
-	private boolean matchesFilter(InventoryItem item, String filter) {
-//		if (item.getInventoryItemType().equals(InventoryItemType.CATEGORY)) {
-//			grid.expand(item);
-//		}
-
-		if (!allToolParametersCheckBox.getValue()) {
-			if (StringUtils.containsIgnoreCase(item.getName(), filter)) {
-				return true;
-			}
-		} else {
-			if (StringUtils.containsIgnoreCase(item.getName(), filter) ||
-						StringUtils.containsIgnoreCase(item.getBarcode(), filter) ||
-						StringUtils.containsIgnoreCase(item.getSerialNumber(), filter) ||
-						StringUtils.containsIgnoreCase(item.getToolInfo(), filter) ||
-						StringUtils.containsIgnoreCase(item.getManufacturer(), filter) ||
-						StringUtils.containsIgnoreCase(item.getModel(), filter) ||
-						StringUtils.containsIgnoreCase((item.getUsageStatus() == null) ? "" : item.getUsageStatus().getName(), filter) ||
-						StringUtils.containsIgnoreCase((item.getCurrentUser() == null) ? "" : item.getCurrentUser().getFullName(), filter) ||
-						StringUtils.containsIgnoreCase((item.getReservedUser() == null) ? "" : item.getReservedUser().getFullName(), filter) ||
-						StringUtils.containsIgnoreCase((item.getDateBought() == null) ? "" : DateConverter.localDateToString(item.getDateBought()), filter) ||
-						StringUtils.containsIgnoreCase((item.getDateNextMaintenance() == null) ? "" : DateConverter.localDateToString(item.getDateNextMaintenance()), filter) ||
-						StringUtils.containsIgnoreCase(String.valueOf(item.getPrice()), filter) ||
-						StringUtils.containsIgnoreCase(String.valueOf(item.getGuarantee_months()), filter)) {
-
-
-				return true;
-			}
-		}
-
-		return item.getChildren().stream().anyMatch(child -> matchesFilter(child, filter));
+	private boolean matchesFilter(Tool item, String filter) {
+		return StringUtils.containsIgnoreCase(item.getName(), filter) ||
+				StringUtils.containsIgnoreCase(item.getBarcode(), filter) ||
+				StringUtils.containsIgnoreCase(item.getSerialNumber(), filter) ||
+				StringUtils.containsIgnoreCase(item.getToolInfo(), filter) ||
+				StringUtils.containsIgnoreCase(item.getManufacturer(), filter) ||
+				StringUtils.containsIgnoreCase(item.getModel(), filter) ||
+				StringUtils.containsIgnoreCase((item.getUsageStatus() == null) ? "" : item.getUsageStatus().getName(), filter) ||
+				StringUtils.containsIgnoreCase((item.getCurrentUser() == null) ? "" : item.getCurrentUser().getFullName(), filter) ||
+				StringUtils.containsIgnoreCase((item.getReservedUser() == null) ? "" : item.getReservedUser().getFullName(), filter) ||
+				StringUtils.containsIgnoreCase((item.getDateBought() == null) ? "" : DateConverter.localDateToString(item.getDateBought()), filter) ||
+				StringUtils.containsIgnoreCase((item.getDateNextMaintenance() == null) ? "" : DateConverter.localDateToString(item.getDateNextMaintenance()), filter) ||
+				StringUtils.containsIgnoreCase(String.valueOf(item.getPrice()), filter) ||
+				StringUtils.containsIgnoreCase(String.valueOf(item.getGuarantee_months()), filter);
 	}
 
 
-	private void showDetails(InventoryItem tool) {
+	private void showDetails(Tool tool) {
 		if (tool != null) {
 			toolForm.setTool(tool);
 			detailsDrawer.show();
@@ -409,8 +412,8 @@ public class InventoryView extends Div {
 	 * Dialog with Grid containing all Tools user has in use / reserved with ability to return / cancel reservation
 	 */
 	private void constructMyToolsDialog() {
-		List<InventoryItem> allMyTools = new ArrayList<>();
-		List<InventoryItem> selectedTools = new ArrayList<>();
+		List<Tool> allMyTools = new ArrayList<>();
+		List<Tool> selectedTools = new ArrayList<>();
 
 		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByCurrentUserId(AuthenticationService.getCurrentSessionUser().getId()));
 		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByReservedUserId(AuthenticationService.getCurrentSessionUser().getId()));
@@ -420,7 +423,7 @@ public class InventoryView extends Div {
 			return;
 		}
 
-		ListDataProvider<InventoryItem> myToolsDataProvider = DataProvider.ofCollection(allMyTools);
+		ListDataProvider<Tool> myToolsDataProvider = DataProvider.ofCollection(allMyTools);
 
 
 		CustomDialog dialog = new CustomDialog();
@@ -428,13 +431,13 @@ public class InventoryView extends Div {
 		dialog.setCloseOnOutsideClick(false);
 		dialog.setHeader(UIUtils.createH3Label("My Tools"));
 
-		Grid<InventoryItem> myToolsGrid = new Grid<>();
+		Grid<Tool> myToolsGrid = new Grid<>();
 		myToolsGrid.addClassName("grid-view");
 		myToolsGrid.addClassName("my-tools-grid");
 
 		myToolsGrid.setDataProvider(myToolsDataProvider);
 
-		myToolsGrid.addColumn(InventoryItem::getName)
+		myToolsGrid.addColumn(Tool::getName)
 				.setHeader("Tool")
 				.setFlexGrow(3)
 				.setAutoWidth(true);
@@ -518,7 +521,7 @@ public class InventoryView extends Div {
 					returnToolOnClick(selectedTools, locationComboBox.getValue());
 
 					if (selectedTools.size() < myToolsDataProvider.getItems().size()) {
-						for (InventoryItem tool : selectedTools) {
+						for (Tool tool : selectedTools) {
 							myToolsDataProvider.getItems().removeIf(item -> item.getId().equals(tool.getId()));
 						}
 						myToolsDataProvider.refreshAll();
@@ -563,7 +566,7 @@ public class InventoryView extends Div {
 							cameraDialog.stopCamera();
 							UI.getCurrent().push();
 
-							InventoryItem tool = InventoryFacade.getInstance().getToolByCode(code);
+							Tool tool = InventoryFacade.getInstance().getToolByCode(code);
 							if (tool == null) {
 								UIUtils.showNotification("Tool not found", UIUtils.NotificationType.INFO);
 							} else {
@@ -611,12 +614,12 @@ public class InventoryView extends Div {
 	/**
 	 * TAKE TOOL
 	 */
-	private void takeToolOnClick(InventoryItem tool) {
+	private void takeToolOnClick(Tool tool) {
 		if (tool == null) {
 			return;
 		}
 
-		InventoryItem toolFromDB = InventoryFacade.getInstance().getById(tool.getId());
+		Tool toolFromDB = InventoryFacade.getInstance().getToolById(tool.getId());
 
 		if (toolFromDB == null) {
 			UIUtils.showNotification("Error retrieving tool from database", UIUtils.NotificationType.ERROR);
@@ -672,12 +675,12 @@ public class InventoryView extends Div {
 	/**
 	 * RESERVE TOOL
 	 */
-	private void reserveToolOnClick(InventoryItem tool) {
+	private void reserveToolOnClick(Tool tool) {
 		if (tool == null) {
 			return;
 		}
 
-		InventoryItem toolFromDB = InventoryFacade.getInstance().getById(tool.getId());
+		Tool toolFromDB = InventoryFacade.getInstance().getToolById(tool.getId());
 
 		if (toolFromDB == null) {
 			UIUtils.showNotification("Error retrieving tool from database", UIUtils.NotificationType.ERROR);
@@ -731,12 +734,12 @@ public class InventoryView extends Div {
 	/**
 	 * REPORT TOOL
 	 */
-	private void reportToolOnClick(InventoryItem tool) {
+	private void reportToolOnClick(Tool tool) {
 		if (tool == null) {
 			return;
 		}
 
-		InventoryItem toolFromDB = InventoryFacade.getInstance().getById(tool.getId());
+		Tool toolFromDB = InventoryFacade.getInstance().getToolById(tool.getId());
 
 		//TODO: DIALOG WITH REPORTS FOR tool
 	}
@@ -745,7 +748,7 @@ public class InventoryView extends Div {
 	/**
 	 * RETURN TOOL
 	 */
-	private void returnToolOnClick(List<InventoryItem> userSelectedTools, Location location) {
+	private void returnToolOnClick(List<Tool> userSelectedTools, Location location) {
 
 		if (userSelectedTools == null) {
 			System.out.println("userSelectedTools == null");
@@ -757,23 +760,22 @@ public class InventoryView extends Div {
 			return;
 		}
 
-		List<InventoryItem> tools = new ArrayList<>();
+		List<Tool> tools = new ArrayList<>();
 
-		// RECURSIVELY FIND TOOL FROM DATA PROVIDER TREE DATA
-		for (InventoryItem userSelectedItem : userSelectedTools) {
-			for (InventoryItem rootItem : dataProvider.getTreeData().getRootItems()) {
-				InventoryItem item = getItemFromDataProviderRecursively(rootItem, userSelectedItem.getId());
+		// RECURSIVELY FIND TOOL FROM DATA PROVIDER
+		for (Tool userSelectedItem : userSelectedTools) {
 
-				if (item != null) {
-					tools.add(item);
+			for (Tool tool : dataProvider.getItems()) {
+				if (tool.getId().equals(userSelectedItem.getId())) {
+					tools.add(tool);
 					break;
 				}
 			}
 		}
 
-		for (InventoryItem tool : tools) {
+		for (Tool tool : tools) {
 
-			copyToolParameters(tool, InventoryFacade.getInstance().getById(tool.getId()));
+			copyToolParameters(tool, InventoryFacade.getInstance().getToolById(tool.getId()));
 
 			if (tool.getCurrentUser() != null) {
 
@@ -857,9 +859,7 @@ public class InventoryView extends Div {
 	}
 
 
-	private void copyToolParameters(InventoryItem destinationTool, InventoryItem sourceTool) {
-		destinationTool.setParent(sourceTool.getParent());
-		destinationTool.setInventoryItemType(sourceTool.getInventoryItemType());
+	private void copyToolParameters(Tool destinationTool, Tool sourceTool) {
 		destinationTool.setName(sourceTool.getName());
 		destinationTool.setSerialNumber(sourceTool.getSerialNumber());
 		destinationTool.setSerialNumber(sourceTool.getSerialNumber());
@@ -868,7 +868,6 @@ public class InventoryView extends Div {
 		destinationTool.setManufacturer(sourceTool.getManufacturer());
 		destinationTool.setModel(sourceTool.getModel());
 		destinationTool.setToolInfo(sourceTool.getToolInfo());
-		destinationTool.setPersonal(sourceTool.isPersonal());
 		destinationTool.setUsageStatus(sourceTool.getUsageStatus());
 		destinationTool.setCurrentUser(sourceTool.getCurrentUser());
 		destinationTool.setReservedUser(sourceTool.getReservedUser());
@@ -880,32 +879,31 @@ public class InventoryView extends Div {
 		destinationTool.setCurrentLocation(sourceTool.getCurrentLocation());
 	}
 
-
-	/**
-	 * Recursive search method
-	 * @param item return item from memory data provider if id's match
-	 * @param id item's id to search for
-	 * @return null if item is null else item from memory
-	 */
-	private InventoryItem getItemFromDataProviderRecursively(InventoryItem item, long id) {
-		if (item == null) {
-			return null;
-		}
-
-		if (item.getId().equals(id)) {
-			return item;
-		}
-
-		if (dataProvider.getTreeData().getChildren(item).size() > 0) {
-			for (InventoryItem child : dataProvider.getTreeData().getChildren(item)) {
-				InventoryItem temp = getItemFromDataProviderRecursively(child, id);
-
-				if (temp != null) {
-					return temp;
-				}
-			}
-		}
-
-		return null;
-	}
+//	/**
+//	 * Recursive search method
+//	 * @param item return item from memory data provider if id's match
+//	 * @param id item's id to search for
+//	 * @return null if item is null else item from memory
+//	 */
+//	private Tool getItemFromDataProviderRecursively(Tool item, long id) {
+//		if (item == null) {
+//			return null;
+//		}
+//
+//		if (item.getId().equals(id)) {
+//			return item;
+//		}
+//
+//		if (dataProvider.getTreeData().getChildren(item).size() > 0) {
+//			for (Tool child : dataProvider.getTreeData().getChildren(item)) {
+//				Tool temp = getItemFromDataProviderRecursively(child, id);
+//
+//				if (temp != null) {
+//					return temp;
+//				}
+//			}
+//		}
+//
+//		return null;
+//	}
 }
