@@ -117,7 +117,7 @@ public class ToolForm extends FormLayout {
 		barcode = new TextField("Barcode");
 		barcode.setPrefixComponent(VaadinIcon.BARCODE.create());
 
-		Button scanBarcodeButton = UIUtils.createIconButton(VaadinIcon.CAMERA, ButtonVariant.LUMO_CONTRAST);
+		Button scanBarcodeButton = UIUtils.createIconButton(VaadinIcon.CAMERA, ButtonVariant.LUMO_PRIMARY);
 		scanBarcodeButton.addClickListener(e -> constructCodeScannerDialog(barcode));
 		UIUtils.setTooltip("Scan Barcode with camera", scanBarcodeButton);
 
@@ -152,7 +152,7 @@ public class ToolForm extends FormLayout {
 		categoryComboBox.setItemLabelGenerator(Category::getName);
 		categoryComboBox.setRequired(true);
 
-		Button editCategoryButton = UIUtils.createButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
+		Button editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
 		editCategoryButton.addClickListener(e -> {
 			Category selectedCategory = categoryComboBox.getValue();
 			if (selectedCategory != null) {

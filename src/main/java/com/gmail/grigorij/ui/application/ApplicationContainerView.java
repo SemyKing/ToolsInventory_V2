@@ -14,7 +14,7 @@ import com.gmail.grigorij.ui.components.navigation.drawer.NaviItem;
 import com.gmail.grigorij.ui.components.navigation.drawer.NaviMenu;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.Overflow;
-import com.gmail.grigorij.ui.application.views.Admin;
+import com.gmail.grigorij.ui.application.views.AdminView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -215,13 +215,6 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 			admin_inventory.addClickListener(e-> {
 				adminNaviItemOnClick(admin_inventory);
 			});
-
-			NaviItem admin_transactions = new NaviItem(ProjectConstants.ADMIN_TRANSACTIONS);
-			menu.addNaviItem(adminItem, admin_transactions);
-
-			admin_transactions.addClickListener(e-> {
-				adminNaviItemOnClick(admin_transactions);
-			});
 		}
 
 		//Open Dashboard view
@@ -242,7 +235,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		viewContainer.removeAll();
 		appBar.reset();
 
-		viewContainer.add(new Admin(this));
+		viewContainer.add(new AdminView(this));
 
 		selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
 

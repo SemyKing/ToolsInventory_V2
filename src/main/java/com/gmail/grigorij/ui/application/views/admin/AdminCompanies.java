@@ -10,7 +10,7 @@ import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.ui.application.views.Admin;
+import com.gmail.grigorij.ui.application.views.AdminView;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
@@ -42,7 +42,7 @@ public class AdminCompanies extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-companies";
 	private final CompanyForm companyForm = new CompanyForm();
-	private final Admin adminView;
+	private final AdminView adminView;
 
 	private Grid<Company> grid;
 	private ListDataProvider<Company> dataProvider;
@@ -51,7 +51,7 @@ public class AdminCompanies extends FlexBoxLayout {
 	private boolean entityOldStatus;
 
 
-	public AdminCompanies(Admin adminView) {
+	public AdminCompanies(AdminView adminView) {
 		this.adminView = adminView;
 		setClassName(CLASS_NAME);
 

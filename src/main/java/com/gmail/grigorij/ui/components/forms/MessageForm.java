@@ -170,7 +170,7 @@ public class MessageForm extends FormLayout {
 
 	private void cancelTool() {
 		if (message == null || message.getToolId() == null) {
-			UIUtils.showNotification("No Tool in message", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("No tool in message", UIUtils.NotificationType.INFO);
 			return;
 		}
 

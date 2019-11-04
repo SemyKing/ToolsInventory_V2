@@ -9,7 +9,7 @@ import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.ui.application.views.Admin;
+import com.gmail.grigorij.ui.application.views.AdminView;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
@@ -60,7 +60,7 @@ public class AdminInventory extends FlexBoxLayout {
 	private final ToolForm bulkToolForm = new ToolForm(this);
 	private final CategoryForm categoryForm = new CategoryForm();
 	private final ToolCopyForm toolCopyForm = new ToolCopyForm();
-	private final Admin admin;
+	private final AdminView admin;
 
 	private Grid<Tool> grid;
 	private ListDataProvider<Tool> dataProvider;
@@ -71,7 +71,7 @@ public class AdminInventory extends FlexBoxLayout {
 	private Button editToolButton;
 
 
-	public AdminInventory(Admin admin) {
+	public AdminInventory(AdminView admin) {
 		this.admin = admin;
 		setClassName(CLASS_NAME);
 
@@ -168,6 +168,7 @@ public class AdminInventory extends FlexBoxLayout {
 		}
 
 		grid.setDataProvider(dataProvider);
+
 		grid.addColumn(Tool::getName)
 				.setHeader("Tool")
 				.setFlexGrow(1)
@@ -177,12 +178,14 @@ public class AdminInventory extends FlexBoxLayout {
 				.setHeader("Category")
 				.setAutoWidth(true);
 
-		grid.addColumn(Tool::getCompanyString)
-				.setHeader("Company")
-				.setAutoWidth(true);
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			grid.addColumn(Tool::getCompanyString)
+					.setHeader("Company")
+					.setAutoWidth(true);
+		}
 
 		grid.addColumn(Tool::getUsageStatusString)
-				.setHeader("Usage Status")
+				.setHeader("Status")
 				.setAutoWidth(true);
 
 		grid.addColumn(new ComponentRenderer<>(tool -> UIUtils.createActiveGridIcon(tool.isDeleted())))

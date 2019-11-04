@@ -24,7 +24,6 @@ public final class ProjectConstants {
 	public static final String COMPANIES = "Companies";
 	public static final String PERSONNEL = "Personnel";
 	public static final String ADMIN_INVENTORY = "Inventory "; //defined
-	public static final String ADMIN_TRANSACTIONS = "Transactions ";
 
 	// EntityStatus
 	public static final String ACTIVE = "Active";

@@ -42,6 +42,7 @@ import '@polymer/polymer/lib/elements/custom-style.js';
         padding-right: var(--lumo-space-m);
         padding-bottom: var(--lumo-space-s);
         box-shadow: inset 0 -1px var(--lumo-contrast-20pct);
+        background-color: var(--lumo-contrast-5pct);
     }
 
     .custom-dialog__content {
@@ -58,7 +59,7 @@ import '@polymer/polymer/lib/elements/custom-style.js';
 		padding-left: var(--lumo-space-m);
         padding-right: var(--lumo-space-m);
         justify-content: space-between;
-        background-color: var(--lumo-contrast-5pct);
+        background-color: var(--lumo-contrast-10pct);
     }
 
     .custom-dialog__content > .form {

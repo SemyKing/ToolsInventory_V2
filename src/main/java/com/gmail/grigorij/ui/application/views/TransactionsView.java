@@ -21,6 +21,7 @@ import com.gmail.grigorij.utils.DateConverter;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
@@ -46,7 +47,11 @@ public class TransactionsView extends Div {
 	private static final String CLASS_NAME = "transactions";
 	private final TransactionForm transactionsForm = new TransactionForm();
 
+	private TextField searchField;
+	private Div filtersDiv;
 	private DatePicker dateStartField, dateEndField;
+
+	private boolean filtersVisible = false;
 
 	private Grid<Transaction> grid;
 	private ListDataProvider<Transaction> dataProvider;
@@ -65,6 +70,8 @@ public class TransactionsView extends Div {
 
 		add(contentWrapper);
 		add(constructDetails());
+
+		toggleFilters();
 	}
 
 
@@ -72,49 +79,64 @@ public class TransactionsView extends Div {
 		Div header = new Div();
 		header.setClassName(CLASS_NAME + "__header");
 
-		TextField searchField = new TextField("Search");
+		Div headerTopDiv = new Div();
+		headerTopDiv.addClassName(CLASS_NAME + "__header-top");
+		header.add(headerTopDiv);
+
+		Button toggleFiltersButton = UIUtils.createButton("Filters", VaadinIcon.FILTER, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+		toggleFiltersButton.addClassName("dynamic-label-button");
+		toggleFiltersButton.addClickListener(e -> toggleFilters());
+		headerTopDiv.add(toggleFiltersButton);
+
+		searchField = new TextField();
 		searchField.setClearButtonVisible(true);
 		searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 		searchField.setPlaceholder("Search Transactions");
 		searchField.setValueChangeMode(ValueChangeMode.LAZY);
-		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
+		searchField.addValueChangeListener(event -> applyFilters());
+		headerTopDiv.add(searchField);
 
-		header.add(searchField);
-
-		FlexBoxLayout datesLayout = new FlexBoxLayout();
-		datesLayout.addClassName(CLASS_NAME + "__additional_options");
-		datesLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
-		datesLayout.setMargin(Left.S);
-
-		LocalDate now = LocalDate.now();
-
-		dateStartField = new DatePicker();
-		dateStartField.setLabel("Start Date");
-		dateStartField.setPlaceholder("Start Date");
-		dateStartField.setLocale(new Locale("fi"));
-		dateStartField.setValue(now.minusMonths(1).withDayOfMonth(1));
-
-		datesLayout.add(dateStartField);
-
-		dateEndField = new DatePicker();
-		dateEndField.setLabel("End Date");
-		dateEndField.setPlaceholder("End Date");
-		dateEndField.setLocale(new Locale("fi"));
-		dateEndField.setValue(now);
-
-		datesLayout.add(dateEndField);
-		datesLayout.setComponentMargin(dateEndField, Horizontal.S);
-
-		Button applyDates = UIUtils.createButton("Apply", ButtonVariant.LUMO_CONTRAST);
-		applyDates.addClickListener(e -> getTransactionsBetweenDates());
-
-		datesLayout.add(applyDates);
-
-
-		header.add(datesLayout);
+		Div headerBottomDiv = new Div();
+		headerBottomDiv.addClassName(CLASS_NAME + "__header-bottom");
+		headerBottomDiv.add(constructTransactionsFilterLayout());
+		header.add(headerBottomDiv);
 
 		return header;
 	}
+
+	private Div constructTransactionsFilterLayout() {
+		filtersDiv = new Div();
+		filtersDiv.addClassName(CLASS_NAME + "__filters");
+
+		dateStartField = new DatePicker();
+		dateStartField.setLabel("Start Date");
+		dateStartField.setLocale(new Locale("fi"));
+		dateStartField.setValue(LocalDate.now().minusMonths(1).withDayOfMonth(1));
+		dateStartField.setRequired(true);
+		dateStartField.setErrorMessage("Invalid Date");
+		dateStartField.addValueChangeListener(e -> {
+			dateStartField.setInvalid(false);
+
+			applyFilters();
+		});
+		filtersDiv.add(dateStartField);
+
+		dateEndField = new DatePicker();
+		dateEndField.setLabel("End Date");
+		dateEndField.setLocale(new Locale("fi"));
+		dateEndField.setValue(LocalDate.now());
+		dateEndField.setRequired(true);
+		dateEndField.setErrorMessage("Invalid Date");
+		dateEndField.addValueChangeListener(e -> {
+			dateEndField.setInvalid(false);
+
+			applyFilters();
+		});
+		filtersDiv.add(dateEndField);
+
+		return filtersDiv;
+	}
+
 
 	private Div constructContent() {
 		Div content = new Div();
@@ -203,8 +225,57 @@ public class TransactionsView extends Div {
 	}
 
 
-	private void filterGrid(String searchString) {
+	private void toggleFilters() {
+		if (dateStartField.isInvalid() || dateEndField.isInvalid()) {
+			return;
+		}
+
+		filtersDiv.getElement().setAttribute("hidden", !filtersVisible);
+		filtersVisible = !filtersVisible;
+	}
+
+	private void applyFilters() {
 		dataProvider.clearFilters();
+
+		if (dateStartField.isInvalid() || dateEndField.isInvalid()) {
+			return;
+		}
+
+		try {
+			DateConverter.localDateToString(dateStartField.getValue());
+		} catch (Exception e) {
+			dateStartField.setInvalid(true);
+
+			if (!filtersVisible) {
+				toggleFilters();
+			}
+
+			return;
+		}
+
+		try {
+			DateConverter.localDateToString(dateEndField.getValue());
+		} catch (Exception e) {
+			dateEndField.setInvalid(true);
+
+			if (!filtersVisible) {
+				toggleFilters();
+			}
+
+			return;
+		}
+
+		if (dateStartField.getValue().isAfter(dateEndField.getValue())) {
+			UIUtils.showNotification("Start Date cannot be after End Date", UIUtils.NotificationType.INFO);
+			return;
+		}
+
+		getTransactionsBetweenDates();
+
+		filterGrid(searchField.getValue());
+	}
+
+	private void filterGrid(String searchString) {
 		final String mainSearchString = searchString.trim();
 
 		if (mainSearchString.contains("+")) {
@@ -241,25 +312,6 @@ public class TransactionsView extends Div {
 	}
 
 	private void getTransactionsBetweenDates() {
-		//Handle errors
-
-		if (dateStartField.isInvalid()) {
-			UIUtils.showNotification("Invalid Start Date", UIUtils.NotificationType.INFO);
-			dateStartField.focus();
-			return;
-		}
-
-		if (dateEndField.isInvalid()) {
-			UIUtils.showNotification("Invalid End Date", UIUtils.NotificationType.INFO);
-			dateEndField.focus();
-			return;
-		}
-
-		if (dateStartField.getValue().isAfter(dateEndField.getValue())) {
-			UIUtils.showNotification("Start Date cannot be after End Date", UIUtils.NotificationType.INFO);
-			return;
-		}
-
 		List<Transaction> transactions;
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {

@@ -46,9 +46,6 @@
 	width: 100%;
 }
 
-.inventory__filters[hidden] {
-	display: none !important;
-}
 .inventory__filters {
 	display: flex;
 	flex-direction: row;

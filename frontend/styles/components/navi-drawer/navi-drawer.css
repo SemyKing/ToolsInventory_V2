@@ -8,7 +8,7 @@
 
 /* Scrim */
 .navi-drawer__scrim {
-	animation: var(--transition-duration-m) lumo-overlay-backdrop-enter both;
+	animation: var(--transition-duration-s) lumo-overlay-backdrop-enter both;
 	background: var(--lumo-shade-20pct);
 	bottom: 0;
 	opacity: 0;
@@ -28,7 +28,7 @@
 	flex-direction: column;
 	height: 100%;
 	position: relative;
-	transition: margin var(--transition-duration-m);
+	transition: margin var(--transition-duration-s);
 	width: var(--navi-drawer-width);
 }
 

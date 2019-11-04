@@ -53,6 +53,11 @@
     align-items: baseline;
     justify-content: center;
 }
+
+.messages__filters {
+	display: flex;
+    align-items: baseline;
+}
 .messages__filters > vaadin-date-picker:not(:last-child) {
 	margin-right: var(--lumo-space-s);
 }

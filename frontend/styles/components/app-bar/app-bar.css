@@ -8,7 +8,7 @@
 
 /* Container */
 .app-bar__container {
-	transition: padding var(--transition-duration-m);
+	transition: padding var(--transition-duration-xs);
 }
 
 /* Navi icon */

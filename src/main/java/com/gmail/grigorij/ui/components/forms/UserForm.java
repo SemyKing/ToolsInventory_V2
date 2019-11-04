@@ -102,7 +102,6 @@ public class UserForm extends FormLayout {
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
 			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
 				entityStatusCheckbox.setReadOnly(true);
-//				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
 				entityStatusDiv.getElement().getStyle().set("display", "none");
 			}
 		}
@@ -110,6 +109,7 @@ public class UserForm extends FormLayout {
 		usernameField = new TextField("Username");
 		usernameField.setRequired(true);
 		usernameField.setPrefixComponent(VaadinIcon.USER.create());
+		usernameField.setReadOnly(true);
 
 		passwordField = new PasswordField("Password");
 		passwordField.setRequired(true);
@@ -195,7 +195,7 @@ public class UserForm extends FormLayout {
 		});
 
 
-		editPermissionsButton = UIUtils.createButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
+		editPermissionsButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
 		editPermissionsButton.addClickListener(e -> {
 			constructAccessRightsDialog();
 		});

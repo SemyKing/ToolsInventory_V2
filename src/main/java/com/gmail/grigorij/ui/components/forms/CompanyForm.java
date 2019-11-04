@@ -106,7 +106,7 @@ public class CompanyForm extends FormLayout {
 		}
 
 
-		Button newLocationButton = UIUtils.createIconButton(VaadinIcon.FILE_ADD, ButtonVariant.LUMO_CONTRAST);
+		Button newLocationButton = UIUtils.createIconButton(VaadinIcon.FILE_ADD, ButtonVariant.LUMO_PRIMARY);
 		UIUtils.setTooltip("Add New Location", newLocationButton);
 		newLocationButton.addClickListener(e -> constructLocationDialog(null));
 		newLocationButton.setEnabled(false);

@@ -1,5 +1,6 @@
 package com.gmail.grigorij.utils;
 
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.database.entities.Transaction;
@@ -94,25 +95,23 @@ public class AuthenticationService {
 
 
 	private static boolean constructSessionData(User user, String username) {
-		System.out.println();
-
 		if (user == null) {
 			user = UserFacade.getInstance().getUserByUsername(username);
 		}
 
 		if (user == null) {
-			System.out.println("LOGIN FAIL, user not found (NULL)");
+			System.out.println("\nLOGIN FAIL, user not found (NULL)");
 			return false;
 		} else {
 			if (user.isDeleted()) {
 				UIUtils.showNotification("Your credentials have expired", UIUtils.NotificationType.INFO, 0);
-				System.out.println("LOGIN FAIL, user: '" + user.getUsername() + "' set as 'deleted'");
+				System.out.println("\nLOGIN FAIL, user: '" + user.getFullName() + "' set as 'deleted'");
 				return false;
 			}
 
 			if (user.getCompany() == null) {
 				UIUtils.showNotification("Company is NULL", UIUtils.NotificationType.ERROR);
-				System.err.println("LOGIN FAIL, NULL company");
+				System.err.println("\nLOGIN FAIL, NULL company");
 				return false;
 			}
 		}

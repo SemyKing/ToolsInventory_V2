@@ -9,7 +9,7 @@ import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.ui.application.views.Admin;
+import com.gmail.grigorij.ui.application.views.AdminView;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
@@ -40,7 +40,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
 	private final UserForm userForm = new UserForm();
-	private final Admin admin;
+	private final AdminView admin;
 
 	private Grid<User> grid;
 	private ListDataProvider<User> dataProvider;
@@ -48,7 +48,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 	private DetailsDrawer detailsDrawer;
 
 
-	public AdminPersonnel(Admin admin) {
+	public AdminPersonnel(AdminView admin) {
 		this.admin = admin;
 		setClassName(CLASS_NAME);
 

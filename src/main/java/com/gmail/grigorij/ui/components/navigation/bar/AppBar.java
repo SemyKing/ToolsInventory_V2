@@ -1,11 +1,15 @@
 package com.gmail.grigorij.ui.components.navigation.bar;
 
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.ui.components.ListItem;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.forms.UserForm;
@@ -111,9 +115,9 @@ public class AppBar extends Composite<FlexLayout> {
 
         MenuItem userMenuItem = userInfoMenuBar.addItem(userInfoContainer);
 
-        userMenuItem.getSubMenu().addItem("Profile", e -> constructUserProfileDialog());
+        userMenuItem.getSubMenu().addItem(new ListItem(VaadinIcon.USER.create(), "Profile"), e -> constructUserProfileDialog());
         userMenuItem.getSubMenu().add(new Hr());
-        userMenuItem.getSubMenu().addItem("Change Theme", e -> {
+        userMenuItem.getSubMenu().addItem(new ListItem(VaadinIcon.MOON.create(), "Change Theme"), e -> {
             String themeVariant = AuthenticationService.getCurrentSessionUser().getThemeVariant();
 
             themeVariant = (themeVariant.equals(LumoStyles.DARK)) ? LumoStyles.LIGHT : LumoStyles.DARK;
@@ -124,7 +128,7 @@ public class AppBar extends Composite<FlexLayout> {
             UserFacade.getInstance().update(user);
         });
         userMenuItem.getSubMenu().add(new Hr());
-        userMenuItem.getSubMenu().addItem("Sign Out", e -> {
+        userMenuItem.getSubMenu().addItem(new ListItem(VaadinIcon.SIGN_OUT.create(), "Sign Out"), e -> {
             AuthenticationService.signOut();
         });
     }
@@ -141,31 +145,34 @@ public class AppBar extends Composite<FlexLayout> {
         dialog.closeOnCancel();
 
         dialog.getConfirmButton().setText("Save");
-        dialog.getConfirmButton().addClickListener(e -> {
-            User editedUser = userForm.getUser();
+        dialog.getConfirmButton().setEnabled(false);
 
-            if (editedUser != null) {
-                if (UserFacade.getInstance().update(editedUser)) {
-//                    AuthenticationService.setCurrentSessionUser(editedUser);
+        if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+                PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.USER, PermissionRange.OWN)) {
 
+            dialog.getConfirmButton().setEnabled(true);
+            dialog.getConfirmButton().addClickListener(e -> {
+                User editedUser = userForm.getUser();
 
-                    UIUtils.showNotification("Information saved", UIUtils.NotificationType.SUCCESS);
-                } else {
-                    UIUtils.showNotification("Information update failed", UIUtils.NotificationType.ERROR);
+                if (editedUser != null) {
+                    if (UserFacade.getInstance().update(editedUser)) {
+                        UIUtils.showNotification("Information saved", UIUtils.NotificationType.SUCCESS);
+                    } else {
+                        UIUtils.showNotification("Information update failed", UIUtils.NotificationType.ERROR);
+                    }
+                    dialog.close();
+
+                    Transaction transaction = new Transaction();
+                    transaction.setUser(AuthenticationService.getCurrentSessionUser());
+                    transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+                    transaction.setOperation(Operation.EDIT);
+                    transaction.setOperationTarget1(OperationTarget.USER);
+                    transaction.setTargetDetails(editedUser.getFullName());
+                    transaction.setChanges(userForm.getChanges());
+                    TransactionFacade.getInstance().insert(transaction);
                 }
-                dialog.close();
-
-                Transaction transaction = new Transaction();
-                transaction.setUser(AuthenticationService.getCurrentSessionUser());
-                transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-                transaction.setOperation(Operation.EDIT);
-                transaction.setOperationTarget1(OperationTarget.USER);
-                transaction.setTargetDetails(editedUser.getFullName());
-                transaction.setChanges(userForm.getChanges());
-                TransactionFacade.getInstance().insert(transaction);
-            }
-        });
-
+            });
+        }
 
         dialog.open();
     }

@@ -116,8 +116,6 @@ public class MessagesView extends Div {
 			}
 		}
 
-		header.add(headerTopDiv);
-
 		Div headerBottomDiv = new Div();
 		headerBottomDiv.addClassName(CLASS_NAME + "__header-bottom");
 		headerBottomDiv.add(constructMessagesFilterLayout());
@@ -272,6 +270,7 @@ public class MessagesView extends Div {
 		Button replyButton = UIUtils.createButton("Reply", VaadinIcon.REPLY, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
 		replyButton.addClickListener(reply -> {
 			Message message = grid.asSingleSelect().getValue();
+
 			if (message != null) {
 				if (message.getSenderUser() == null) {
 					UIUtils.showNotification("Cannot reply to: " + message.getSenderString(), UIUtils.NotificationType.INFO);
@@ -435,15 +434,14 @@ public class MessagesView extends Div {
 		}
 
 
-		Div messageAllUsersDiv = null;
+		Div messageAllUsersDiv = new Div();
+		messageAllUsersDiv.addClassName(CLASS_NAME + "__message_a_u_i_c");
+
 		Checkbox useCompanyRecipients = new Checkbox("Use This");
+
 		ComboBox<Company> allUsersInCompany = new ComboBox<>();
-		boolean system_admin = false;
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			messageAllUsersDiv = new Div();
-			messageAllUsersDiv.addClassName(CLASS_NAME + "__message_a_u_i_c");
-
 			allUsersInCompany.setLabel("All Recipients In");
 			allUsersInCompany.setItems(CompanyFacade.getInstance().getAllCompanies());
 			allUsersInCompany.setItemLabelGenerator(Company::getName);
@@ -456,8 +454,6 @@ public class MessagesView extends Div {
 
 			messageAllUsersDiv.add(allUsersInCompany);
 			messageAllUsersDiv.add(useCompanyRecipients);
-
-			system_admin = true;
 		}
 
 		TextArea subjectField = new TextArea("Subject");
@@ -477,7 +473,7 @@ public class MessagesView extends Div {
 		dialog.setCloseOnEsc(false);
 
 		dialog.getContent().add(recipientComboBox);
-		if (system_admin) {
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			dialog.getContent().add(messageAllUsersDiv);
 		}
 		dialog.getContent().add(subjectField);
@@ -490,11 +486,11 @@ public class MessagesView extends Div {
 		dialog.getConfirmButton().addClickListener(send -> {
 
 			if (subjectField.getValue().length() > 255) {
-				UIUtils.showNotification("Maximum amount of characters for Subject is 255", UIUtils.NotificationType.WARNING);
+				UIUtils.showNotification("Maximum amount of characters for Subject is 255", UIUtils.NotificationType.INFO);
 				return;
 			}
 			if (messageArea.getValue().length() > 255) {
-				UIUtils.showNotification("Maximum amount of characters for Message is 255", UIUtils.NotificationType.WARNING);
+				UIUtils.showNotification("Maximum amount of characters for Message is 255", UIUtils.NotificationType.INFO);
 				return;
 			}
 
