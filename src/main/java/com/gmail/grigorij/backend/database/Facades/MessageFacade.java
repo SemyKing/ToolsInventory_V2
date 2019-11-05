@@ -1,7 +1,8 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.message.Message;
+import com.gmail.grigorij.backend.database.entities.Message;
+import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
 import java.sql.Date;
@@ -25,7 +26,7 @@ public class MessageFacade {
 		List<Message> messages;
 		try {
 			messages = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Message.QUERY_ALL_BY_USER, Message.class)
-					.setParameter(Message.ID_VAR, userId)
+					.setParameter(ProjectConstants.ID_VAR, userId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			messages = null;

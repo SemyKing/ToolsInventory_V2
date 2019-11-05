@@ -1,17 +1,19 @@
 package com.gmail.grigorij.ui.components.forms;
 
+import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.embeddable.Location;
-import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.user.PermissionTest;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.dialogs.PermissionsDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
@@ -59,7 +61,7 @@ public class UserForm extends FormLayout {
 	private Binder<User> binder;
 
 	private User user, originalUser;
-	private List<PermissionTest> tempPermissions;
+	private List<Permission> tempPermissions;
 	private String initialUsername;
 	private boolean isNew;
 
@@ -100,13 +102,14 @@ public class UserForm extends FormLayout {
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
 			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
 				entityStatusCheckbox.setReadOnly(true);
-				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
+				entityStatusDiv.getElement().getStyle().set("display", "none");
 			}
 		}
 
 		usernameField = new TextField("Username");
 		usernameField.setRequired(true);
 		usernameField.setPrefixComponent(VaadinIcon.USER.create());
+		usernameField.setReadOnly(true);
 
 		passwordField = new PasswordField("Password");
 		passwordField.setRequired(true);
@@ -192,7 +195,7 @@ public class UserForm extends FormLayout {
 		});
 
 
-		editPermissionsButton = UIUtils.createButton(VaadinIcon.EDIT, ButtonVariant.LUMO_CONTRAST);
+		editPermissionsButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
 		editPermissionsButton.addClickListener(e -> {
 			constructAccessRightsDialog();
 		});
@@ -295,8 +298,8 @@ public class UserForm extends FormLayout {
 		initialUsername = user.getUsername();
 		tempPermissions = new ArrayList<>();
 
-		for (PermissionTest permission : user.getPermissions()) {
-			tempPermissions.add(new PermissionTest(permission));
+		for (Permission permission : user.getPermissions()) {
+			tempPermissions.add(new Permission(permission));
 		}
 
 		List<PermissionLevel> levels = new ArrayList<>(EnumSet.allOf(PermissionLevel.class));
@@ -355,15 +358,38 @@ public class UserForm extends FormLayout {
 		dialog.getHeader().add(UIUtils.createH3Label("Permissions Details"));
 		dialog.constructView();
 
+
 		dialog.getConfirmButton().addClickListener(saveOnClick -> {
-			List<PermissionTest> permissions = dialog.getPermissions();
+			List<Permission> permissions = dialog.getPermissions();
 			if (permissions != null) {
 				tempPermissions = permissions;
 				dialog.close();
 
 				UIUtils.showNotification("Permissions Edited", UIUtils.NotificationType.SUCCESS, 1000);
+
+				Transaction transaction = new Transaction();
+				transaction.setUser(AuthenticationService.getCurrentSessionUser());
+				transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+				transaction.setOperation(Operation.EDIT);
+				transaction.setOperationTarget1(OperationTarget.PERMISSIONS);
+				transaction.setTargetDetails(user.getFullName());
+				transaction.setChanges(dialog.getChanges());
+				TransactionFacade.getInstance().insert(transaction);
+
 			}
 		});
+		dialog.getConfirmButton().setEnabled(false);
+
+		if (AuthenticationService.getCurrentSessionUser().getId().equals(user.getId())) {
+			if (PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.OWN)) {
+				dialog.getConfirmButton().setEnabled(true);
+			}
+		} else {
+			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+					PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
+				dialog.getConfirmButton().setEnabled(true);
+			}
+		}
 
 		dialog.open();
 	}
@@ -389,6 +415,10 @@ public class UserForm extends FormLayout {
 
 		binder.readBean(this.user);
 		dataLoaded = true;
+
+		if (isNew) {
+			companyComboBox.setValue(AuthenticationService.getCurrentSessionUser().getCompany());
+		}
 	}
 
 	public User getUser() {

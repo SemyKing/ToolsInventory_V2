@@ -1,7 +1,7 @@
 package com.gmail.grigorij.backend.database;
 
 import com.gmail.grigorij.utils.ApplicationServletContextListener;
-import com.gmail.grigorij.backend.entities.EntityPojo;
+import com.gmail.grigorij.backend.database.entities.EntityPojo;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

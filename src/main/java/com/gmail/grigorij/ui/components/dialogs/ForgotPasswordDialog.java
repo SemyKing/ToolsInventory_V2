@@ -1,14 +1,18 @@
 package com.gmail.grigorij.ui.components.dialogs;
 
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.backend.entities.recoverylink.RecoveryLink;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
+import com.gmail.grigorij.backend.database.entities.RecoveryLink;
+import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.email.Email;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.EmailValidator;
@@ -46,9 +50,7 @@ public class ForgotPasswordDialog extends CustomDialog {
 		emailField.setMinWidth("400px");
 		emailField.setClearButtonVisible(true);
 		emailField.setErrorMessage("Please enter a valid email address");
-
-		//TODO: REMOVE AT PRODUCTION
-		emailField.setValue("gs@mail.com");
+		emailField.focus();
 
 		content.add(emailField);
 		return content;
@@ -69,8 +71,6 @@ public class ForgotPasswordDialog extends CustomDialog {
 		if (binder.isValid()) {
 			generateRecoveryLink(emailField.getValue());
 
-			constructRecoveryEmail(emailField.getValue());
-
 			this.close();
 		}
 	}
@@ -81,37 +81,35 @@ public class ForgotPasswordDialog extends CustomDialog {
 	private void generateRecoveryLink(String emailAddress) {
 		User user = UserFacade.getInstance().getUserByEmail(emailAddress);
 
+		// TODO: WHAT TODO?
+		if (user == null) {
+			System.err.println("USER NOT FOUND WITH EMAIL: " + emailAddress);
+			return;
+		}
+
 		if (user.isDeleted()) {
 			UIUtils.showNotification("Your credentials have expired", UIUtils.NotificationType.INFO);
 			return;
 		}
 
-		RecoveryLink link = RecoveryLink.generateRecoveryLink();
-		link.setEmail(emailAddress);
-
+		RecoveryLink link = new RecoveryLink();
+		link.setUser(user);
 		RecoveryLinkFacade.getInstance().insert(link);
 
-//		Transaction tr = new Transaction();
-//		tr.setTransactionOperation(TransactionType.EDIT);
-//		tr.setTransactionTarget(TransactionTarget.USER);
-//		tr.setUser(user);
-//		tr.setAdditionalInfo("User has requested password reset link. Email: " + emailAddress);
-//		TransactionFacade.getInstance().insert(tr);
+		Transaction transaction = new Transaction();
+		transaction.setUser(user);
+		transaction.setCompany(user.getCompany());
+		transaction.setOperation(Operation.REQUEST);
+		transaction.setOperationTarget1(OperationTarget.PASSWORD_RESET_EMAIL);
+		TransactionFacade.getInstance().insert(transaction);
 
-		UIUtils.showNotification("https://localhost:8443/reset-password/" + link.getToken(), UIUtils.NotificationType.SUCCESS, 0);
-	}
 
-	private void constructRecoveryEmail(String emailAddress) {
 
-		//CONSTRUCT EMAIL
-
-		sendPasswordRecoveryEmail(emailAddress);
-	}
-
-	private void sendPasswordRecoveryEmail(String emailAddress) {
-
-		//SEND EMAIL
-
-		UIUtils.showNotification("Password recovery link has been sent to: " + emailAddress, UIUtils.NotificationType.INFO);
+		Email email = new Email();
+		if (email.constructAndSendMessage(emailAddress, "https://localhost:8443/reset-password/" + link.getToken())) {
+			UIUtils.showNotification("Recovery link has been sent to your email", UIUtils.NotificationType.SUCCESS);
+		} else {
+			UIUtils.showNotification("Recovery link sending error", UIUtils.NotificationType.ERROR);
+		}
 	}
 }

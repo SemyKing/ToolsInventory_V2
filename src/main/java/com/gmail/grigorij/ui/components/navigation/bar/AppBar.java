@@ -1,11 +1,15 @@
 package com.gmail.grigorij.ui.components.navigation.bar;
 
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.ui.components.ListItem;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.forms.UserForm;
@@ -71,7 +75,8 @@ public class AppBar extends Composite<FlexLayout> {
      * 'NaviDrawer' button visible only on small views -> open / close NaviDrawer
      */
     private void initMenuIcon() {
-        menuIcon = UIUtils.createTertiaryInlineButton(VaadinIcon.MENU);
+//        menuIcon = UIUtils.createTertiaryInlineButton(VaadinIcon.MENU);
+        menuIcon = UIUtils.createButton(VaadinIcon.MENU, ButtonVariant.LUMO_TERTIARY_INLINE);
         menuIcon.removeThemeVariants(ButtonVariant.LUMO_ICON);
         menuIcon.addClassName(CLASS_NAME + "__navi-icon");
         menuIcon.addClickListener(e -> menuLayout.getNaviDrawer().toggle());
@@ -85,23 +90,25 @@ public class AppBar extends Composite<FlexLayout> {
     }
 
     private void initUserInfo() {
+        User currentUser = AuthenticationService.getCurrentSessionUser();
+
         Div userInfoContainer = new Div();
         userInfoContainer.addClassName(CLASS_NAME + "__user_info_container");
 
         Div userInfo = new Div();
         userInfo.addClassName(CLASS_NAME + "__user_info");
 
-        Span userFullName = new Span(AuthenticationService.getCurrentSessionUser().getFullName());
+        Span userFullName = new Span(currentUser.getFullName());
         userFullName.addClassName(CLASS_NAME + "__user_info_full_name");
         userInfo.add(userFullName);
 
-        Span userCompanyName = new Span(AuthenticationService.getCurrentSessionUser().getCompany().getName());
+        Span userCompanyName = new Span(currentUser.getCompany().getName());
         userCompanyName.addClassName(CLASS_NAME + "__user_info_company");
         userInfo.add(userCompanyName);
 
 
         userInfoContainer.add(userInfo);
-        userInfoContainer.add(UIUtils.createInitials(AuthenticationService.getCurrentSessionUser().getInitials()));
+        userInfoContainer.add(UIUtils.createInitials(currentUser.getInitials()));
 
 
         userInfoMenuBar = new MenuBar();
@@ -109,19 +116,20 @@ public class AppBar extends Composite<FlexLayout> {
 
         MenuItem userMenuItem = userInfoMenuBar.addItem(userInfoContainer);
 
-        userMenuItem.getSubMenu().addItem("Profile", e -> constructUserProfileDialog());
+        userMenuItem.getSubMenu().addItem(new ListItem(VaadinIcon.USER.create(), "Profile"), e -> constructUserProfileDialog());
         userMenuItem.getSubMenu().add(new Hr());
-        userMenuItem.getSubMenu().addItem("Change Theme", e -> {
+        userMenuItem.getSubMenu().addItem(new ListItem(VaadinIcon.MOON.create(), "Change Theme"), e -> {
             String themeVariant = AuthenticationService.getCurrentSessionUser().getThemeVariant();
 
             themeVariant = (themeVariant.equals(LumoStyles.DARK)) ? LumoStyles.LIGHT : LumoStyles.DARK;
             menuLayout.setThemeVariant(themeVariant);
 
-            AuthenticationService.getCurrentSessionUser().setThemeVariant(themeVariant);
-            UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
+            User user = AuthenticationService.getCurrentSessionUser();
+            user.setThemeVariant(themeVariant);
+            UserFacade.getInstance().update(user);
         });
         userMenuItem.getSubMenu().add(new Hr());
-        userMenuItem.getSubMenu().addItem("Sign Out", e -> {
+        userMenuItem.getSubMenu().addItem(new ListItem(VaadinIcon.SIGN_OUT.create(), "Sign Out"), e -> {
             AuthenticationService.signOut();
         });
     }
@@ -138,29 +146,34 @@ public class AppBar extends Composite<FlexLayout> {
         dialog.closeOnCancel();
 
         dialog.getConfirmButton().setText("Save");
-        dialog.getConfirmButton().addClickListener(e -> {
-            User editedUser = userForm.getUser();
+        dialog.getConfirmButton().setEnabled(false);
 
-            if (editedUser != null) {
-                if (UserFacade.getInstance().update(editedUser)) {
-                    AuthenticationService.setCurrentSessionUser(editedUser);
-                    UIUtils.showNotification("Information saved", UIUtils.NotificationType.SUCCESS);
-                } else {
-                    UIUtils.showNotification("Information update failed", UIUtils.NotificationType.ERROR);
+        if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+                PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.USER, PermissionRange.OWN)) {
+
+            dialog.getConfirmButton().setEnabled(true);
+            dialog.getConfirmButton().addClickListener(e -> {
+                User editedUser = userForm.getUser();
+
+                if (editedUser != null) {
+                    if (UserFacade.getInstance().update(editedUser)) {
+                        UIUtils.showNotification("Information saved", UIUtils.NotificationType.SUCCESS);
+                    } else {
+                        UIUtils.showNotification("Information update failed", UIUtils.NotificationType.ERROR);
+                    }
+                    dialog.close();
+
+                    Transaction transaction = new Transaction();
+                    transaction.setUser(AuthenticationService.getCurrentSessionUser());
+                    transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+                    transaction.setOperation(Operation.EDIT);
+                    transaction.setOperationTarget1(OperationTarget.USER);
+                    transaction.setTargetDetails(editedUser.getFullName());
+                    transaction.setChanges(userForm.getChanges());
+                    TransactionFacade.getInstance().insert(transaction);
                 }
-                dialog.close();
-
-                Transaction transaction = new Transaction();
-                transaction.setUser(AuthenticationService.getCurrentSessionUser());
-                transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-                transaction.setOperation(Operation.EDIT);
-                transaction.setOperationTarget1(OperationTarget.USER);
-                transaction.setTargetDetails(editedUser.getFullName());
-                transaction.setChanges(userForm.getChanges());
-                TransactionFacade.getInstance().insert(transaction);
-            }
-        });
-
+            });
+        }
 
         dialog.open();
     }

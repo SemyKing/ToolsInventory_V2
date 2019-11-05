@@ -3,16 +3,6 @@
 	.inventory__header {
 		flex-direction: column !important;
 	}
-	.inventory__header > vaadin-text-field {
-    	width: 100%;
-    }
-	.inventory__additional_options {
-		display: flex;
-        width: 100%;
-	}
-	.inventory__additional_options > vaadin-checkbox {
-		margin-right: auto;
-	}
 }
 
 .inventory {
@@ -31,21 +21,46 @@
 
 .inventory__header {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	margin: 5px 5px 0 5px;
     align-items: center;
 }
-.inventory__header > vaadin-text-field {
+
+.inventory__header-top {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	align-items: baseline;
+}
+.inventory__header-top > vaadin-button:not(:last-child) {
+	margin-right: var(--lumo-space-s);
+}
+.inventory__header-top > vaadin-text-field {
 	flex-grow: 1;
+	margin-right: var(--lumo-space-s);
 }
 
-.inventory__additional_options {
-    display: flex;
-    align-items: center;
+.inventory__header-bottom {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
 }
-.inventory__additional_options > vaadin-button {
-	margin-left: var(--lumo-space-s);
+
+.inventory__filters {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+    align-items: baseline;
+    justify-content: center;
 }
+.inventory__filters > vaadin-combo-box:not(:last-child) {
+	margin-right: var(--lumo-space-s);
+}
+.inventory__filters > vaadin-combo-box {
+	max-width: calc(100% / 3 - var(--lumo-space-s));
+}
+
+
 
 .inventory__content {
 	display: flex;
@@ -66,4 +81,13 @@
 /*   MY TOOLS DIALOG   */
 .my-tools-grid {
 	min-width: 60vw;
+}
+.location-selection-layout {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+    justify-content: center;
+}
+.location-selection-layout > vaadin-combo-box {
+	width: 50%
 }

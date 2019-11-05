@@ -1,8 +1,8 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
+import com.gmail.grigorij.backend.database.entities.Tool;
+import com.gmail.grigorij.backend.database.entities.Category;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
@@ -11,14 +11,8 @@ import java.util.*;
 
 public class InventoryFacade {
 
-	private InventoryItem rootCategory;
-
 	private static InventoryFacade mInstance;
-	private InventoryFacade() {
-		rootCategory = new InventoryItem();
-		rootCategory.setName(ProjectConstants.ROOT_CATEGORY);
-		rootCategory.setInventoryHierarchyType(InventoryHierarchyType.CATEGORY);
-	}
+	private InventoryFacade() {}
 	public static InventoryFacade getInstance() {
 		if (mInstance == null) {
 			mInstance = new InventoryFacade();
@@ -26,27 +20,10 @@ public class InventoryFacade {
 		return mInstance;
 	}
 
-	public InventoryItem getRootCategory() {
-		return rootCategory;
-	}
-
-
-//	public List<InventoryItem> getAll() {
-//		List<InventoryItem> all;
-//		try {
-//			all = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL, InventoryItem.class)
-//					.getResultList();
-//		} catch (NoResultException nre) {
-//			all = null;
-//		}
-//		return all;
-//	}
-
-	public List<InventoryItem> getAllByHierarchyType(InventoryHierarchyType type) {
-		List<InventoryItem> tools;
+	public List<Tool> getAllTools() {
+		List<Tool> tools;
 		try {
-			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_TYPE, InventoryItem.class)
-					.setParameter(InventoryItem.VAR, type)
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Tool.QUERY_ALL, Tool.class)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -54,24 +31,23 @@ public class InventoryFacade {
 		return tools;
 	}
 
-	public List<InventoryItem> getAllInCompany(long companyId) {
-		List<InventoryItem> allInCompany;
+	public List<Tool> getAllToolsInCompany(long companyId) {
+		List<Tool> tools;
 		try {
-			allInCompany = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_COMPANY, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, companyId)
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Tool.QUERY_ALL_BY_COMPANY_ID, Tool.class)
+					.setParameter(ProjectConstants.ID_VAR, companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
-			allInCompany = null;
+			tools = null;
 		}
-		return allInCompany;
+		return tools;
 	}
 
-	public List<InventoryItem> getAllInCompanyByType(long companyId, InventoryHierarchyType type) {
-		List<InventoryItem> categories;
+	public List<Category> getAllCategoriesInCompany(long companyId) {
+		List<Category> categories;
 		try {
-			categories = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_COMPANY_BY_TYPE, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, companyId)
-					.setParameter(InventoryItem.VAR, type)
+			categories = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Category.QUERY_ALL_BY_COMPANY_ID, Category.class)
+					.setParameter(ProjectConstants.ID_VAR, companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			categories = null;
@@ -79,11 +55,11 @@ public class InventoryFacade {
 		return categories;
 	}
 
-	public List<InventoryItem> getAllToolsByCurrentUser(long userId) {
-		List<InventoryItem> tools;
+	public List<Tool> getAllToolsByCurrentUserId(long userId) {
+		List<Tool> tools;
 		try {
-			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_CURRENT_USER, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, userId)
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Tool.QUERY_ALL_BY_CURRENT_USER, Tool.class)
+					.setParameter(ProjectConstants.ID_VAR, userId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -91,11 +67,11 @@ public class InventoryFacade {
 		return tools;
 	}
 
-	public List<InventoryItem> getAllToolsByReservedUser(long userId) {
-		List<InventoryItem> tools;
+	public List<Tool> getAllToolsByReservedUserId(long userId) {
+		List<Tool> tools;
 		try {
-			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_ALL_BY_RESERVED_USER, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, userId)
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Tool.QUERY_ALL_BY_RESERVED_USER, Tool.class)
+					.setParameter(ProjectConstants.ID_VAR, userId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			tools = null;
@@ -103,12 +79,11 @@ public class InventoryFacade {
 		return tools;
 	}
 
-
-	public InventoryItem getById(Long id) {
-		InventoryItem tool;
+	public Tool getToolById(Long id) {
+		Tool tool;
 		try {
-			tool = DatabaseManager.getInstance().createEntityManager().createNamedQuery(InventoryItem.QUERY_BY_ID, InventoryItem.class)
-					.setParameter(InventoryItem.ID_VAR, id)
+			tool = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Tool.QUERY_BY_ID, Tool.class)
+					.setParameter(ProjectConstants.ID_VAR, id)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			tool = null;
@@ -117,11 +92,11 @@ public class InventoryFacade {
 	}
 
 	// TODO: LIST OF TOOLS IF MULTIPLE
-	public InventoryItem getToolByCode(String code) {
-		InventoryItem tool;
+	public Tool getToolByCode(String code) {
+		Tool tool;
 		try {
-			tool = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getToolByCode", InventoryItem.class)
-					.setParameter("code_var", code)
+			tool = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Tool.QUERY_BY_CODE_VAR, Tool.class)
+					.setParameter(ProjectConstants.VAR1, code)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			tool = null;
@@ -129,77 +104,111 @@ public class InventoryFacade {
 		return tool;
 	}
 
-	// LOCAL HELPER
-	private String getItemType(InventoryItem item) {
-		if (item.getInventoryHierarchyType() == null) {
-			return "NULL INVENTORY_HIERARCHY_TYPE";
-		}
-		return item.getInventoryHierarchyType().toString().toUpperCase();
-	}
 
-
-	public boolean insert(InventoryItem item) {
-		if (item == null){
+	public boolean insert(Tool tool) {
+		if (tool == null){
 			System.err.println(this.getClass().getSimpleName() + " -> INSERT NULL INVENTORY_ITEM");
 			return false;
 		}
 
 		try {
-			DatabaseManager.getInstance().insert(item);
+			DatabaseManager.getInstance().insert(tool);
 		} catch (Exception e) {
-			System.err.println(this.getClass().getSimpleName() + " -> " + getItemType(item) + " INSERT FAIL");
+			System.err.println(this.getClass().getSimpleName() + " -> TOOL INSERT FAIL");
 			e.printStackTrace();
 			return false;
 		}
 		return true;
 	}
 
-	public boolean update(InventoryItem item) {
-		if (item == null) {
+	public boolean insert(Category category) {
+		if (category == null){
+			System.err.println(this.getClass().getSimpleName() + " -> INSERT NULL CATEGORY");
+			return false;
+		}
+
+		try {
+			DatabaseManager.getInstance().insert(category);
+		} catch (Exception e) {
+			System.err.println(this.getClass().getSimpleName() + " ->  CATEGORY INSERT FAIL");
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public boolean update(Tool tool) {
+		if (tool == null) {
 			System.err.println(this.getClass().getSimpleName() + " -> UPDATE NULL INVENTORY_ITEM");
 			return false;
 		}
 
-		InventoryItem itemInDatabase = null;
+		Tool toolInDatabase = null;
 
-		if (item.getId() != null) {
-			itemInDatabase = DatabaseManager.getInstance().find(InventoryItem.class, item.getId());
+		if (tool.getId() != null) {
+			toolInDatabase = DatabaseManager.getInstance().find(Tool.class, tool.getId());
 		}
 
 		try {
-			if (itemInDatabase == null) {
-				return insert(item);
+			if (toolInDatabase == null) {
+				return insert(tool);
 			} else {
-				DatabaseManager.getInstance().update(item);
+				DatabaseManager.getInstance().update(tool);
 			}
 		} catch (Exception e) {
-			System.err.println(this.getClass().getSimpleName() + " -> " + getItemType(item) + " UPDATE FAIL");
+			System.err.println(this.getClass().getSimpleName() + " -> TOOL UPDATE FAIL");
 			e.printStackTrace();
 			return false;
 		}
 		return true;
 	}
 
-	private void remove(InventoryItem item) {
-		if (item == null) {
-			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL INVENTORY_ITEM");
-			return;
+	public boolean update(Category category) {
+		if (category == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> UPDATE NULL CATEGORY");
+			return false;
 		}
 
-		InventoryItem itemInDatabase = null;
+		Tool categoryInDatabase = null;
 
-		if (item.getId() != null) {
-			itemInDatabase = DatabaseManager.getInstance().find(InventoryItem.class, item.getId());
+		if (category.getId() != null) {
+			categoryInDatabase = DatabaseManager.getInstance().find(Tool.class, category.getId());
 		}
 
 		try {
-			if (itemInDatabase != null) {
-				DatabaseManager.getInstance().remove(itemInDatabase);
+			if (categoryInDatabase == null) {
+				return insert(category);
 			} else {
-				System.err.println(this.getClass().getSimpleName() + " -> " + getItemType(item) + ": '" + item.getName() + "'NOT FOUND IN DATABASE");
+				DatabaseManager.getInstance().update(category);
 			}
 		} catch (Exception e) {
-			System.out.println(this.getClass().getSimpleName() + " -> INVENTORY_ITEM REMOVE FAIL");
+			System.err.println(this.getClass().getSimpleName() + " -> CATEGORY UPDATE FAIL");
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	private void remove(Tool tool) {
+		if (tool == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> REMOVE NULL TOOL");
+			return;
+		}
+
+		Tool toolInDatabase = null;
+
+		if (tool.getId() != null) {
+			toolInDatabase = DatabaseManager.getInstance().find(Tool.class, tool.getId());
+		}
+
+		try {
+			if (toolInDatabase != null) {
+				DatabaseManager.getInstance().remove(toolInDatabase);
+			} else {
+				System.err.println(this.getClass().getSimpleName() + " -> TOOL NOT FOUND IN DATABASE");
+			}
+		} catch (Exception e) {
+			System.out.println(this.getClass().getSimpleName() + " -> TOOL REMOVE FAIL");
 			e.printStackTrace();
 		}
 	}

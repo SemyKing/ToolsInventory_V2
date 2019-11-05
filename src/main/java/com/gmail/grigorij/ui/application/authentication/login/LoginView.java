@@ -1,8 +1,6 @@
 package com.gmail.grigorij.ui.application.authentication.login;
 
-import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
+import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.ui.components.dialogs.ForgotPasswordDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -117,7 +115,7 @@ public class LoginView extends Div {
 
 		content.add(layout);
 
-		loginButton = UIUtils.createPrimaryButton("LOG IN");
+		loginButton = UIUtils.createButton("LOG IN", ButtonVariant.LUMO_PRIMARY);
 		loginButton.addClickListener(e -> {
 			loginOnClick();
 		});
@@ -182,13 +180,6 @@ public class LoginView extends Div {
 		loginErrorLayout.getElement().setAttribute("visible", false);
 
 		if (AuthenticationService.signIn(username, password, rememberMe)) {
-
-//			Transaction tr = new Transaction();
-//			tr.setUser(AuthenticationService.getCurrentSessionUser());
-//			tr.setTransactionOperation(TransactionType.LOGIN);
-//			tr.setTransactionTarget(TransactionTarget.USER);
-//
-//			TransactionFacade.getInstance().insert(tr);
 
 			operationStatus.onSuccess("");
 		} else {

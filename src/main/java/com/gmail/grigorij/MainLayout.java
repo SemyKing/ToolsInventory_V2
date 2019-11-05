@@ -2,9 +2,8 @@ package com.gmail.grigorij;
 
 import com.gmail.grigorij.backend.DummyDataGenerator;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.application.ApplicationContainerView;
@@ -40,6 +39,17 @@ import org.slf4j.LoggerFactory;
 public class MainLayout extends Div {
 
 	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
+
+
+	/* MAIN T0D0 LIST */
+
+	//TODO: DON'T SHOW DELETED ENTITIES
+	//TODO: ADD LOGGER FUNCTIONALITY IF NEEDED
+	//TODO: ADD USER TOOL REPORT FUNCTIONALITY: LOST, STOLEN...
+	//TODO: ADD DYNAMIC REPORTING LAYOUTS FOR DIFFERENT COMPANIES
+	//TODO: ADD TOOL GEOLOCATION
+	//TODO: ADD IMPORT / EXPORT FUNCTIONALITY
+
 
 
 	public MainLayout() {

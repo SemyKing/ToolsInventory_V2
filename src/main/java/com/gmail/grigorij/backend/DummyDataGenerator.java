@@ -1,13 +1,14 @@
 package com.gmail.grigorij.backend;
 
+import com.gmail.grigorij.backend.database.entities.Category;
 import com.gmail.grigorij.backend.database.facades.*;
-import com.gmail.grigorij.backend.embeddable.Location;
-import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.inventory.ToolUsageStatus;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.Tool;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -21,15 +22,13 @@ public class DummyDataGenerator {
 
 	private int companiesCount = 3; //excluding 1st company: ADMINISTRATION
 	private int usersPerCompany = 10;
+	private int toolsPerCategoryCount = 20;
+	private int categoriesCount = 5;
 
-	private int toolsCount = 10;
-	private int toolCategoriesCount = 5;
-	private int subCategories = 2;
-	private int toolsPerCategory = toolsCount / toolCategoriesCount;
 
 	private List<Company> companies = new ArrayList<>();
 	private List<User> users = new ArrayList<>();
-	private List<InventoryItem> tools = new ArrayList<>();
+	private List<Tool> tools = new ArrayList<>();
 
 
 	public DummyDataGenerator() {
@@ -64,6 +63,16 @@ public class DummyDataGenerator {
 		companyLocation.setCountry("Finland");
 		companyLocation.setCity("Vantaa");
 		companyLocation.setPostcode("01530");
+
+
+		Location dummy_location = new Location();
+		dummy_location.setName("dummy location");
+		dummy_location.setAddressLine1("dummy location");
+		dummy_location.setCountry("dummy location");
+		dummy_location.setCity("dummy location");
+		dummy_location.setPostcode("dummy location");
+
+		administrationCompany.getLocations().add(dummy_location);
 
 		administrationCompany.setAddress(companyLocation);
 		administrationCompany.setContactPerson(contactPerson);
@@ -114,20 +123,22 @@ public class DummyDataGenerator {
 		admin.setThemeVariant(LumoStyles.LIGHT);
 		admin.setAdditionalInfo("System Administrator");
 
-//		admin.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.YES, Permission.YES));
-//		admin.setAccessGroup(AccessGroup.SYSTEM_ADMIN);
-
 		admin.setPermissionLevel(PermissionLevel.SYSTEM_ADMIN);
 
 		Person adminP = new Person();
-		adminP.setFirstName("Grigorij");
-		adminP.setLastName("Semykin");
+		adminP.setFirstName("System");
+		adminP.setLastName("Admin");
 		adminP.setPhoneNumber("046123456");
-		adminP.setEmail("gs@mail.com");
+		adminP.setEmail("oriel.muaaz@thtt.us");
 
 		admin.setPerson(adminP);
 
 		users.add(admin);
+
+		// UNCOMMENT -> ONLY SYSTEM ADMIN IN ADMINISTRATION COMPANY
+
+//		long id = companies.get(0).getId();
+//		companies.removeIf(company -> company.getId().equals(id));
 
 		for (int compInd = 0; compInd < companies.size(); compInd++) {
 
@@ -139,8 +150,6 @@ public class DummyDataGenerator {
 				user.setUsername("user" + compInd + "." + userInd);
 				user.setPassword("password");
 				user.setCompany(company);
-//				user.setAccessGroup(AccessGroup.COMPANY_ADMIN);
-//				user.setAccessRights(AccessRightFacade.getInstance().constructAccessRights(Permission.YES, Permission.YES, Permission.NO, Permission.YES));
 
 				user.setPermissionLevel(PermissionLevel.USER);
 				user.setPermissions(PermissionFacade.getInstance().getDefaultUserPermissions());
@@ -175,60 +184,50 @@ public class DummyDataGenerator {
 
 	@SuppressWarnings( "deprecation" )
 	private void generateTools() {
-		int categoryCounter = 1;
-		int subCategoryCounter = 1;
+
 		int toolCounter = 1;
+		int categoryCounter = 1;
 
 		for (Company company : companies) {
-			for (int i = 0; i < toolCategoriesCount; i++) {
-				InventoryItem p = new InventoryItem();
-				p.setName("Category " + categoryCounter);
-				p.setCompany(company);
 
-				for (int j = 0; j < subCategories; j++) {
-					InventoryItem c = new InventoryItem();
-					c.setName("Sub Category " + subCategoryCounter + " (P: " + categoryCounter + ")");
-					c.setParentCategory(p);
-					c.setCompany(company);
+			for (int i = 0; i < categoriesCount; i++) {
+				Category category = new Category();
+				category.setName("Category " + categoryCounter);
+				category.setCompany(company);
 
-					p.addChild(c);
+				InventoryFacade.getInstance().insert(category);
 
-					for (int k = 0; k < toolsPerCategory; k++) {
-						InventoryItem cc = new InventoryItem();
-						cc.setUsageStatus(ToolUsageStatus.FREE);
-						cc.setCompany(company);
-						cc.setName("Tool " + toolCounter + " (P: " + categoryCounter + ", SP: " + subCategoryCounter + ")");
-						cc.setManufacturer(RandomStringUtils.randomAlphabetic(5));
-						cc.setModel(RandomStringUtils.randomNumeric(10));
-						cc.setToolInfo(RandomStringUtils.randomAlphabetic(10));
-						cc.setSnCode(RandomStringUtils.randomNumeric(7));
-						cc.setBarcode(RandomStringUtils.randomNumeric(10));
-						cc.setPrice(999.93);
-
-//						cc.setDateBought(new Date(100, 12, 31));
-//						cc.setDateNextMaintenance(new Date(102, 1, 1));
-
-						cc.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
-
-						cc.setParentCategory(c);
-
-						c.addChild(cc);
-
-						toolCounter++;
-					}
-
-					subCategoryCounter++;
-				}
-
-				tools.add(p);
 				categoryCounter++;
+
+				for (int j = 0; j < toolsPerCategoryCount; j++) {
+
+					Tool tool = new Tool();
+					tool.setName("Tool " + toolCounter);
+					tool.setCompany(company);
+					tool.setUsageStatus(ToolUsageStatus.FREE);
+					tool.setManufacturer(RandomStringUtils.randomAlphabetic(5));
+					tool.setModel(RandomStringUtils.randomNumeric(10));
+					tool.setToolInfo(RandomStringUtils.randomAlphabetic(10));
+					tool.setSerialNumber(RandomStringUtils.randomNumeric(7));
+					tool.setBarcode(RandomStringUtils.randomNumeric(10));
+					tool.setCurrentLocation(company.getLocations().get(0));
+					tool.setPrice(999.93);
+					tool.setGuarantee_months(Integer.parseInt(RandomStringUtils.randomNumeric(2)));
+
+					tool.setCategory(category);
+
+					tools.add(tool);
+
+					toolCounter++;
+				}
 			}
 		}
 
-		for (InventoryItem ie : tools) {
+		for (Tool ie : tools) {
 			InventoryFacade.getInstance().insert(ie);
 		}
 	}
+
 
 	private String getRandomStrings(int count) {
 		return RandomStringUtils.randomAlphabetic(count).toUpperCase();

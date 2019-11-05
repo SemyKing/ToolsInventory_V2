@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
@@ -95,19 +95,19 @@ public class LocationForm extends FormLayout {
 	}
 
 
-	public void setLocation(Location originalLocation) {
+	public void setLocation(Location location) {
 		isNew = false;
 
-		if (originalLocation == null) {
-			location = new Location();
+		if (location == null) {
+			this.location = new Location();
 			isNew = true;
 		} else {
-			location = originalLocation;
+			this.location = location;
 		}
 
 		original_Location = new Location(this.location);
 
-		binder.readBean(location);
+		binder.readBean(this.location);
 	}
 
 	public Location getLocation() {

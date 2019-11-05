@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
+import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.utils.DateConverter;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.formlayout.FormLayout;

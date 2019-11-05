@@ -1,13 +1,11 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.recoverylink.RecoveryLink;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.RecoveryLink;
+import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
 
 
 public class RecoveryLinkFacade {
@@ -25,15 +23,14 @@ public class RecoveryLinkFacade {
 	public RecoveryLink getRecoveryLinkByToken(String token) {
 		RecoveryLink link;
 		try {
-			link = DatabaseManager.getInstance().createEntityManager().createNamedQuery("getRecoveryLinkByToken", RecoveryLink.class)
-					.setParameter("token_var", token)
+			link = DatabaseManager.getInstance().createEntityManager().createNamedQuery(RecoveryLink.QUERY_BY_TOKEN, RecoveryLink.class)
+					.setParameter(ProjectConstants.VAR1, token)
 					.getSingleResult();
 		} catch (NoResultException nre) {
 			link = null;
 		}
 		return link;
 	}
-
 
 
 	public boolean insert(RecoveryLink link) {
@@ -46,6 +43,32 @@ public class RecoveryLinkFacade {
 			DatabaseManager.getInstance().insert(link);
 		} catch (Exception e) {
 			System.err.println(this.getClass().getSimpleName() + " -> RECOVERY_LINK INSERT FAIL");
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public boolean update(RecoveryLink link) {
+		if (link == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> UPDATE NULL RECOVERY LINK");
+			return false;
+		}
+
+		RecoveryLink linkInDatabase = null;
+
+		if (link.getId() != null) {
+			linkInDatabase = DatabaseManager.getInstance().find(RecoveryLink.class, link.getId());
+		}
+		try {
+			if (linkInDatabase == null) {
+				System.err.println(this.getClass().getSimpleName() + " -> RECOVERY LINK NOT FOUND IN DATABASE");
+				return false;
+			} else {
+				DatabaseManager.getInstance().update(link);
+			}
+		} catch (Exception e) {
+			System.err.println(this.getClass().getSimpleName() + " -> RECOVERY LINK UPDATE FAIL");
 			e.printStackTrace();
 			return false;
 		}

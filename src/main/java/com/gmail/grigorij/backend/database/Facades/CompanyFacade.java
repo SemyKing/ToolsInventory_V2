@@ -1,7 +1,8 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.company.Company;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
 import java.util.ArrayList;
@@ -34,7 +35,7 @@ public class CompanyFacade {
 		Company company;
 		try {
 			company =  DatabaseManager.getInstance().createEntityManager().createNamedQuery(Company.QUERY_BY_ID, Company.class)
-					.setParameter(Company.ID_VAR, companyId)
+					.setParameter(ProjectConstants.ID_VAR, companyId)
 					.getSingleResult();
 
 			companies.add(company);

@@ -1,10 +1,11 @@
 package com.gmail.grigorij.utils;
 
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
@@ -37,15 +38,15 @@ public class AuthenticationService {
 	}
 
 	public static User getCurrentSessionUser() {
-		return (User) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA);
+		return UserFacade.getInstance().getUserById((Long) getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA));
 	}
 
-	public static void setCurrentSessionUser(User user) {
-		if (user == null) {
+	private static void setCurrentSessionUser(Long userId) {
+		if (userId == null) {
 			return;
 		}
 		getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
-		getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, user);
+		getCurrentRequest().getWrappedSession().setAttribute(SESSION_DATA, userId);
 	}
 
 	public static boolean signIn(String username, String password, boolean rememberMe) {
@@ -94,30 +95,28 @@ public class AuthenticationService {
 
 
 	private static boolean constructSessionData(User user, String username) {
-		System.out.println();
-
 		if (user == null) {
 			user = UserFacade.getInstance().getUserByUsername(username);
 		}
 
 		if (user == null) {
-			System.out.println("LOGIN FAIL, user not found (NULL)");
+			System.out.println("\nLOGIN FAIL, user not found (NULL)");
 			return false;
 		} else {
 			if (user.isDeleted()) {
 				UIUtils.showNotification("Your credentials have expired", UIUtils.NotificationType.INFO, 0);
-				System.out.println("LOGIN FAIL, user: '" + user.getUsername() + "' set as 'deleted'");
+				System.out.println("\nLOGIN FAIL, user: '" + user.getFullName() + "' set as 'deleted'");
 				return false;
 			}
 
 			if (user.getCompany() == null) {
 				UIUtils.showNotification("Company is NULL", UIUtils.NotificationType.ERROR);
-				System.err.println("LOGIN FAIL, NULL company");
+				System.err.println("\nLOGIN FAIL, NULL company");
 				return false;
 			}
 		}
 
-		setCurrentSessionUser(user);
+		setCurrentSessionUser(user.getId());
 
 		return true;
 	}

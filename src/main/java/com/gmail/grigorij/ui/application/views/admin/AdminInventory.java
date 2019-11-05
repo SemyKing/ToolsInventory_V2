@@ -1,14 +1,15 @@
 package com.gmail.grigorij.ui.application.views.admin;
 
+import com.gmail.grigorij.backend.database.entities.Category;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.enums.inventory.InventoryHierarchyType;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.ui.application.views.Admin;
+import com.gmail.grigorij.backend.database.entities.Tool;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.ui.application.views.AdminView;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
@@ -59,18 +60,18 @@ public class AdminInventory extends FlexBoxLayout {
 	private final ToolForm bulkToolForm = new ToolForm(this);
 	private final CategoryForm categoryForm = new CategoryForm();
 	private final ToolCopyForm toolCopyForm = new ToolCopyForm();
-	private final Admin admin;
+	private final AdminView admin;
 
-	private Grid<InventoryItem> grid;
-	private ListDataProvider<InventoryItem> dataProvider;
-	private List<InventoryItem> selectedTools = null;
+	private Grid<Tool> grid;
+	private ListDataProvider<Tool> dataProvider;
+	private List<Tool> selectedTools = null;
 
 	private DetailsDrawer detailsDrawer;
 	private Button copyToolButton;
 	private Button editToolButton;
 
 
-	public AdminInventory(Admin admin) {
+	public AdminInventory(AdminView admin) {
 		this.admin = admin;
 		setClassName(CLASS_NAME);
 
@@ -103,27 +104,42 @@ public class AdminInventory extends FlexBoxLayout {
 		header.add(searchField);
 
 		MenuBar actionsMenuBar = new MenuBar();
-		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_CONTRAST);
+		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_PRIMARY, MenuBarVariant.LUMO_ICON);
 
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
 
-		menuItem.getSubMenu().addItem("New Tool", e -> {
-			grid.deselectAll();
-			showToolDetails(null);
-		});
-		menuItem.getSubMenu().add(new Hr());
-		menuItem.getSubMenu().addItem("New Category", e -> {
-			grid.deselectAll();
-			constructCategoryDialog(null);
-		});
-		menuItem.getSubMenu().add(new Hr());
-		menuItem.getSubMenu().addItem("Import", e -> {
-			importTools();
-		});
-		menuItem.getSubMenu().add(new Hr());
-		menuItem.getSubMenu().addItem("Export", e -> {
-			exportTools();
-		});
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.INVENTORY_TOOL, null)) {
+			menuItem.getSubMenu().addItem("New Tool", e -> {
+				grid.deselectAll();
+				showToolDetails(null);
+			});
+			menuItem.getSubMenu().add(new Hr());
+		}
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.INVENTORY_CATEGORY, null)) {
+			menuItem.getSubMenu().addItem("New Category", e -> {
+				grid.deselectAll();
+				constructCategoryDialog(null);
+			});
+			menuItem.getSubMenu().add(new Hr());
+		}
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.IMPORT, OperationTarget.INVENTORY_TOOL, null)) {
+			menuItem.getSubMenu().addItem("Import", e -> {
+				importTools();
+			});
+			menuItem.getSubMenu().add(new Hr());
+		}
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EXPORT, OperationTarget.INVENTORY_TOOL, null)) {
+			menuItem.getSubMenu().addItem("Export", e -> {
+				exportTools();
+			});
+		}
 
 		header.add(actionsMenuBar);
 
@@ -146,48 +162,36 @@ public class AdminInventory extends FlexBoxLayout {
 		grid.setSizeFull();
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllByHierarchyType(InventoryHierarchyType.TOOL));
+			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllTools());
 		} else {
-			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllInCompanyByType(AuthenticationService.getCurrentSessionUser().getCompany().getId(), InventoryHierarchyType.TOOL));
+			dataProvider = DataProvider.ofCollection(InventoryFacade.getInstance().getAllToolsInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
 		}
 
 		grid.setDataProvider(dataProvider);
-		grid.addColumn(InventoryItem::getName).setHeader("Tool")
+
+		grid.addColumn(Tool::getName)
+				.setHeader("Tool")
 				.setFlexGrow(1)
 				.setAutoWidth(true);
 
-		grid.addColumn(tool -> (tool.getParentCategory() == null) ? InventoryFacade.getInstance().getRootCategory().getName() : tool.getParentCategory().getName())
+		grid.addColumn(Tool::getCategoryString)
 				.setHeader("Category")
 				.setAutoWidth(true);
 
-		grid.addColumn(tool -> (tool.getCompany() == null) ? "" : tool.getCompany().getName())
-				.setHeader("Company")
-				.setAutoWidth(true);
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			grid.addColumn(Tool::getCompanyString)
+					.setHeader("Company")
+					.setAutoWidth(true);
+		}
 
-		grid.addColumn(tool -> (tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getName())
-				.setHeader("Usage Status")
-				.setAutoWidth(true);
-
-		grid.addColumn(tool -> {
-					if (tool.getCurrentUser() != null && tool.getReservedUser() != null) {
-						return tool.getCurrentUser().getFullName() + ", " + tool.getReservedUser().getFullName();
-					}
-					if (tool.getCurrentUser() != null) {
-						return tool.getCurrentUser().getFullName();
-					}
-					if (tool.getReservedUser() != null) {
-						return tool.getReservedUser().getFullName();
-					}
-					return "";
-				})
-				.setHeader("In Use / Reserved By")
+		grid.addColumn(Tool::getUsageStatusString)
+				.setHeader("Status")
 				.setAutoWidth(true);
 
 		grid.addColumn(new ComponentRenderer<>(tool -> UIUtils.createActiveGridIcon(tool.isDeleted())))
 				.setHeader("Active")
 				.setFlexGrow(0)
 				.setAutoWidth(true);
-
 
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
 
@@ -206,20 +210,32 @@ public class AdminInventory extends FlexBoxLayout {
 	private void constructDetails() {
 		detailsDrawer = admin.getDetailsDrawer();
 
-		copyToolButton = UIUtils.createButton(VaadinIcon.COPY, ButtonVariant.LUMO_PRIMARY);
-		copyToolButton.addClickListener(e -> constructToolCopyDialog());
-		UIUtils.setTooltip("Copy This Tool", copyToolButton);
-
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Tool Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
-		detailsDrawerHeader.getContent().add(copyToolButton);
-		detailsDrawerHeader.getContent().setComponentMargin(copyToolButton, Left.AUTO);
-		detailsDrawer.setHeader(detailsDrawerHeader);
 
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.COPY, OperationTarget.INVENTORY_TOOL, null)) {
+
+			copyToolButton = UIUtils.createButton(VaadinIcon.COPY, ButtonVariant.LUMO_PRIMARY);
+			copyToolButton.addClickListener(e -> constructToolCopyDialog());
+			UIUtils.setTooltip("Copy This Tool", copyToolButton);
+
+			detailsDrawerHeader.getContent().add(copyToolButton);
+			detailsDrawerHeader.getContent().setComponentMargin(copyToolButton, Left.AUTO);
+		}
+
+		detailsDrawer.setHeader(detailsDrawerHeader);
 		detailsDrawer.setContent(toolForm);
 
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
-		detailsDrawerFooter.getSave().addClickListener(e -> toolSaveOnClick());
+		detailsDrawerFooter.getSave().setEnabled(false);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.INVENTORY_TOOL, null)) {
+			detailsDrawerFooter.getSave().addClickListener(e -> toolSaveOnClick());
+			detailsDrawerFooter.getSave().setEnabled(true);
+		}
+
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 	}
@@ -240,9 +256,9 @@ public class AdminInventory extends FlexBoxLayout {
 							res =  StringUtils.containsIgnoreCase(tool.getName(), sParam) ||
 									StringUtils.containsIgnoreCase((tool.getCurrentUser() == null) ? "" : tool.getCurrentUser().getUsername(), sParam) ||
 									StringUtils.containsIgnoreCase((tool.getReservedUser() == null) ? "" : tool.getReservedUser().getUsername(), sParam) ||
-									StringUtils.containsIgnoreCase((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName(), sParam) ||
-									StringUtils.containsIgnoreCase((tool.getCompany() == null) ? "" : tool.getCompany().getName(), sParam) ||
-									StringUtils.containsIgnoreCase((tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getName(), sParam);
+									StringUtils.containsIgnoreCase(tool.getCategoryString(), sParam) ||
+									StringUtils.containsIgnoreCase(tool.getCompanyString(), sParam) ||
+									StringUtils.containsIgnoreCase(tool.getUsageStatusString(), sParam);
 
 							//(res) -> shows All items based on searchParams (multiple rows)
 							//(!res) -> shows ONE item based on searchParams
@@ -257,16 +273,14 @@ public class AdminInventory extends FlexBoxLayout {
 					tool -> StringUtils.containsIgnoreCase(tool.getName(), mainSearchString)  ||
 							StringUtils.containsIgnoreCase((tool.getCurrentUser() == null) ? "" : tool.getCurrentUser().getUsername(), mainSearchString) ||
 							StringUtils.containsIgnoreCase((tool.getReservedUser() == null) ? "" : tool.getReservedUser().getUsername(), mainSearchString) ||
-							StringUtils.containsIgnoreCase((tool.getParentCategory() == null) ? "" : tool.getParentCategory().getName(), mainSearchString) ||
-							StringUtils.containsIgnoreCase((tool.getCompany() == null) ? "" : tool.getCompany().getName(), mainSearchString) ||
-							StringUtils.containsIgnoreCase((tool.getUsageStatus() == null) ? "" : tool.getUsageStatus().getName(), mainSearchString)
+							StringUtils.containsIgnoreCase(tool.getCategoryString(), mainSearchString) ||
+							StringUtils.containsIgnoreCase(tool.getCompanyString(), mainSearchString) ||
+							StringUtils.containsIgnoreCase(tool.getUsageStatusString(), mainSearchString)
 			);
 		}
 	}
 
-	private void showToolDetails(InventoryItem tool) {
-		copyToolButton.setEnabled( tool != null );
-
+	private void showToolDetails(Tool tool) {
 		toolForm.setTool(tool);
 		detailsDrawer.show();
 	}
@@ -301,15 +315,9 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 
-	private void categorySaveOnClick(InventoryItem editedCategory) {
+	private void categorySaveOnClick(Category editedCategory) {
 		if (editedCategory == null) {
 			return;
-		}
-
-		if (editedCategory.getParentCategory() != null) {
-			if (editedCategory.getParentCategory().equals(InventoryFacade.getInstance().getRootCategory())) {
-				editedCategory.setParentCategory(null);
-			}
 		}
 
 		if (categoryForm.isNew()) {
@@ -323,7 +331,7 @@ public class AdminInventory extends FlexBoxLayout {
 			if (InventoryFacade.getInstance().update(editedCategory)) {
 				UIUtils.showNotification("Category updated", UIUtils.NotificationType.SUCCESS);
 			} else {
-				UIUtils.showNotification("Category updated failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Category update failed", UIUtils.NotificationType.ERROR);
 				return;
 			}
 		}
@@ -348,7 +356,7 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 	private void toolSaveOnClick() {
-		InventoryItem editedTool = toolForm.getTool();
+		Tool editedTool = toolForm.getTool();
 
 		if (editedTool == null) {
 			return;
@@ -401,6 +409,11 @@ public class AdminInventory extends FlexBoxLayout {
 
 
 	private void constructToolCopyDialog() {
+		if (selectedTools == null || selectedTools.get(0) == null) {
+			UIUtils.showNotification("Cannot copy this tool", UIUtils.NotificationType.INFO);
+			return;
+		}
+
 		CustomDialog dialog = new CustomDialog();
 		dialog.setHeader(UIUtils.createH3Label("Copy Tool Information"));
 
@@ -411,7 +424,7 @@ public class AdminInventory extends FlexBoxLayout {
 
 		dialog.getConfirmButton().setText("Copy");
 		dialog.getConfirmButton().addClickListener(e -> {
-			InventoryItem toolToCopy = toolCopyForm.getToolCopy();
+			Tool toolToCopy = toolCopyForm.getToolCopy();
 			if (toolToCopy != null) {
 				dialog.close();
 
@@ -429,7 +442,7 @@ public class AdminInventory extends FlexBoxLayout {
 		dialog.open();
 	}
 
-	public void constructCategoryDialog(InventoryItem category) {
+	public void constructCategoryDialog(Category category) {
 		categoryForm.setCategory(category);
 
 		CustomDialog dialog = new CustomDialog();
@@ -439,26 +452,34 @@ public class AdminInventory extends FlexBoxLayout {
 		dialog.getCancelButton().addClickListener(e -> dialog.close());
 
 		dialog.getConfirmButton().setText("Save");
-		dialog.getConfirmButton().addClickListener(e -> {
-			InventoryItem editedCategory = categoryForm.getCategory();
+		dialog.getConfirmButton().setEnabled(false);
 
-			if (editedCategory != null) {
-				categorySaveOnClick(editedCategory);
-				dialog.close();
-			}
-		});
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.INVENTORY_CATEGORY, null)) {
+
+			dialog.getConfirmButton().setEnabled(true);
+			dialog.getConfirmButton().addClickListener(e -> {
+				Category editedCategory = categoryForm.getCategory();
+
+				if (editedCategory != null) {
+					categorySaveOnClick(editedCategory);
+					dialog.close();
+				}
+			});
+		}
 
 		dialog.open();
 	}
+
 
 	/*
 	 ******BULK OPERATIONS******
 	 */
 	private CustomDialog bulkEditDialog;
-	private List<InventoryItem> bulkTools;
+	private List<Tool> bulkTools;
 	private int currentBulkEditToolIndex = 0;
 
-	private void constructBulkEditDialog(boolean editMode, InventoryItem toolToCopy, int numberOfTools) {
+	private void constructBulkEditDialog(boolean editMode, Tool toolToCopy, int numberOfTools) {
 
 		currentBulkEditToolIndex = 0;
 
@@ -468,7 +489,7 @@ public class AdminInventory extends FlexBoxLayout {
 			bulkTools = new ArrayList<>();
 
 			for (int i = 0; i < numberOfTools; i++) {
-				bulkTools.add(new InventoryItem(toolToCopy));
+				bulkTools.add(new Tool(toolToCopy));
 			}
 		}
 
@@ -494,64 +515,71 @@ public class AdminInventory extends FlexBoxLayout {
 		});
 
 		bulkEditDialog.getConfirmButton().setText("Save");
-		bulkEditDialog.getConfirmButton().addClickListener(confirmEvent -> {
+		bulkEditDialog.getConfirmButton().setEnabled(false);
 
-			boolean error = false;
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.INVENTORY_TOOL, null)) {
 
-			InventoryItem editedTool = bulkToolForm.getTool();
-			if (editedTool != null) {
-				bulkTools.set(currentBulkEditToolIndex, editedTool);
+			bulkEditDialog.getConfirmButton().setEnabled(true);
+			bulkEditDialog.getConfirmButton().addClickListener(confirmEvent -> {
 
-				if (editMode) { //EDIT TOOLS
-					for (InventoryItem tool : bulkTools) {
-						if (InventoryFacade.getInstance().update(tool)) {
+				boolean error = false;
 
-							Transaction transaction = new Transaction();
-							transaction.setUser(AuthenticationService.getCurrentSessionUser());
-							transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-							transaction.setOperation(Operation.EDIT);
-							transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
-							transaction.setTargetDetails(tool.getName());
+				Tool editedTool = bulkToolForm.getTool();
+				if (editedTool != null) {
+					bulkTools.set(currentBulkEditToolIndex, editedTool);
+
+					if (editMode) { //EDIT TOOLS
+						for (Tool tool : bulkTools) {
+							if (InventoryFacade.getInstance().update(tool)) {
+
+								Transaction transaction = new Transaction();
+								transaction.setUser(AuthenticationService.getCurrentSessionUser());
+								transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+								transaction.setOperation(Operation.EDIT);
+								transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
+								transaction.setTargetDetails(tool.getName());
 //							transaction.setChanges(bulkToolForm.getChanges()); // CANNOT GET CHANGES BECAUSE ONLY ONE INSTANCE OF bulkToolForm
-							TransactionFacade.getInstance().insert(transaction);
+								TransactionFacade.getInstance().insert(transaction);
+							} else {
+								error = true;
+							}
+						}
+
+						if (error) {
+							UIUtils.showNotification("Tools Update Error", UIUtils.NotificationType.ERROR);
 						} else {
-							error = true;
+							UIUtils.showNotification("Tools Updated", UIUtils.NotificationType.SUCCESS);
+						}
+					} else {    // COPY TOOLS
+						for (Tool tool : bulkTools) {
+							if (InventoryFacade.getInstance().insert(tool)) {
+								dataProvider.getItems().add(tool);
+
+								Transaction transaction = new Transaction();
+								transaction.setUser(AuthenticationService.getCurrentSessionUser());
+								transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+								transaction.setOperation(Operation.ADD);
+								transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
+								transaction.setTargetDetails(tool.getName());
+								TransactionFacade.getInstance().insert(transaction);
+							} else {
+								error = true;
+							}
+						}
+
+						if (error) {
+							UIUtils.showNotification("Tools Insert Error", UIUtils.NotificationType.ERROR);
+						} else {
+							UIUtils.showNotification("Tools Created", UIUtils.NotificationType.SUCCESS);
 						}
 					}
 
-					if (error) {
-						UIUtils.showNotification("Tools Update Error", UIUtils.NotificationType.ERROR);
-					} else {
-						UIUtils.showNotification("Tools Updated successful", UIUtils.NotificationType.SUCCESS);
-					}
-				} else {    // COPY TOOLS
-					for (InventoryItem tool : bulkTools) {
-						if (InventoryFacade.getInstance().insert(tool)) {
-							dataProvider.getItems().add(tool);
-
-							Transaction transaction = new Transaction();
-							transaction.setUser(AuthenticationService.getCurrentSessionUser());
-							transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-							transaction.setOperation(Operation.ADD);
-							transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
-							transaction.setTargetDetails(tool.getName());
-							TransactionFacade.getInstance().insert(transaction);
-						} else {
-							error = true;
-						}
-					}
-
-					if (error) {
-						UIUtils.showNotification("Tools Insert Error", UIUtils.NotificationType.ERROR);
-					} else {
-						UIUtils.showNotification("Tools Inserted Successful", UIUtils.NotificationType.SUCCESS);
-					}
+					dataProvider.refreshAll();
+					bulkEditDialog.close();
 				}
-
-				dataProvider.refreshAll();
-				bulkEditDialog.close();
-			}
-		});
+			});
+		}
 
 		bulkEditDialog.open();
 	}
@@ -584,7 +612,7 @@ public class AdminInventory extends FlexBoxLayout {
 		Button addOneCopyButton = UIUtils.createIconButton(VaadinIcon.PLUS, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_TERTIARY_INLINE);
 		UIUtils.setTooltip("Create new copy of this Tool", addOneCopyButton);
 		addOneCopyButton.addClickListener(e -> {
-			InventoryItem newToolCopy = new InventoryItem(bulkTools.get(currentBulkEditToolIndex));
+			Tool newToolCopy = new Tool(bulkTools.get(currentBulkEditToolIndex));
 			bulkTools.add(newToolCopy);
 			toolsSizeLabel.setText(""+(bulkTools.size()));
 		});
@@ -644,7 +672,7 @@ public class AdminInventory extends FlexBoxLayout {
 		toolsToLeftButton.addClickListener(e -> {
 			if (currentBulkEditToolIndex > 0) {
 
-				InventoryItem editedTool = bulkToolForm.getTool();
+				Tool editedTool = bulkToolForm.getTool();
 				if (editedTool != null) {
 					bulkTools.set(currentBulkEditToolIndex, editedTool);
 
@@ -663,7 +691,7 @@ public class AdminInventory extends FlexBoxLayout {
 		toolsToRightButton.addClickListener(e -> {
 			if (currentBulkEditToolIndex < (bulkTools.size()-1)) {
 
-				InventoryItem editedTool = bulkToolForm.getTool();
+				Tool editedTool = bulkToolForm.getTool();
 				if (editedTool != null) {
 					bulkTools.set(currentBulkEditToolIndex, editedTool);
 
@@ -679,7 +707,7 @@ public class AdminInventory extends FlexBoxLayout {
 		return bulkDialogHeader;
 	}
 
-	private void setToolBulkEditDialogContent(InventoryItem tool) {
+	private void setToolBulkEditDialogContent(Tool tool) {
 		bulkToolForm.setTool(tool);
 		bulkEditDialog.setContent(bulkToolForm);
 	}
