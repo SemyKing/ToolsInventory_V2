@@ -10,6 +10,12 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: com.sun.mail:javax.mail:1.6.1" level="project" />
+    <orderEntry type="library" name="Maven: javax.activation:activation:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.itextpdf:itextpdf:5.5.13.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.pdfbox:pdfbox:2.0.17" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.pdfbox:fontbox:2.0.17" level="project" />
+    <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:vaadin-core:14.0.7" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin:flow-server:2.0.14" level="project" />
     <orderEntry type="library" name="Maven: com.vaadin.external.gwt:gwt-elemental:2.8.2.vaadin2" level="project" />
