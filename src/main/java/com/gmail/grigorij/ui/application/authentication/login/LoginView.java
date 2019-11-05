@@ -115,7 +115,7 @@ public class LoginView extends Div {
 
 		content.add(layout);
 
-		loginButton = UIUtils.createPrimaryButton("LOG IN");
+		loginButton = UIUtils.createButton("LOG IN", ButtonVariant.LUMO_PRIMARY);
 		loginButton.addClickListener(e -> {
 			loginOnClick();
 		});

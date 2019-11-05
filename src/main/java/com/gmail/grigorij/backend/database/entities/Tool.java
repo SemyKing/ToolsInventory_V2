@@ -3,6 +3,7 @@ package com.gmail.grigorij.backend.database.entities;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.ToolReport;
 import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
+import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.*;

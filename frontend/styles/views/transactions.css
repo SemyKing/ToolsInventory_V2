@@ -53,6 +53,10 @@
 }
 .transactions__filters > vaadin-date-picker:not(:last-child) {
 	margin-right: var(--lumo-space-s);
+
+}
+.transactions__filters > vaadin-date-picker {
+	max-width: var(--date-picker-width);
 }
 
 

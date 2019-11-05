@@ -41,6 +41,17 @@ public class MainLayout extends Div {
 	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
 
 
+	/* MAIN T0D0 LIST */
+
+	//TODO: DON'T SHOW DELETED ENTITIES
+	//TODO: ADD LOGGER FUNCTIONALITY IF NEEDED
+	//TODO: ADD USER TOOL REPORT FUNCTIONALITY: LOST, STOLEN...
+	//TODO: ADD DYNAMIC REPORTING LAYOUTS FOR DIFFERENT COMPANIES
+	//TODO: ADD TOOL GEOLOCATION
+	//TODO: ADD IMPORT / EXPORT FUNCTIONALITY
+
+
+
 	public MainLayout() {
 		setSizeFull();
 		addClassName("root");

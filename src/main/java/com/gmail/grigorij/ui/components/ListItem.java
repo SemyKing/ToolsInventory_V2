@@ -1,6 +1,10 @@
 package com.gmail.grigorij.ui.components;
 
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
+import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.FlexDirection;
+import com.gmail.grigorij.ui.utils.css.FontSize;
+import com.gmail.grigorij.ui.utils.css.TextColor;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -8,11 +12,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.gmail.grigorij.ui.utils.css.FontSize;
-import com.gmail.grigorij.ui.utils.css.TextColor;
-import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.css.WhiteSpace;
 
 @CssImport("./styles/components/list-item.css")
 public class ListItem extends FlexLayout implements HasStyle {
@@ -26,8 +25,6 @@ public class ListItem extends FlexLayout implements HasStyle {
 
     private Span primary;
     private Span secondary;
-
-    private Div divider;
 
     public ListItem(String primary, String secondary) {
         setClassName(CLASS_NAME);
@@ -46,8 +43,6 @@ public class ListItem extends FlexLayout implements HasStyle {
         this(primary, "");
     }
 
-    /* === PREFIX === */
-
     public ListItem(Component prefix, String primary, String secondary) {
         this(primary, secondary);
         setPrefix(prefix);
@@ -56,8 +51,6 @@ public class ListItem extends FlexLayout implements HasStyle {
     public ListItem(Component prefix, String primary) {
         this(prefix, primary, "");
     }
-
-    /* === SUFFIX === */
 
     public ListItem(String primary, String secondary, Component suffix) {
         this(primary, secondary);
@@ -80,7 +73,6 @@ public class ListItem extends FlexLayout implements HasStyle {
         this(prefix, primary, "", suffix);
     }
 
-    /* === MISC === */
 
     public FlexBoxLayout getContent() {
         return content;
@@ -94,10 +86,6 @@ public class ListItem extends FlexLayout implements HasStyle {
         return suffix;
     }
 
-    public void setWhiteSpace(WhiteSpace whiteSpace) {
-        UIUtils.setWhiteSpace(whiteSpace, this);
-    }
-
     public void setReverse(boolean reverse) {
         if (reverse) {
             content.setFlexDirection(FlexDirection.COLUMN_REVERSE);
@@ -106,26 +94,8 @@ public class ListItem extends FlexLayout implements HasStyle {
         }
     }
 
-    public void setHorizontalPadding(boolean horizontalPadding) {
-        if (horizontalPadding) {
-            getStyle().remove("padding-left");
-            getStyle().remove("padding-right");
-        } else {
-            getStyle().set("padding-left", "0");
-            getStyle().set("padding-right", "0");
-        }
-    }
-
-    public void setPrimaryText(String text) {
-        primary.setText(text);
-    }
-
     public Span getPrimary() {
         return primary;
-    }
-
-    public void setSecondaryText(String text) {
-        secondary.setText(text);
     }
 
     public void setPrefix(Component... components) {
@@ -148,14 +118,4 @@ public class ListItem extends FlexLayout implements HasStyle {
         suffix.removeAll();
         suffix.add(components);
     }
-
-    public void setDividerVisible(boolean visible) {
-        if (divider == null) {
-            divider = new Div();
-            divider.addClassName(CLASS_NAME + "__divider");
-            add(divider);
-        }
-        divider.setVisible(visible);
-    }
-
 }

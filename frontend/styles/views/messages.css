@@ -61,6 +61,9 @@
 .messages__filters > vaadin-date-picker:not(:last-child) {
 	margin-right: var(--lumo-space-s);
 }
+.messages__filters > vaadin-date-picker {
+	max-width: var(--date-picker-width);
+}
 
 
 .messages__content {

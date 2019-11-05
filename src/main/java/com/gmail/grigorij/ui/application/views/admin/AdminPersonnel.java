@@ -217,6 +217,25 @@ public class AdminPersonnel extends FlexBoxLayout {
 	}
 
 	private void showDetails(User user) {
+
+		if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			if (user != null) {
+				if (AuthenticationService.getCurrentSessionUser().getId().equals(user.getId())) {
+					if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.USER, PermissionRange.OWN)) {
+						UIUtils.showNotification("You don't have permission for this action", UIUtils.NotificationType.INFO);
+						grid.deselectAll();
+						return;
+					}
+				} else {
+					if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.USER, PermissionRange.COMPANY)) {
+						UIUtils.showNotification("You don't have permission for this action", UIUtils.NotificationType.INFO);
+						grid.deselectAll();
+						return;
+					}
+				}
+			}
+		}
+
 		userForm.setUser(user);
 		detailsDrawer.show();
 	}

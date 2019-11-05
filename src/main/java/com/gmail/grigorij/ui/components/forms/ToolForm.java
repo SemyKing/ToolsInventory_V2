@@ -333,12 +333,12 @@ public class ToolForm extends FormLayout {
 
 		binder.forField(priceField)
 				.withConverter(new StringToDoubleConverter("Price must be a number"))
-//				.withNullRepresentation(0.00)
+				.withNullRepresentation(0.00)
 				.bind(Tool::getPrice, Tool::setPrice);
 
 		binder.forField(guaranteeField)
 				.withConverter(new StringToIntegerConverter("Guarantee must be a number"))
-//				.withNullRepresentation(0)
+				.withNullRepresentation(0)
 				.bind(Tool::getGuarantee_months, Tool::setGuarantee_months);
 
 		binder.forField(dateBought)

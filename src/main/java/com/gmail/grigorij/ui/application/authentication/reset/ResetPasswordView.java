@@ -1,20 +1,15 @@
 package com.gmail.grigorij.ui.application.authentication.reset;
 
+import com.gmail.grigorij.backend.database.entities.RecoveryLink;
 import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.database.entities.RecoveryLink;
-import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.css.Display;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.utils.css.size.Right;
-import com.gmail.grigorij.ui.utils.css.size.Top;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;

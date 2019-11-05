@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.application.views.admin;
 
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
@@ -221,6 +222,16 @@ public class AdminCompanies extends FlexBoxLayout {
 	private void showDetails(Company company) {
 		if (company != null) {
 			entityOldStatus = company.isDeleted();
+		}
+
+		if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			if (company != null) {
+				if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
+					UIUtils.showNotification("You don't have permission for this action", UIUtils.NotificationType.INFO);
+					grid.deselectAll();
+					return;
+				}
+			}
 		}
 
 		companyForm.setCompany(company);

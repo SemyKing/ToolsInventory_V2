@@ -75,7 +75,8 @@ public class AppBar extends Composite<FlexLayout> {
      * 'NaviDrawer' button visible only on small views -> open / close NaviDrawer
      */
     private void initMenuIcon() {
-        menuIcon = UIUtils.createTertiaryInlineButton(VaadinIcon.MENU);
+//        menuIcon = UIUtils.createTertiaryInlineButton(VaadinIcon.MENU);
+        menuIcon = UIUtils.createButton(VaadinIcon.MENU, ButtonVariant.LUMO_TERTIARY_INLINE);
         menuIcon.removeThemeVariants(ButtonVariant.LUMO_ICON);
         menuIcon.addClassName(CLASS_NAME + "__navi-icon");
         menuIcon.addClickListener(e -> menuLayout.getNaviDrawer().toggle());

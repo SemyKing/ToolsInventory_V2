@@ -1,5 +1,4 @@
 @media (max-width: 1024px) {
-
 	:host(.dynamic-label-button) [part="label"] {
 		display: none !important;
 	}
