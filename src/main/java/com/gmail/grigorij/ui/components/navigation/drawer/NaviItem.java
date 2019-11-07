@@ -12,7 +12,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import java.util.ArrayList;
 import java.util.List;
 
-@CssImport("./styles/components/navi-drawer/navi-item.css")
+//@CssImport("./styles/components/navi-drawer/navi-item.css")
 public class NaviItem extends Div {
 
     protected final String CLASS_NAME = "navi-item";

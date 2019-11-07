@@ -15,6 +15,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.server.StreamResource;
 
 import java.io.ByteArrayInputStream;
@@ -89,11 +90,16 @@ public class ReportingView extends Div {
 
 	private void constructReport() {
 		if (selectedUsers.size() <= 0) {
-			UIUtils.showNotification("Select users for report", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("Select users for report", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
 		PDF_ReportGenerator pdfReportGenerator = new PDF_ReportGenerator(selectedUsers);
+
+		if (pdfReportGenerator.hasErrors()) {
+			System.err.println("PDF report generation error");
+			return;
+		}
 
 		StreamResource streamResource = new StreamResource("Report", () -> new ByteArrayInputStream(pdfReportGenerator.getPDFByteArray()));
 		streamResource.setContentType("application/pdf");

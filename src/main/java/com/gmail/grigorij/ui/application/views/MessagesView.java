@@ -34,6 +34,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -273,7 +274,7 @@ public class MessagesView extends Div {
 
 			if (message != null) {
 				if (message.getSenderUser() == null) {
-					UIUtils.showNotification("Cannot reply to: " + message.getSenderString(), UIUtils.NotificationType.INFO);
+					UIUtils.showNotification("Cannot reply to: " + message.getSenderString(), NotificationVariant.LUMO_PRIMARY);
 				} else {
 					constructMessageDialog(message.getSenderUser(), message.getSubject());
 				}
@@ -327,7 +328,7 @@ public class MessagesView extends Div {
 		}
 
 		if (dateStartField.getValue().isAfter(dateEndField.getValue())) {
-			UIUtils.showNotification("Start Date cannot be after End Date", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("Start Date cannot be after End Date", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
@@ -486,11 +487,11 @@ public class MessagesView extends Div {
 		dialog.getConfirmButton().addClickListener(send -> {
 
 			if (subjectField.getValue().length() > 255) {
-				UIUtils.showNotification("Maximum amount of characters for Subject is 255", UIUtils.NotificationType.INFO);
+				UIUtils.showNotification("Maximum amount of characters for Subject is 255", NotificationVariant.LUMO_PRIMARY);
 				return;
 			}
 			if (messageArea.getValue().length() > 255) {
-				UIUtils.showNotification("Maximum amount of characters for Message is 255", UIUtils.NotificationType.INFO);
+				UIUtils.showNotification("Maximum amount of characters for Message is 255", NotificationVariant.LUMO_PRIMARY);
 				return;
 			}
 
@@ -504,7 +505,7 @@ public class MessagesView extends Div {
 					}
 				} else {
 					if (recipientComboBox.getValue() == null) {
-						UIUtils.showNotification("Select Recipient", UIUtils.NotificationType.INFO);
+						UIUtils.showNotification("Select Recipient", NotificationVariant.LUMO_PRIMARY);
 						return;
 					}
 
@@ -513,7 +514,7 @@ public class MessagesView extends Div {
 				}
 			} else {
 				if (recipientComboBox.getValue() == null) {
-					UIUtils.showNotification("Select Recipient", UIUtils.NotificationType.INFO);
+					UIUtils.showNotification("Select Recipient", NotificationVariant.LUMO_PRIMARY);
 					return;
 				}
 
@@ -534,11 +535,11 @@ public class MessagesView extends Div {
 		message.setText(text);
 
 		if (MessageFacade.getInstance().insert(message)) {
-			UIUtils.showNotification("Message sent", UIUtils.NotificationType.SUCCESS);
+			UIUtils.showNotification("Message sent", NotificationVariant.LUMO_SUCCESS);
 
 			Broadcaster.broadcastToUser(recipientId, "You have new message");
 		} else {
-			UIUtils.showNotification("Message sending failed", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Message sending failed", NotificationVariant.LUMO_ERROR);
 		}
 	}
 }

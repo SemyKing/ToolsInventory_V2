@@ -39,6 +39,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -419,7 +420,7 @@ public class InventoryView extends Div {
 		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByReservedUserId(AuthenticationService.getCurrentSessionUser().getId()));
 
 		if (allMyTools.size() <= 0) {
-			UIUtils.showNotification("You don't have any tools", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("You don't have any tools", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
@@ -508,11 +509,11 @@ public class InventoryView extends Div {
 		Button returnButton = UIUtils.createButton("Return", ButtonVariant.LUMO_PRIMARY);
 		returnButton.addClickListener(e -> {
 			if (locationComboBox.getValue() == null) {
-				UIUtils.showNotification("Select Location where to return", UIUtils.NotificationType.INFO);
+				UIUtils.showNotification("Select Location where to return", NotificationVariant.LUMO_PRIMARY);
 			} else {
 
 				if (selectedTools.size() <= 0) {
-					UIUtils.showNotification("Select Tools to return", UIUtils.NotificationType.INFO);
+					UIUtils.showNotification("Select Tools to return", NotificationVariant.LUMO_PRIMARY);
 				} else {
 
 					// IF TOOL IS RESERVED
@@ -562,15 +563,15 @@ public class InventoryView extends Div {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
 						try {
-							UIUtils.showNotification("Code scanned, searching for tool...", UIUtils.NotificationType.INFO);
+							UIUtils.showNotification("Code scanned, searching for tool...", NotificationVariant.LUMO_PRIMARY);
 							cameraDialog.stopCamera();
 							UI.getCurrent().push();
 
 							Tool tool = InventoryFacade.getInstance().getToolByCode(code);
 							if (tool == null) {
-								UIUtils.showNotification("Tool not found", UIUtils.NotificationType.INFO);
+								UIUtils.showNotification("Tool not found", NotificationVariant.LUMO_PRIMARY);
 							} else {
-								UIUtils.showNotification("Tool found", UIUtils.NotificationType.SUCCESS, 3000);
+								UIUtils.showNotification("Tool found", NotificationVariant.LUMO_SUCCESS, 3000);
 								showDetails(tool);
 							}
 
@@ -580,7 +581,7 @@ public class InventoryView extends Div {
 							cameraDialog.getCameraView().stop();
 							cameraDialog.close();
 
-							UIUtils.showNotification("We are sorry, but an internal error occurred", UIUtils.NotificationType.ERROR);
+							UIUtils.showNotification("We are sorry, but an internal error occurred", NotificationVariant.LUMO_ERROR);
 							e.printStackTrace();
 						}
 					});
@@ -592,13 +593,13 @@ public class InventoryView extends Div {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
 						try {
-							UIUtils.showNotification("Code not found in image", UIUtils.NotificationType.INFO, 2000);
+							UIUtils.showNotification("Code not found in image", NotificationVariant.LUMO_PRIMARY, 2000);
 							UI.getCurrent().push();
 						} catch (Exception e) {
 							cameraDialog.getCameraView().stop();
 							cameraDialog.close();
 
-							UIUtils.showNotification("We are sorry, but an internal error occurred", UIUtils.NotificationType.ERROR);
+							UIUtils.showNotification("We are sorry, but an internal error occurred", NotificationVariant.LUMO_ERROR);
 							e.printStackTrace();
 						}
 					});
@@ -622,7 +623,7 @@ public class InventoryView extends Div {
 		Tool toolFromDB = InventoryFacade.getInstance().getToolById(tool.getId());
 
 		if (toolFromDB == null) {
-			UIUtils.showNotification("Error retrieving tool from database", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Error retrieving tool from database", NotificationVariant.LUMO_ERROR);
 			return;
 		}
 
@@ -632,7 +633,7 @@ public class InventoryView extends Div {
 
 			// RESERVED BY OTHER USER
 			if (!tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-				UIUtils.showNotification("Tool is currently reserved", UIUtils.NotificationType.INFO);
+				UIUtils.showNotification("Tool is currently reserved", NotificationVariant.LUMO_PRIMARY);
 				dataProvider.refreshItem(tool);
 				showDetails(tool);
 				return;
@@ -658,14 +659,14 @@ public class InventoryView extends Div {
 				TransactionFacade.getInstance().insert(transaction);
 
 				dataProvider.refreshItem(tool);
-				UIUtils.showNotification("Tool taken", UIUtils.NotificationType.SUCCESS, 2000);
+				UIUtils.showNotification("Tool taken", NotificationVariant.LUMO_SUCCESS, 2000);
 
 				closeDetails();
 			} else {
-				UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Tool take failed", NotificationVariant.LUMO_ERROR);
 			}
 		} else {
-			UIUtils.showNotification("Tool is currently in use", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("Tool is currently in use", NotificationVariant.LUMO_PRIMARY);
 			dataProvider.refreshItem(tool);
 			showDetails(tool);
 		}
@@ -683,7 +684,7 @@ public class InventoryView extends Div {
 		Tool toolFromDB = InventoryFacade.getInstance().getToolById(tool.getId());
 
 		if (toolFromDB == null) {
-			UIUtils.showNotification("Error retrieving tool from database", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Error retrieving tool from database", NotificationVariant.LUMO_ERROR);
 			return;
 		}
 
@@ -693,7 +694,7 @@ public class InventoryView extends Div {
 
 			if (toolFromDB.getCurrentUser() != null) {
 				if (tool.getCurrentUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-					UIUtils.showNotification("You cannot reserve the tool you already have", UIUtils.NotificationType.INFO);
+					UIUtils.showNotification("You cannot reserve the tool you already have", NotificationVariant.LUMO_PRIMARY);
 					dataProvider.refreshItem(tool);
 					return;
 				}
@@ -717,14 +718,14 @@ public class InventoryView extends Div {
 				TransactionFacade.getInstance().insert(transaction);
 
 				dataProvider.refreshItem(tool);
-				UIUtils.showNotification("Tool reserved", UIUtils.NotificationType.SUCCESS, 2000);
+				UIUtils.showNotification("Tool reserved", NotificationVariant.LUMO_SUCCESS, 2000);
 
 				closeDetails();
 			} else {
-				UIUtils.showNotification("Tool reserve failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Tool reserve failed", NotificationVariant.LUMO_ERROR);
 			}
 		} else {
-			UIUtils.showNotification("Tool is currently reserved", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("Tool is currently reserved", NotificationVariant.LUMO_PRIMARY);
 			dataProvider.refreshItem(tool);
 			showDetails(tool);
 		}

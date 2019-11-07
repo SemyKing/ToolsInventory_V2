@@ -41,6 +41,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -322,16 +323,16 @@ public class AdminInventory extends FlexBoxLayout {
 
 		if (categoryForm.isNew()) {
 			if (InventoryFacade.getInstance().insert(editedCategory)) {
-				UIUtils.showNotification("Category created", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Category created", NotificationVariant.LUMO_SUCCESS);
 			} else {
-				UIUtils.showNotification("Category insert failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Category insert failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		} else {
 			if (InventoryFacade.getInstance().update(editedCategory)) {
-				UIUtils.showNotification("Category updated", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Category updated", NotificationVariant.LUMO_SUCCESS);
 			} else {
-				UIUtils.showNotification("Category update failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Category update failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		}
@@ -366,16 +367,16 @@ public class AdminInventory extends FlexBoxLayout {
 			if (InventoryFacade.getInstance().insert(editedTool)) {
 				dataProvider.getItems().add(editedTool);
 
-				UIUtils.showNotification("Tool created successfully", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Tool created successfully", NotificationVariant.LUMO_SUCCESS);
 			} else {
-				UIUtils.showNotification("Tool insert failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Tool insert failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		} else {
 			if (InventoryFacade.getInstance().update(editedTool)) {
-				UIUtils.showNotification("Tool updated successfully", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Tool updated successfully", NotificationVariant.LUMO_SUCCESS);
 			} else {
-				UIUtils.showNotification("Tool update failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Tool update failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		}
@@ -410,7 +411,7 @@ public class AdminInventory extends FlexBoxLayout {
 
 	private void constructToolCopyDialog() {
 		if (selectedTools == null || selectedTools.get(0) == null) {
-			UIUtils.showNotification("Cannot copy this tool", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("Cannot copy this tool", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
@@ -547,9 +548,9 @@ public class AdminInventory extends FlexBoxLayout {
 						}
 
 						if (error) {
-							UIUtils.showNotification("Tools Update Error", UIUtils.NotificationType.ERROR);
+							UIUtils.showNotification("Tools Update Error", NotificationVariant.LUMO_ERROR);
 						} else {
-							UIUtils.showNotification("Tools Updated", UIUtils.NotificationType.SUCCESS);
+							UIUtils.showNotification("Tools Updated", NotificationVariant.LUMO_SUCCESS);
 						}
 					} else {    // COPY TOOLS
 						for (Tool tool : bulkTools) {
@@ -569,9 +570,9 @@ public class AdminInventory extends FlexBoxLayout {
 						}
 
 						if (error) {
-							UIUtils.showNotification("Tools Insert Error", UIUtils.NotificationType.ERROR);
+							UIUtils.showNotification("Tools Insert Error", NotificationVariant.LUMO_ERROR);
 						} else {
-							UIUtils.showNotification("Tools Created", UIUtils.NotificationType.SUCCESS);
+							UIUtils.showNotification("Tools Created", NotificationVariant.LUMO_SUCCESS);
 						}
 					}
 

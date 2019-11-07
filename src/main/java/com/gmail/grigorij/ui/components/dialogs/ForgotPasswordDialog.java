@@ -13,6 +13,7 @@ import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.email.Email;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.validator.EmailValidator;
@@ -88,7 +89,7 @@ public class ForgotPasswordDialog extends CustomDialog {
 		}
 
 		if (user.isDeleted()) {
-			UIUtils.showNotification("Your credentials have expired", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("Your credentials have expired", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
@@ -107,9 +108,9 @@ public class ForgotPasswordDialog extends CustomDialog {
 
 		Email email = new Email();
 		if (email.constructAndSendMessage(emailAddress, "https://localhost:8443/reset-password/" + link.getToken())) {
-			UIUtils.showNotification("Recovery link has been sent to your email", UIUtils.NotificationType.SUCCESS);
+			UIUtils.showNotification("Recovery link has been sent to your email", NotificationVariant.LUMO_SUCCESS);
 		} else {
-			UIUtils.showNotification("Recovery link sending error", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Recovery link sending error", NotificationVariant.LUMO_ERROR);
 		}
 	}
 }

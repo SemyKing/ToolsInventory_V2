@@ -6,7 +6,7 @@ import java.util.List;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 
-@CssImport("./styles/components/navi-drawer/navi-menu.css")
+//@CssImport("./styles/components/navi-drawer/navi-menu.css")
 public class NaviMenu extends Div {
 
     private static final String CLASS_NAME = "navi-menu";

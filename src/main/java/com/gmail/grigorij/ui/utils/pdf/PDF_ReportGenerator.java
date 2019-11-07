@@ -9,11 +9,13 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.vaadin.flow.component.notification.NotificationVariant;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
@@ -42,9 +44,12 @@ public class PDF_ReportGenerator {
 	private List<User> users;
 	private HashMap<User, List<Tool>> toolsInUseByUser;
 
+	private boolean error;
+
 
 	public PDF_ReportGenerator(List<User> users) {
 		this.users = users;
+		error = false;
 
 		document = new Document(PageSize.A4, DOCUMENT_MARGIN, DOCUMENT_MARGIN, DOCUMENT_MARGIN, DOCUMENT_MARGIN);
 		normalFont = FontFactory.getFont(FontFactory.COURIER, 14, BaseColor.BLACK);
@@ -59,7 +64,7 @@ public class PDF_ReportGenerator {
 
 		if (PDF_File == null) {
 			System.err.println("temp PDF file is null");
-			UIUtils.showNotification("Could not create report", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Could not create report", NotificationVariant.LUMO_ERROR);
 			return;
 		}
 
@@ -179,7 +184,13 @@ public class PDF_ReportGenerator {
 			newPage = true;
 		}
 
-		document.close();
+		try {
+			document.close();
+		} catch (Exception e) {
+			System.err.println("user has no tools, document close exception");
+			error = true;
+		}
+
 	}
 
 	private void addTableHeader(PdfPTable table) {
@@ -230,5 +241,9 @@ public class PDF_ReportGenerator {
 			e.printStackTrace();
 		}
 		return new byte[0];
+	}
+
+	public boolean hasErrors() {
+		return error;
 	}
 }

@@ -3,9 +3,6 @@ package com.gmail.grigorij.ui.components.layouts;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.gmail.grigorij.ui.utils.css.size.Size;
-import com.gmail.grigorij.ui.utils.css.BorderRadius;
-import com.gmail.grigorij.ui.utils.css.BoxSizing;
-import com.gmail.grigorij.ui.utils.css.Display;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.Overflow;
 
@@ -13,9 +10,6 @@ public class FlexBoxLayout extends FlexLayout {
 
     private static final String BACKGROUND_COLOR = "background-color";
     private static final String COLOR = "color";
-    private static final String BORDER_RADIUS = "border-radius";
-    private static final String BOX_SIZING = "box-sizing";
-    private static final String DISPLAY = "display";
     private static final String FLEX_DIRECTION = "flex-direction";
     private static final String MAX_WIDTH = "max-width";
     private static final String OVERFLOW = "overflow";
@@ -30,18 +24,6 @@ public class FlexBoxLayout extends FlexLayout {
 
     public void setColor(String value) {
         getStyle().set(COLOR, value);
-    }
-
-    public void setBorderRadius(BorderRadius radius) {
-        getStyle().set(BORDER_RADIUS, radius.getValue());
-    }
-
-    public void setBoxSizing(BoxSizing sizing) {
-        getStyle().set(BOX_SIZING, sizing.getValue());
-    }
-
-    public void setDisplay(Display display) {
-        getStyle().set(DISPLAY, display.getValue());
     }
 
     public void setFlexDirection(FlexDirection direction) {

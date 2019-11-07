@@ -9,7 +9,6 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 
-@StyleSheet("context://styles/components/dialogs.css")
 public class PDF_Dialog extends Div {
 
 	private final static String CLASS_NAME = "pdf-dialog";

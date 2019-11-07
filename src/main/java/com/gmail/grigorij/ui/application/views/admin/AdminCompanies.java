@@ -29,6 +29,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -227,7 +228,7 @@ public class AdminCompanies extends FlexBoxLayout {
 		if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			if (company != null) {
 				if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
-					UIUtils.showNotification("You don't have permission for this action", UIUtils.NotificationType.INFO);
+					UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
 					grid.deselectAll();
 					return;
 				}
@@ -253,20 +254,20 @@ public class AdminCompanies extends FlexBoxLayout {
 			if (CompanyFacade.getInstance().insert(editedCompany)) {
 				dataProvider.getItems().add(editedCompany);
 
-				UIUtils.showNotification("Company created", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Company created", NotificationVariant.LUMO_SUCCESS);
 			} else {
-				UIUtils.showNotification("Company insert failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Company insert failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		} else {
 			if (CompanyFacade.getInstance().update(editedCompany)) {
-				UIUtils.showNotification("Company updated", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Company updated", NotificationVariant.LUMO_SUCCESS);
 
 				if ((!entityOldStatus && editedCompany.isDeleted()) || (entityOldStatus && !editedCompany.isDeleted())) {
 					confirmAllEmployeesInCompanyStatusChange(editedCompany);
 				}
 			} else {
-				UIUtils.showNotification("Company update failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Company update failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		}
@@ -322,13 +323,13 @@ public class AdminCompanies extends FlexBoxLayout {
 //					TransactionFacade.getInstance().insert(tr);
 
 				} else {
-					UIUtils.showNotification("User status change failed for: " + user.getUsername(), UIUtils.NotificationType.ERROR);
+					UIUtils.showNotification("User status change failed for: " + user.getUsername(), NotificationVariant.LUMO_ERROR);
 					error = true;
 				}
 			}
 			dialog.close();
 			if (!error) {
-				UIUtils.showNotification("Users status change successful", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Users status change successful", NotificationVariant.LUMO_SUCCESS);
 			}
 		});
 		dialog.open();

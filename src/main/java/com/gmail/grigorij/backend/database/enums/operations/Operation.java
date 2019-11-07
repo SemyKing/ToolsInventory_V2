@@ -4,7 +4,7 @@ import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 
 /**
  * PermissionLevel is used for Access Rights management.
- * Users with PermissionLevel LOWER than minimalPermissionLevel cannot see / edit said Operation
+ * Users with PermissionLevel LOWER than minimalPermissionLevel cannot see said Operation
  */
 
 public enum Operation {

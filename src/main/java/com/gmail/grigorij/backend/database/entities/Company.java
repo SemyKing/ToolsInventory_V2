@@ -38,6 +38,9 @@ public class Company extends EntityPojo {
 	@ElementCollection
 	private List<Location> locations = new ArrayList<>();
 
+	@Column(columnDefinition = "text")
+	private String announcements = "";
+
 
 	public Company() {}
 
@@ -47,6 +50,7 @@ public class Company extends EntityPojo {
 		this.address = other.address;
 		this.contactPerson = other.contactPerson;
 		this.locations = other.locations;
+		this.announcements = other.announcements;
 	}
 
 	public String getName() {
@@ -85,5 +89,12 @@ public class Company extends EntityPojo {
 	}
 	public void setContactPerson(Person contactPerson) {
 		this.contactPerson = contactPerson;
+	}
+
+	public String getAnnouncements() {
+		return announcements;
+	}
+	public void setAnnouncements(String announcements) {
+		this.announcements = announcements;
 	}
 }

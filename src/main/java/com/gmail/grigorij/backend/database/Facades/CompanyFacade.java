@@ -2,6 +2,7 @@ package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
@@ -43,6 +44,17 @@ public class CompanyFacade {
 			companies = null;
 		}
 		return companies;
+	}
+
+	public Company getAdministrationCompany() {
+		List<User> systemAdmins = UserFacade.getInstance().getSystemAdmins();
+
+		if (systemAdmins.size() <= 0) {
+			System.err.println("!!! COULD NOT RETRIEVE SYSTEM ADMINS !!!");
+			return null;
+		} else {
+			return systemAdmins.get(0).getCompany();
+		}
 	}
 
 

@@ -6,13 +6,6 @@ public class LumoStyles {
     public static final String LIGHT = "light";
     public static final String THEME = "theme";
 
-    public class BorderRadius {
-        public static final String S = "border-radius-s";
-        public static final String M = "border-radius-m";
-        public static final String L = "border-radius-l";
-        public static final String _50 = "border-radius-50";
-    }
-
     public class Color {
         public static final String BASE_COLOR = "var(--lumo-base-color)";
 
