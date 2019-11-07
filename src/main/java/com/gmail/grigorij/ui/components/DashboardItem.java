@@ -3,56 +3,51 @@ package com.gmail.grigorij.ui.components;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.Div;
+
 
 @CssImport(value = "./styles/views/dashboard.css", themeFor = "vaadin-details")
 public class DashboardItem extends FlexBoxLayout {
 
 	private final String CLASS_NAME = "dashboard-item";
 
+	private Div content, contentLeft, contentRight, footer;
 
-	private FlexBoxLayout header, content, footer;
 
 	public DashboardItem() {
 		setClassName(CLASS_NAME);
 
-		header = new FlexBoxLayout();
-		header.addClassName(CLASS_NAME  + "__header");
-
-		content = new FlexBoxLayout();
+		content = new Div();
 		content.addClassName(CLASS_NAME  + "__content");
 
-		footer = new FlexBoxLayout();
+		contentLeft = new Div();
+		contentLeft.addClassName(CLASS_NAME  + "__content-left");
+
+		contentRight = new Div();
+		contentRight.addClassName(CLASS_NAME  + "__content-right");
+
+		content.add(contentLeft, contentRight);
+
+		footer = new Div();
 		footer.addClassName(CLASS_NAME  + "__footer");
 
-		add(header, content, footer);
-	}
-
-	public FlexBoxLayout getHeader() {
-		return header;
-	}
-
-	public void setHeader(Component... components) {
-		header.removeAll();
-		header.add(components);
+		add(content, footer);
 	}
 
 
-	public FlexBoxLayout getContent() {
+	public Div getContent() {
 		return content;
 	}
 
-	public void setContent(Component... components) {
-		content.removeAll();
-		content.add(components);
+	public Div getContentLeft() {
+		return contentLeft;
 	}
 
+	public Div getContentRight() {
+		return contentRight;
+	}
 
-	public FlexBoxLayout getFooter() {
+	public Div getFooter() {
 		return footer;
-	}
-
-	public void setFooter(Component... components) {
-		footer.removeAll();
-		footer.add(components);
 	}
 }

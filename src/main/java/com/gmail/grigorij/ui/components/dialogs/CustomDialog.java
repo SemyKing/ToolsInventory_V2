@@ -5,11 +5,10 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 
-@StyleSheet("context://styles/components/dialogs.css")
+
 public class CustomDialog extends Div {
 
 	private final static String CLASS_NAME = "custom-dialog";

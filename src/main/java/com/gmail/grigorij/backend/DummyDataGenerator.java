@@ -1,12 +1,9 @@
 package com.gmail.grigorij.backend;
 
-import com.gmail.grigorij.backend.database.entities.Category;
+import com.gmail.grigorij.backend.database.entities.*;
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.Person;
-import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.Tool;
-import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
@@ -33,6 +30,7 @@ public class DummyDataGenerator {
 
 	public DummyDataGenerator() {
 		if (!entitiesGenerated) {
+
 			generateCompanies();
 
 			generateUsers();

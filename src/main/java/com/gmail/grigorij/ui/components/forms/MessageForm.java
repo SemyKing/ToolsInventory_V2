@@ -18,6 +18,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -170,7 +171,7 @@ public class MessageForm extends FormLayout {
 
 	private void cancelTool() {
 		if (message == null || message.getToolId() == null) {
-			UIUtils.showNotification("No tool in message", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("No tool in message", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
@@ -189,18 +190,18 @@ public class MessageForm extends FormLayout {
 			transaction.setTargetDetails(tool.getName());
 			TransactionFacade.getInstance().insert(transaction);
 
-			UIUtils.showNotification("Tool reservation cancelled", UIUtils.NotificationType.SUCCESS);
+			UIUtils.showNotification("Tool reservation cancelled", NotificationVariant.LUMO_SUCCESS);
 
 			message.setToolId(null);
 			MessageFacade.getInstance().update(message);
 		} else {
-			UIUtils.showNotification("Tool reservation cancel failed", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Tool reservation cancel failed", NotificationVariant.LUMO_ERROR);
 		}
 	}
 
 	private void takeTool() {
 		if (message == null || message.getToolId() == null) {
-			UIUtils.showNotification("No Tool in message", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("No Tool in message", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
@@ -220,12 +221,12 @@ public class MessageForm extends FormLayout {
 			transaction.setTargetDetails(tool.getName());
 			TransactionFacade.getInstance().insert(transaction);
 
-			UIUtils.showNotification("Tool taken", UIUtils.NotificationType.SUCCESS);
+			UIUtils.showNotification("Tool taken", NotificationVariant.LUMO_SUCCESS);
 
 			message.setToolId(null);
 			MessageFacade.getInstance().update(message);
 		} else {
-			UIUtils.showNotification("Tool take failed", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Tool take failed", NotificationVariant.LUMO_ERROR);
 		}
 	}
 }

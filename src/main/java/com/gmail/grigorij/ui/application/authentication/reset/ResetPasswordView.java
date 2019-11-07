@@ -21,6 +21,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -160,12 +161,12 @@ public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 
 		if (user == null) {
 			System.err.println("USER IS NULL IN RECOVERYLINK -> PASSWORD RECOVERY");
-			UIUtils.showNotification("Error occurred, please contact System Administrator", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Error occurred, please contact System Administrator", NotificationVariant.LUMO_ERROR);
 		} else {
 			user.setPassword(newPassword);
 
 			if (UserFacade.getInstance().update(user)) {
-				UIUtils.showNotification("Password reset", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("Password reset", NotificationVariant.LUMO_SUCCESS);
 
 				Transaction transaction = new Transaction();
 				transaction.setUser(user);
@@ -185,7 +186,7 @@ public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 					UI.getCurrent().navigate("");
 				}
 			} else {
-				UIUtils.showNotification("Password reset Error", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Password reset Error", NotificationVariant.LUMO_ERROR);
 			}
 		}
 	}

@@ -20,6 +20,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -256,7 +257,7 @@ public class TransactionsView extends Div {
 		}
 
 		if (dateStartField.getValue().isAfter(dateEndField.getValue())) {
-			UIUtils.showNotification("Start Date cannot be after End Date", UIUtils.NotificationType.INFO);
+			UIUtils.showNotification("Start Date cannot be after End Date", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
@@ -332,9 +333,9 @@ public class TransactionsView extends Div {
 		Transaction transaction = transactionsForm.getTransaction();
 
 		if (TransactionFacade.getInstance().update(transaction)) {
-			UIUtils.showNotification("Transaction updated", UIUtils.NotificationType.SUCCESS);
+			UIUtils.showNotification("Transaction updated", NotificationVariant.LUMO_SUCCESS);
 		} else {
-			UIUtils.showNotification("Transaction update failed", UIUtils.NotificationType.ERROR);
+			UIUtils.showNotification("Transaction update failed", NotificationVariant.LUMO_ERROR);
 		}
 	}
 }

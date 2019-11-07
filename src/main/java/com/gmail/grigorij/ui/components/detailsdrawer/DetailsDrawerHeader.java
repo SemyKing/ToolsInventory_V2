@@ -17,7 +17,7 @@ public class DetailsDrawerHeader extends FlexBoxLayout {
     private Label title;
 
     public DetailsDrawerHeader(String title) {
-        addClassNames(CLASS_NAME, BoxShadowBorders.BOTTOM);
+        addClassNames(CLASS_NAME);
 
         close = UIUtils.createButton(VaadinIcon.CLOSE, ButtonVariant.LUMO_TERTIARY_INLINE);
         close.addClassName(CLASS_NAME + "__close_button");

@@ -18,7 +18,6 @@ import elemental.json.JsonObject;
 
 
 @JsModule("./src/navi-drawer-swipe-away.js")
-@CssImport("./styles/components/navi-drawer/navi-drawer.css")
 public class NaviDrawer extends Composite<Div> implements AfterNavigationObserver {
 
 	private static final String CLASS_NAME = "navi-drawer";

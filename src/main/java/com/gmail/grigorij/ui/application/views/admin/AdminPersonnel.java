@@ -17,6 +17,7 @@ import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.forms.UserForm;
 import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -26,6 +27,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
@@ -222,13 +224,13 @@ public class AdminPersonnel extends FlexBoxLayout {
 			if (user != null) {
 				if (AuthenticationService.getCurrentSessionUser().getId().equals(user.getId())) {
 					if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.USER, PermissionRange.OWN)) {
-						UIUtils.showNotification("You don't have permission for this action", UIUtils.NotificationType.INFO);
+						UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
 						grid.deselectAll();
 						return;
 					}
 				} else {
 					if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.USER, PermissionRange.COMPANY)) {
-						UIUtils.showNotification("You don't have permission for this action", UIUtils.NotificationType.INFO);
+						UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
 						grid.deselectAll();
 						return;
 					}
@@ -256,16 +258,16 @@ public class AdminPersonnel extends FlexBoxLayout {
 			if (UserFacade.getInstance().insert(editedUser)) {
 				dataProvider.getItems().add(editedUser);
 
-				UIUtils.showNotification("User created", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("User created", NotificationVariant.LUMO_SUCCESS);
 			} else {
-				UIUtils.showNotification("User insert failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("User insert failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		} else {
 			if (UserFacade.getInstance().update(editedUser)) {
-				UIUtils.showNotification("User updated", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("User updated", NotificationVariant.LUMO_SUCCESS);
 			} else {
-				UIUtils.showNotification("User update failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("User update failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		}
@@ -353,9 +355,9 @@ public class AdminPersonnel extends FlexBoxLayout {
 //				UserFacade.getInstance().insert(u);
 //			}
 //
-//			UIUtils.showNotification("Users imported successfully", UIUtils.NotificationType.SUCCESS);
+//			UIUtils.showNotification("Users imported successfully", NotificationVariant.LUMO_SUCCESS);
 //		} catch (Exception e) {
-//			UIUtils.showNotification("Users import failed", UIUtils.NotificationType.ERROR);
+//			UIUtils.showNotification("Users import failed", NotificationVariant.LUMO_ERROR);
 //			e.printStackTrace();
 //		}
 //	}

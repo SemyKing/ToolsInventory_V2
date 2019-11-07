@@ -34,7 +34,6 @@ public class AdminView extends Div {
 		contentWrapper.add(constructContent());
 
 		add(contentWrapper);
-
 		add(constructDetails());
 
 		constructAppBarTabs();
@@ -56,7 +55,6 @@ public class AdminView extends Div {
 				detailsDrawer.hide();
 			tabsOnSelect();
 		});
-		appBar.centerTabs();
 	}
 
 	private void tabsOnSelect() {
@@ -84,7 +82,7 @@ public class AdminView extends Div {
 		}
 	}
 
-	private Component constructContent() {
+	private Div constructContent() {
 		content = new Div();
 		content.setClassName(CLASS_NAME + "__content");
 		return content;

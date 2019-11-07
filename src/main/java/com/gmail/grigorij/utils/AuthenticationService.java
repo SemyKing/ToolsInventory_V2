@@ -8,6 +8,7 @@ import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 
@@ -104,13 +105,13 @@ public class AuthenticationService {
 			return false;
 		} else {
 			if (user.isDeleted()) {
-				UIUtils.showNotification("Your credentials have expired", UIUtils.NotificationType.INFO, 0);
+				UIUtils.showNotification("Your credentials have expired", NotificationVariant.LUMO_PRIMARY, 0);
 				System.out.println("\nLOGIN FAIL, user: '" + user.getFullName() + "' set as 'deleted'");
 				return false;
 			}
 
 			if (user.getCompany() == null) {
-				UIUtils.showNotification("Company is NULL", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("Company is NULL", NotificationVariant.LUMO_ERROR);
 				System.err.println("\nLOGIN FAIL, NULL company");
 				return false;
 			}

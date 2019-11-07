@@ -62,6 +62,7 @@ public class PermissionsDialog extends CustomDialog {
 		self = user.getId().equals(AuthenticationService.getCurrentSessionUser().getId());
 
 		getContent().add(constructContentHeader());
+		getContent().add(new Hr());
 		getContent().add(constructContent());
 
 		if (!self) { // CANNOT ADD PERMISSIONS TO SELF
@@ -129,12 +130,13 @@ public class PermissionsDialog extends CustomDialog {
 		right.add(UIUtils.createH4Label(user.getCompany() == null ? "" : user.getCompany().getName()));
 		right.add(UIUtils.createH4Label(user.getPermissionLevel().getName()));
 
-		contentHeader.add(left, right, new Hr());
+		contentHeader.add(left, right);
 
 		populateData();
 	}
 
 	private void populateData() {
+
 		for (Permission permission : permissions) {
 
 			if (systemAdmin) {
@@ -164,8 +166,8 @@ public class PermissionsDialog extends CustomDialog {
 			permissionRow.getPermissionCompanyComboBox().setValue(permission.getPermissionCompany());
 
 			if (systemAdmin) {
-				permissionRow.addPermissionSystemComboBox();
-				permissionRow.getPermissionSystemComboBox().setValue(permission.getPermissionSystem());
+//				permissionRow.addPermissionSystemComboBox();
+//				permissionRow.getPermissionSystemComboBox().setValue(permission.getPermissionSystem());
 
 				permissionRow.addVisibleButton();
 				permissionRow.setPermissionVisible(permission.isVisible());
@@ -185,7 +187,7 @@ public class PermissionsDialog extends CustomDialog {
 						permissionRow.getTargetComboBox().setReadOnly(true);
 						permissionRow.getPermissionOwnComboBox().setReadOnly(true);
 						permissionRow.getPermissionCompanyComboBox().setReadOnly(true);
-						permissionRow.getPermissionSystemComboBox().setReadOnly(true);
+//						permissionRow.getPermissionSystemComboBox().setReadOnly(true);
 						permissionRow.getToggleVisibleButton().setEnabled(false);
 					}
 				} else {
@@ -195,14 +197,14 @@ public class PermissionsDialog extends CustomDialog {
 						permissionRow.getTargetComboBox().setReadOnly(true);
 						permissionRow.getPermissionOwnComboBox().setReadOnly(true);
 						permissionRow.getPermissionCompanyComboBox().setReadOnly(true);
-						permissionRow.getPermissionSystemComboBox().setReadOnly(true);
+//						permissionRow.getPermissionSystemComboBox().setReadOnly(true);
 						permissionRow.getToggleVisibleButton().setEnabled(false);
 					}
 				}
 			}
 		} else {
 			if (systemAdmin) {
-				permissionRow.addPermissionSystemComboBox();
+//				permissionRow.addPermissionSystemComboBox();
 				permissionRow.addVisibleButton();
 
 				initDeleteButton(permissionRow);
@@ -294,17 +296,17 @@ public class PermissionsDialog extends CustomDialog {
 					return false;
 				}
 
-				if (permissionRow.getPermissionSystemComboBox().getValue() == null) {
-					permissionRow.getPermissionSystemComboBox().setInvalid(true);
-					return false;
-				}
+//				if (permissionRow.getPermissionSystemComboBox().getValue() == null) {
+//					permissionRow.getPermissionSystemComboBox().setInvalid(true);
+//					return false;
+//				}
 
 				Permission permission = new Permission();
 				permission.setOperation(permissionRow.getOperationComboBox().getValue());
 				permission.setOperationTarget(permissionRow.getTargetComboBox().getValue());
 				permission.setPermissionOwn(permissionRow.getPermissionOwnComboBox().getValue());
 				permission.setPermissionCompany(permissionRow.getPermissionCompanyComboBox().getValue());
-				permission.setPermissionSystem(permissionRow.getPermissionSystemComboBox().getValue());
+//				permission.setPermissionSystem(permissionRow.getPermissionSystemComboBox().getValue());
 				permission.setVisible(permissionRow.isPermissionVisible());
 
 				editedPermissions.add(permission);
@@ -353,7 +355,7 @@ public class PermissionsDialog extends CustomDialog {
 				permission.setOperationTarget(permissionRow.getTargetComboBox().getValue());
 				permission.setPermissionOwn(permissionRow.getPermissionOwnComboBox().getValue());
 				permission.setPermissionCompany(permissionRow.getPermissionCompanyComboBox().getValue());
-				permission.setPermissionSystem(OperationPermission.NO);
+//				permission.setPermissionSystem(OperationPermission.NO);
 				permission.setVisible(permissionRow.isPermissionVisible());
 
 				editedPermissions.add(permission);
@@ -384,7 +386,7 @@ public class PermissionsDialog extends CustomDialog {
 		private ComboBox<OperationTarget> targetComboBox;
 		private ComboBox<OperationPermission> permissionOwnComboBox;
 		private ComboBox<OperationPermission> permissionCompanyComboBox;
-		private ComboBox<OperationPermission> permissionSystemComboBox;
+//		private ComboBox<OperationPermission> permissionSystemComboBox;
 
 		private boolean permissionVisible = false;
 		private Button toggleVisibleButton;
@@ -453,35 +455,35 @@ public class PermissionsDialog extends CustomDialog {
 				permissionCompanyComboBox.setInvalid(false);
 			});
 
-			permissionSystemComboBox = new ComboBox<>();
-			permissionSystemComboBox.setLabel("System");
-			permissionSystemComboBox.setItems(EnumSet.allOf(OperationPermission.class));
-			permissionSystemComboBox.setItemLabelGenerator(OperationPermission::getName);
-			permissionSystemComboBox.setErrorMessage("Value Required");
-			permissionSystemComboBox.setRequired(true);
-			permissionSystemComboBox.setValue(OperationPermission.NO);
-			permissionSystemComboBox.addValueChangeListener(e -> {
-				permissionSystemComboBox.setInvalid(false);
-			});
+//			permissionSystemComboBox = new ComboBox<>();
+//			permissionSystemComboBox.setLabel("System");
+//			permissionSystemComboBox.setItems(EnumSet.allOf(OperationPermission.class));
+//			permissionSystemComboBox.setItemLabelGenerator(OperationPermission::getName);
+//			permissionSystemComboBox.setErrorMessage("Value Required");
+//			permissionSystemComboBox.setRequired(true);
+//			permissionSystemComboBox.setValue(OperationPermission.NO);
+//			permissionSystemComboBox.addValueChangeListener(e -> {
+//				permissionSystemComboBox.setInvalid(false);
+//			});
 
 			permissionsAndActionsDiv.add(permissionOwnComboBox, permissionCompanyComboBox);
 
 
-			toggleVisibleButton = UIUtils.createButton(VaadinIcon.EYE_SLASH, ButtonVariant.LUMO_TERTIARY);
+			toggleVisibleButton = UIUtils.createIconButton(VaadinIcon.EYE_SLASH, ButtonVariant.LUMO_PRIMARY);
 			toggleVisibleButton.addClassName(CLASS_NAME + "__tvb");
 			toggleVisibleButton.addClickListener(e -> {
 				toggleVisibility();
 			});
 
-			deleteButton = UIUtils.createButton(VaadinIcon.TRASH, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
+			deleteButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 
 			add(operationAndTargetDiv);
 			add(permissionsAndActionsDiv);
 		}
 
-		private void addPermissionSystemComboBox() {
-			permissionsAndActionsDiv.add(permissionSystemComboBox);
-		}
+//		private void addPermissionSystemComboBox() {
+//			permissionsAndActionsDiv.add(permissionSystemComboBox);
+//		}
 
 		private void addVisibleButton() {
 			permissionsAndActionsDiv.add(toggleVisibleButton);
@@ -503,9 +505,9 @@ public class PermissionsDialog extends CustomDialog {
 		private ComboBox<OperationPermission> getPermissionCompanyComboBox() {
 			return permissionCompanyComboBox;
 		}
-		private ComboBox<OperationPermission> getPermissionSystemComboBox() {
-			return permissionSystemComboBox;
-		}
+//		private ComboBox<OperationPermission> getPermissionSystemComboBox() {
+//			return permissionSystemComboBox;
+//		}
 
 
 		private Button getToggleVisibleButton() {

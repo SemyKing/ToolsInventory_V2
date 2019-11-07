@@ -45,11 +45,11 @@ public final class ProjectConstants {
 
 	public final static String NEW_LINE = "##_NEW_LINE_##";
 
-	public final static String INVISIBLE_ATTR = "invisible";
-
-
 	// DATABASE
 	public final static String VAR1 = "variable_1";
 	public final static String VAR2 = "variable_2";
 	public final static String ID_VAR = "id_variable";
+
+
+	public final static String ACTION_NOT_ALLOWED = "You don't have permission for this action";
 }

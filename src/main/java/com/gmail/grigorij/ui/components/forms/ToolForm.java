@@ -31,6 +31,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -107,7 +108,7 @@ public class ToolForm extends FormLayout {
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
 			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
 				entityStatusCheckbox.setReadOnly(true);
-				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
+				entityStatusDiv.getElement().setAttribute("hidden", true);
 			}
 		}
 
@@ -384,7 +385,7 @@ public class ToolForm extends FormLayout {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
 						try {
-							UIUtils.showNotification("Code scanned", UIUtils.NotificationType.SUCCESS, 2000);
+							UIUtils.showNotification("Code scanned", NotificationVariant.LUMO_SUCCESS, 2000);
 
 							codeField.setValue(code);
 							cameraDialog.stopCamera();
@@ -395,7 +396,7 @@ public class ToolForm extends FormLayout {
 							cameraDialog.getCameraView().stop();
 							cameraDialog.close();
 
-							UIUtils.showNotification("We are sorry, but an internal error occurred", UIUtils.NotificationType.ERROR);
+							UIUtils.showNotification("We are sorry, but an internal error occurred", NotificationVariant.LUMO_ERROR);
 							e.printStackTrace();
 						}
 					});
@@ -407,13 +408,13 @@ public class ToolForm extends FormLayout {
 				if (UI.getCurrent() != null) {
 					UI.getCurrent().access(() -> {
 						try {
-							UIUtils.showNotification("Code not found in image", UIUtils.NotificationType.INFO, 2000);
+							UIUtils.showNotification("Code not found in image", NotificationVariant.LUMO_PRIMARY, 2000);
 							UI.getCurrent().push();
 						} catch (Exception e) {
 							cameraDialog.getCameraView().stop();
 							cameraDialog.close();
 
-							UIUtils.showNotification("We are sorry, but an internal error occurred", UIUtils.NotificationType.ERROR);
+							UIUtils.showNotification("We are sorry, but an internal error occurred", NotificationVariant.LUMO_ERROR);
 							e.printStackTrace();
 						}
 					});

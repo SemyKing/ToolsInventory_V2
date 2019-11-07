@@ -26,6 +26,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
@@ -36,17 +37,18 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-@CssImport("./styles/lumo/lumo-styles.css")
 @CssImport("./styles/components/forms.css")
-@CssImport(value = "./styles/components/grid-style.css", themeFor = "vaadin-grid")
-@CssImport(value = "./styles/components/date-picker-style.css", themeFor = "vaadin-date-picker")
-@CssImport(value = "./styles/components/button-style.css", themeFor = "vaadin-button")
-@CssImport(value = "./styles/components/menu-bar-style.css", themeFor = "vaadin-menu-bar")
-@CssImport(value = "./styles/components/dialogs/vaadin-dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
+@CssImport("./styles/components/dialogs.css")
+@CssImport("./styles/components/navi-drawer.css")
+@CssImport(value = "./styles/components/vaadin-components/grid-style.css", themeFor = "vaadin-grid")
+@CssImport(value = "./styles/components/vaadin-components/date-picker-style.css", themeFor = "vaadin-date-picker")
+@CssImport(value = "./styles/components/vaadin-components/button-style.css", themeFor = "vaadin-button")
+@CssImport(value = "./styles/components/vaadin-components/menu-bar-style.css", themeFor = "vaadin-menu-bar")
+@CssImport(value = "./styles/components/vaadin-components/vaadin-dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
 public class ApplicationContainerView extends FlexBoxLayout implements PageConfigurator {
 
-	private static final Logger log = LoggerFactory.getLogger(ApplicationContainerView.class);
-	private static final String CLASS_NAME = "main-menu";
+//	private static final Logger log = LoggerFactory.getLogger(ApplicationContainerView.class);
+	private static final String CLASS_NAME = "application-container";
 
 	private List<Notification> notifications = new ArrayList<>();
 
@@ -331,9 +333,9 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 	@Override
 	protected void onAttach(AttachEvent attachEvent) {
 		UI ui = attachEvent.getUI();
-		broadcasterRegistration = Broadcaster.registerUser(AuthenticationService.getCurrentSessionUser().getId(), newMessage -> {
+		broadcasterRegistration = Broadcaster.registerUser(AuthenticationService.getCurrentSessionUser().getId(), message -> {
 			ui.access(() -> {
-				Notification notification = UIUtils.constructNotification(newMessage, UIUtils.NotificationType.INFO, 0);
+				Notification notification = UIUtils.constructNotification(message, NotificationVariant.LUMO_PRIMARY, 0);
 				notification.open();
 
 				notifications.add(notification);

@@ -13,7 +13,7 @@ public class EntityPojo {
 	@Column(name = "deleted", nullable = false)
 	private boolean deleted = false;
 
-	@Column(name = "additional_info")
+	@Column(columnDefinition = "text")
 	private String additionalInfo = "";
 
 

@@ -30,6 +30,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
@@ -109,7 +110,6 @@ public class UserForm extends FormLayout {
 		usernameField = new TextField("Username");
 		usernameField.setRequired(true);
 		usernameField.setPrefixComponent(VaadinIcon.USER.create());
-		usernameField.setReadOnly(true);
 
 		passwordField = new PasswordField("Password");
 		passwordField.setRequired(true);
@@ -295,6 +295,12 @@ public class UserForm extends FormLayout {
 
 
 	private void initDynamicFormItems() {
+		usernameField.setReadOnly(true);
+
+		if (isNew) {
+			usernameField.setReadOnly(false);
+		}
+
 		initialUsername = user.getUsername();
 		tempPermissions = new ArrayList<>();
 
@@ -349,7 +355,7 @@ public class UserForm extends FormLayout {
 
 		if (AuthenticationService.getCurrentSessionUser().getId().equals(user.getId())) {
 			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-				UIUtils.showNotification("As System Administrator, you have all permissions", UIUtils.NotificationType.INFO);
+				UIUtils.showNotification("As System Administrator, you have all permissions", NotificationVariant.LUMO_PRIMARY);
 				return;
 			}
 		}
@@ -365,7 +371,7 @@ public class UserForm extends FormLayout {
 				tempPermissions = permissions;
 				dialog.close();
 
-				UIUtils.showNotification("Permissions Edited", UIUtils.NotificationType.SUCCESS, 1000);
+				UIUtils.showNotification("Permissions Edited", NotificationVariant.LUMO_SUCCESS, 1000);
 
 				Transaction transaction = new Transaction();
 				transaction.setUser(AuthenticationService.getCurrentSessionUser());

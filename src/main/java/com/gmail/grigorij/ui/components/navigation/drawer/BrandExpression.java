@@ -8,7 +8,7 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
 import com.gmail.grigorij.ui.utils.UIUtils;
 
-@CssImport("./styles/components/navi-drawer/brand-expression.css")
+//@CssImport("./styles/components/navi-drawer/brand-expression.css")
 public class BrandExpression extends Composite<Div> {
 
     private String CLASS_NAME = "brand-expression";

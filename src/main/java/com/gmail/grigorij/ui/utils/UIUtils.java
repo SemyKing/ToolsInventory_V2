@@ -8,11 +8,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 
 
 public class UIUtils {
@@ -241,76 +243,32 @@ public class UIUtils {
 
 	/* === NOTIFICATIONS === */
 
-	public enum NotificationType {
-		INFO (      LumoStyles.Color.Primary._100,5000),
-		SUCCESS (   LumoStyles.Color.Success._100,3000),
-		WARNING(    "hsl(22, 96%, 47%)", 5000), //ORANGE
-		ERROR (     LumoStyles.Color.Error._100,  0);
-
-		private String backgroundColor;
-		private int duration;
-
-		NotificationType(String backgroundColor, int duration) {
-			this.backgroundColor = backgroundColor;
-			this.duration = duration;
-		}
-
-		public String getBackgroundColor() {
-			return backgroundColor;
-		}
-
-		public int getDuration() {
-			return duration;
-		}
-	}
-
-	public static void showNotification(String msg, NotificationType type, int... duration) {
-		Notification notification = new Notification();
-		notification.setPosition(Notification.Position.TOP_CENTER);
-
-		Label msgLabel = new Label(msg);
-		msgLabel.addClassName("custom-notification-label");
-
-		FlexBoxLayout layout = new FlexBoxLayout();
-		layout.setClassName("custom-notification");
-		layout.setBackgroundColor(type.getBackgroundColor());
-		layout.add(msgLabel);
-
-		UIUtils.setTooltip("Close", layout);
-		layout.addClickListener(e -> notification.close());
-
-		if (duration.length > 0) {
-			notification.setDuration(duration[0]);
-		} else {
-			notification.setDuration(type.getDuration());
-		}
-
-		notification.add(layout);
+	public static void showNotification(String msg, NotificationVariant themeVariant, int... duration) {
+		Notification notification = constructNotification(msg, themeVariant, duration);
 		notification.open();
 	}
 
-	public static Notification constructNotification(String msg, NotificationType type, int... duration) {
+	public static Notification constructNotification(String msg, NotificationVariant themeVariant, int... duration) {
 		Notification notification = new Notification();
 		notification.setPosition(Notification.Position.TOP_CENTER);
+		notification.addThemeVariants(themeVariant);
 
-		Label msgLabel = new Label(msg);
-		msgLabel.addClassName("custom-notification-label");
+		Div notificationContent = new Div();
+		notificationContent.addClassName("notification-content");
+		notificationContent.addClickListener(e -> notification.close());
+		notificationContent.add(new Span(msg));
 
-		FlexBoxLayout layout = new FlexBoxLayout();
-		layout.setClassName("custom-notification");
-		layout.setBackgroundColor(type.getBackgroundColor());
-		layout.add(msgLabel);
-
-		UIUtils.setTooltip("Close", layout);
-		layout.addClickListener(e -> notification.close());
+		notification.add(notificationContent);
 
 		if (duration.length > 0) {
 			notification.setDuration(duration[0]);
 		} else {
-			notification.setDuration(type.getDuration());
+			if (themeVariant.equals(NotificationVariant.LUMO_ERROR)) {
+				notification.setDuration(0);
+			} else {
+				notification.setDuration(5000);
+			}
 		}
-
-		notification.add(layout);
 		return notification;
 	}
 

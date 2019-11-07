@@ -77,7 +77,7 @@ public class CompanyForm extends FormLayout {
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
 			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.COMPANY, PermissionRange.COMPANY)) {
 				entityStatusCheckbox.setReadOnly(true);
-				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
+				entityStatusDiv.getElement().setAttribute("hidden", true);
 			}
 		}
 
