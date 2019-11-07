@@ -1,13 +1,13 @@
 package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
-import com.gmail.grigorij.backend.embeddable.Location;
-import com.gmail.grigorij.backend.embeddable.Person;
-import com.gmail.grigorij.backend.entities.company.Company;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.backend.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -75,9 +75,9 @@ public class CompanyForm extends FormLayout {
 		setColspan(entityStatusDiv, 2);
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
-			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
+			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.COMPANY, PermissionRange.COMPANY)) {
 				entityStatusCheckbox.setReadOnly(true);
-				entityStatusDiv.getElement().setAttribute(ProjectConstants.INVISIBLE_ATTR, true);
+				entityStatusDiv.getElement().setAttribute("hidden", true);
 			}
 		}
 
@@ -98,10 +98,24 @@ public class CompanyForm extends FormLayout {
 				companyLocationsComboBox.setValue(null);
 			}
 		});
+		companyLocationsComboBox.setReadOnly(true);
 
-		Button newLocationButton = UIUtils.createIconButton(VaadinIcon.FILE_ADD, ButtonVariant.LUMO_CONTRAST);
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.LOCATIONS, null)) {
+			companyLocationsComboBox.setReadOnly(false);
+		}
+
+
+		Button newLocationButton = UIUtils.createIconButton(VaadinIcon.FILE_ADD, ButtonVariant.LUMO_PRIMARY);
 		UIUtils.setTooltip("Add New Location", newLocationButton);
 		newLocationButton.addClickListener(e -> constructLocationDialog(null));
+		newLocationButton.setEnabled(false);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.LOCATIONS, null)) {
+			newLocationButton.setEnabled(true);
+		}
+
 
 		//LOCATION & NEW LOCATION BUTTON
 		locationsLayout = new FlexBoxLayout();
@@ -198,19 +212,27 @@ public class CompanyForm extends FormLayout {
 		dialog.getCancelButton().addClickListener(e -> dialog.close());
 
 		dialog.getConfirmButton().setText("Save");
-		dialog.getConfirmButton().addClickListener(e -> {
+		dialog.getConfirmButton().setEnabled(false);
 
-			Location editedLocation = locationForm.getLocation();
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.LOCATIONS, null)) {
 
-			if (editedLocation != null) {
-				if (locationForm.isNew()) {
-					tempLocations.add(editedLocation);
+			dialog.getConfirmButton().setEnabled(true);
+			dialog.getConfirmButton().addClickListener(e -> {
+
+				Location editedLocation = locationForm.getLocation();
+
+				if (editedLocation != null) {
+					if (locationForm.isNew()) {
+						tempLocations.add(editedLocation);
+					}
+					companyLocationsComboBox.setItems(tempLocations);
+
+					dialog.close();
 				}
-				companyLocationsComboBox.setItems(tempLocations);
+			});
+		}
 
-				dialog.close();
-			}
-		});
 		dialog.open();
 	}
 
@@ -256,13 +278,7 @@ public class CompanyForm extends FormLayout {
 				} else {
 					company.setContactPerson(contactPerson);
 				}
-
 				company.setLocations(tempLocations);
-
-				if (Boolean.compare(originalCompany.isDeleted(), company.isDeleted()) != 0) {
-					//TODO: TRANSACTION ENTITY STATUS CHANGE
-				}
-
 				binder.writeBean(company);
 				return company;
 			}
@@ -278,6 +294,8 @@ public class CompanyForm extends FormLayout {
 
 		if (Boolean.compare(originalCompany.isDeleted(), company.isDeleted()) != 0) {
 			changes.add("Status changed from: '" + UIUtils.entityStatusToString(originalCompany.isDeleted()) + "', to: '" + UIUtils.entityStatusToString(company.isDeleted()) + "'");
+
+			//TODO: TRANSACTION ENTITY STATUS CHANGE
 		}
 		if (!originalCompany.getName().equals(company.getName())) {
 			changes.add("Name changed from: '" + originalCompany.getName() + "', to: '" + company.getName() + "'");

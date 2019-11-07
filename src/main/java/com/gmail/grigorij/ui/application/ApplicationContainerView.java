@@ -1,9 +1,9 @@
 package com.gmail.grigorij.ui.application;
 
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.MainLayout;
 import com.gmail.grigorij.ui.application.views.*;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -14,7 +14,7 @@ import com.gmail.grigorij.ui.components.navigation.drawer.NaviItem;
 import com.gmail.grigorij.ui.components.navigation.drawer.NaviMenu;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.Overflow;
-import com.gmail.grigorij.ui.application.views.Admin;
+import com.gmail.grigorij.ui.application.views.AdminView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -26,6 +26,7 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.PageConfigurator;
@@ -36,15 +37,18 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-@CssImport("./styles/lumo/lumo-styles.css")
 @CssImport("./styles/components/forms.css")
-@CssImport(value = "./styles/components/grid-style.css", themeFor = "vaadin-grid")
-@CssImport(value = "./styles/components/menu-bar-style.css", themeFor = "vaadin-menu-bar")
-@CssImport(value = "./styles/components/dialogs/vaadin-dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
+@CssImport("./styles/components/dialogs.css")
+@CssImport("./styles/components/navi-drawer.css")
+@CssImport(value = "./styles/components/vaadin-components/grid-style.css", themeFor = "vaadin-grid")
+@CssImport(value = "./styles/components/vaadin-components/date-picker-style.css", themeFor = "vaadin-date-picker")
+@CssImport(value = "./styles/components/vaadin-components/button-style.css", themeFor = "vaadin-button")
+@CssImport(value = "./styles/components/vaadin-components/menu-bar-style.css", themeFor = "vaadin-menu-bar")
+@CssImport(value = "./styles/components/vaadin-components/vaadin-dialog-overlay.css", themeFor = "vaadin-dialog-overlay")
 public class ApplicationContainerView extends FlexBoxLayout implements PageConfigurator {
 
-	private static final Logger log = LoggerFactory.getLogger(ApplicationContainerView.class);
-	private static final String CLASS_NAME = "main-menu";
+//	private static final Logger log = LoggerFactory.getLogger(ApplicationContainerView.class);
+	private static final String CLASS_NAME = "application-container";
 
 	private List<Notification> notifications = new ArrayList<>();
 
@@ -133,7 +137,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 		dashboard.addClickListener(e-> {
 			naviItemOnClick(dashboard);
-			viewContainer.add(new Dashboard());
+			viewContainer.add(new DashboardView());
 		});
 		menu.addNaviItem(dashboard);
 
@@ -143,7 +147,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 			inventory.addClickListener(e-> {
 				naviItemOnClick(inventory);
-				viewContainer.add(new Inventory());
+				viewContainer.add(new InventoryView());
 			});
 			menu.addNaviItem(inventory);
 		}
@@ -154,7 +158,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 			messages.addClickListener(e-> {
 				naviItemOnClick(messages);
-				viewContainer.add(new Messages());
+				viewContainer.add(new MessagesView());
 
 				notifications.forEach(Notification::close);
 				notifications.clear();
@@ -168,7 +172,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 			transaction.addClickListener(e-> {
 				naviItemOnClick(transaction);
-				viewContainer.add(new Transactions());
+				viewContainer.add(new TransactionsView());
 			});
 			menu.addNaviItem(transaction);
 		}
@@ -179,7 +183,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 			reporting.addClickListener(e-> {
 				naviItemOnClick(reporting);
-				viewContainer.add(new Reporting());
+				viewContainer.add(new ReportingView());
 			});
 			menu.addNaviItem(reporting);
 		}
@@ -213,18 +217,11 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 			admin_inventory.addClickListener(e-> {
 				adminNaviItemOnClick(admin_inventory);
 			});
-
-			NaviItem admin_transactions = new NaviItem(ProjectConstants.ADMIN_TRANSACTIONS);
-			menu.addNaviItem(adminItem, admin_transactions);
-
-			admin_transactions.addClickListener(e-> {
-				adminNaviItemOnClick(admin_transactions);
-			});
 		}
 
 		//Open Dashboard view
 		naviItemOnClick(dashboard);
-		viewContainer.add(new Dashboard());
+		viewContainer.add(new DashboardView());
 	}
 
 	private void naviItemOnClick(NaviItem naviItem) {
@@ -240,7 +237,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		viewContainer.removeAll();
 		appBar.reset();
 
-		viewContainer.add(new Admin(this));
+		viewContainer.add(new AdminView(this));
 
 		selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
 
@@ -336,9 +333,9 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 	@Override
 	protected void onAttach(AttachEvent attachEvent) {
 		UI ui = attachEvent.getUI();
-		broadcasterRegistration = Broadcaster.registerUser(AuthenticationService.getCurrentSessionUser().getId(), newMessage -> {
+		broadcasterRegistration = Broadcaster.registerUser(AuthenticationService.getCurrentSessionUser().getId(), message -> {
 			ui.access(() -> {
-				Notification notification = UIUtils.constructNotification(newMessage, UIUtils.NotificationType.INFO, 0);
+				Notification notification = UIUtils.constructNotification(message, NotificationVariant.LUMO_PRIMARY, 0);
 				notification.open();
 
 				notifications.add(notification);

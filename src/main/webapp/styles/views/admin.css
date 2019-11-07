@@ -51,7 +51,6 @@
     width: 100%;
 }
 .admin-companies__header vaadin-menu-bar {
-    margin-right: var(--lumo-space-s);
     margin-left: var(--lumo-space-s);
 }
 
@@ -79,7 +78,6 @@
     width: 100%;
 }
 .admin-personnel__header vaadin-menu-bar {
-    margin-right: var(--lumo-space-s);
     margin-left: var(--lumo-space-s);
 }
 
@@ -108,7 +106,6 @@
     margin-left: var(--lumo-space-m);
 }
 .admin-inventory__header vaadin-menu-bar {
-    margin-right: var(--lumo-space-s);
     margin-left: var(--lumo-space-s);
 }
 
@@ -137,12 +134,11 @@
     padding-top: 0 !important;
 }
 .admin-transactions__header vaadin-menu-bar {
-    margin-right: var(--lumo-space-s);
     margin-left: var(--lumo-space-s);
 }
 
 .admin-transactions__dates > vaadin-date-picker {
-	max-width: 110px;
+	max-width: var(--date-picker-width);
 }
 
 .admin-transactions__content {

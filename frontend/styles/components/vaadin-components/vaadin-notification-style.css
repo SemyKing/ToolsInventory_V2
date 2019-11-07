@@ -1,0 +1,11 @@
+:host {
+	margin: 0px;
+	margin-bottom: 5px;
+}
+[part="content"] {
+	padding: 0px;
+    width: 100vw;
+    font-weight: bold;
+    min-height: 25px;
+    justify-content: center;
+}

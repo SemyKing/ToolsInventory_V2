@@ -1,6 +1,6 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.entities.inventory.InventoryItem;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -12,7 +12,7 @@ public class ToolCopyForm extends FormLayout {
 
 	private final String CLASS_NAME = "form";
 
-	private InventoryItem tool;
+	private Tool tool;
 	private int numberOfCopies = 1;
 
 
@@ -58,6 +58,7 @@ public class ToolCopyForm extends FormLayout {
 		});
 
 		numberOfCopiesField = new NumberField("Number of copies");
+		numberOfCopiesField.setWidth("120px");
 		numberOfCopiesField.setMin(1);
 		numberOfCopiesField.setMax(100);
 		numberOfCopiesField.setHasControls(true);
@@ -141,7 +142,7 @@ public class ToolCopyForm extends FormLayout {
 	}
 
 
-	public void setTool(InventoryItem tool) {
+	public void setTool(Tool tool) {
 		if (tool == null) {
 			System.err.println("Tool copy, original Tool cannot be NULL");
 			return;
@@ -152,7 +153,7 @@ public class ToolCopyForm extends FormLayout {
 		allCheckBox.setValue(true);
 	}
 
-	public InventoryItem getToolCopy() {
+	public Tool getToolCopy() {
 		if (numberOfCopiesField.isInvalid()) {
 			return null;
 		}
@@ -161,7 +162,7 @@ public class ToolCopyForm extends FormLayout {
 			this.numberOfCopies = numberOfCopiesField.getValue().intValue();
 		}
 
-		InventoryItem toolCopy = new InventoryItem();
+		Tool toolCopy = new Tool();
 
 		if (name.getValue()) {
 			toolCopy.setName(tool.getName());
@@ -170,7 +171,7 @@ public class ToolCopyForm extends FormLayout {
 			toolCopy.setBarcode(tool.getBarcode());
 		}
 		if (sn.getValue()) {
-			toolCopy.setSnCode(tool.getSnCode());
+			toolCopy.setSerialNumber(tool.getSerialNumber());
 		}
 		if (manufacturer.getValue()) {
 			toolCopy.setManufacturer(tool.getManufacturer());
@@ -185,7 +186,7 @@ public class ToolCopyForm extends FormLayout {
 			toolCopy.setCompany(tool.getCompany());
 		}
 		if (category.getValue()) {
-			toolCopy.setParentCategory(tool.getParentCategory());
+			toolCopy.setCategory(tool.getCategory());
 		}
 		if (usageStatus.getValue()) {
 			toolCopy.setUsageStatus(tool.getUsageStatus());

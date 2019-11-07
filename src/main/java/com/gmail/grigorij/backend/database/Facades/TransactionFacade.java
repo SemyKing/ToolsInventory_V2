@@ -1,7 +1,8 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
 import java.sql.Date;
@@ -37,7 +38,7 @@ public class TransactionFacade {
 		List<Transaction> transaction;
 		try {
 			transaction = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Transaction.QUERY_ALL_BY_COMPANY, Transaction.class)
-					.setParameter(Transaction.ID_VAR, companyId)
+					.setParameter(ProjectConstants.ID_VAR, companyId)
 					.getResultList();
 		} catch (NoResultException nre) {
 			transaction = null;

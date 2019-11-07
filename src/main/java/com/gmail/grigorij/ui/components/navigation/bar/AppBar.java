@@ -1,11 +1,15 @@
 package com.gmail.grigorij.ui.components.navigation.bar;
 
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.ui.components.ListItem;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.forms.UserForm;
@@ -15,6 +19,7 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.application.ApplicationContainerView;
 import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Composite;
@@ -29,6 +34,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -40,19 +46,17 @@ import java.util.ArrayList;
 
 @CssImport("./styles/components/app-bar/app-bar.css")
 @CssImport(value = "./styles/components/app-bar/navi-icon.css", themeFor = "vaadin-button")
-
 public class AppBar extends Composite<FlexLayout> {
 
-    private String CLASS_NAME = "app-bar";
+    private final String CLASS_NAME = "app-bar";
+    private final ApplicationContainerView menuLayout;
 
     private Button menuIcon;
     private H4 title;
-    private MenuBar userInfoMenuBar;
+    private MenuBar profileMenuBar;
     private NaviTabs tabs;
 
     private ArrayList<Tab> tabsList = new ArrayList<>();
-
-    private final ApplicationContainerView menuLayout;
 
 
     public AppBar(ApplicationContainerView menuLayout, String title, NaviTab... tabs) {
@@ -62,7 +66,7 @@ public class AppBar extends Composite<FlexLayout> {
 
         initMenuIcon();
         initTitle(title);
-        initUserInfo();
+        initProfileMenu();
         initContainer();
         initTabs(tabs);
     }
@@ -71,7 +75,7 @@ public class AppBar extends Composite<FlexLayout> {
      * 'NaviDrawer' button visible only on small views -> open / close NaviDrawer
      */
     private void initMenuIcon() {
-        menuIcon = UIUtils.createTertiaryInlineButton(VaadinIcon.MENU);
+        menuIcon = UIUtils.createButton(VaadinIcon.MENU, ButtonVariant.LUMO_TERTIARY_INLINE);
         menuIcon.removeThemeVariants(ButtonVariant.LUMO_ICON);
         menuIcon.addClassName(CLASS_NAME + "__navi-icon");
         menuIcon.addClickListener(e -> menuLayout.getNaviDrawer().toggle());
@@ -84,89 +88,29 @@ public class AppBar extends Composite<FlexLayout> {
         this.title.setClassName(CLASS_NAME + "__title");
     }
 
-    private void initUserInfo() {
-        Div userInfoContainer = new Div();
-        userInfoContainer.addClassName(CLASS_NAME + "__user_info_container");
+    private void initProfileMenu() {
+        User currentUser = AuthenticationService.getCurrentSessionUser();
 
-        Div userInfo = new Div();
-        userInfo.addClassName(CLASS_NAME + "__user_info");
+        ListItem userItem = new ListItem(currentUser.getFullName(), currentUser.getCompany().getName());
+        userItem.addClassName(CLASS_NAME + "__user-item");
 
-        Span userFullName = new Span(AuthenticationService.getCurrentSessionUser().getFullName());
-        userFullName.addClassName(CLASS_NAME + "__user_info_full_name");
-        userInfo.add(userFullName);
-
-        Span userCompanyName = new Span(AuthenticationService.getCurrentSessionUser().getCompany().getName());
-        userCompanyName.addClassName(CLASS_NAME + "__user_info_company");
-        userInfo.add(userCompanyName);
+        ListItem wrapperItem = new ListItem(userItem, UIUtils.createInitials(currentUser.getInitials()));
+        wrapperItem.addClassName(CLASS_NAME + "__wrapper-item");
 
 
-        userInfoContainer.add(userInfo);
-        userInfoContainer.add(UIUtils.createInitials(AuthenticationService.getCurrentSessionUser().getInitials()));
+        profileMenuBar = new MenuBar();
+        profileMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
 
-
-        userInfoMenuBar = new MenuBar();
-        userInfoMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
-
-        MenuItem userMenuItem = userInfoMenuBar.addItem(userInfoContainer);
-
-        userMenuItem.getSubMenu().addItem("Profile", e -> constructUserProfileDialog());
-        userMenuItem.getSubMenu().add(new Hr());
-        userMenuItem.getSubMenu().addItem("Change Theme", e -> {
-            String themeVariant = AuthenticationService.getCurrentSessionUser().getThemeVariant();
-
-            themeVariant = (themeVariant.equals(LumoStyles.DARK)) ? LumoStyles.LIGHT : LumoStyles.DARK;
-            menuLayout.setThemeVariant(themeVariant);
-
-            AuthenticationService.getCurrentSessionUser().setThemeVariant(themeVariant);
-            UserFacade.getInstance().update(AuthenticationService.getCurrentSessionUser());
-        });
-        userMenuItem.getSubMenu().add(new Hr());
-        userMenuItem.getSubMenu().addItem("Sign Out", e -> {
-            AuthenticationService.signOut();
-        });
-    }
-
-
-    private void constructUserProfileDialog() {
-        CustomDialog dialog = new CustomDialog();
-        dialog.setHeader(UIUtils.createH3Label("Profile"));
-
-        UserForm userForm = new UserForm();
-        userForm.setUser(AuthenticationService.getCurrentSessionUser());
-
-        dialog.setContent( userForm );
-        dialog.closeOnCancel();
-
-        dialog.getConfirmButton().setText("Save");
-        dialog.getConfirmButton().addClickListener(e -> {
-            User editedUser = userForm.getUser();
-
-            if (editedUser != null) {
-                if (UserFacade.getInstance().update(editedUser)) {
-                    AuthenticationService.setCurrentSessionUser(editedUser);
-                    UIUtils.showNotification("Information saved", UIUtils.NotificationType.SUCCESS);
-                } else {
-                    UIUtils.showNotification("Information update failed", UIUtils.NotificationType.ERROR);
-                }
-                dialog.close();
-
-                Transaction transaction = new Transaction();
-                transaction.setUser(AuthenticationService.getCurrentSessionUser());
-                transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-                transaction.setOperation(Operation.EDIT);
-                transaction.setOperationTarget1(OperationTarget.USER);
-                transaction.setTargetDetails(editedUser.getFullName());
-                transaction.setChanges(userForm.getChanges());
-                TransactionFacade.getInstance().insert(transaction);
-            }
-        });
-
-
-        dialog.open();
+        MenuItem menuItem = profileMenuBar.addItem(wrapperItem);
+        menuItem.getSubMenu().addItem("Profile", e -> constructUserProfileDialog());
+        menuItem.getSubMenu().add(new Hr());
+        menuItem.getSubMenu().addItem("Change Theme", e -> changeTheme());
+        menuItem.getSubMenu().add(new Hr());
+        menuItem.getSubMenu().addItem("Sign Out", e -> AuthenticationService.signOut());
     }
 
     private void initContainer() {
-        FlexBoxLayout container = new FlexBoxLayout(menuIcon, title, userInfoMenuBar);
+        FlexBoxLayout container = new FlexBoxLayout(menuIcon, title, profileMenuBar);
         container.addClassName(CLASS_NAME + "__container");
         container.setAlignItems(FlexComponent.Alignment.CENTER);
 
@@ -188,20 +132,69 @@ public class AppBar extends Composite<FlexLayout> {
     }
 
 
+    private void constructUserProfileDialog() {
+        if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+            if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.USER, PermissionRange.OWN)) {
+                UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
+                return;
+            }
+        }
 
-    /* === MENU ICON === */
+        CustomDialog dialog = new CustomDialog();
+        dialog.setHeader(UIUtils.createH3Label("Profile"));
 
-    public Button getMenuIcon() {
-        return menuIcon;
+        UserForm userForm = new UserForm();
+        userForm.setUser(AuthenticationService.getCurrentSessionUser());
+
+        dialog.setContent(userForm);
+        dialog.closeOnCancel();
+
+        dialog.getConfirmButton().setText("Save");
+        dialog.getConfirmButton().setEnabled(false);
+
+        if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+                PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.USER, PermissionRange.OWN)) {
+
+            dialog.getConfirmButton().setEnabled(true);
+            dialog.getConfirmButton().addClickListener(e -> {
+                User editedUser = userForm.getUser();
+
+                if (editedUser != null) {
+                    if (UserFacade.getInstance().update(editedUser)) {
+                        UIUtils.showNotification("Information saved", NotificationVariant.LUMO_SUCCESS);
+                    } else {
+                        UIUtils.showNotification("Information update failed", NotificationVariant.LUMO_ERROR);
+                    }
+                    dialog.close();
+
+                    Transaction transaction = new Transaction();
+                    transaction.setUser(AuthenticationService.getCurrentSessionUser());
+                    transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+                    transaction.setOperation(Operation.EDIT);
+                    transaction.setOperationTarget1(OperationTarget.USER);
+                    transaction.setTargetDetails(editedUser.getFullName());
+                    transaction.setChanges(userForm.getChanges());
+                    TransactionFacade.getInstance().insert(transaction);
+                }
+            });
+        }
+
+        dialog.open();
     }
 
+    private void changeTheme() {
+        String themeVariant = AuthenticationService.getCurrentSessionUser().getThemeVariant();
+
+        themeVariant = (themeVariant.equals(LumoStyles.DARK)) ? LumoStyles.LIGHT : LumoStyles.DARK;
+        menuLayout.setThemeVariant(themeVariant);
+
+        User user = AuthenticationService.getCurrentSessionUser();
+        user.setThemeVariant(themeVariant);
+        UserFacade.getInstance().update(user);
+    }
 
 
     /* === TITLE === */
-
-    public String getTitle() {
-        return this.title.getText();
-    }
 
     public void setTitle(String title) {
         this.title.setText(title);
@@ -213,10 +206,6 @@ public class AppBar extends Composite<FlexLayout> {
 
     public void setTabsVariant(TabsVariant tabsVariant) {
         this.tabs.addThemeVariants(tabsVariant);
-    }
-
-    public void centerTabs() {
-        tabs.addClassName(LumoStyles.Margin.Horizontal.AUTO);
     }
 
     private void configureTab(Tab tab) {
@@ -231,26 +220,12 @@ public class AppBar extends Composite<FlexLayout> {
         return tab;
     }
 
-    public Tab addTab(String text, Class<? extends Component> navigationTarget) {
-        Tab tab = tabs.addTab(text, navigationTarget);
-        configureTab(tab);
-        return tab;
-    }
-
     public Tab getSelectedTab() {
         return tabs.getSelectedTab();
     }
 
     public void setSelectedTab(Tab selectedTab) {
         tabs.setSelectedTab(selectedTab);
-    }
-
-    public void updateSelectedTab(String text, Class<? extends Component> navigationTarget) {
-        tabs.updateSelectedTab(text, navigationTarget);
-    }
-
-    public void navigateToSelectedTab() {
-        tabs.navigateToSelectedTab();
     }
 
     public void addTabSelectionListener(ComponentEventListener<Tabs.SelectedChangeEvent> listener) {
@@ -261,32 +236,16 @@ public class AppBar extends Composite<FlexLayout> {
         return tabsList;
     }
 
-    public int getTabCount() {
-        return tabs.getTabCount();
-    }
-
-    public void removeAllTabs() {
+    private void removeAllTabs() {
         tabs.removeAll();
         updateTabsVisibility();
     }
 
-
-    /* === RESET === */
-
     public void reset() {
-//        setNaviMode(AppBar.NaviMode.MENU);
-//        removeAllActionItems();
         removeAllTabs();
 
         tabsList.clear();
     }
-
-
-    /* === UPDATE VISIBILITY === */
-
-//    private void updateActionItemsVisibility() {
-//        actionItems.setVisible(actionItems.getComponentCount() > 0);
-//    }
 
     private void updateTabsVisibility() {
         tabs.setVisible(tabs.getComponentCount() > 0);

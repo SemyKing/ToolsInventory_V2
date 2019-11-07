@@ -1,0 +1,43 @@
+@media (max-width: 1024px) {
+
+}
+
+[part~="container"] > vaadin-menu-bar-button {
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+/*  classes are here because they are in SHADOW DOM of vaadin-menu-bar  */
+
+.app-bar__wrapper-item > .list-item__content {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.app-bar__user-item > .list-item__content {
+	display: flex;
+	flex-direction: column;
+	color: var(--lumo-body-text-color);
+}
+.app-bar__user-item > .list-item__content > .list-item__primary {
+    font-weight: bold;
+}
+.app-bar__user-item > .list-item__content > .list-item__secondary {
+
+}
+
+.initials {
+    height: var(--lumo-size-m);
+    width: var(--lumo-size-m);
+    justify-content: center;
+    align-items: center;
+    margin-left: 5px;
+    margin-right: 5px;
+    border-radius: 100%;
+    background-color: var(--lumo-contrast-30pct);
+    color: var(--lumo-body-text-color);
+    font-weight: 600;
+    font-size: var(--lumo-font-size-m);
+}

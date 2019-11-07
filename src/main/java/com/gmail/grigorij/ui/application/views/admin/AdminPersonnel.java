@@ -1,13 +1,15 @@
 package com.gmail.grigorij.ui.application.views.admin;
 
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.entities.transaction.Transaction;
-import com.gmail.grigorij.backend.entities.user.User;
-import com.gmail.grigorij.backend.enums.operations.Operation;
-import com.gmail.grigorij.backend.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.ui.application.views.Admin;
+import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.ui.application.views.AdminView;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
@@ -15,6 +17,7 @@ import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.forms.UserForm;
 import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
@@ -24,6 +27,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
@@ -38,7 +42,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
 	private final UserForm userForm = new UserForm();
-	private final Admin admin;
+	private final AdminView admin;
 
 	private Grid<User> grid;
 	private ListDataProvider<User> dataProvider;
@@ -46,7 +50,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 	private DetailsDrawer detailsDrawer;
 
 
-	public AdminPersonnel(Admin admin) {
+	public AdminPersonnel(AdminView admin) {
 		this.admin = admin;
 		setClassName(CLASS_NAME);
 
@@ -71,22 +75,34 @@ public class AdminPersonnel extends FlexBoxLayout {
 		header.add(searchField);
 
 		MenuBar actionsMenuBar = new MenuBar();
-		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY, MenuBarVariant.LUMO_CONTRAST);
+		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_PRIMARY, MenuBarVariant.LUMO_ICON);
 
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
 
-		menuItem.getSubMenu().addItem("New User", e -> {
-			grid.select(null);
-			showDetails(null);
-		});
-		menuItem.getSubMenu().add(new Hr());
-		menuItem.getSubMenu().addItem("Import", e -> {
-			importOnClick();
-		});
-		menuItem.getSubMenu().add(new Hr());
-		menuItem.getSubMenu().addItem("Export", e -> {
-			exportOnClick();
-		});
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.USER, null)) {
+			menuItem.getSubMenu().addItem("New User", e -> {
+				grid.select(null);
+				showDetails(null);
+			});
+			menuItem.getSubMenu().add(new Hr());
+		}
+
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.IMPORT, OperationTarget.USER, null)) {
+			menuItem.getSubMenu().addItem("Import", e -> {
+				importOnClick();
+			});
+			menuItem.getSubMenu().add(new Hr());
+		}
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EXPORT, OperationTarget.USER, null)) {
+			menuItem.getSubMenu().addItem("Export", e -> {
+				exportOnClick();
+			});
+		}
 
 		header.add(actionsMenuBar);
 
@@ -152,7 +168,14 @@ public class AdminPersonnel extends FlexBoxLayout {
 		detailsDrawer.setContent(userForm);
 
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
-		detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
+		detailsDrawerFooter.getSave().setEnabled(false);
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
+				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.USER, PermissionRange.COMPANY)) {
+			detailsDrawerFooter.getSave().setEnabled(true);
+			detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
+		}
+
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
 	}
@@ -196,6 +219,25 @@ public class AdminPersonnel extends FlexBoxLayout {
 	}
 
 	private void showDetails(User user) {
+
+		if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			if (user != null) {
+				if (AuthenticationService.getCurrentSessionUser().getId().equals(user.getId())) {
+					if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.USER, PermissionRange.OWN)) {
+						UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
+						grid.deselectAll();
+						return;
+					}
+				} else {
+					if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.USER, PermissionRange.COMPANY)) {
+						UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
+						grid.deselectAll();
+						return;
+					}
+				}
+			}
+		}
+
 		userForm.setUser(user);
 		detailsDrawer.show();
 	}
@@ -214,16 +256,18 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 		if (userForm.isNew()) {
 			if (UserFacade.getInstance().insert(editedUser)) {
-				UIUtils.showNotification("User created", UIUtils.NotificationType.SUCCESS);
+				dataProvider.getItems().add(editedUser);
+
+				UIUtils.showNotification("User created", NotificationVariant.LUMO_SUCCESS);
 			} else {
-				UIUtils.showNotification("User insert failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("User insert failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		} else {
 			if (UserFacade.getInstance().update(editedUser)) {
-				UIUtils.showNotification("User updated", UIUtils.NotificationType.SUCCESS);
+				UIUtils.showNotification("User updated", NotificationVariant.LUMO_SUCCESS);
 			} else {
-				UIUtils.showNotification("User update failed", UIUtils.NotificationType.ERROR);
+				UIUtils.showNotification("User update failed", NotificationVariant.LUMO_ERROR);
 				return;
 			}
 		}
@@ -311,9 +355,9 @@ public class AdminPersonnel extends FlexBoxLayout {
 //				UserFacade.getInstance().insert(u);
 //			}
 //
-//			UIUtils.showNotification("Users imported successfully", UIUtils.NotificationType.SUCCESS);
+//			UIUtils.showNotification("Users imported successfully", NotificationVariant.LUMO_SUCCESS);
 //		} catch (Exception e) {
-//			UIUtils.showNotification("Users import failed", UIUtils.NotificationType.ERROR);
+//			UIUtils.showNotification("Users import failed", NotificationVariant.LUMO_ERROR);
 //			e.printStackTrace();
 //		}
 //	}

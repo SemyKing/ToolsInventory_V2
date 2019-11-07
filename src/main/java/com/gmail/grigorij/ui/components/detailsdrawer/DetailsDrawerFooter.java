@@ -9,14 +9,15 @@ public class DetailsDrawerFooter extends FlexBoxLayout {
 
     private static final String CLASS_NAME = "footer-content";
 
-    private final Button save;
     private final Button close;
+    private final Button save;
+
 
     public DetailsDrawerFooter() {
         addClassName(CLASS_NAME);
 
-        close = UIUtils.createButton("Close", ButtonVariant.LUMO_CONTRAST);
-        save = UIUtils.createButton("Save", ButtonVariant.LUMO_PRIMARY);
+        close = UIUtils.createButton("Close", ButtonVariant.LUMO_PRIMARY);
+        save = UIUtils.createButton("Save", ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
         add(close, save);
     }
 

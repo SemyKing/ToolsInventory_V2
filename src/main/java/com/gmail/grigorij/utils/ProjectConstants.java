@@ -24,7 +24,6 @@ public final class ProjectConstants {
 	public static final String COMPANIES = "Companies";
 	public static final String PERSONNEL = "Personnel";
 	public static final String ADMIN_INVENTORY = "Inventory "; //defined
-	public static final String ADMIN_TRANSACTIONS = "Transactions ";
 
 	// EntityStatus
 	public static final String ACTIVE = "Active";
@@ -46,5 +45,11 @@ public final class ProjectConstants {
 
 	public final static String NEW_LINE = "##_NEW_LINE_##";
 
-	public final static String INVISIBLE_ATTR = "invisible";
+	// DATABASE
+	public final static String VAR1 = "variable_1";
+	public final static String VAR2 = "variable_2";
+	public final static String ID_VAR = "id_variable";
+
+
+	public final static String ACTION_NOT_ALLOWED = "You don't have permission for this action";
 }

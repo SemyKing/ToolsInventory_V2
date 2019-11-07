@@ -4,12 +4,11 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 
-@StyleSheet("context://styles/components/dialogs.css")
+
 public class ConfirmDialog extends Div {
 
 	private final static String CLASS_NAME = "confirm-dialog";

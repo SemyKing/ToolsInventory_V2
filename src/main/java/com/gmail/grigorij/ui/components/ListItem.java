@@ -1,161 +1,46 @@
 package com.gmail.grigorij.ui.components;
 
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.gmail.grigorij.ui.utils.css.FontSize;
-import com.gmail.grigorij.ui.utils.css.TextColor;
-import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
-import com.gmail.grigorij.ui.utils.css.WhiteSpace;
+
 
 @CssImport("./styles/components/list-item.css")
-public class ListItem extends FlexLayout implements HasStyle {
+public class ListItem extends Div implements HasStyle {
 
     private final String CLASS_NAME = "list-item";
 
-    private Div prefix;
-    private Div suffix;
-
-    private FlexBoxLayout content;
-
-    private Span primary;
-    private Span secondary;
-
-    private Div divider;
+    private Div content;
 
     public ListItem(String primary, String secondary) {
         setClassName(CLASS_NAME);
-        setAlignItems(FlexComponent.Alignment.CENTER);
 
-        this.primary = new Span(primary);
-        this.secondary = UIUtils.createText(FontSize.S, TextColor.SECONDARY, secondary);
+        Span primary1 = new Span(primary);
+        primary1.addClassName(CLASS_NAME + "__primary");
 
-        content = new FlexBoxLayout(this.primary, this.secondary);
+        Span secondary1 = new Span(secondary);
+        secondary1.addClassName(CLASS_NAME + "__secondary");
+
+        content = new Div(primary1, secondary1);
         content.addClassName(CLASS_NAME + "__content");
-        content.setFlexDirection(FlexDirection.COLUMN);
+
         add(content);
     }
 
-    public ListItem(String primary) {
-        this(primary, "");
+    public ListItem(Component prefix, Component suffix) {
+        setClassName(CLASS_NAME);
+
+        Div prefix1 = new Div(prefix);
+        prefix1.addClassName(CLASS_NAME + "__prefix");
+
+        Div suffix1 = new Div(suffix);
+        suffix1.addClassName(CLASS_NAME + "__suffix");
+
+        content = new Div(prefix1, suffix1);
+        content.addClassName(CLASS_NAME + "__content");
+
+        add(content);
     }
-
-    /* === PREFIX === */
-
-    public ListItem(Component prefix, String primary, String secondary) {
-        this(primary, secondary);
-        setPrefix(prefix);
-    }
-
-    public ListItem(Component prefix, String primary) {
-        this(prefix, primary, "");
-    }
-
-    /* === SUFFIX === */
-
-    public ListItem(String primary, String secondary, Component suffix) {
-        this(primary, secondary);
-        setSuffix(suffix);
-    }
-
-    public ListItem(String primary, Component suffix) {
-        this(primary, null, suffix);
-    }
-
-    /* === PREFIX & SUFFIX === */
-
-    public ListItem(Component prefix, String primary, String secondary, Component suffix) {
-        this(primary, secondary);
-        setPrefix(prefix);
-        setSuffix(suffix);
-    }
-
-    public ListItem(Component prefix, String primary, Component suffix) {
-        this(prefix, primary, "", suffix);
-    }
-
-    /* === MISC === */
-
-    public FlexBoxLayout getContent() {
-        return content;
-    }
-
-    public Div getPrefix() {
-        return prefix;
-    }
-
-    public Div getSuffix() {
-        return suffix;
-    }
-
-    public void setWhiteSpace(WhiteSpace whiteSpace) {
-        UIUtils.setWhiteSpace(whiteSpace, this);
-    }
-
-    public void setReverse(boolean reverse) {
-        if (reverse) {
-            content.setFlexDirection(FlexDirection.COLUMN_REVERSE);
-        } else {
-            content.setFlexDirection(FlexDirection.COLUMN);
-        }
-    }
-
-    public void setHorizontalPadding(boolean horizontalPadding) {
-        if (horizontalPadding) {
-            getStyle().remove("padding-left");
-            getStyle().remove("padding-right");
-        } else {
-            getStyle().set("padding-left", "0");
-            getStyle().set("padding-right", "0");
-        }
-    }
-
-    public void setPrimaryText(String text) {
-        primary.setText(text);
-    }
-
-    public Span getPrimary() {
-        return primary;
-    }
-
-    public void setSecondaryText(String text) {
-        secondary.setText(text);
-    }
-
-    public void setPrefix(Component... components) {
-        if (prefix == null) {
-            prefix = new Div();
-            prefix.addClassName(CLASS_NAME + "__prefix");
-            getElement().insertChild(0, prefix.getElement());
-        }
-        prefix.removeAll();
-        prefix.add(components);
-    }
-
-    public void setSuffix(Component... components) {
-        if (suffix == null) {
-            suffix = new Div();
-            suffix.addClassName(CLASS_NAME + "__suffix");
-            getElement().insertChild(getElement().getChildCount(),
-                    suffix.getElement());
-        }
-        suffix.removeAll();
-        suffix.add(components);
-    }
-
-    public void setDividerVisible(boolean visible) {
-        if (divider == null) {
-            divider = new Div();
-            divider.addClassName(CLASS_NAME + "__divider");
-            add(divider);
-        }
-        divider.setVisible(visible);
-    }
-
 }
