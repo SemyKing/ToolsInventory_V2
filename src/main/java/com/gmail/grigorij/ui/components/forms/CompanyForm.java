@@ -218,12 +218,13 @@ public class CompanyForm extends FormLayout {
 		}
 		companyLocationsComboBox.setItems(tempLocations);
 
-		if (isNew) {
-			tempPDF_Template = new PDF_Template();
-		} else {
-//			tempPDF_Template = new PDF_Template(PDF_Facade.getInstance().getPDF_TemplateByCompany(company.getId()));
-			tempPDF_Template = PDF_Facade.getInstance().getPDF_TemplateByCompany(company.getId());
-		}
+//		if (isNew) {
+//			tempPDF_Template = new PDF_Template();
+////			tempPDF_Template.setCompany(company);
+//		} else {
+////			tempPDF_Template = new PDF_Template(PDF_Facade.getInstance().getPDF_TemplateByCompany(company.getId()));
+//			tempPDF_Template = PDF_Facade.getInstance().getPDF_TemplateByCompany(company.getId());
+//		}
 
 		try {
 			editPDF_TemplateButton.setEnabled(false);
@@ -273,7 +274,7 @@ public class CompanyForm extends FormLayout {
 	}
 
 	private void constructPDF_TemplateDialog() {
-		pdfTemplateDialog = new PDF_TemplateDialog(tempPDF_Template);
+		pdfTemplateDialog = new PDF_TemplateDialog(company.getPdf_template());
 		pdfTemplateDialog.setHeader(UIUtils.createH3Label("PDF Template for Reporting"));
 		pdfTemplateDialog.constructView();
 
@@ -282,7 +283,6 @@ public class CompanyForm extends FormLayout {
 
 			if (pdfTemplate != null) {
 				tempPDF_Template = pdfTemplate;
-
 
 				pdfTemplateDialog.close();
 			}
@@ -336,9 +336,11 @@ public class CompanyForm extends FormLayout {
 
 				company.setLocations(tempLocations);
 
-				if (!PDF_Facade.getInstance().update(tempPDF_Template)) {
-					UIUtils.showNotification(isNew ? "PDF Template insert error" : "PDF Template update error", NotificationVariant.LUMO_ERROR);
-				}
+				company.setPdf_template(tempPDF_Template);
+
+//				if (PDF_Facade.getInstance().update(tempPDF_Template)) {
+//					UIUtils.showNotification(isNew ? "PDF Template insert error" : "PDF Template update error", NotificationVariant.LUMO_ERROR);
+//				}
 
 				binder.writeBean(company);
 				return company;
@@ -377,10 +379,12 @@ public class CompanyForm extends FormLayout {
 		}
 
 		if (pdfTemplateDialog != null) {
-			otherChanges = pdfTemplateDialog.getChanges();
-			if (otherChanges.size() > 0) {
-				changes.add("Reporting Template changed");
-				changes.addAll(otherChanges);
+			if (!pdfTemplateDialog.isNew()) {
+				otherChanges = pdfTemplateDialog.getChanges();
+				if (otherChanges.size() > 0) {
+					changes.add("Reporting Template changed");
+					changes.addAll(otherChanges);
+				}
 			}
 		}
 

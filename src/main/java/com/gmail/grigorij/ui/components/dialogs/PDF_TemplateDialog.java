@@ -48,16 +48,26 @@ public class PDF_TemplateDialog extends CustomDialog {
 
 	private List<String> changes = new ArrayList<>();
 
+	private boolean isNew;
+
 
 	public PDF_TemplateDialog(PDF_Template originalTemplate) {
-		this.originalTemplate = originalTemplate;
+		isNew = false;
 
-		for (PDF_Template.PDF_Column column : originalTemplate.getPdfColumns()) {
+		if (originalTemplate == null) {
+			this.originalTemplate = new PDF_Template();
+			isNew = true;
+		} else {
+			this.originalTemplate = originalTemplate;
+		}
+
+
+		for (PDF_Template.PDF_Column column : this.originalTemplate.getPdfColumns()) {
 			originalColumns.add(new PDF_Template.PDF_Column(column));
 		}
 
 		editedTemplate = new PDF_Template(this.originalTemplate);
-		editedTemplate.setId(originalTemplate.getId());
+		editedTemplate.setId(this.originalTemplate.getId());
 
 		setCloseOnEsc(false);
 		setCloseOnOutsideClick(false);
@@ -323,6 +333,9 @@ public class PDF_TemplateDialog extends CustomDialog {
 		return changes;
 	}
 
+	public boolean isNew() {
+		return isNew;
+	}
 
 	private boolean validate() {
 		List<PDF_Template.PDF_Column> columns = new ArrayList<>();

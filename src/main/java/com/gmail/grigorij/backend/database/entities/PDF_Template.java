@@ -11,7 +11,7 @@ import java.util.List;
 
 
 @Entity
-@Table(name = "pdf_report_templates")
+@Table(name = "pdf_templates")
 @NamedQueries({
 		@NamedQuery(name= PDF_Template.QUERY_ALL,
 				query="SELECT pdf_template FROM PDF_Template pdf_template"),
@@ -24,7 +24,7 @@ public class PDF_Template extends EntityPojo {
 	public static final String QUERY_ALL = "get_all_pdf_report_templates";
 	public static final String QUERY_BY_COMPANY_ID = "get_pdf_report_template_by_id";
 
-	@OneToOne
+	@OneToOne(mappedBy = "pdf_template")
 	private Company company;
 
 	@Embedded

@@ -50,6 +50,7 @@ public class MessageFacade {
 
 	public List<Message> getAllMessagesBetweenDatesByUser(LocalDate start, LocalDate end, long userId) {
 		List<Message> messages = getAllMessagesByUser(userId);
+		messages.sort(Comparator.comparing(Message::getDate).reversed());
 
 		return getSortedList(messages, start, end);
 	}
