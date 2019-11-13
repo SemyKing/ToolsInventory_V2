@@ -53,6 +53,7 @@ public class Company extends EntityPojo {
 		this.announcements = other.announcements;
 	}
 
+
 	public String getName() {
 		return name;
 	}

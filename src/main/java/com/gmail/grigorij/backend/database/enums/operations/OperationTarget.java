@@ -22,7 +22,8 @@ public enum OperationTarget {
 
 	PASSWORD("Password", PermissionLevel.FOR_TRANSACTIONS),
 	PASSWORD_RESET_EMAIL("Password Reset Email", PermissionLevel.FOR_TRANSACTIONS),
-	ANNOUNCEMENT("Announcement", PermissionLevel.FOR_TRANSACTIONS);
+	ANNOUNCEMENT("Announcement", PermissionLevel.FOR_TRANSACTIONS),
+	STATUS("Status", PermissionLevel.FOR_TRANSACTIONS);
 
 	private String name;
 	private PermissionLevel minimalPermissionLevel;

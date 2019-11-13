@@ -1,12 +1,12 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Category;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.NoResultException;
-import java.util.*;
+import java.util.List;
 
 
 public class InventoryFacade {
@@ -31,6 +31,18 @@ public class InventoryFacade {
 		return tools;
 	}
 
+	public List<Tool> getAllActiveTools() {
+		List<Tool> tools;
+		try {
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Tool.QUERY_ALL, Tool.class)
+					.getResultList();
+			tools.removeIf(Tool::isDeleted);
+		} catch (NoResultException nre) {
+			tools = null;
+		}
+		return tools;
+	}
+
 	public List<Tool> getAllToolsInCompany(long companyId) {
 		List<Tool> tools;
 		try {
@@ -43,12 +55,26 @@ public class InventoryFacade {
 		return tools;
 	}
 
-	public List<Category> getAllCategoriesInCompany(long companyId) {
+	public List<Tool> getAllActiveToolsInCompany(long companyId) {
+		List<Tool> tools;
+		try {
+			tools = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Tool.QUERY_ALL_BY_COMPANY_ID, Tool.class)
+					.setParameter(ProjectConstants.ID_VAR, companyId)
+					.getResultList();
+			tools.removeIf(Tool::isDeleted);
+		} catch (NoResultException nre) {
+			tools = null;
+		}
+		return tools;
+	}
+
+	public List<Category> getAllActiveCategoriesInCompany(long companyId) {
 		List<Category> categories;
 		try {
 			categories = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Category.QUERY_ALL_BY_COMPANY_ID, Category.class)
 					.setParameter(ProjectConstants.ID_VAR, companyId)
 					.getResultList();
+			categories.removeIf(Category::isDeleted);
 		} catch (NoResultException nre) {
 			categories = null;
 		}
@@ -169,10 +195,10 @@ public class InventoryFacade {
 			return false;
 		}
 
-		Tool categoryInDatabase = null;
+		Category categoryInDatabase = null;
 
 		if (category.getId() != null) {
-			categoryInDatabase = DatabaseManager.getInstance().find(Tool.class, category.getId());
+			categoryInDatabase = DatabaseManager.getInstance().find(Category.class, category.getId());
 		}
 
 		try {

@@ -1,19 +1,18 @@
 package com.gmail.grigorij.ui.components.detailsdrawer;
 
-import com.gmail.grigorij.ui.utils.css.size.Size;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.css.FlexDirection;
 
 @CssImport("./styles/components/details-drawer.css")
 public class DetailsDrawer extends Composite<FlexLayout> implements HasStyle, HasSize {
 
     private static final String CLASS_NAME = "details-drawer";
+    private static final String DELETED = "deleted";
 
     private final FlexBoxLayout header;
     private final FlexBoxLayout content;
@@ -56,6 +55,10 @@ public class DetailsDrawer extends Composite<FlexLayout> implements HasStyle, Ha
     public void setFooter(FlexBoxLayout detailsDrawerFooter) {
         this.footer.removeAll();
         this.footer.add(detailsDrawerFooter);
+    }
+
+    public void setDeletedAttribute(boolean b) {
+        this.getElement().setAttribute(DELETED, b);
     }
 
 

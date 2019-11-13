@@ -1,11 +1,11 @@
 package com.gmail.grigorij.backend;
 
 import com.gmail.grigorij.backend.database.entities.*;
-import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.Person;
-import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -55,12 +55,12 @@ public class DummyDataGenerator {
 		contactPerson.setLastName(r2 + "_lastName ");
 		contactPerson.setEmail(r1+r2 +  "@mail.com");
 
-		Location companyLocation = new Location();
-		companyLocation.setName("Main Office");
-		companyLocation.setAddressLine1("Street Name 1");
-		companyLocation.setCountry("Finland");
-		companyLocation.setCity("Vantaa");
-		companyLocation.setPostcode("01530");
+		Location companyAddress = new Location();
+		companyAddress.setName("Main Office");
+		companyAddress.setAddressLine1("Street Name 1");
+		companyAddress.setCountry("Finland");
+		companyAddress.setCity("Vantaa");
+		companyAddress.setPostcode("01530");
 
 
 		Location dummy_location = new Location();
@@ -72,7 +72,7 @@ public class DummyDataGenerator {
 
 		administrationCompany.getLocations().add(dummy_location);
 
-		administrationCompany.setAddress(companyLocation);
+		administrationCompany.setAddress(companyAddress);
 		administrationCompany.setContactPerson(contactPerson);
 		administrationCompany.setAdditionalInfo("ADMINISTRATION COMPANY FOR ADMINS ONLY");
 
@@ -138,9 +138,16 @@ public class DummyDataGenerator {
 //		long id = companies.get(0).getId();
 //		companies.removeIf(company -> company.getId().equals(id));
 
+		boolean companyAdminSet = false;
+
 		for (int compInd = 0; compInd < companies.size(); compInd++) {
 
 			Company company = companies.get(compInd);
+			companyAdminSet = false;
+
+			PDF_Template template = new PDF_Template();
+			template.setCompany(company);
+			PDF_Facade.getInstance().insert(template);
 
 			for (int userInd = 0; userInd < usersPerCompany; userInd++) {
 
@@ -149,8 +156,14 @@ public class DummyDataGenerator {
 				user.setPassword("password");
 				user.setCompany(company);
 
-				user.setPermissionLevel(PermissionLevel.USER);
-				user.setPermissions(PermissionFacade.getInstance().getDefaultUserPermissions());
+				if (!companyAdminSet) {
+					user.setPermissionLevel(PermissionLevel.COMPANY_ADMIN);
+					user.setPermissions(PermissionFacade.getInstance().getDefaultCompanyAdminPermissions());
+				} else {
+					user.setPermissionLevel(PermissionLevel.USER);
+					user.setPermissions(PermissionFacade.getInstance().getDefaultUserPermissions());
+				}
+				companyAdminSet = true;
 
 				String r1 = getRandomStrings(1);
 				String r2 = getRandomStrings(1);
@@ -175,12 +188,12 @@ public class DummyDataGenerator {
 			}
 		}
 
+
 		for (User user : users) {
 			UserFacade.getInstance().insert(user);
 		}
 	}
 
-	@SuppressWarnings( "deprecation" )
 	private void generateTools() {
 
 		int toolCounter = 1;

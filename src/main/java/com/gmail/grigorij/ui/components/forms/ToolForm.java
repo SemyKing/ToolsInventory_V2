@@ -1,21 +1,24 @@
 package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.entities.Category;
-import com.gmail.grigorij.backend.database.entities.embeddable.Location;
-import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.Company;
 import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.User;
-import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
-import com.gmail.grigorij.ui.application.views.admin.AdminInventory;
+import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.facades.CompanyFacade;
+import com.gmail.grigorij.backend.database.facades.InventoryFacade;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
+import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.CameraDialog;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Right;
+import com.gmail.grigorij.ui.views.app.admin.AdminInventory;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.DateConverter;
 import com.gmail.grigorij.utils.OperationStatus;
@@ -136,7 +139,7 @@ public class ToolForm extends FormLayout {
 
 
 		companyComboBox = new ComboBox<>();
-		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
+		companyComboBox.setItems(CompanyFacade.getInstance().getAllActiveCompanies());
 		companyComboBox.setItemLabelGenerator(Company::getName);
 		companyComboBox.setLabel("Company");
 		companyComboBox.setRequired(true);
@@ -370,9 +373,9 @@ public class ToolForm extends FormLayout {
 			toolCurrentUserComboBox.setValue(null);
 			toolReservedByUserComboBox.setValue(null);
 
-			categoryComboBox.setItems(InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId()));
-			toolCurrentUserComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
-			toolReservedByUserComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
+			categoryComboBox.setItems(InventoryFacade.getInstance().getAllActiveCategoriesInCompany(company.getId()));
+			toolCurrentUserComboBox.setItems(UserFacade.getInstance().getAllActiveUsersInCompany(company.getId()));
+			toolReservedByUserComboBox.setItems(UserFacade.getInstance().getAllActiveUsersInCompany(company.getId()));
 			locationComboBox.setItems(company.getLocations());
 		}
 	}

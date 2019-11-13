@@ -1,7 +1,6 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
-import com.gmail.grigorij.backend.database.entities.Company;
 import com.gmail.grigorij.backend.database.entities.RecoveryLink;
 import com.gmail.grigorij.utils.ProjectConstants;
 

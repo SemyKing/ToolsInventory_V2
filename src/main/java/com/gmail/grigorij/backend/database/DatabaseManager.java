@@ -1,7 +1,7 @@
 package com.gmail.grigorij.backend.database;
 
-import com.gmail.grigorij.utils.ApplicationServletContextListener;
 import com.gmail.grigorij.backend.database.entities.EntityPojo;
+import com.gmail.grigorij.utils.servlet.ApplicationServletContextListener;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -43,15 +43,15 @@ public class DatabaseManager {
 
 	public <T extends EntityPojo> T insert(T pojo) {
 //		logger.debug( "Inserting new pojo:" + pojo.getClass().getName());
-		System.out.println();
-		System.out.println(this.getClass().getSimpleName() + " INSERT: " + pojo.getClass().getSimpleName());
+//		System.out.println();
+//		System.out.println(this.getClass().getSimpleName() + " INSERT: " + pojo.getClass().getSimpleName());
 
 		EntityManager em = createEntityManager();
 		try {
 			em.getTransaction().begin();
 			em.persist(pojo);
 			em.getTransaction().commit();
-			System.out.println("INSERT SUCCESSFUL");
+//			System.out.println("INSERT SUCCESSFUL");
 			return pojo;
 		} catch (PersistenceException e) {
 			System.err.println("INSERT ERROR");
@@ -78,8 +78,8 @@ public class DatabaseManager {
 	}
 
 	public <T> T update(T pojo) {
-		System.out.println();
-		System.out.println(this.getClass().getSimpleName() + " UPDATE: " + pojo.getClass().getSimpleName());
+//		System.out.println();
+//		System.out.println(this.getClass().getSimpleName() + " UPDATE: " + pojo.getClass().getSimpleName());
 
 		EntityManager em = createEntityManager();
 		try {
@@ -88,7 +88,7 @@ public class DatabaseManager {
 			em.flush();
 			p = em.merge(p); // Related entities marked cascade-merge will become merged too.
 			em.getTransaction().commit();
-			System.out.println("UPDATE SUCCESSFUL");
+//			System.out.println("UPDATE SUCCESSFUL");
 			return p;
 		} catch (RollbackException e) {
 			System.err.println("UPDATE ERROR");
@@ -99,21 +99,21 @@ public class DatabaseManager {
 	}
 
 	public void remove(EntityPojo pojo) {
-		System.out.println();
-		System.out.println(this.getClass().getSimpleName() + " DELETE");
+//		System.out.println();
+//		System.out.println(this.getClass().getSimpleName() + " DELETE");
 		if (pojo == null || pojo.getId() <= 0 ) {
-			System.err.println("ENTITY IS NULL OR ID <= 0");
+			System.err.println("DATABASE REMOVE -> ENTITY IS NULL OR ID <= 0");
 			return;
 		}
 
-		System.out.println("DELETING: " + pojo.getClass().getSimpleName());
+//		System.out.println("DELETING: " + pojo.getClass().getSimpleName());
 
 		EntityManager em = createEntityManager();
 		try {
 			em.getTransaction().begin();
 			em.remove(em.find(pojo.getClass(), pojo.getId()));
 			em.getTransaction().commit();
-			System.out.println("DELETE SUCCESSFUL");
+//			System.out.println("DELETE SUCCESSFUL");
 		} catch (PersistenceException e) {
 			System.err.println("DELETE ERROR");
 			throw e;

@@ -1,10 +1,7 @@
 package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.entities.Category;
-import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.utils.AuthenticationService;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;

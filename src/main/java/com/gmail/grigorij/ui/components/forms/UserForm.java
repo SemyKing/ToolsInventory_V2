@@ -1,22 +1,20 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.entities.Transaction;
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
-import com.gmail.grigorij.backend.database.facades.PermissionFacade;
-import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.database.entities.embeddable.Location;
-import com.gmail.grigorij.backend.database.entities.embeddable.Person;
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
+import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.CompanyFacade;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
+import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.dialogs.PermissionsDialog;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.utils.AuthenticationService;
@@ -118,7 +116,7 @@ public class UserForm extends FormLayout {
 
 		companyComboBox = new ComboBox<>();
 		companyComboBox.setLabel("Company");
-		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
+		companyComboBox.setItems(CompanyFacade.getInstance().getAllActiveCompanies());
 		companyComboBox.setItemLabelGenerator(Company::getName);
 		companyComboBox.setRequired(true);
 
@@ -352,7 +350,6 @@ public class UserForm extends FormLayout {
 	}
 
 	private void constructAccessRightsDialog() {
-
 		if (AuthenticationService.getCurrentSessionUser().getId().equals(user.getId())) {
 			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 				UIUtils.showNotification("As System Administrator, you have all permissions", NotificationVariant.LUMO_PRIMARY);
@@ -371,16 +368,16 @@ public class UserForm extends FormLayout {
 				tempPermissions = permissions;
 				dialog.close();
 
-				UIUtils.showNotification("Permissions Edited", NotificationVariant.LUMO_SUCCESS, 1000);
-
-				Transaction transaction = new Transaction();
-				transaction.setUser(AuthenticationService.getCurrentSessionUser());
-				transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-				transaction.setOperation(Operation.EDIT);
-				transaction.setOperationTarget1(OperationTarget.PERMISSIONS);
-				transaction.setTargetDetails(user.getFullName());
-				transaction.setChanges(dialog.getChanges());
-				TransactionFacade.getInstance().insert(transaction);
+//				UIUtils.showNotification("Permissions Edited", NotificationVariant.LUMO_SUCCESS, 1000);
+//
+//				Transaction transaction = new Transaction();
+//				transaction.setUser(AuthenticationService.getCurrentSessionUser());
+//				transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+//				transaction.setOperation(Operation.EDIT);
+//				transaction.setOperationTarget1(OperationTarget.PERMISSIONS);
+//				transaction.setTargetDetails(user.getFullName());
+//				transaction.setChanges(dialog.getChanges());
+//				TransactionFacade.getInstance().insert(transaction);
 
 			}
 		});
@@ -432,8 +429,8 @@ public class UserForm extends FormLayout {
 			binder.validate();
 
 			if (binder.isValid()) {
-				Location address = addressForm.getLocation();
 
+				Location address = addressForm.getLocation();
 				if (address == null) {
 					return null;
 				} else {
@@ -441,7 +438,6 @@ public class UserForm extends FormLayout {
 				}
 
 				Person person = personForm.getPerson();
-
 				if (person == null) {
 					return null;
 				} else {

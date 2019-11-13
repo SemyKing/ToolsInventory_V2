@@ -1,12 +1,11 @@
 package com.gmail.grigorij.ui.components.navigation.drawer;
 
+import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Composite;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Label;
-import com.gmail.grigorij.ui.utils.UIUtils;
 
 //@CssImport("./styles/components/navi-drawer/brand-expression.css")
 public class BrandExpression extends Composite<Div> {

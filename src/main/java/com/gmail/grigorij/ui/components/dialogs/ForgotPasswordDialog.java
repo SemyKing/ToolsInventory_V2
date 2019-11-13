@@ -1,17 +1,16 @@
 package com.gmail.grigorij.ui.components.dialogs;
 
+import com.gmail.grigorij.backend.database.entities.RecoveryLink;
 import com.gmail.grigorij.backend.database.entities.Transaction;
+import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.entities.embeddable.Person;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
-import com.gmail.grigorij.backend.database.entities.embeddable.Person;
-import com.gmail.grigorij.backend.database.entities.RecoveryLink;
-import com.gmail.grigorij.backend.database.entities.User;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.email.Email;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.EmailField;

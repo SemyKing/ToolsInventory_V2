@@ -1,7 +1,5 @@
 package com.gmail.grigorij.ui.components;
 
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 

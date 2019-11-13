@@ -1,16 +1,16 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Message;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Transaction;
-import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.ui.application.views.MessagesView;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.views.app.MessagesView;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;

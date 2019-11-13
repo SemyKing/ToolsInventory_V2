@@ -1,6 +1,7 @@
 package com.gmail.grigorij.backend.database.entities;
 
 import com.gmail.grigorij.utils.ProjectConstants;
+
 import javax.persistence.*;
 
 

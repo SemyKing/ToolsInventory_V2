@@ -1,14 +1,14 @@
 package com.gmail.grigorij.ui.components.dialogs;
 
-import com.gmail.grigorij.backend.database.facades.PermissionFacade;
-import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationPermission;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -469,7 +469,7 @@ public class PermissionsDialog extends CustomDialog {
 			permissionsAndActionsDiv.add(permissionOwnComboBox, permissionCompanyComboBox);
 
 
-			toggleVisibleButton = UIUtils.createIconButton(VaadinIcon.EYE_SLASH, ButtonVariant.LUMO_PRIMARY);
+			toggleVisibleButton = UIUtils.createIconButton(VaadinIcon.EYE_SLASH, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_CONTRAST);
 			toggleVisibleButton.addClassName(CLASS_NAME + "__tvb");
 			toggleVisibleButton.addClickListener(e -> {
 				toggleVisibility();
@@ -522,8 +522,10 @@ public class PermissionsDialog extends CustomDialog {
 		private void toggleVisibility() {
 			if (permissionVisible) {
 				toggleVisibleButton.setIcon(VaadinIcon.EYE_SLASH.create());
+				toggleVisibleButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 			} else {
 				toggleVisibleButton.setIcon(VaadinIcon.EYE.create());
+				toggleVisibleButton.removeThemeVariants(ButtonVariant.LUMO_CONTRAST);
 			}
 			permissionVisible = !permissionVisible;
 		}

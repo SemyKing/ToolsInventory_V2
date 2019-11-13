@@ -10,7 +10,6 @@ import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -39,7 +38,7 @@ import java.util.List;
 
 		@NamedQuery(name = User.QUERY_ALL_BY_COMPANY,
 				query = "SELECT user FROM User user WHERE" +
-						" user.company.id = :" + ProjectConstants.ID_VAR),
+						" user.company.id = :" + ProjectConstants.ID_VAR + " ORDER BY user.username ASC"),
 
 		@NamedQuery(name = User.QUERY_ALL_BY_PERMISSION_LEVEL,
 				query = "SELECT user FROM User user WHERE" +
