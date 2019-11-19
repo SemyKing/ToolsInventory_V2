@@ -7,7 +7,7 @@ import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.components.PDF_Component;
 import com.gmail.grigorij.ui.components.dialogs.PDF_Dialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.pdf.PDF_Constructor;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -88,6 +88,7 @@ public class ReportingView extends Div {
 		return grid;
 	}
 
+
 	private void constructReport() {
 		if (selectedUsers.size() <= 0) {
 			UIUtils.showNotification("Select users for report", NotificationVariant.LUMO_PRIMARY);
@@ -119,6 +120,4 @@ public class ReportingView extends Div {
 		dialog.setContent(new PDF_Component(streamResource));
 		dialog.open();
 	}
-
-
 }

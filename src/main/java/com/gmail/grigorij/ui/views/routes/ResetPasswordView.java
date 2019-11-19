@@ -28,6 +28,9 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.Lumo;
 
+/**
+ * Page accessible form URL containing .../reset-password/ + unique code
+ */
 
 @Route(value = "reset-password")
 @StyleSheet("context://styles/views/password-reset.css")
@@ -41,6 +44,10 @@ public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 	public ResetPasswordView() {
 		setClassName(CLASS_NAME);
 
+		add(constructContent());
+	}
+
+	private Div constructContent() {
 		Div wrapperDiv = new Div();
 		wrapperDiv.addClassName(CLASS_NAME+"__wrapper");
 
@@ -60,8 +67,9 @@ public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 
 		wrapperDiv.add(content);
 
-		add(wrapperDiv);
+		return wrapperDiv;
 	}
+
 
 	@Override
 	public void setParameter(BeforeEvent event, String tokenParameter) {
@@ -75,10 +83,12 @@ public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 
 		checkIfTokenValid(tokenParameter);
 
-		getElement().setAttribute(LumoStyles.THEME, "");
-		if (UI.getCurrent() != null) {
-			UI.getCurrent().getElement().setAttribute(LumoStyles.THEME, Lumo.DARK);
-		}
+//		getElement().setAttribute(LumoStyles.THEME, "");
+//
+//		final UI ui = UI.getCurrent();
+//		if (ui != null) {
+//			ui.getElement().setAttribute(LumoStyles.THEME, Lumo.DARK);
+//		}
 	}
 
 	private void checkIfTokenValid(String token) {

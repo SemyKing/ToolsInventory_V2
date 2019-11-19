@@ -2,23 +2,17 @@ package com.gmail.grigorij.backend.database.enums.permissions;
 
 public enum PermissionRange {
 
-	OWN("Own", PermissionLevel.USER),
-	COMPANY("Company", PermissionLevel.COMPANY_ADMIN),
-	SYSTEM("System", PermissionLevel.SYSTEM_ADMIN);
+	OWN("Own"),
+	COMPANY("Company"),
+	SYSTEM("System");
 
 	private String name;
-	private PermissionLevel minimalPermissionLevel;
 
-	PermissionRange(String name, PermissionLevel minimalPermissionLevel) {
+	PermissionRange(String name) {
 		this.name = name;
-		this.minimalPermissionLevel = minimalPermissionLevel;
 	}
 
 	public String getName() {
 		return this.name;
-	}
-
-	public PermissionLevel getMinimalPermissionLevel() {
-		return this.minimalPermissionLevel;
 	}
 }

@@ -11,7 +11,7 @@ import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.views.app.MessagesView;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -150,23 +150,6 @@ public class MessageForm extends FormLayout {
 
 		initDynamicFormItems();
 	}
-
-//	public Message getMessage() {
-//		try {
-//			binder.validate();
-//
-//			if (binder.isValid()) {
-//
-//				binder.writeBean(message);
-//
-//				return message;
-//			}
-//		} catch (ValidationException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//		return null;
-//	}
 
 
 	private void cancelTool() {

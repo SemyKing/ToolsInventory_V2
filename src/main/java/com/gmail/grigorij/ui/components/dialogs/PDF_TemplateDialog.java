@@ -1,6 +1,7 @@
 package com.gmail.grigorij.ui.components.dialogs;
 
 import com.gmail.grigorij.backend.database.entities.PDF_Template;
+import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.enums.WeekSelector;
 import com.gmail.grigorij.backend.database.enums.tools.ToolParameter;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
@@ -20,54 +21,65 @@ import com.vaadin.flow.component.textfield.TextArea;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 
 public class PDF_TemplateDialog extends CustomDialog {
 
-	private final static String CLASS_NAME = "reporting-template-dialog";
+	private final static String CLASS_NAME = "pdf_template-dialog";
 
 	private FlexBoxLayout content;
 	private List<ParameterRowLayout> parameterRows = new ArrayList<>();
 
 	private TextArea signatureTextArea;
+	private String signatureTextAreaOldValue;
+
 	private TextArea contrastTextArea;
+	private String contrastTextAreaOldValue;
 
 	private NumberField normalFontSizeField;
+	private Float normalFontSizeFieldOldValue;
+
 	private NumberField contrastFontSizeField;
+	private Float contrastFontSizeFieldOldValue;
 
 	private Checkbox showDateCheckbox;
+	private boolean showDateCheckboxOldValue;
+
 	private ComboBox<WeekSelector> weekSelectorComboBox;
+	private WeekSelector weekSelectorComboBoxOldValue;
+
 	private ComboBox<DayOfWeek> dayOfWeekComboBox;
+	private DayOfWeek dayOfWeekComboBoxOldValue;
 
-
-	private PDF_Template originalTemplate;
-	private List<PDF_Template.PDF_Column> originalColumns = new ArrayList<>();
-
-	private PDF_Template editedTemplate;
+	private PDF_Template template;
 
 	private List<String> changes = new ArrayList<>();
+	private LinkedHashMap<Integer, ColumnPair> templateChangesHashMap = new LinkedHashMap<>();
 
 	private boolean isNew;
 
 
-	public PDF_TemplateDialog(PDF_Template originalTemplate) {
+	public PDF_TemplateDialog(PDF_Template template) {
 		isNew = false;
 
-		if (originalTemplate == null) {
-			this.originalTemplate = new PDF_Template();
+		if (template == null) {
+			this.template = new PDF_Template();
 			isNew = true;
 		} else {
-			this.originalTemplate = originalTemplate;
+			this.template = new PDF_Template(template);
 		}
 
+		ParameterRowLayout.instanceCounter = 0;
 
-		for (PDF_Template.PDF_Column column : this.originalTemplate.getPdfColumns()) {
-			originalColumns.add(new PDF_Template.PDF_Column(column));
-		}
-
-		editedTemplate = new PDF_Template(this.originalTemplate);
-		editedTemplate.setId(this.originalTemplate.getId());
+		signatureTextAreaOldValue = this.template.getSignatureText();
+		contrastTextAreaOldValue = this.template.getContrastText();
+		normalFontSizeFieldOldValue = this.template.getNormalTextFontSize();
+		contrastFontSizeFieldOldValue = this.template.getContrastTextFontSize();
+		showDateCheckboxOldValue = this.template.isShowDate();
+		weekSelectorComboBoxOldValue = this.template.getWeekSelector();
+		dayOfWeekComboBoxOldValue = this.template.getDayOfWeek();
 
 		setCloseOnEsc(false);
 		setCloseOnOutsideClick(false);
@@ -79,6 +91,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 			confirmDialog.setMessage("Are you sure you want to cancel?" + ProjectConstants.NEW_LINE + "All changes will be lost");
 			confirmDialog.closeOnCancel();
 			confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
+				changes = null;
 				confirmDialog.close();
 				this.close();
 			});
@@ -98,15 +111,19 @@ public class PDF_TemplateDialog extends CustomDialog {
 		contentWrapper.add(content);
 
 		Button newColumnButton = UIUtils.createButton("ADD COLUMN", ButtonVariant.LUMO_PRIMARY);
-		newColumnButton.addClickListener(e -> addRow(constructParameterRow(null)));
+		newColumnButton.addClickListener(e -> {
+			addRow(constructParameterRow(null));
+		});
+
+
 		contentWrapper.add(newColumnButton);
 
 		signatureTextArea = new TextArea("Signature Text");
-		signatureTextArea.setValue(editedTemplate.getSignatureText());
+		signatureTextArea.setValue(template.getSignatureText());
 		contentWrapper.add(signatureTextArea);
 
 		contrastTextArea = new TextArea("Contrast Text");
-		contrastTextArea.setValue(editedTemplate.getContrastText());
+		contrastTextArea.setValue(template.getContrastText());
 		contentWrapper.add(contrastTextArea);
 
 		normalFontSizeField = new NumberField("Normal Font Size");
@@ -114,14 +131,14 @@ public class PDF_TemplateDialog extends CustomDialog {
 		normalFontSizeField.setMin(1);
 		normalFontSizeField.setMax(50);
 		normalFontSizeField.setHasControls(true);
-		normalFontSizeField.setValue((double) editedTemplate.getNormalTextFontSize());
+		normalFontSizeField.setValue((double) template.getNormalTextFontSize());
 
 		contrastFontSizeField = new NumberField("Contrast Font Size");
 		contrastFontSizeField.setStep(1.0);
 		contrastFontSizeField.setMin(1);
 		contrastFontSizeField.setMax(50);
 		contrastFontSizeField.setHasControls(true);
-		contrastFontSizeField.setValue((double) editedTemplate.getContrastTextFontSize());
+		contrastFontSizeField.setValue((double) template.getContrastTextFontSize());
 
 		FlexBoxLayout fontSizeSelectorDiv = new FlexBoxLayout();
 		fontSizeSelectorDiv.setFlexDirection(FlexDirection.ROW);
@@ -137,7 +154,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 		weekSelectorComboBox.setLabel("Week Selector");
 		weekSelectorComboBox.setItems(EnumSet.allOf(WeekSelector.class));
 		weekSelectorComboBox.setItemLabelGenerator(WeekSelector::getName);
-		weekSelectorComboBox.setValue(editedTemplate.getWeekSelector());
+		weekSelectorComboBox.setValue(template.getWeekSelector());
 		weekSelectorComboBox.setRequired(true);
 		weekSelectorComboBox.setReadOnly(true);
 
@@ -145,7 +162,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 		dayOfWeekComboBox.addClassName(ProjectConstants.NO_PADDING_TOP);
 		dayOfWeekComboBox.setLabel("Day of Week");
 		dayOfWeekComboBox.setItems(EnumSet.allOf(DayOfWeek.class));
-		dayOfWeekComboBox.setValue(editedTemplate.getDayOfWeek());
+		dayOfWeekComboBox.setValue(template.getDayOfWeek());
 		dayOfWeekComboBox.setRequired(true);
 		dayOfWeekComboBox.setReadOnly(true);
 
@@ -159,7 +176,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 			weekSelectorComboBox.setReadOnly(!e.getValue());
 			dayOfWeekComboBox.setReadOnly(!e.getValue());
 		});
-		showDateCheckbox.setValue(editedTemplate.isShowDate());
+		showDateCheckbox.setValue(template.isShowDate());
 
 		return contentWrapper;
 	}
@@ -170,7 +187,13 @@ public class PDF_TemplateDialog extends CustomDialog {
 		if (column != null) {
 			parameterRow.getParameterComboBox().setValue(column.getParameter());
 			parameterRow.getColumnWidthField().setValue((double) column.getUserSetWidth());
+
+			templateChangesHashMap.put(ParameterRowLayout.instanceCounter,
+					new PDF_TemplateDialog.ColumnPair(new PDF_Template.PDF_Column(column), new PDF_Template.PDF_Column(column)));
+		} else {
+			templateChangesHashMap.put(ParameterRowLayout.instanceCounter, new PDF_TemplateDialog.ColumnPair(null, null));
 		}
+		ParameterRowLayout.instanceCounter++;
 
 		parameterRow.getParameterComboBox().addValueChangeListener(e -> {
 			if (e.getValue() != null) {
@@ -183,9 +206,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 		});
 
 		parameterRow.getDeleteButton().addClickListener(e -> {
-			if (parameterRow.getParameterComboBox().getValue() != null) {
-				changes.add("Removed column: " + parameterRow.getParameterComboBox().getValue().getName());
-			}
+			templateChangesHashMap.get(parameterRow.getCounter()).setC2(null);
 
 			parameterRows.remove(parameterRow);
 			content.remove(parameterRow);
@@ -206,128 +227,67 @@ public class PDF_TemplateDialog extends CustomDialog {
 
 
 	public void constructView() {
-		for (PDF_Template.PDF_Column column : editedTemplate.getPdfColumns()) {
+		for (PDF_Template.PDF_Column column : template.getPdfColumns()) {
 			addRow(constructParameterRow(column));
 		}
 	}
 
 	public PDF_Template getTemplate() {
 		if (validate()) {
-			return editedTemplate;
+			return template;
 		} else {
 			return null;
 		}
 	}
 
 	public List<String> getChanges() {
-		List<PDF_Template.PDF_Column> edited = new ArrayList<>(editedTemplate.getPdfColumns());
+		if (changes == null) {
+			return null;
+		}
 
-		int columnCounter = 1;
+		for (Integer i : templateChangesHashMap.keySet()) {
 
-		// NEW OR ADDED COLUMNS
-		if (edited.size() > originalColumns.size()) {
-			if (originalColumns.size() == 0) {
-				for (PDF_Template.PDF_Column reportingColumn : edited) {
-					String change = compareColumns(columnCounter, null, reportingColumn);
+			PDF_Template.PDF_Column c1 = templateChangesHashMap.get(i).getC1();
+			PDF_Template.PDF_Column c2 = templateChangesHashMap.get(i).getC2();
 
-					if (change.length() > 0) {
-						changes.add(change);
-					}
-
-					columnCounter++;
-				}
-			} else {
-				for (int i = 0; i < originalColumns.size(); i++) {
-					String change = compareColumns(columnCounter, originalColumns.get(i), edited.get(i));
-
-					if (change.length() > 0) {
-						changes.add(change);
-					}
-
-					columnCounter++;
-				}
-
-				for (int i = originalColumns.size(); i < edited.size(); i++) {
-					if (originalColumns.size() > 0) {
-						String change = compareColumns(columnCounter, null, edited.get(i));
-
-						if (change.length() > 0) {
-							changes.add(change);
-						}
-					}
-
-					columnCounter++;
-				}
+			if (c1 == null) {
+				changes.add("Added Column: " + getColumnString(c2));
+				continue;
 			}
 
-		// REMOVED COLUMNS
-		} else if (originalColumns.size() > edited.size()) {
-			if (edited.size() == 0) {
-				for (PDF_Template.PDF_Column reportingColumn : originalColumns) {
-					String change = compareColumns(columnCounter, reportingColumn, null);
-
-					if (change.length() > 0) {
-						changes.add(change);
-					}
-
-					columnCounter++;
-				}
-			} else {
-				for (int i = 0; i < edited.size(); i++) {
-					String change = compareColumns(columnCounter, originalColumns.get(i), edited.get(i));
-
-					if (change.length() > 0) {
-						changes.add(change);
-					}
-
-					columnCounter++;
-				}
-
-				for (int i = edited.size(); i < originalColumns.size(); i++) {
-					if (edited.size() > 0) {
-						String change = compareColumns(columnCounter, originalColumns.get(i), null);
-
-						if (change.length() > 0) {
-							changes.add(change);
-						}
-					}
-
-					columnCounter++;
-				}
+			if (c2 == null) {
+				changes.add("Removed Column: " + getColumnString(c1));
+				continue;
 			}
 
-		// COLUMNS SIZE NOT CHANGED
-		} else {
-			for (int i = 0; i < originalColumns.size(); i++) {
-				String change = compareColumns(columnCounter, originalColumns.get(i), edited.get(i));
+			String c1s = getColumnString(c1);
+			String c2s = getColumnString(c2);
 
-				if (change.length() > 0) {
-					changes.add(change);
-				}
-
-				columnCounter++;
+			if (!c1s.equals(c2s)) {
+				changes.add("Column changed from:  '" + c1s + "'  to:  '" + c2s + "'");
 			}
 		}
 
-		if (!originalTemplate.getSignatureText().equals(editedTemplate.getSignatureText())) {
-			changes.add("Signature changed from: '" + originalTemplate.getSignatureText() +
-					"',  to:  " + editedTemplate.getSignatureText() + "'");
+		if (!signatureTextAreaOldValue.equals(template.getSignatureText())) {
+			changes.add("Signature Text changed from:  '" + signatureTextAreaOldValue + "'  to:  '" + template.getSignatureText() + "'");
 		}
-		if (!originalTemplate.getContrastText().equals(editedTemplate.getContrastText())) {
-			changes.add("Return text changed from: '" + originalTemplate.getContrastText() +
-					"',  to:  " + editedTemplate.getContrastText() + "'");
+		if (!contrastTextAreaOldValue.equals(template.getContrastText())) {
+			changes.add("Contrast Text changed from:  '" + contrastTextAreaOldValue + "'  to:  '" + template.getContrastText() + "'");
 		}
-		if (!originalTemplate.isShowDate() == (editedTemplate.isShowDate())) {
-			changes.add("Show date changed from: '" + originalTemplate.isShowDate() +
-					"',  to:  " + editedTemplate.isShowDate() + "'");
+		if (!normalFontSizeFieldOldValue.equals(template.getNormalTextFontSize())) {
+			changes.add("Normal Font Size changed from:  '" + normalFontSizeFieldOldValue + "'  to:  '" + template.getNormalTextFontSize() + "'");
 		}
-		if (!originalTemplate.getWeekSelector().equals(editedTemplate.getWeekSelector())) {
-			changes.add("Week selector changed from: '" + originalTemplate.getWeekSelector() +
-					"',  to:  '" + editedTemplate.getWeekSelector() + "'");
+		if (!contrastFontSizeFieldOldValue.equals(template.getContrastTextFontSize())) {
+			changes.add("Contrast Font Size changed from:  '" + contrastFontSizeFieldOldValue + "'  to:  '" + template.getContrastTextFontSize() + "'");
 		}
-		if (!originalTemplate.getDayOfWeek().equals(editedTemplate.getDayOfWeek())) {
-			changes.add("Day of week changed from: '" + originalTemplate.getDayOfWeek() +
-					"',  to:  '" + editedTemplate.getDayOfWeek() + "'");
+		if (!showDateCheckboxOldValue == (template.isShowDate())) {
+			changes.add("Show Date changed from:  '" + showDateCheckboxOldValue + "'  to:  '" + template.isShowDate() + "'");
+		}
+		if (!weekSelectorComboBoxOldValue.equals(template.getWeekSelector())) {
+			changes.add("Week Selector changed from:  '" + weekSelectorComboBoxOldValue + "'  to:  '" + template.getWeekSelector() + "'");
+		}
+		if (!dayOfWeekComboBoxOldValue.equals(template.getDayOfWeek())) {
+			changes.add("Day of Week changed from:  '" + dayOfWeekComboBoxOldValue + "'  to:  '" + template.getDayOfWeek() + "'");
 		}
 
 		return changes;
@@ -336,6 +296,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 	public boolean isNew() {
 		return isNew;
 	}
+
 
 	private boolean validate() {
 		List<PDF_Template.PDF_Column> columns = new ArrayList<>();
@@ -360,6 +321,8 @@ public class PDF_TemplateDialog extends CustomDialog {
 			column.setUserSetWidth(row.getColumnWidthField().getValue().floatValue());
 
 			columns.add(column);
+
+			templateChangesHashMap.get(row.getCounter()).setC2(column);
 		}
 
 		if (normalFontSizeField.getValue() == null || normalFontSizeField.isInvalid()) {
@@ -369,7 +332,6 @@ public class PDF_TemplateDialog extends CustomDialog {
 			return false;
 		}
 
-
 		if (weekSelectorComboBox.getValue() == null || weekSelectorComboBox.isInvalid()) {
 			return false;
 		}
@@ -377,36 +339,27 @@ public class PDF_TemplateDialog extends CustomDialog {
 			return false;
 		}
 
-		editedTemplate.getPdfColumns().clear();
-		editedTemplate.getPdfColumns().addAll(columns);
+		template.getPdfColumns().clear();
+		template.getPdfColumns().addAll(columns);
 
-		editedTemplate.setSignatureText(signatureTextArea.getValue());
-		editedTemplate.setContrastText(contrastTextArea.getValue());
-		editedTemplate.setNormalTextFontSize(normalFontSizeField.getValue().floatValue());
-		editedTemplate.setNormalTextFontSize(contrastFontSizeField.getValue().floatValue());
-		editedTemplate.setShowDate(showDateCheckbox.getValue());
-		editedTemplate.setWeekSelector(weekSelectorComboBox.getValue());
-		editedTemplate.setDayOfWeek(dayOfWeekComboBox.getValue());
+		template.setSignatureText(signatureTextArea.getValue());
+		template.setContrastText(contrastTextArea.getValue());
+		template.setNormalTextFontSize(normalFontSizeField.getValue().floatValue());
+		template.setContrastTextFontSize(contrastFontSizeField.getValue().floatValue());
+		template.setShowDate(showDateCheckbox.getValue());
+		template.setWeekSelector(weekSelectorComboBox.getValue());
+		template.setDayOfWeek(dayOfWeekComboBox.getValue());
 		return true;
 	}
 
-	private String compareColumns(int columnNumber, PDF_Template.PDF_Column c1, PDF_Template.PDF_Column c2) {
-		String change = "";
+	private String getColumnString(PDF_Template.PDF_Column c) {
+		String cs = "";
 
-		if (c1 == null) {
-			change = "New Column "+columnNumber+": '" + c2.getParameter().getName() + "', width: " + c2.getUserSetWidth();
-		} else {
-			if (c2 == null) {
-				change = "Removed Column "+columnNumber+": '" + c1.getParameter().getName();
-			} else {
-				if (!(c1.getParameter().getName().equals(c2.getParameter().getName())) || !(c1.getUserSetWidth().equals(c2.getUserSetWidth()))) {
-					change = "Column "+columnNumber+", changed from: '" + c1.getParameter().getName() + "', width: '" + c1.getUserSetWidth()+"',  to:  " +
-							c2.getParameter().getName() + "', width: '" + c2.getUserSetWidth();
-				}
-			}
+		if (c != null) {
+			cs = c.getParameter().getName() + ", " + c.getUserSetWidth();
 		}
 
-		return change;
+		return cs;
 	}
 
 
@@ -417,6 +370,9 @@ public class PDF_TemplateDialog extends CustomDialog {
 		private ComboBox<ToolParameter> parameterComboBox;
 		private NumberField columnWidthField;
 		private Button deleteButton;
+
+		private static int instanceCounter = 0;
+		private int counter;
 
 
 		ParameterRowLayout() {
@@ -443,6 +399,9 @@ public class PDF_TemplateDialog extends CustomDialog {
 			add(parameterComboBox);
 			add(columnWidthField);
 			add(deleteButton);
+
+			counter = instanceCounter;
+//			instanceCounter++;
 		}
 
 
@@ -456,6 +415,39 @@ public class PDF_TemplateDialog extends CustomDialog {
 
 		private Button getDeleteButton() {
 			return deleteButton;
+		}
+
+		public int getCounter() {
+			return counter;
+		}
+	}
+
+	private static class ColumnPair {
+
+		private PDF_Template.PDF_Column c1;
+		private PDF_Template.PDF_Column c2;
+
+		ColumnPair(PDF_Template.PDF_Column p1, PDF_Template.PDF_Column p2) {
+			this.c1 = p1;
+			this.c2 = p2;
+		}
+
+		private PDF_Template.PDF_Column getC1() {
+			return c1;
+		}
+		private void setC1(PDF_Template.PDF_Column c1) {
+			this.c1 = c1;
+		}
+
+		private PDF_Template.PDF_Column getC2() {
+			return c2;
+		}
+		private void setC2(PDF_Template.PDF_Column c2) {
+			this.c2 = c2;
+		}
+
+		private boolean isNull() {
+			return this.c1 == null && this.c2 == null;
 		}
 	}
 }

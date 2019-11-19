@@ -10,3 +10,7 @@
 	padding-top: 0 !important;
 }
 
+:host(.width_75px) {
+	max-width: 75px;
+}
+

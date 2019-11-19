@@ -56,6 +56,7 @@ public class Company extends EntityPojo {
 		this.locations = other.locations;
 		this.announcements = other.announcements;
 		this.pdf_template = other.pdf_template;
+		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
 
 

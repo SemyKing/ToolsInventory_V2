@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 
 @Tag(Tag.DIV)
-public class InvalidRouteError extends Component implements HasErrorParameter<NotFoundException> {
+public class InvalidRouteReRouter extends Component implements HasErrorParameter<NotFoundException> {
 
 	@Override
 	public int setErrorParameter(BeforeEnterEvent beforeEnterEvent, ErrorParameter<NotFoundException> errorParameter) {

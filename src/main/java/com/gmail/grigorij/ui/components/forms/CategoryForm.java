@@ -1,7 +1,8 @@
 package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.entities.Category;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -13,7 +14,7 @@ import java.util.List;
 
 public class CategoryForm extends FormLayout {
 
-	private final String CLASS_NAME = "form";
+//	private final String CLASS_NAME = "form";
 
 	private Binder<Category> binder;
 
@@ -28,7 +29,7 @@ public class CategoryForm extends FormLayout {
 
 
 	public CategoryForm() {
-		addClassName(CLASS_NAME);
+//		addClassName(CLASS_NAME);
 
 		constructFormItems();
 
@@ -52,7 +53,9 @@ public class CategoryForm extends FormLayout {
 	private void constructForm() {
 		setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP));
 		add(nameField);
-		add(companyField);
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			add(companyField);
+		}
 	}
 
 	private void constructBinder() {

@@ -2,9 +2,13 @@ package com.gmail.grigorij.ui.views.app;
 
 import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.navigation.bar.AppBar;
@@ -13,7 +17,7 @@ import com.gmail.grigorij.ui.views.ApplicationContainerView;
 import com.gmail.grigorij.ui.views.app.admin.AdminCompanies;
 import com.gmail.grigorij.ui.views.app.admin.AdminInventory;
 import com.gmail.grigorij.ui.views.app.admin.AdminPersonnel;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
@@ -51,6 +55,16 @@ public class AdminView extends Div {
 		tabsOnSelect();
 	}
 
+	private Div constructContent() {
+		content = new Div();
+		content.setClassName(CLASS_NAME + "__content");
+		return content;
+	}
+
+	private DetailsDrawer constructDetails() {
+		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
+		return detailsDrawer;
+	}
 
 	private void constructAppBarTabs() {
 		appBar = menuLayout.getAppBar();
@@ -59,7 +73,9 @@ public class AdminView extends Div {
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			appBar.addTab(ProjectConstants.COMPANIES);
 		} else {
-			appBar.addTab(ProjectConstants.COMPANY);
+			if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
+				appBar.addTab(ProjectConstants.COMPANY);
+			}
 		}
 		appBar.addTab(ProjectConstants.PERSONNEL);
 		appBar.addTab(ProjectConstants.ADMIN_INVENTORY);
@@ -70,6 +86,7 @@ public class AdminView extends Div {
 			tabsOnSelect();
 		});
 	}
+
 
 	private void tabsOnSelect() {
 		if (appBar.getSelectedTab() != null) {
@@ -100,21 +117,10 @@ public class AdminView extends Div {
 		}
 	}
 
-	private Div constructContent() {
-		content = new Div();
-		content.setClassName(CLASS_NAME + "__content");
-		return content;
-	}
-
-	private DetailsDrawer constructDetails() {
-		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
-		return detailsDrawer;
-	}
 
 	public DetailsDrawer getDetailsDrawer() {
 		return detailsDrawer;
 	}
-
 
 	public boolean handleUserStatusChange(long userId, boolean newStatus) {
 		User user = UserFacade.getInstance().getUserById(userId);
@@ -159,6 +165,4 @@ public class AdminView extends Div {
 
 		return true;
 	}
-
-
 }

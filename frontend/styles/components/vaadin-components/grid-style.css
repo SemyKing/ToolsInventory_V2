@@ -8,6 +8,10 @@
 
 }
 
+:host(.permissions-grid) [part~="cell"] ::slotted(vaadin-grid-cell-content) {
+	padding: 0 var(--lumo-space-xs) !important;
+}
+
 /*
 [part~="cell"] ::slotted(vaadin-grid-cell-content) {
     padding: 0 var(--lumo-space-xs) !important;

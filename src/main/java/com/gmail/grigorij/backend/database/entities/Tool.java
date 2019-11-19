@@ -107,6 +107,7 @@ public class Tool extends EntityPojo {
 		this.currentLocation = other.currentLocation;
 		this.reports = other.reports;
 		this.category = other.category;
+		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
 
 

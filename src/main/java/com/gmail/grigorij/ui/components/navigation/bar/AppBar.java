@@ -4,7 +4,6 @@ import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
@@ -18,8 +17,7 @@ import com.gmail.grigorij.ui.components.navigation.bar.tab.NaviTabs;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.views.ApplicationContainerView;
-import com.gmail.grigorij.utils.AuthenticationService;
-import com.gmail.grigorij.utils.ProjectConstants;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
@@ -52,7 +50,6 @@ public class AppBar extends Composite<FlexLayout> {
     private H4 title;
     private MenuBar profileMenuBar;
     private NaviTabs tabs;
-
     private ArrayList<Tab> tabsList = new ArrayList<>();
 
 
@@ -88,19 +85,23 @@ public class AppBar extends Composite<FlexLayout> {
     private void initProfileMenu() {
         User currentUser = AuthenticationService.getCurrentSessionUser();
 
-        ListItem userItem = new ListItem(currentUser.getFullName(), currentUser.getCompany().getName());
+        ListItem userItem = new ListItem(currentUser.getFullName(), currentUser.getCompany().getName(), ListItem.Direction.COLUMN);
         userItem.addClassName(CLASS_NAME + "__user-item");
 
-        ListItem wrapperItem = new ListItem(userItem, UIUtils.createInitials(currentUser.getInitials()));
-        wrapperItem.addClassName(CLASS_NAME + "__wrapper-item");
+        ListItem wrapperItem = new ListItem(userItem, UIUtils.createInitials(currentUser.getInitials()), ListItem.Direction.ROW);
+        wrapperItem.addClassName(CLASS_NAME + "__user-item__wrapper-item");
 
 
         profileMenuBar = new MenuBar();
         profileMenuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY);
 
         MenuItem menuItem = profileMenuBar.addItem(wrapperItem);
-        menuItem.getSubMenu().addItem("Profile", e -> constructUserProfileDialog());
-        menuItem.getSubMenu().add(new Hr());
+
+        if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.USER, PermissionRange.OWN)) {
+            menuItem.getSubMenu().addItem("Profile", e -> constructUserProfileDialog());
+            menuItem.getSubMenu().add(new Hr());
+        }
+
         menuItem.getSubMenu().addItem("Change Theme", e -> changeTheme());
         menuItem.getSubMenu().add(new Hr());
         menuItem.getSubMenu().addItem("Sign Out", e -> AuthenticationService.signOut());
@@ -109,8 +110,6 @@ public class AppBar extends Composite<FlexLayout> {
     private void initContainer() {
         FlexBoxLayout container = new FlexBoxLayout(menuIcon, title, profileMenuBar);
         container.addClassName(CLASS_NAME + "__container");
-        container.setAlignItems(FlexComponent.Alignment.CENTER);
-
         getContent().add(container);
     }
 
@@ -130,13 +129,6 @@ public class AppBar extends Composite<FlexLayout> {
 
 
     private void constructUserProfileDialog() {
-        if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-            if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.USER, PermissionRange.OWN)) {
-                UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
-                return;
-            }
-        }
-
         CustomDialog dialog = new CustomDialog();
         dialog.setHeader(UIUtils.createH3Label("Profile"));
 
@@ -149,8 +141,7 @@ public class AppBar extends Composite<FlexLayout> {
         dialog.getConfirmButton().setText("Save");
         dialog.getConfirmButton().setEnabled(false);
 
-        if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-                PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.USER, PermissionRange.OWN)) {
+        if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.USER, PermissionRange.OWN)) {
 
             dialog.getConfirmButton().setEnabled(true);
             dialog.getConfirmButton().addClickListener(e -> {

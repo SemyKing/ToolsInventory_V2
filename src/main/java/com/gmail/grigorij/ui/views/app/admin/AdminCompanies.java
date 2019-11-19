@@ -19,7 +19,7 @@ import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.forms.CompanyForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.views.app.AdminView;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.Grid;
@@ -87,8 +87,7 @@ public class AdminCompanies extends FlexBoxLayout {
 
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.COMPANY, null)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.ADD, OperationTarget.COMPANY, null)) {
 			menuItem.getSubMenu().addItem("New Company", e -> {
 				grid.deselectAll();
 				showDetails(null);
@@ -96,16 +95,14 @@ public class AdminCompanies extends FlexBoxLayout {
 			menuItem.getSubMenu().add(new Hr());
 		}
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.IMPORT, OperationTarget.COMPANY, null)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.IMPORT, OperationTarget.COMPANY, null)) {
 			menuItem.getSubMenu().addItem("Import", e -> {
 				importCompanies();
 			});
 			menuItem.getSubMenu().add(new Hr());
 		}
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.EXPORT, OperationTarget.COMPANY, null)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EXPORT, OperationTarget.COMPANY, null)) {
 			menuItem.getSubMenu().addItem("Export", e -> {
 				exportCompanies();
 			});
@@ -178,10 +175,9 @@ public class AdminCompanies extends FlexBoxLayout {
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.getSave().setEnabled(false);
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.COMPANY, null)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.COMPANY, null)) {
 			detailsDrawerFooter.getSave().addClickListener(e -> {
-				companySaveOnClick(companyForm.getCompany(), companyForm.isNew(), companyForm.getChanges());
+				saveCompanyInDatabase(companyForm.getCompany(), companyForm.isNew(), companyForm.getChanges());
 			});
 			detailsDrawerFooter.getSave().setEnabled(true);
 		}
@@ -229,13 +225,21 @@ public class AdminCompanies extends FlexBoxLayout {
 
 	private void showDetails(Company company) {
 		if (company != null) {
-			if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-				if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
-					UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
-					grid.deselectAll();
-					return;
-				}
+
+
+			if (!PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
+				UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
+				grid.deselectAll();
+				return;
 			}
+
+//			if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+//				if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
+//					UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
+//					grid.deselectAll();
+//					return;
+//				}
+//			}
 
 			entityOldStatus = company.isDeleted();
 			detailsDrawer.setDeletedAttribute(company.isDeleted());
@@ -254,7 +258,7 @@ public class AdminCompanies extends FlexBoxLayout {
 		grid.deselectAll();
 	}
 
-	private void companySaveOnClick(Company company, boolean isNew, List<String> changes) {
+	private void saveCompanyInDatabase(Company company, boolean isNew, List<String> changes) {
 		if (company == null) {
 			return;
 		}
@@ -370,9 +374,9 @@ public class AdminCompanies extends FlexBoxLayout {
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.getSave().setEnabled(false);
 
-		if (PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.COMPANY, PermissionRange.OWN)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.COMPANY, PermissionRange.OWN)) {
 			detailsDrawerFooter.getSave().addClickListener(e -> {
-				companySaveOnClick(companyForm.getCompany(), companyForm.isNew(), companyForm.getChanges());
+				saveCompanyInDatabase(companyForm.getCompany(), companyForm.isNew(), companyForm.getChanges());
 			});
 			detailsDrawerFooter.getSave().setEnabled(true);
 		}

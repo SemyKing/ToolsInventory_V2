@@ -11,7 +11,7 @@ import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.forms.TransactionForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.DateConverter;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -128,7 +128,6 @@ public class TransactionsView extends Div {
 		return filtersDiv;
 	}
 
-
 	private Div constructContent() {
 		Div content = new Div();
 		content.setClassName(CLASS_NAME + "__content");
@@ -203,10 +202,9 @@ public class TransactionsView extends Div {
 		DetailsDrawerFooter detailsDrawerFooter = new DetailsDrawerFooter();
 		detailsDrawerFooter.getSave().setEnabled(false);
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.TRANSACTIONS, null)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.TRANSACTIONS, null)) {
 			detailsDrawerFooter.getSave().setEnabled(true);
-			detailsDrawerFooter.getSave().addClickListener(e -> saveOnClick());
+			detailsDrawerFooter.getSave().addClickListener(e -> saveTransactionInDatabase());
 		}
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 
@@ -302,6 +300,7 @@ public class TransactionsView extends Div {
 		}
 	}
 
+
 	private void getTransactionsBetweenDates() {
 		List<Transaction> transactions;
 
@@ -329,7 +328,7 @@ public class TransactionsView extends Div {
 		grid.deselectAll();
 	}
 
-	private void saveOnClick() {
+	private void saveTransactionInDatabase() {
 		Transaction transaction = transactionsForm.getTransaction();
 
 		if (TransactionFacade.getInstance().update(transaction)) {

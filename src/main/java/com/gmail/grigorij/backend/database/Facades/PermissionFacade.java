@@ -4,8 +4,9 @@ import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationPermission;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -199,7 +200,13 @@ public class PermissionFacade {
 				OperationPermission.YES,    // COMPANY
 				false));
 		userPermissions.add(constructPermission(Operation.EDIT, OperationTarget.PERMISSIONS,
-				OperationPermission.NO,    // OWN
+				OperationPermission.NO,     // OWN
+				OperationPermission.YES,    // COMPANY
+				true));
+
+
+		userPermissions.add(constructPermission(Operation.EDIT, OperationTarget.PERMISSION_LEVEL,
+				OperationPermission.NO,     // OWN
 				OperationPermission.YES,    // COMPANY
 				true));
 
@@ -210,6 +217,10 @@ public class PermissionFacade {
 				true));
 
 
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.INVENTORY_CATEGORY,
+				OperationPermission.YES,    // OWN
+				OperationPermission.YES,    // COMPANY
+				true));
 		userPermissions.add(constructPermission(Operation.ADD, OperationTarget.INVENTORY_CATEGORY,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
@@ -220,11 +231,19 @@ public class PermissionFacade {
 				true));
 
 
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.INVENTORY_TOOL,
+				OperationPermission.YES,    // OWN
+				OperationPermission.YES,    // COMPANY
+				true));
 		userPermissions.add(constructPermission(Operation.ADD, OperationTarget.INVENTORY_TOOL,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
 				true));
 		userPermissions.add(constructPermission(Operation.EDIT, OperationTarget.INVENTORY_TOOL,
+				OperationPermission.YES,    // OWN
+				OperationPermission.YES,    // COMPANY
+				true));
+		userPermissions.add(constructPermission(Operation.DELETE, OperationTarget.INVENTORY_TOOL,
 				OperationPermission.YES,    // OWN
 				OperationPermission.YES,    // COMPANY
 				true));
@@ -256,6 +275,13 @@ public class PermissionFacade {
 		return permissionTest;
 	}
 
+	public boolean isSystemAdminOrAllowedTo(Operation action, OperationTarget target, PermissionRange range) {
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			return true;
+		} else {
+			return isUserAllowedTo(action, target, range);
+		}
+	}
 
 	public boolean isUserAllowedTo(Operation action, OperationTarget target, PermissionRange range) {
 
@@ -268,8 +294,7 @@ public class PermissionFacade {
 				if (target.equals(permission.getOperationTarget())) {
 
 					if (range == null) {
-						return permission.getPermissionOwn().isAllowed() ||
-								permission.getPermissionCompany().isAllowed();
+						return permission.getPermissionOwn().isAllowed() || permission.getPermissionCompany().isAllowed();
 					} else {
 						if (range.equals(PermissionRange.OWN)) {
 							return permission.getPermissionOwn().isAllowed();

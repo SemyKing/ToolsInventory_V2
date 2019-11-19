@@ -7,6 +7,7 @@ import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
+import com.gmail.grigorij.utils.authentication.PasswordUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.List;
 public class DummyDataGenerator {
 
 	private static boolean entitiesGenerated = false;
+
+	private final static String PASSWORD = "password";
 
 
 	private int companiesCount = 3; //excluding 1st company: ADMINISTRATION
@@ -62,19 +65,21 @@ public class DummyDataGenerator {
 		companyAddress.setCity("Vantaa");
 		companyAddress.setPostcode("01530");
 
-
-		Location dummy_location = new Location();
-		dummy_location.setName("dummy location");
-		dummy_location.setAddressLine1("dummy location");
-		dummy_location.setCountry("dummy location");
-		dummy_location.setCity("dummy location");
-		dummy_location.setPostcode("dummy location");
-
-		administrationCompany.getLocations().add(dummy_location);
+		for (int j = 0; j < 3; j++) {
+			Location location = new Location();
+			location.setName("AC Location Name_" + j);
+			location.setAddressLine1("AC Location Address_" + j);
+			location.setCountry("AC Location Country_" + j);
+			location.setCity("AC Location City_" + j);
+			location.setPostcode("AC Location Postcode_" + j);
+			administrationCompany.addLocation(location);
+		}
 
 		administrationCompany.setAddress(companyAddress);
 		administrationCompany.setContactPerson(contactPerson);
 		administrationCompany.setAdditionalInfo("ADMINISTRATION COMPANY FOR ADMINS ONLY");
+
+		administrationCompany.setPdf_template(new PDF_Template());
 
 		companies.add(administrationCompany);
 
@@ -87,21 +92,31 @@ public class DummyDataGenerator {
 			r2 = getRandomStrings(1);
 
 			Person p = new Person();
-			p.setFirstName(r1 + "_firstName" + i);
-			p.setLastName(r2 + "_lLastName" + i);
+			p.setFirstName(r1 + "_FirstName" + i);
+			p.setLastName(r2 + "_LastName" + i);
 			p.setEmail(r1+r2 +  "@mail.com");
-
 			company.setContactPerson(p);
+
+			Location address = new Location();
+			address.setName("C"+i+" Main Office");
+			address.setAddressLine1("C"+i+" Address Line 1");
+			address.setCountry("C"+i+" Finland");
+			address.setCity("C"+i+" Vantaa");
+			address.setPostcode("C"+i+" 01530");
+			company.setAddress(address);
+
 
 			for (int j = 0; j < 3; j++) {
 				Location location = new Location();
-				location.setName("LocationName_" + j);
-				location.setAddressLine1("LocationAddress_" + j);
-				location.setCountry("LocationCountry_" + j);
-				location.setCity("LocationCity_" + j);
-				location.setPostcode("LocationPostcode_" + j);
+				location.setName("C "+i+" Location Name_" + j);
+				location.setAddressLine1("C "+i+" Location Address_" + j);
+				location.setCountry("C "+i+" Location Country_" + j);
+				location.setCity("C "+i+" Location City_" + j);
+				location.setPostcode("C "+i+" Location Postcode_" + j);
 				company.addLocation(location);
 			}
+
+			company.setPdf_template(new PDF_Template());
 
 			companies.add(company);
 		}
@@ -115,21 +130,34 @@ public class DummyDataGenerator {
 		companies = CompanyFacade.getInstance().getAllCompanies();
 
 		User admin = new User();
-		admin.setUsername("system_admin");
-		admin.setPassword("password");
+		admin.setUsername("sysadmin");
+
+
+		String salt = PasswordUtils.getSalt(30);
+		admin.setSalt(salt);
+		admin.setPassword(PasswordUtils.generateSecurePassword(PASSWORD, salt));
+		admin.setDummyPassword(PasswordUtils.generateDummyPassword(PASSWORD));
+
 		admin.setCompany(companies.get(0));
 		admin.setThemeVariant(LumoStyles.LIGHT);
 		admin.setAdditionalInfo("System Administrator");
-
 		admin.setPermissionLevel(PermissionLevel.SYSTEM_ADMIN);
 
 		Person adminP = new Person();
 		adminP.setFirstName("System");
 		adminP.setLastName("Admin");
 		adminP.setPhoneNumber("046123456");
-		adminP.setEmail("oriel.muaaz@thtt.us");
-
+		adminP.setEmail("some.mail@mail.com");
 		admin.setPerson(adminP);
+
+		Location adminAddress = new Location();
+		adminAddress.setName("Admin Home Address");
+		adminAddress.setAddressLine1("Admin Address Line 1");
+		adminAddress.setCountry("Admin Country");
+		adminAddress.setCity("Admin City");
+		adminAddress.setPostcode("Admin Postcode");
+		admin.setAddress(adminAddress);
+
 
 		users.add(admin);
 
@@ -138,22 +166,22 @@ public class DummyDataGenerator {
 //		long id = companies.get(0).getId();
 //		companies.removeIf(company -> company.getId().equals(id));
 
-		boolean companyAdminSet = false;
+		boolean companyAdminSet;
 
 		for (int compInd = 0; compInd < companies.size(); compInd++) {
 
 			Company company = companies.get(compInd);
 			companyAdminSet = false;
 
-			PDF_Template template = new PDF_Template();
-			template.setCompany(company);
-			PDF_Facade.getInstance().insert(template);
-
 			for (int userInd = 0; userInd < usersPerCompany; userInd++) {
 
 				User user = new User();
 				user.setUsername("user" + compInd + "." + userInd);
-				user.setPassword("password");
+
+				salt = PasswordUtils.getSalt(30);
+				user.setSalt(salt);
+				user.setPassword(PasswordUtils.generateSecurePassword(PASSWORD, salt));
+				user.setDummyPassword(PasswordUtils.generateDummyPassword(PASSWORD));
 				user.setCompany(company);
 
 				if (!companyAdminSet) {
@@ -171,17 +199,17 @@ public class DummyDataGenerator {
 				Person p = new Person();
 				p.setFirstName(r1 + "_FirstName");
 				p.setLastName(r2 + "_LastName");
-				p.setPhoneNumber("046" + compInd + "." + userInd);
+				p.setPhoneNumber("046" + compInd + "..." + userInd);
 				p.setEmail(r1 + r2 + "@mail.com");
 
-				Location location = new Location();
-				location.setName("LocationName_" + compInd + "." + userInd);
-				location.setAddressLine1("LocationAddress_" + compInd + "." + userInd);
-				location.setCountry("LocationCountry_" + compInd + "." + userInd);
-				location.setCity("LocationCity_" + compInd + "." + userInd);
-				location.setPostcode("LocationPostcode_" + compInd + "." + userInd);
+				Location userAddress = new Location();
+				userAddress.setName("Home Address_" + compInd + "." + userInd);
+				userAddress.setAddressLine1("Address Line 1_" + compInd + "." + userInd);
+				userAddress.setCountry("Country_" + compInd + "." + userInd);
+				userAddress.setCity("City_" + compInd + "." + userInd);
+				userAddress.setPostcode("Postcode_" + compInd + "." + userInd);
 
-				user.setAddress(location);
+				user.setAddress(userAddress);
 				user.setPerson(p);
 
 				users.add(user);

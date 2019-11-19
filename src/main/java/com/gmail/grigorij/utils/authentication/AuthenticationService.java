@@ -1,4 +1,4 @@
-package com.gmail.grigorij.utils;
+package com.gmail.grigorij.utils.authentication;
 
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.entities.User;
@@ -6,6 +6,7 @@ import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.utils.Broadcaster;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.server.VaadinRequest;
@@ -33,8 +34,6 @@ public class AuthenticationService {
 
 
 	public static boolean isAuthenticated() {
-//		return getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA) != null || loginRememberedUser();
-
 		if (getCurrentRequest().getWrappedSession().getAttribute(SESSION_DATA) != null) {
 			return true;
 		}
@@ -83,7 +82,7 @@ public class AuthenticationService {
 	}
 
 	private static boolean loginRememberedUser() {
-		System.out.println("-------------------------------------- loginRememberedUser --------------------------------------");
+		System.out.println("--loginRememberedUser()");
 
 		Optional<Cookie> rememberMeCookie = getRememberMeCookie();
 
@@ -143,9 +142,14 @@ public class AuthenticationService {
 		if (password == null || password.isEmpty())
 			return false;
 
-		User user = UserFacade.getInstance().getUserByUsernameAndPassword(username, password);
+		username = username.replaceAll("[^a-zA-Z0-9]", "");
+
+		User user = UserFacade.getInstance().getUserByUsername(username);
 
 		if (user != null) {
+			if (!PasswordUtils.verifyUserPassword(password, user.getPassword(), user.getSalt())) {
+				return false;
+			}
 			if (!constructSessionData(user, null)) {
 				return false;
 			}

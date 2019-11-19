@@ -20,6 +20,7 @@ import com.gmail.grigorij.ui.components.forms.ReadOnlyToolForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.utils.*;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -169,7 +170,8 @@ public class InventoryView extends Div {
 		grid.addClassName("grid-view");
 		grid.setSizeFull();
 
-		dataProvider = new ListDataProvider<>(InventoryFacade.getInstance().getAllActiveToolsInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
+		dataProvider = new ListDataProvider<>(
+				InventoryFacade.getInstance().getAllActiveToolsInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()));
 
 		grid.setDataProvider(dataProvider);
 
@@ -207,58 +209,6 @@ public class InventoryView extends Div {
 
 		return grid;
 	}
-
-//	private MenuBar getMenuBar(InventoryItem inventoryItem) {
-//		MenuBar menuBar = new MenuBar();
-//
-//		if (inventoryItem.getInventoryHierarchyType().equals(InventoryHierarchyType.CATEGORY)) {
-//			return menuBar;
-//		}
-//
-//		menuBar.addThemeVariants(MenuBarVariant.LUMO_TERTIARY_INLINE);
-//		MenuItem menuItem = menuBar.addItem(new Icon(VaadinIcon.MENU));
-//
-//		boolean take = false;
-//		boolean reserve = false;
-//
-//		if (PermissionFacade.getInstance().isUserAllowedTo(Operation.TAKE, OperationTarget.INVENTORY_TOOL, PermissionRange.COMPANY) ||
-//				AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-//
-//			menuItem.getSubMenu().addItem("Take", e -> {
-//				takeToolOnClick(inventoryItem);
-//			});
-//			take = true;
-//		}
-//
-//		if (PermissionFacade.getInstance().isUserAllowedTo(Operation.RESERVE, OperationTarget.INVENTORY_TOOL, PermissionRange.COMPANY) ||
-//				AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-//
-//			if (take) {
-//				menuItem.getSubMenu().add(new Hr());
-//			}
-//			menuItem.getSubMenu().addItem("Reserve", e -> {
-//				reserveToolOnClick(inventoryItem);
-//			});
-//			reserve = true;
-//		}
-//
-//		if (PermissionFacade.getInstance().isUserAllowedTo(Operation.REPORT, OperationTarget.INVENTORY_TOOL, PermissionRange.COMPANY) ||
-//				AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-//
-//			if (reserve) {
-//				menuItem.getSubMenu().add(new Hr());
-//			} else {
-//				if (take) {
-//					menuItem.getSubMenu().add(new Hr());
-//				}
-//			}
-//			menuItem.getSubMenu().addItem("Report", e -> {
-//				reportToolOnClick(inventoryItem);
-//			});
-//		}
-//
-//		return menuBar;
-//	}
 
 	private DetailsDrawer constructDetails() {
 		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
@@ -551,55 +501,59 @@ public class InventoryView extends Div {
 		cameraDialog.getCameraView().onFinished(new OperationStatus() {
 			@Override
 			public void onSuccess(String code) {
-				if (UI.getCurrent() != null) {
-					UI.getCurrent().access(() -> {
+				final UI ui = UI.getCurrent();
+
+				if (ui != null) {
+					ui.access(() -> {
 						try {
-							UIUtils.showNotification("Code scanned, searching for tool...", NotificationVariant.LUMO_PRIMARY);
-							cameraDialog.stopCamera();
-							UI.getCurrent().push();
+//							cameraDialog.getCameraView().stop();
+							cameraDialog.stop();
+							cameraDialog.close();
 
 							Tool tool = InventoryFacade.getInstance().getToolByCode(code);
 							if (tool == null) {
-								UIUtils.showNotification("Tool not found", NotificationVariant.LUMO_PRIMARY);
+								UIUtils.showNotification("Tool not found", NotificationVariant.LUMO_PRIMARY, 2000);
 							} else {
-								UIUtils.showNotification("Tool found", NotificationVariant.LUMO_SUCCESS, 3000);
+								UIUtils.showNotification("Tool found", NotificationVariant.LUMO_SUCCESS, 1000);
 								showDetails(tool);
 							}
-
-							cameraDialog.close();
-							UI.getCurrent().push();
 						} catch (Exception e) {
-							cameraDialog.getCameraView().stop();
+//							cameraDialog.getCameraView().stop();
+							cameraDialog.stop();
 							cameraDialog.close();
 
 							UIUtils.showNotification("We are sorry, but an internal error occurred", NotificationVariant.LUMO_ERROR);
 							e.printStackTrace();
 						}
+						ui.push();
 					});
 				}
 			}
 
 			@Override
 			public void onFail() {
-				if (UI.getCurrent() != null) {
-					UI.getCurrent().access(() -> {
+				final UI ui = UI.getCurrent();
+
+				if (ui != null) {
+					ui.access(() -> {
 						try {
-							UIUtils.showNotification("Code not found in image", NotificationVariant.LUMO_PRIMARY, 2000);
-							UI.getCurrent().push();
+							cameraDialog.getCameraView().takePicture();
 						} catch (Exception e) {
-							cameraDialog.getCameraView().stop();
+//							cameraDialog.getCameraView().stop();
+							cameraDialog.stop();
 							cameraDialog.close();
 
 							UIUtils.showNotification("We are sorry, but an internal error occurred", NotificationVariant.LUMO_ERROR);
 							e.printStackTrace();
 						}
+						ui.push();
 					});
 				}
 			}
 		});
 
 		cameraDialog.open();
-		cameraDialog.getCameraView().showPreview();
+		cameraDialog.initCamera();
 	}
 
 
@@ -851,6 +805,9 @@ public class InventoryView extends Div {
 	}
 
 
+	/**
+	 * UPDATE TOOL PARAMETERS FROM DATABASE TO LOCAL TOOLS IN DATA PROVIDER
+	 */
 	private void copyToolParameters(Tool destinationTool, Tool sourceTool) {
 		destinationTool.setName(sourceTool.getName());
 		destinationTool.setSerialNumber(sourceTool.getSerialNumber());
@@ -870,32 +827,4 @@ public class InventoryView extends Div {
 		destinationTool.setGuarantee_months(sourceTool.getGuarantee_months());
 		destinationTool.setCurrentLocation(sourceTool.getCurrentLocation());
 	}
-
-//	/**
-//	 * Recursive search method
-//	 * @param item return item from memory data provider if id's match
-//	 * @param id item's id to search for
-//	 * @return null if item is null else item from memory
-//	 */
-//	private Tool getItemFromDataProviderRecursively(Tool item, long id) {
-//		if (item == null) {
-//			return null;
-//		}
-//
-//		if (item.getId().equals(id)) {
-//			return item;
-//		}
-//
-//		if (dataProvider.getTreeData().getChildren(item).size() > 0) {
-//			for (Tool child : dataProvider.getTreeData().getChildren(item)) {
-//				Tool temp = getItemFromDataProviderRecursively(child, id);
-//
-//				if (temp != null) {
-//					return temp;
-//				}
-//			}
-//		}
-//
-//		return null;
-//	}
 }

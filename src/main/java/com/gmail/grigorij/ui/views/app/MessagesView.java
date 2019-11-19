@@ -18,7 +18,7 @@ import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.forms.MessageForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.DateConverter;
 import com.vaadin.flow.component.button.Button;
@@ -106,12 +106,11 @@ public class MessagesView extends Div {
 		Button composeMessageButton = UIUtils.createButton("Compose", VaadinIcon.ENVELOPE , ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
 		composeMessageButton.addClassName("dynamic-label-button");
 		composeMessageButton.addClickListener(e -> constructMessageDialog(null, ""));
+		composeMessageButton.setEnabled(false);
 		headerTopDiv.add(composeMessageButton);
 
-		if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.SEND, OperationTarget.MESSAGES, PermissionRange.COMPANY)) {
-				composeMessageButton.setEnabled(false);
-			}
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.SEND, OperationTarget.MESSAGES, PermissionRange.COMPANY)) {
+			composeMessageButton.setEnabled(true);
 		}
 
 		Div headerBottomDiv = new Div();
@@ -342,7 +341,6 @@ public class MessagesView extends Div {
 		filterGrid(searchField.getValue());
 	}
 
-
 	private void filterGrid(String searchString) {
 
 		final String mainSearchString = searchString.trim();
@@ -373,6 +371,7 @@ public class MessagesView extends Div {
 			);
 		}
 	}
+
 
 	private void showDetails(Message message) {
 		messageForm.setMessage(message);
@@ -525,7 +524,6 @@ public class MessagesView extends Div {
 
 	private void sendMessage(long recipientId, String subject, String text) {
 		Message message = new Message();
-//		message.setMessageType(MessageType.SIMPLE_MESSAGE);
 		message.setRecipientId(recipientId);
 		message.setSenderUser(AuthenticationService.getCurrentSessionUser());
 		message.setSubject(subject);

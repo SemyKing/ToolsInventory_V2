@@ -3,7 +3,7 @@ package com.gmail.grigorij.ui.views.routes;
 import com.gmail.grigorij.backend.database.entities.PDF_Report;
 import com.gmail.grigorij.backend.database.facades.PDF_Facade;
 import com.gmail.grigorij.ui.components.PDF_Component;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -12,6 +12,9 @@ import com.vaadin.flow.server.StreamResource;
 
 import java.io.ByteArrayInputStream;
 
+/**
+ * Page accessible form URL containing .../report/ + dynamic report name
+ */
 
 @Route(value = "report")
 public class PDF_PageView extends Div implements HasUrlParameter<String> {

@@ -4,7 +4,7 @@ import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.ForgotPasswordDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.DetachEvent;
@@ -35,7 +35,6 @@ public class LoginView extends Div {
 	private Button loginButton;
 
 	private Div loginErrorLayout;
-	private Paragraph loginFailContent;
 
 	private ShortcutRegistration registration;
 	private Binder<User> binder;
@@ -59,7 +58,7 @@ public class LoginView extends Div {
 		usernameField.focus();
 
 		//TODO:REMOVE AT PRODUCTION
-		usernameField.setValue("system_admin");
+		usernameField.setValue("sysadmin");
 		passwordField.setValue("password");
 	}
 
@@ -130,7 +129,7 @@ public class LoginView extends Div {
 		loginErrorLayout = new Div();
 		loginErrorLayout.setClassName(CLASS_NAME + "__error-wrapper");
 
-		loginFailContent = new Paragraph(
+		Paragraph loginFailContent = new Paragraph(
 				new H5("Incorrect username or password"),
 				new Span("The username and password you entered do not match our records. Please double-check and try again"));
 

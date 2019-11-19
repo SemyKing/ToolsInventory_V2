@@ -58,8 +58,13 @@ public class User extends EntityPojo {
 	@Column(name = "username")
 	private String username;
 
-	@Column(name = "password")
-	private String password;
+	@Column(columnDefinition = "text")
+	private String salt = "";
+
+	@Column(columnDefinition = "text")
+	private String password = "";
+
+	private String dummyPassword = "";
 
 	@Column(name = "theme_variant")
 	private String themeVariant = Lumo.LIGHT;
@@ -90,7 +95,9 @@ public class User extends EntityPojo {
 
 	public User(User other) {
 		this.username = other.username;
+		this.salt = other.salt;
 		this.password = other.password;
+		this.dummyPassword = other.dummyPassword;
 		this.themeVariant = other.themeVariant;
 		this.locale = other.locale;
 		this.company = other.company;
@@ -98,6 +105,7 @@ public class User extends EntityPojo {
 		this.person = other.person;
 		this.permissionLevel = other.permissionLevel;
 		this.permissions = other.permissions;
+		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
 
 
@@ -108,11 +116,25 @@ public class User extends EntityPojo {
 		this.username = username;
 	}
 
+	public String getSalt() {
+		return salt;
+	}
+	public void setSalt(String salt) {
+		this.salt = salt;
+	}
+
 	public String getPassword() {
 		return password;
 	}
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getDummyPassword() {
+		return dummyPassword;
+	}
+	public void setDummyPassword(String dummyPassword) {
+		this.dummyPassword = dummyPassword;
 	}
 
 	public String getThemeVariant() {

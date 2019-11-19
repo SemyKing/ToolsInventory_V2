@@ -10,22 +10,24 @@
 
 /*  classes are here because they are in SHADOW DOM of vaadin-menu-bar  */
 
-.app-bar__wrapper-item > .list-item__content {
+.app-bar__user-item {
+	color: var(--lumo-body-text-color);
+}
+
+.list-item__primary {
+    font-weight: bold;
+}
+
+.list-item__row__content {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 }
 
-.app-bar__user-item > .list-item__content {
+.list-item__column__content {
 	display: flex;
 	flex-direction: column;
-	color: var(--lumo-body-text-color);
-}
-.app-bar__user-item > .list-item__content > .list-item__primary {
-    font-weight: bold;
-}
-.app-bar__user-item > .list-item__content > .list-item__secondary {
-
+	align-items: flex-end;
 }
 
 .initials {

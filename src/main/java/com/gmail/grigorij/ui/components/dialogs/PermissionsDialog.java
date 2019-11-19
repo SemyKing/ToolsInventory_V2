@@ -8,20 +8,22 @@ import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
-import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.data.provider.ListDataProvider;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 
@@ -30,20 +32,18 @@ public class PermissionsDialog extends CustomDialog {
 	private final static String CLASS_NAME = "permissions-dialog";
 	private final User user;
 
-	private List<Permission> editedPermissions;
+	private ListDataProvider<Permission> dataProvider;
 	private List<Permission> permissions = new ArrayList<>();
-	private List<PermissionRowLayout> permissionRows = new ArrayList<>();
-
-	// FOR TRANSACTION CHANGES
-	private List<PermissionRowLayout> addedPermissions = new ArrayList<>();
-
-
 	private List<String> changes = new ArrayList<>();
+	private LinkedHashMap<Integer, PermissionPair> permissionChangesHashMap = new LinkedHashMap<>();
 
-	private FlexBoxLayout content;
-	private Div contentHeader;
+	private static int counter;
 
-	private boolean systemAdmin, editOwnAllowed, editOthersAllowed, self;
+	private boolean systemAdmin = false;
+	private boolean editOwnAllowed = false;
+	private boolean editOthersAllowed = false;
+	private boolean self = false;
+	private boolean editMode = false;
 
 
 	public PermissionsDialog(User user) {
@@ -52,34 +52,33 @@ public class PermissionsDialog extends CustomDialog {
 		setCloseOnEsc(false);
 		setCloseOnOutsideClick(false);
 
+		counter = 0;
+
 		systemAdmin = AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN);
+		self = user.getId().equals(AuthenticationService.getCurrentSessionUser().getId());
 
 		if (!systemAdmin) {
 			editOwnAllowed = PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.OWN);
 			editOthersAllowed = PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY);
 		}
 
-		self = user.getId().equals(AuthenticationService.getCurrentSessionUser().getId());
+		for (Permission p : user.getPermissions()) {
 
-		getContent().add(constructContentHeader());
-		getContent().add(new Hr());
-		getContent().add(constructContent());
+			Permission pCopy = new Permission(p);
+			permissions.add(pCopy);
 
-		if (!self) { // CANNOT ADD PERMISSIONS TO SELF
-			if (systemAdmin || PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
-				Button addPermissionButton = UIUtils.createButton("Add Permission", ButtonVariant.LUMO_PRIMARY);
-				addPermissionButton.getElement().getStyle().set("min-height", "31.5px");
-				addPermissionButton.addClickListener(e -> {
-					PermissionRowLayout permissionRow = constructPermissionRow(null);
-					content.add(permissionRow);
-					content.add(new Hr());
-
-					addedPermissions.add(permissionRow);
-				});
-
-				getContent().add(addPermissionButton);
-			}
+			permissionChangesHashMap.put(counter, new PermissionPair(new Permission(p), new Permission(p)));
+			counter++;
 		}
+
+		Div wrapper = new Div();
+		wrapper.addClassName(CLASS_NAME);
+
+		wrapper.add(constructUserInformation());
+		wrapper.add(new Hr());
+		wrapper.add(constructContent());
+
+		getContent().add(wrapper);
 
 
 		getCancelButton().addClickListener(cancelEditOnClick -> {
@@ -87,6 +86,7 @@ public class PermissionsDialog extends CustomDialog {
 			confirmDialog.setMessage("Are you sure you want to cancel?" + ProjectConstants.NEW_LINE + "All changes will be lost");
 			confirmDialog.closeOnCancel();
 			confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
+				changes = null;
 				confirmDialog.close();
 				this.close();
 			});
@@ -94,28 +94,13 @@ public class PermissionsDialog extends CustomDialog {
 		});
 
 		getConfirmButton().setText("Save");
+		getConfirmButton().setEnabled(false);
 	}
 
 
-	private Div constructContentHeader() {
-		contentHeader = new Div();
+	private Div constructUserInformation() {
+		Div contentHeader = new Div();
 		contentHeader.addClassName(CLASS_NAME + "__content_header");
-
-		return contentHeader;
-	}
-
-	private FlexBoxLayout constructContent() {
-		content = new FlexBoxLayout();
-		content.addClassName(CLASS_NAME + "__content");
-
-		return content;
-	}
-
-
-	public void constructView() {
-		for (Permission permission : user.getPermissions()) {
-			permissions.add(new Permission(permission));
-		}
 
 		Div left = new Div();
 		left.addClassName("left");
@@ -132,288 +117,307 @@ public class PermissionsDialog extends CustomDialog {
 
 		contentHeader.add(left, right);
 
-		populateData();
+		return contentHeader;
 	}
 
-	private void populateData() {
+	private Div constructContent() {
+		Div content = new Div();
+		content.addClassName(CLASS_NAME + "__content");
 
-		for (Permission permission : permissions) {
-
-			if (systemAdmin) {
-				content.add(constructPermissionRow(permission));
-				content.add(new Hr());
-			} else {
-				if (self) {
-					if (permission.isVisible()) {
-						content.add(constructPermissionRow(permission));
-						content.add(new Hr());
-					}
-				} else {
-					content.add(constructPermissionRow(permission));
-					content.add(new Hr());
-				}
-			}
-		}
-	}
-
-	private PermissionRowLayout constructPermissionRow(Permission permission) {
-		PermissionRowLayout permissionRow = new PermissionRowLayout();
-
-		if (permission != null) {
-			permissionRow.getOperationComboBox().setValue(permission.getOperation());
-			permissionRow.getTargetComboBox().setValue(permission.getOperationTarget());
-			permissionRow.getPermissionOwnComboBox().setValue(permission.getPermissionOwn());
-			permissionRow.getPermissionCompanyComboBox().setValue(permission.getPermissionCompany());
-
-			if (systemAdmin) {
-//				permissionRow.addPermissionSystemComboBox();
-//				permissionRow.getPermissionSystemComboBox().setValue(permission.getPermissionSystem());
-
-				permissionRow.addVisibleButton();
-				permissionRow.setPermissionVisible(permission.isVisible());
-
-				initDeleteButton(permissionRow);
-			} else {
-				if (!self) {
-					permissionRow.addVisibleButton();
-					permissionRow.setPermissionVisible(permission.isVisible());
-
-					if (PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
-						initDeleteButton(permissionRow);
-					}
-
-					if (!editOthersAllowed) {
-						permissionRow.getOperationComboBox().setReadOnly(true);
-						permissionRow.getTargetComboBox().setReadOnly(true);
-						permissionRow.getPermissionOwnComboBox().setReadOnly(true);
-						permissionRow.getPermissionCompanyComboBox().setReadOnly(true);
-//						permissionRow.getPermissionSystemComboBox().setReadOnly(true);
-						permissionRow.getToggleVisibleButton().setEnabled(false);
-					}
-				} else {
-					if (!editOwnAllowed) {
-
-						permissionRow.getOperationComboBox().setReadOnly(true);
-						permissionRow.getTargetComboBox().setReadOnly(true);
-						permissionRow.getPermissionOwnComboBox().setReadOnly(true);
-						permissionRow.getPermissionCompanyComboBox().setReadOnly(true);
-//						permissionRow.getPermissionSystemComboBox().setReadOnly(true);
-						permissionRow.getToggleVisibleButton().setEnabled(false);
-					}
-				}
-			}
-		} else {
-			if (systemAdmin) {
-//				permissionRow.addPermissionSystemComboBox();
-				permissionRow.addVisibleButton();
-
-				initDeleteButton(permissionRow);
-			} else {
-				if (!self) {
-					permissionRow.addVisibleButton();
-
-					if (PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
-						initDeleteButton(permissionRow);
-					}
-				}
-			}
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			Button addPermissionButton = UIUtils.createButton("Add Permission", VaadinIcon.PLUS_CIRCLE, ButtonVariant.LUMO_PRIMARY);
+			addPermissionButton.addClickListener(e -> addPermissionOnClick());
+			content.add(addPermissionButton);
 		}
 
-		permissionRows.add(permissionRow);
+		// GRID
+		content.add(constructGrid());
 
-		return permissionRow;
+		return content;
 	}
 
-	private void initDeleteButton(PermissionRowLayout permissionRow) {
-		permissionRow.addDeleteButton();
-		permissionRow.getDeleteButton().addClickListener(e -> {
+	private Grid constructGrid() {
+		Grid<Permission> grid = new Grid<>();
+		grid.addClassNames("grid-view", "permissions-grid");
 
-			ConfirmDialog dialog = new ConfirmDialog();
-			dialog.setMessage("Delete permission?");
-			dialog.closeOnCancel();
-			dialog.getConfirmButton().addClickListener(confirmEvent -> {
-				int itemIndex = content.indexOf(permissionRow);
-				Hr hrBelow = null;
+		dataProvider = new ListDataProvider<>(permissions);
+		dataProvider.getItems().removeIf(permission -> (self && !permission.isVisible()));
 
-				if (itemIndex >= 0) {
-					int nextItemIndex = ++itemIndex;
+		grid.setDataProvider(dataProvider);
 
-					Component component = content.getComponentAt((nextItemIndex));
+		grid.addColumn(Permission::getOperationString)
+				.setHeader("Operation")
+				.setAutoWidth(true)
+				.setFlexGrow(1);
 
-					if (component instanceof Hr) {
-						hrBelow = (Hr)content.getComponentAt((nextItemIndex));
-					}
-				}
+		grid.addColumn(Permission::getTargetString)
+				.setHeader("Target")
+				.setAutoWidth(true)
+				.setFlexGrow(2);
 
-				content.remove(permissionRow);
+		grid.addColumn(Permission::getPermissionOwnString)
+				.setHeader("Own")
+				.setFlexGrow(0);
 
-				if (hrBelow != null) {
-					content.remove(hrBelow);
-				}
-				permissionRows.remove(permissionRow);
-				dialog.close();
+		grid.addColumn(Permission::getPermissionCompanyString)
+				.setHeader("Company")
+				.setFlexGrow(0);
 
-				addedPermissions.removeIf(pr -> pr.equals(permissionRow));
-				changes.add("Deleted Permission: " + permissionRow.getOperationComboBox().getValue() + " " + permissionRow.getTargetComboBox().getValue());
-			});
-			dialog.open();
+		if (systemAdmin || (!self && editOthersAllowed)) {
+			grid.addComponentColumn(permission -> {
+				Button setPermissionVisibleButton = UIUtils.createIconButton(VaadinIcon.EYE_SLASH, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+
+				configureVisibilityButton(setPermissionVisibleButton, permission.isVisible());
+
+				setPermissionVisibleButton.addClickListener(editEvent -> {
+					toggleVisibility(permission, setPermissionVisibleButton);
+				});
+
+				return setPermissionVisibleButton;
+			})
+					.setTextAlign(ColumnTextAlign.CENTER)
+					.setWidth("50px")
+					.setFlexGrow(0);
+		}
+
+		if (systemAdmin || (!self && editOthersAllowed) || (self && editOwnAllowed)) {
+			grid.addComponentColumn(permission -> {
+				Button editPermissionButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+				editPermissionButton.addClickListener(editEvent -> {
+					editPermissionOnClick(permission);
+				});
+
+				return editPermissionButton;
+			})
+					.setTextAlign(ColumnTextAlign.CENTER)
+					.setWidth("50px")
+					.setFlexGrow(0);
+		}
+
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
+			grid.addComponentColumn(permission -> {
+				Button removePermissionButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
+				removePermissionButton.addClickListener(removeEvent -> {
+					removePermissionOnClick(permission);
+				});
+
+				return removePermissionButton;
+			})
+					.setTextAlign(ColumnTextAlign.CENTER)
+					.setWidth("50px")
+					.setFlexGrow(0);
+		}
+
+		return grid;
+	}
+
+
+	private void addPermissionOnClick() {
+		CustomDialog permissionEditDialog = new CustomDialog();
+		permissionEditDialog.closeOnCancel();
+		permissionEditDialog.setHeader(UIUtils.createH3Label("Permission Details"));
+
+		PermissionLayout layout = new PermissionLayout(null);
+		permissionEditDialog.setContent(layout);
+
+		permissionEditDialog.getConfirmButton().setText("Save");
+		permissionEditDialog.getConfirmButton().addClickListener(e -> {
+			Permission p = getValidPermission(layout);
+			if (p != null) {
+				dataProvider.getItems().add(p);
+				dataProvider.refreshAll();
+
+				permissionChangesHashMap.put(counter, new PermissionPair(null, new Permission(p)));
+				counter++;
+				permissionEditDialog.close();
+			}
 		});
+		permissionEditDialog.open();
+	}
+
+	private void editPermissionOnClick(Permission permission) {
+		CustomDialog permissionEditDialog = new CustomDialog();
+		permissionEditDialog.closeOnCancel();
+		permissionEditDialog.setHeader(UIUtils.createH3Label("Permission Details"));
+
+		PermissionLayout layout = new PermissionLayout(permission);
+		permissionEditDialog.setContent(layout);
+
+		permissionEditDialog.getConfirmButton().setText("Save");
+		permissionEditDialog.getConfirmButton().addClickListener(e -> {
+			Permission p = getValidPermission(layout);
+			if (p != null) {
+				permission.setOperation(p.getOperation());
+				permission.setOperationTarget(p.getOperationTarget());
+				permission.setPermissionOwn(p.getPermissionOwn());
+				permission.setPermissionCompany(p.getPermissionCompany());
+				permission.setVisible(p.isVisible());
+				dataProvider.refreshItem(permission);
+
+				permissionChangesHashMap.get(permission.getCounter()).setP2(p);
+
+				permissionEditDialog.close();
+			}
+		});
+		permissionEditDialog.open();
+	}
+
+	private void removePermissionOnClick(Permission permission) {
+		permissionChangesHashMap.get(permission.getCounter()).setP2(null);
+
+		dataProvider.getItems().remove(permission);
+		dataProvider.refreshAll();
 	}
 
 
-	public List<Permission> getPermissions() {
-		if (validate()) {
-			return editedPermissions;
+	private void toggleVisibility(Permission permission, Button button) {
+		permission.setVisible(!permission.isVisible());
+		configureVisibilityButton(button, permission.isVisible());
+	}
+
+	private void configureVisibilityButton(Button button, boolean visible) {
+		if (visible) {
+			button.setIcon(VaadinIcon.EYE.create());
+			button.removeThemeVariants(ButtonVariant.LUMO_CONTRAST);
 		} else {
-			return null;
+			button.setIcon(VaadinIcon.EYE_SLASH.create());
+			button.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 		}
+	}
+
+	private Permission getValidPermission(PermissionLayout layout) {
+		Permission permission = new Permission();
+
+		if (layout.getOperationComboBox().getValue() == null || layout.getOperationComboBox().isInvalid()) {
+			return null;
+		} else {
+			permission.setOperation(layout.getOperationComboBox().getValue());
+		}
+
+		if (layout.getTargetComboBox().getValue() == null || layout.getTargetComboBox().isInvalid()) {
+			return null;
+		} else {
+			permission.setOperationTarget(layout.getTargetComboBox().getValue());
+		}
+
+		if (layout.getPermissionOwnComboBox().getValue() == null || layout.getPermissionOwnComboBox().isInvalid()) {
+			return null;
+		} else {
+			permission.setPermissionOwn(layout.getPermissionOwnComboBox().getValue());
+		}
+
+		if (layout.getPermissionCompanyComboBox().getValue() == null || layout.getPermissionCompanyComboBox().isInvalid()) {
+			return null;
+		} else {
+			permission.setPermissionCompany(layout.getPermissionCompanyComboBox().getValue());
+		}
+
+		return permission;
 	}
 
 
 	private boolean validate() {
-		editedPermissions = new ArrayList<>();
+		if (!systemAdmin) {
 
-		if (systemAdmin) {
-			for (PermissionRowLayout permissionRow : permissionRows) {
-
-				if (permissionRow.getOperationComboBox().getValue() == null) {
-					permissionRow.getOperationComboBox().setInvalid(true);
-					return false;
-				}
-
-				if (permissionRow.getTargetComboBox().getValue() == null) {
-					permissionRow.getTargetComboBox().setInvalid(true);
-					return false;
-				}
-
-				if (permissionRow.getPermissionOwnComboBox().getValue() == null) {
-					permissionRow.getPermissionOwnComboBox().setInvalid(true);
-					return false;
-				}
-
-				if (permissionRow.getPermissionCompanyComboBox().getValue() == null) {
-					permissionRow.getPermissionCompanyComboBox().setInvalid(true);
-					return false;
-				}
-
-//				if (permissionRow.getPermissionSystemComboBox().getValue() == null) {
-//					permissionRow.getPermissionSystemComboBox().setInvalid(true);
-//					return false;
-//				}
-
-				Permission permission = new Permission();
-				permission.setOperation(permissionRow.getOperationComboBox().getValue());
-				permission.setOperationTarget(permissionRow.getTargetComboBox().getValue());
-				permission.setPermissionOwn(permissionRow.getPermissionOwnComboBox().getValue());
-				permission.setPermissionCompany(permissionRow.getPermissionCompanyComboBox().getValue());
-//				permission.setPermissionSystem(permissionRow.getPermissionSystemComboBox().getValue());
-				permission.setVisible(permissionRow.isPermissionVisible());
-
-				editedPermissions.add(permission);
-			}
-		} else {
-
-			if (!editOwnAllowed || !editOthersAllowed) {
-				editedPermissions = permissions;
-				return true;
-			}
-
-			// COMPANY ADMIN
-			if (self) {
+			// EDIT NOT ALLOWED -> RETURN ORIGINAL PERMISSIONS
+			if (!editOwnAllowed || !editOthersAllowed || self) {
 
 				// ADD HIDDEN PERMISSIONS
-				for (Permission permission : permissions) {
+				for (Permission permission : user.getPermissions()) {
 					if (!permission.isVisible()) {
-						editedPermissions.add(permission);
+						permissions.add(new Permission(permission));
 					}
 				}
-			}
 
-			for (PermissionRowLayout permissionRow : permissionRows) {
-				if (permissionRow.getOperationComboBox().getValue() == null) {
-					permissionRow.getOperationComboBox().setInvalid(true);
-					return false;
-				}
-
-				if (permissionRow.getTargetComboBox().getValue() == null) {
-					permissionRow.getTargetComboBox().setInvalid(true);
-					return false;
-				}
-
-				if (permissionRow.getPermissionOwnComboBox().getValue() == null) {
-					permissionRow.getPermissionOwnComboBox().setInvalid(true);
-					return false;
-				}
-
-				if (permissionRow.getPermissionCompanyComboBox().getValue() == null) {
-					permissionRow.getPermissionCompanyComboBox().setInvalid(true);
-					return false;
-				}
-
-				Permission permission = new Permission();
-				permission.setOperation(permissionRow.getOperationComboBox().getValue());
-				permission.setOperationTarget(permissionRow.getTargetComboBox().getValue());
-				permission.setPermissionOwn(permissionRow.getPermissionOwnComboBox().getValue());
-				permission.setPermissionCompany(permissionRow.getPermissionCompanyComboBox().getValue());
-//				permission.setPermissionSystem(OperationPermission.NO);
-				permission.setVisible(permissionRow.isPermissionVisible());
-
-				editedPermissions.add(permission);
+				return true;
 			}
 		}
 
 		return true;
 	}
 
+
+	public List<Permission> getPermissions() {
+		if (validate()) {
+			return permissions;
+		} else {
+			return null;
+		}
+	}
+
 	public List<String> getChanges() {
-		for (PermissionRowLayout permissionRow : addedPermissions) {
-			changes.add("Added Permission: " + permissionRow.getOperationComboBox().getValue().getName() + " " + permissionRow.getTargetComboBox().getValue().getName() +
-							" Own: " + permissionRow.getPermissionOwnComboBox().getValue().getName() +
-							" Company: " + permissionRow.getPermissionCompanyComboBox().getValue().getName());
+
+		if (changes == null) {
+			return null;
+		}
+
+		for (Integer i : permissionChangesHashMap.keySet()) {
+
+			Permission p1 = permissionChangesHashMap.get(i).getP1();
+			Permission p2 = permissionChangesHashMap.get(i).getP2();
+
+			if (p1 == null) {
+				changes.add("Added Permission: " + getPermissionString(p2));
+				continue;
+			}
+
+			if (p2 == null) {
+				changes.add("Removed Permission: " + getPermissionString(p1));
+				continue;
+			}
+
+			String p1s = getPermissionString(p1);
+			String p2s = getPermissionString(p2);
+
+			if (!p1s.equals(p2s)) {
+				changes.add("Permission changed from:  '" + p1s + "'\nto:  '" + p2s + "'");
+			}
 		}
 
 		return changes;
 	}
 
 
-	private static class PermissionRowLayout extends Div {
+	private String getPermissionString(Permission p) {
+		String ps = "";
 
-		private final static String CLASS_NAME = "permission-row";
+		if (p != null) {
+			ps = p.getOperation().getName() + " " + p.getOperationTarget().getName() + ", " +
+					PermissionRange.OWN.getName() + ": " + p.getPermissionOwn().getName() + ", " +
+					PermissionRange.COMPANY.getName() + ": " + p.getPermissionCompany().getName();
+		}
 
-		private Div permissionsAndActionsDiv;
+		return ps;
+	}
+
+
+	private static class PermissionLayout extends Div {
 
 		private ComboBox<Operation> operationComboBox;
 		private ComboBox<OperationTarget> targetComboBox;
 		private ComboBox<OperationPermission> permissionOwnComboBox;
 		private ComboBox<OperationPermission> permissionCompanyComboBox;
-//		private ComboBox<OperationPermission> permissionSystemComboBox;
-
-		private boolean permissionVisible = false;
-		private Button toggleVisibleButton;
-
-		private Button deleteButton;
 
 
-		PermissionRowLayout() {
-			addClassName(CLASS_NAME);
-
-			Div operationAndTargetDiv = new Div();
-			operationAndTargetDiv.addClassName(CLASS_NAME + "__ot");
+		PermissionLayout(Permission permission) {
+			addClassName(CLASS_NAME + "__permission");
 
 
+			// OPERATION
 			List<Operation> operations = new ArrayList<>(EnumSet.allOf(Operation.class));
-			operations.removeIf(operation -> operation.getMinimalPermissionLevel().higherThan(AuthenticationService.getCurrentSessionUser().getPermissionLevel()));
+			operations.removeIf(target -> target.getMinimalPermissionLevel().higherThan(AuthenticationService.getCurrentSessionUser().getPermissionLevel()));
 
 			operationComboBox = new ComboBox<>();
 			operationComboBox.setLabel("Operation");
 			operationComboBox.setItems(operations);
-			operationComboBox.setItemLabelGenerator(Operation::getName);
-			operationComboBox.setErrorMessage("Value Required");
 			operationComboBox.setRequired(true);
-			operationComboBox.addValueChangeListener(e -> {
-				operationComboBox.setInvalid(false);
-			});
+			if (permission != null) {
+				operationComboBox.setValue(permission.getOperation());
+			}
+			add(operationComboBox);
 
+
+			// TARGET
 			List<OperationTarget> targets = new ArrayList<>(EnumSet.allOf(OperationTarget.class));
 			targets.removeIf(target -> target.getMinimalPermissionLevel().higherThan(AuthenticationService.getCurrentSessionUser().getPermissionLevel()));
 
@@ -421,77 +425,44 @@ public class PermissionsDialog extends CustomDialog {
 			targetComboBox.setLabel("Target");
 			targetComboBox.setItems(targets);
 			targetComboBox.setItemLabelGenerator(OperationTarget::getName);
-			targetComboBox.setErrorMessage("Value Required");
+			targetComboBox.setErrorMessage(ProjectConstants.VALUE_REQUIRED);
 			targetComboBox.setRequired(true);
-			targetComboBox.addValueChangeListener(e -> {
-				targetComboBox.setInvalid(false);
-			});
+			if (permission != null) {
+				targetComboBox.setValue(permission.getOperationTarget());
+			}
+			add(targetComboBox);
 
-			operationAndTargetDiv.add(operationComboBox, targetComboBox);
 
-
-			permissionsAndActionsDiv = new Div();
-			permissionsAndActionsDiv.addClassName(CLASS_NAME + "__pa");
-
+			// OWN
 			permissionOwnComboBox = new ComboBox<>();
-			permissionOwnComboBox.setLabel("Own");
+			permissionOwnComboBox.setLabel(PermissionRange.OWN.getName());
 			permissionOwnComboBox.setItems(EnumSet.allOf(OperationPermission.class));
 			permissionOwnComboBox.setItemLabelGenerator(OperationPermission::getName);
-			permissionOwnComboBox.setErrorMessage("Value Required");
+			permissionOwnComboBox.setErrorMessage(ProjectConstants.VALUE_REQUIRED);
 			permissionOwnComboBox.setRequired(true);
-			permissionOwnComboBox.setValue(OperationPermission.NO);
-			permissionOwnComboBox.addValueChangeListener(e -> {
-				permissionOwnComboBox.setInvalid(false);
-			});
+			if (permission != null) {
+				permissionOwnComboBox.setValue(permission.getPermissionOwn());
+			} else {
+				permissionOwnComboBox.setValue(OperationPermission.NO);
+			}
+			add(permissionOwnComboBox);
 
+
+			// COMPANY
 			permissionCompanyComboBox = new ComboBox<>();
-			permissionCompanyComboBox.setLabel("Company");
+			permissionCompanyComboBox.setLabel(PermissionRange.COMPANY.getName());
 			permissionCompanyComboBox.setItems(EnumSet.allOf(OperationPermission.class));
 			permissionCompanyComboBox.setItemLabelGenerator(OperationPermission::getName);
-			permissionCompanyComboBox.setErrorMessage("Value Required");
+			permissionCompanyComboBox.setErrorMessage(ProjectConstants.VALUE_REQUIRED);
 			permissionCompanyComboBox.setRequired(true);
-			permissionCompanyComboBox.setValue(OperationPermission.NO);
-			permissionCompanyComboBox.addValueChangeListener(e -> {
-				permissionCompanyComboBox.setInvalid(false);
-			});
-
-//			permissionSystemComboBox = new ComboBox<>();
-//			permissionSystemComboBox.setLabel("System");
-//			permissionSystemComboBox.setItems(EnumSet.allOf(OperationPermission.class));
-//			permissionSystemComboBox.setItemLabelGenerator(OperationPermission::getName);
-//			permissionSystemComboBox.setErrorMessage("Value Required");
-//			permissionSystemComboBox.setRequired(true);
-//			permissionSystemComboBox.setValue(OperationPermission.NO);
-//			permissionSystemComboBox.addValueChangeListener(e -> {
-//				permissionSystemComboBox.setInvalid(false);
-//			});
-
-			permissionsAndActionsDiv.add(permissionOwnComboBox, permissionCompanyComboBox);
-
-
-			toggleVisibleButton = UIUtils.createIconButton(VaadinIcon.EYE_SLASH, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_CONTRAST);
-			toggleVisibleButton.addClassName(CLASS_NAME + "__tvb");
-			toggleVisibleButton.addClickListener(e -> {
-				toggleVisibility();
-			});
-
-			deleteButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
-
-			add(operationAndTargetDiv);
-			add(permissionsAndActionsDiv);
+			if (permission != null) {
+				permissionCompanyComboBox.setValue(permission.getPermissionCompany());
+			} else {
+				permissionCompanyComboBox.setValue(OperationPermission.NO);
+			}
+			add(permissionCompanyComboBox);
 		}
 
-//		private void addPermissionSystemComboBox() {
-//			permissionsAndActionsDiv.add(permissionSystemComboBox);
-//		}
-
-		private void addVisibleButton() {
-			permissionsAndActionsDiv.add(toggleVisibleButton);
-		}
-
-		private void addDeleteButton() {
-			permissionsAndActionsDiv.add(deleteButton);
-		}
 
 		private ComboBox<Operation> getOperationComboBox() {
 			return operationComboBox;
@@ -505,43 +476,34 @@ public class PermissionsDialog extends CustomDialog {
 		private ComboBox<OperationPermission> getPermissionCompanyComboBox() {
 			return permissionCompanyComboBox;
 		}
-//		private ComboBox<OperationPermission> getPermissionSystemComboBox() {
-//			return permissionSystemComboBox;
-//		}
+	}
 
+	private static class PermissionPair {
 
-		private Button getToggleVisibleButton() {
-			return toggleVisibleButton;
+		private Permission p1;
+		private Permission p2;
+
+		PermissionPair(Permission p1, Permission p2) {
+			this.p1 = p1;
+			this.p2 = p2;
 		}
 
-		private Button getDeleteButton() {
-			return deleteButton;
+		private Permission getP1() {
+			return p1;
+		}
+		private void setP1(Permission p1) {
+			this.p1 = p1;
 		}
 
-
-		private void toggleVisibility() {
-			if (permissionVisible) {
-				toggleVisibleButton.setIcon(VaadinIcon.EYE_SLASH.create());
-				toggleVisibleButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
-			} else {
-				toggleVisibleButton.setIcon(VaadinIcon.EYE.create());
-				toggleVisibleButton.removeThemeVariants(ButtonVariant.LUMO_CONTRAST);
-			}
-			permissionVisible = !permissionVisible;
+		private Permission getP2() {
+			return p2;
+		}
+		private void setP2(Permission p2) {
+			this.p2 = p2;
 		}
 
-		private boolean isPermissionVisible() {
-			return permissionVisible;
-		}
-
-		private void setPermissionVisible(boolean visible) {
-			permissionVisible = visible;
-
-			if (permissionVisible) {
-				toggleVisibleButton.setIcon(VaadinIcon.EYE.create());
-			} else {
-				toggleVisibleButton.setIcon(VaadinIcon.EYE_SLASH.create());
-			}
+		private boolean isNull() {
+			return this.p1 == null && this.p2 == null;
 		}
 	}
 }

@@ -14,7 +14,7 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.ui.utils.css.Overflow;
 import com.gmail.grigorij.ui.views.app.*;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.AttachEvent;
@@ -50,17 +50,13 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 	private List<Notification> notifications = new ArrayList<>();
 
-	private Div appHeaderOuter;
-
 	private NaviDrawer naviDrawer;
 	private FlexBoxLayout column;
 
 	private AppBar appBar;
 
 	private FlexBoxLayout viewContainer;
-	private Div appHeaderInner;
-	private Div appFooterInner;
-	private Div appFooterOuter;
+	private Div appHeader;
 
 	private final MainLayout mainLayout;
 
@@ -68,16 +64,16 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		this.mainLayout = mainLayout;
 
 		addClassName(CLASS_NAME);
-		setThemeVariant(AuthenticationService.getCurrentSessionUser().getThemeVariant());
 		setFlexDirection(FlexDirection.COLUMN);
 		setSizeFull();
 
-		initDrawerStructure();
+		setThemeVariant(AuthenticationService.getCurrentSessionUser().getThemeVariant());
 
-		initHeadersAndFooters();
+		constructDrawer();
 
-		// !!! Must be constructed after initHeadersAndFooters();
-		initNaviItems();
+		constructAppHeader();
+
+		constructNaviItems();
 
 		// Show notification about closing tab
 //		if (UI.getCurrent() != null) {
@@ -97,7 +93,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 	/**
 	 * Initialise the navigation drawer.
 	 */
-	private void initDrawerStructure() {
+	private void constructDrawer() {
 		naviDrawer = new NaviDrawer();
 
 		viewContainer = new FlexBoxLayout();
@@ -122,7 +118,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 	/**
 	 * Initialise the navigation items inside navigation drawer.
 	 */
-	private void initNaviItems() {
+	private void constructNaviItems() {
 		NaviMenu menu = naviDrawer.getMenu();
 
 		NaviItem dashboard = new NaviItem(VaadinIcon.DASHBOARD, ProjectConstants.DASHBOARD);
@@ -133,28 +129,26 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 
 		dashboard.addClickListener(e-> {
-			naviItemOnClick(dashboard);
+			naviItemOnClick(dashboard, false);
 			viewContainer.add(new DashboardView());
 		});
 		menu.addNaviItem(dashboard);
 
+		System.out.println("VIEW TAB: " + PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.INVENTORY_TAB, null));
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.INVENTORY_TAB, null)) {
 
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.INVENTORY_TAB, null)) {
 			inventory.addClickListener(e-> {
-				naviItemOnClick(inventory);
+				naviItemOnClick(inventory, false);
 				viewContainer.add(new InventoryView());
 			});
 			menu.addNaviItem(inventory);
 		}
 
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.MESSAGES_TAB, null)) {
-
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.MESSAGES_TAB, null)) {
 			messages.addClickListener(e-> {
-				naviItemOnClick(messages);
+				naviItemOnClick(messages, false);
 				viewContainer.add(new MessagesView());
 
 				notifications.forEach(Notification::close);
@@ -164,22 +158,20 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		}
 
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.TRANSACTIONS_TAB, null)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.TRANSACTIONS_TAB, null)) {
 
 			transaction.addClickListener(e-> {
-				naviItemOnClick(transaction);
+				naviItemOnClick(transaction, false);
 				viewContainer.add(new TransactionsView());
 			});
 			menu.addNaviItem(transaction);
 		}
 
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.REPORTING_TAB, null)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.REPORTING_TAB, null)) {
 
 			reporting.addClickListener(e-> {
-				naviItemOnClick(reporting);
+				naviItemOnClick(reporting, false);
 				viewContainer.add(new ReportingView());
 			});
 			menu.addNaviItem(reporting);
@@ -205,53 +197,66 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 			menu.addNaviItem(adminItem, admin_companies);
 
 			admin_companies.addClickListener(e-> {
-				adminNaviItemOnClick(admin_companies);
+				naviItemOnClick(admin_companies, true);
 			});
 
 			NaviItem admin_personnel = new NaviItem(ProjectConstants.PERSONNEL);
 			menu.addNaviItem(adminItem, admin_personnel);
 
 			admin_personnel.addClickListener(e-> {
-				adminNaviItemOnClick(admin_personnel);
+				naviItemOnClick(admin_personnel, true);
 			});
 
 			NaviItem admin_inventory = new NaviItem(ProjectConstants.ADMIN_INVENTORY);
 			menu.addNaviItem(adminItem, admin_inventory);
 
 			admin_inventory.addClickListener(e-> {
-				adminNaviItemOnClick(admin_inventory);
+				naviItemOnClick(admin_inventory, true);
 			});
 		}
 
 		//Open Dashboard view
-		naviItemOnClick(dashboard);
+		naviItemOnClick(dashboard, false);
 		viewContainer.add(new DashboardView());
 	}
 
-	private void naviItemOnClick(NaviItem naviItem) {
+	private void naviItemOnClick(NaviItem naviItem, boolean adminNaviItem) {
 		naviDrawer.close();
 		viewContainer.removeAll();
 		appBar.reset();
 
-		selectCorrectNaviItem("", naviItem.getText());
-	}
+		if (adminNaviItem) {
+			viewContainer.add(new AdminView(this));
 
-	private void adminNaviItemOnClick(NaviItem naviItem) {
-		naviDrawer.close();
-		viewContainer.removeAll();
-		appBar.reset();
+			selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
 
-		viewContainer.add(new AdminView(this));
-
-		selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
-
-		for (Tab tab : appBar.getTabs()) {
-			if (tab.getLabel().equals(naviItem.getText())) {
-				appBar.setSelectedTab(tab);
-				break;
+			for (Tab tab : appBar.getTabs()) {
+				if (tab.getLabel().equals(naviItem.getText())) {
+					appBar.setSelectedTab(tab);
+					break;
+				}
 			}
+		} else {
+			selectCorrectNaviItem("", naviItem.getText());
 		}
 	}
+
+//	private void adminNaviItemOnClick(NaviItem naviItem) {
+//		naviDrawer.close();
+//		viewContainer.removeAll();
+//		appBar.reset();
+//
+//		viewContainer.add(new AdminView(this));
+//
+//		selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
+//
+//		for (Tab tab : appBar.getTabs()) {
+//			if (tab.getLabel().equals(naviItem.getText())) {
+//				appBar.setSelectedTab(tab);
+//				break;
+//			}
+//		}
+//	}
 
 	public void selectCorrectNaviItem(String tabNamePrefix, String tabName) {
 		appBar.setTitle(tabNamePrefix + " " + tabName);
@@ -266,51 +271,19 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 	}
 
 
-	private void initHeadersAndFooters() {
+	private void constructAppHeader() {
 		appBar = new AppBar(this, "");
-		setAppHeaderInner(appBar);
+		setAppHeader(appBar);
 	}
 
-	private void setAppHeaderOuter(Component... components) {
-		if (appHeaderOuter == null) {
-			appHeaderOuter = new Div();
-			appHeaderOuter.addClassName("app-header-outer");
-			getElement().insertChild(0, appHeaderOuter.getElement());
+	private void setAppHeader(Component... components) {
+		if (appHeader == null) {
+			appHeader = new Div();
+			appHeader.addClassName("app-header-inner");
+			column.getElement().insertChild(0, appHeader.getElement());
 		}
-		appHeaderOuter.removeAll();
-		appHeaderOuter.add(components);
-	}
-
-	private void setAppHeaderInner(Component... components) {
-		if (appHeaderInner == null) {
-			appHeaderInner = new Div();
-			appHeaderInner.addClassName("app-header-inner");
-			column.getElement().insertChild(0, appHeaderInner.getElement());
-		}
-		appHeaderInner.removeAll();
-		appHeaderInner.add(components);
-	}
-
-	private void setAppFooterInner(Component... components) {
-		if (appFooterInner == null) {
-			appFooterInner = new Div();
-			appFooterInner.addClassName("app-footer-inner");
-			column.getElement().insertChild(column.getElement().getChildCount(),
-					appFooterInner.getElement());
-		}
-		appFooterInner.removeAll();
-		appFooterInner.add(components);
-	}
-
-	private void setAppFooterOuter(Component... components) {
-		if (appFooterOuter == null) {
-			appFooterOuter = new Div();
-			appFooterOuter.addClassName("app-footer-outer");
-			getElement().insertChild(getElement().getChildCount(),
-					appFooterOuter.getElement());
-		}
-		appFooterOuter.removeAll();
-		appFooterOuter.add(components);
+		appHeader.removeAll();
+		appHeader.add(components);
 	}
 
 
@@ -329,7 +302,6 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		settings.addMetaTag("apple-mobile-web-app-status-bar-style", "black");
 		settings.addFavIcon("icon", "images/favicons/favicon.ico", "256x256");
 	}
-
 
 
 	private Registration broadcasterRegistration;

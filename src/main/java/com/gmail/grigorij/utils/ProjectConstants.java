@@ -46,6 +46,7 @@ public final class ProjectConstants {
 
 	public final static String NEW_LINE = "##_NEW_LINE_##";
 	public final static String ACTION_NOT_ALLOWED = "You don't have permission for this action";
+	public final static String VALUE_REQUIRED = "Value Required";
 
 
 	// CSS CLASS NAMES
