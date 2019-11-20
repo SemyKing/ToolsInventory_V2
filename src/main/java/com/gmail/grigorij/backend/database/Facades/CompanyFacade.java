@@ -2,6 +2,7 @@ package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
 import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.EntityPojo;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.utils.ProjectConstants;
 
@@ -25,6 +26,19 @@ public class CompanyFacade {
 		try {
 			companies = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Company.QUERY_ALL, Company.class)
 					.getResultList();
+		} catch (NoResultException nre) {
+			companies = null;
+		}
+		return companies;
+	}
+
+	public List<Company> getAllActiveCompanies() {
+		List<Company> companies;
+		try {
+			companies = DatabaseManager.getInstance().createEntityManager().createNamedQuery(Company.QUERY_ALL, Company.class)
+					.getResultList();
+
+			companies.removeIf(EntityPojo::isDeleted);
 		} catch (NoResultException nre) {
 			companies = null;
 		}

@@ -1,10 +1,9 @@
 package com.gmail.grigorij.ui.components.navigation.drawer;
 
+import com.vaadin.flow.component.html.Div;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.html.Div;
 
 //@CssImport("./styles/components/navi-drawer/navi-menu.css")
 public class NaviMenu extends Div {

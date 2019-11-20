@@ -17,6 +17,7 @@ public class Location {
 	private String city = "";
 	private String country = "";
 
+
 	public Location() {}
 
 	public Location(Location other) {
@@ -27,6 +28,7 @@ public class Location {
 		this.city = other.city;
 		this.country = other.country;
 	}
+
 
 	public String getName() {
 		return name;

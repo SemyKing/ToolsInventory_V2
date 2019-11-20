@@ -54,6 +54,7 @@
 
 .app-bar__container {
 	transition: padding var(--transition-duration-xs);
+	align-items: center;
 }
 
 .app-bar__tab-container {

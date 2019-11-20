@@ -1,17 +1,23 @@
 @media (max-width: 1023px) {
 }
 
-
 .list-item {
+	display: flex;
 	box-sizing: border-box;
 	overflow: hidden;
 	position: relative;
 }
 
-.list-item__content {
+.list-item__row__content {
 	display: flex;
     flex-direction: row;
     align-items: center;
+}
+
+.list-item__column__content {
+	display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
 }
 
 .list-item__prefix, .list-item__suffix {
@@ -26,7 +32,3 @@
 .list-item__suffix {
 	margin-left: var(--lumo-space-l);
 }
-
-
-
-

@@ -1,17 +1,17 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Message;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Transaction;
-import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
-import com.gmail.grigorij.ui.application.views.MessagesView;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.ui.views.app.MessagesView;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -151,23 +151,6 @@ public class MessageForm extends FormLayout {
 		initDynamicFormItems();
 	}
 
-//	public Message getMessage() {
-//		try {
-//			binder.validate();
-//
-//			if (binder.isValid()) {
-//
-//				binder.writeBean(message);
-//
-//				return message;
-//			}
-//		} catch (ValidationException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//		return null;
-//	}
-
 
 	private void cancelTool() {
 		if (message == null || message.getToolId() == null) {
@@ -185,7 +168,7 @@ public class MessageForm extends FormLayout {
 			Transaction transaction = new Transaction();
 			transaction.setUser(AuthenticationService.getCurrentSessionUser());
 			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-			transaction.setOperation(Operation.CANCEL_RESERVATION);
+			transaction.setOperation(Operation.CANCEL_RESERVATION_T);
 			transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
 			transaction.setTargetDetails(tool.getName());
 			TransactionFacade.getInstance().insert(transaction);

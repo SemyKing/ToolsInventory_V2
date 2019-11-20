@@ -1,6 +1,6 @@
 package com.gmail.grigorij.backend.database.entities.embeddable;
 
-import javax.persistence.*;
+import javax.persistence.Embeddable;
 
 
 @Embeddable
@@ -11,6 +11,7 @@ public class Person {
 	private String phoneNumber = "";
 	private String email = "";
 
+
 	public Person() {}
 
 	public Person(Person other) {
@@ -19,6 +20,7 @@ public class Person {
 		this.phoneNumber = other.phoneNumber;
 		this.email = other.email;
 	}
+
 
 	public String getFirstName() {
 		return firstName;

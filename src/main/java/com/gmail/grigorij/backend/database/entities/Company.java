@@ -41,6 +41,10 @@ public class Company extends EntityPojo {
 	@Column(columnDefinition = "text")
 	private String announcements = "";
 
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "pdf_template_id")
+	private PDF_Template pdf_template;
+
 
 	public Company() {}
 
@@ -51,7 +55,10 @@ public class Company extends EntityPojo {
 		this.contactPerson = other.contactPerson;
 		this.locations = other.locations;
 		this.announcements = other.announcements;
+		this.pdf_template = other.pdf_template;
+		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
+
 
 	public String getName() {
 		return name;
@@ -96,5 +103,12 @@ public class Company extends EntityPojo {
 	}
 	public void setAnnouncements(String announcements) {
 		this.announcements = announcements;
+	}
+
+	public PDF_Template getPdf_template() {
+		return pdf_template;
+	}
+	public void setPdf_template(PDF_Template pdf_template) {
+		this.pdf_template = pdf_template;
 	}
 }

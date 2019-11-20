@@ -30,13 +30,38 @@ public class UserFacade {
 		}
 		return users;
 	}
+	
+	public List<User> getAllActiveUsers() {
+		List<User> users;
+		try {
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_ALL, User.class)
+					.getResultList();
+			users.removeIf(User::isDeleted);
+		} catch (NoResultException nre) {
+			users = null;
+		}
+		return users;
+	}
 
-	public List<User> getUsersInCompany(long companyId) {
+	public List<User> getAllUsersInCompany(long companyId) {
 		List<User> users;
 		try {
 			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_ALL_BY_COMPANY, User.class)
 					.setParameter(ProjectConstants.ID_VAR, companyId)
 					.getResultList();
+		} catch (NoResultException nre) {
+			users = null;
+		}
+		return users;
+	}
+
+	public List<User> getAllActiveUsersInCompany(long companyId) {
+		List<User> users;
+		try {
+			users = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_ALL_BY_COMPANY, User.class)
+					.setParameter(ProjectConstants.ID_VAR, companyId)
+					.getResultList();
+			users.removeIf(User::isDeleted);
 		} catch (NoResultException nre) {
 			users = null;
 		}

@@ -1,12 +1,12 @@
 package com.gmail.grigorij.ui.components.navigation.bar.tab;
 
+import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.Overflow;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
-import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.Overflow;
 
 /**
  * NaviTabs supports tabs that can be closed, and that can navigate to a

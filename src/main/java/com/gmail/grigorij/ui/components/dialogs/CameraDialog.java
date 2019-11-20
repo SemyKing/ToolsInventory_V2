@@ -2,58 +2,56 @@ package com.gmail.grigorij.ui.components.dialogs;
 
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.camera.CameraView;
+import com.gmail.grigorij.utils.CameraUtility;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Span;
+
 
 public class CameraDialog extends CustomDialog {
 
+	private final CameraUtility cameraUtility;
 	private CameraView cameraView;
-	private boolean cameraActive = false;
 
 
 	public CameraDialog() {
+		cameraView = new CameraView();
+		cameraUtility = new CameraUtility(cameraView, UI.getCurrent());
+
+		setCloseOnEsc(false);
+		setCloseOnOutsideClick(false);
+
 		constructContent();
 	}
 
 
 	private void constructContent() {
-		setCloseOnEsc(false);
-		setCloseOnOutsideClick(false);
+		setHeader(UIUtils.createH3Label("Code Scanner"));
 
-		setHeader(UIUtils.createH3Label("Code scanner"));
+		cameraView.showPreview();
 
-		cameraView = new CameraView();
-		cameraView.addClickListener(imageClickEvent -> {
-			if (cameraActive) {
-				cameraView.takePicture();
-			} else {
-				cameraView.showPreview();
-				cameraActive = true;
-			}
-		});
-
-		Span cameraHint = new Span("Click on image to scan code");
-		cameraHint.addClassName("camera-dialog-hint");
-
-		getContent().add(cameraHint);
 		getContent().add(cameraView);
 
-		setCancelButton(null);
+		setConfirmButton(null);
 
-		getConfirmButton().setText("Close");
-		getConfirmButton().addClickListener(e -> {
+		getCancelButton().setText("Close");
+		getCancelButton().addClickListener(e -> {
 			cameraView.stop();
 			this.close();
 		});
-
-		cameraActive = true;
 	}
 
 	public CameraView getCameraView() {
 		return cameraView;
 	}
 
-	public void stopCamera() {
+	@SuppressWarnings("deprecation")
+	public void stop() {
+		cameraUtility.stop();
 		cameraView.stop();
-		cameraActive = false;
+	}
+
+	public void initCamera() {
+		cameraUtility.start();
 	}
 }

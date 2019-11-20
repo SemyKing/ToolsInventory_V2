@@ -1,9 +1,9 @@
 package com.gmail.grigorij.utils;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.text.SimpleDateFormat;
 
 public class DateConverter {
 
@@ -51,19 +51,6 @@ public class DateConverter {
 				return localDateFormatter.format(date);
 			} catch (Exception e) {
 				System.out.println("Error converting LocalDate: '" + date +"' to String");
-				e.printStackTrace();
-				return "";
-			}
-		}
-	}
-	public static String localDateToStringWithTime(LocalDate date) {
-		if (date == null) {
-			return "";
-		} else {
-			try {
-				return localDateFormatterWithTime.format(date);
-			} catch (Exception e) {
-				System.out.println("Error converting LocalDate: '" + date +"' to String with time");
 				e.printStackTrace();
 				return "";
 			}

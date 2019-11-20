@@ -1,18 +1,20 @@
 package com.gmail.grigorij.ui.components.forms;
 
-import com.gmail.grigorij.backend.database.facades.PermissionFacade;
+import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.PDF_Template;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.Person;
-import com.gmail.grigorij.backend.database.entities.Company;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.dialogs.PDF_TemplateDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Right;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -38,11 +40,14 @@ public class CompanyForm extends FormLayout {
 	private final LocationForm addressForm = new LocationForm();
 	private final PersonForm contactPersonForm = new PersonForm();
 
+	private PDF_TemplateDialog pdfTemplateDialog;
+
 	private Binder<Company> binder;
 	private Company company, originalCompany;
 	private boolean isNew;
 
 	private List<Location> tempLocations;
+	private PDF_Template tempPDF_Template;
 
 	// FORM ITEMS
 	private Div entityStatusDiv;
@@ -52,6 +57,9 @@ public class CompanyForm extends FormLayout {
 	private ComboBox<Location> companyLocationsComboBox;
 	private FlexBoxLayout locationsLayout;
 	private TextArea additionalInfo;
+
+	private Div PDF_TemplateButtonDiv;
+	private Button editPDF_TemplateButton;
 
 
 	public CompanyForm() {
@@ -75,10 +83,10 @@ public class CompanyForm extends FormLayout {
 		setColspan(entityStatusDiv, 2);
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
-			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.COMPANY, PermissionRange.COMPANY)) {
+//			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.COMPANY, PermissionRange.COMPANY)) {
 				entityStatusCheckbox.setReadOnly(true);
 				entityStatusDiv.getElement().setAttribute("hidden", true);
-			}
+//			}
 		}
 
 		nameField = new TextField("Name");
@@ -100,8 +108,7 @@ public class CompanyForm extends FormLayout {
 		});
 		companyLocationsComboBox.setReadOnly(true);
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.LOCATIONS, null)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.LOCATIONS, PermissionRange.OWN)) {
 			companyLocationsComboBox.setReadOnly(false);
 		}
 
@@ -111,11 +118,9 @@ public class CompanyForm extends FormLayout {
 		newLocationButton.addClickListener(e -> constructLocationDialog(null));
 		newLocationButton.setEnabled(false);
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.ADD, OperationTarget.LOCATIONS, null)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.ADD, OperationTarget.LOCATIONS, PermissionRange.OWN)) {
 			newLocationButton.setEnabled(true);
 		}
-
 
 		//LOCATION & NEW LOCATION BUTTON
 		locationsLayout = new FlexBoxLayout();
@@ -126,11 +131,18 @@ public class CompanyForm extends FormLayout {
 
 		setColspan(locationsLayout, 2);
 
+		editPDF_TemplateButton = UIUtils.createButton("EDIT PDF TEMPLATE", VaadinIcon.CLIPBOARD_TEXT, ButtonVariant.LUMO_PRIMARY);
+		editPDF_TemplateButton.addClickListener(e -> constructPDF_TemplateDialog());
+
+		PDF_TemplateButtonDiv = new Div();
+		PDF_TemplateButtonDiv.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
+
+		setColspan(PDF_TemplateButtonDiv, 2);
+
 		additionalInfo = new TextArea("Additional Info");
 		additionalInfo.setMaxHeight("200px");
 
 		setColspan(additionalInfo, 2);
-
 		setColspan(addressForm, 2);
 		setColspan(contactPersonForm, 2);
 	}
@@ -144,6 +156,7 @@ public class CompanyForm extends FormLayout {
 		add(nameField);
 		add(vatField);
 		add(locationsLayout);
+		add(PDF_TemplateButtonDiv);
 
 		Hr hr = new Hr();
 		setColspan(hr, 2);
@@ -192,12 +205,18 @@ public class CompanyForm extends FormLayout {
 
 	private void initDynamicFormItems() {
 		tempLocations = new ArrayList<>();
-
 		for (Location location : company.getLocations()) {
 			tempLocations.add(new Location(location));
 		}
-
 		companyLocationsComboBox.setItems(tempLocations);
+
+		try {
+			PDF_TemplateButtonDiv.remove(editPDF_TemplateButton);
+		} catch (Exception ignored) {}
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			PDF_TemplateButtonDiv.add(editPDF_TemplateButton);
+		}
 	}
 
 	private void constructLocationDialog(Location location) {
@@ -214,9 +233,7 @@ public class CompanyForm extends FormLayout {
 		dialog.getConfirmButton().setText("Save");
 		dialog.getConfirmButton().setEnabled(false);
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN) ||
-				PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.LOCATIONS, null)) {
-
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.LOCATIONS, PermissionRange.OWN)) {
 			dialog.getConfirmButton().setEnabled(true);
 			dialog.getConfirmButton().addClickListener(e -> {
 
@@ -234,6 +251,24 @@ public class CompanyForm extends FormLayout {
 		}
 
 		dialog.open();
+	}
+
+	private void constructPDF_TemplateDialog() {
+		pdfTemplateDialog = new PDF_TemplateDialog(company.getPdf_template());
+		pdfTemplateDialog.setHeader(UIUtils.createH3Label("PDF Template for Reporting"));
+		pdfTemplateDialog.constructView();
+
+		pdfTemplateDialog.getConfirmButton().addClickListener(e -> {
+			PDF_Template pdfTemplate = pdfTemplateDialog.getTemplate();
+
+			if (pdfTemplate != null) {
+				tempPDF_Template = pdfTemplate;
+
+				pdfTemplateDialog.close();
+			}
+		});
+
+		pdfTemplateDialog.open();
 	}
 
 
@@ -278,7 +313,13 @@ public class CompanyForm extends FormLayout {
 				} else {
 					company.setContactPerson(contactPerson);
 				}
+
 				company.setLocations(tempLocations);
+
+				if (tempPDF_Template != null) {
+					company.setPdf_template(tempPDF_Template);
+				}
+
 				binder.writeBean(company);
 				return company;
 			}
@@ -289,40 +330,49 @@ public class CompanyForm extends FormLayout {
 		return null;
 	}
 
+
 	public List<String> getChanges() {
 		List<String> changes = new ArrayList<>();
 
 		if (Boolean.compare(originalCompany.isDeleted(), company.isDeleted()) != 0) {
-			changes.add("Status changed from: '" + UIUtils.entityStatusToString(originalCompany.isDeleted()) + "', to: '" + UIUtils.entityStatusToString(company.isDeleted()) + "'");
-
-			//TODO: TRANSACTION ENTITY STATUS CHANGE
+			changes.add("Status changed from: '" + UIUtils.entityStatusToString(originalCompany.isDeleted()) + "',  to:  '" + UIUtils.entityStatusToString(company.isDeleted()) + "'");
 		}
 		if (!originalCompany.getName().equals(company.getName())) {
-			changes.add("Name changed from: '" + originalCompany.getName() + "', to: '" + company.getName() + "'");
+			changes.add("Name changed from: '" + originalCompany.getName() + "',  to:  '" + company.getName() + "'");
 		}
 		if (!originalCompany.getVat().equals(company.getVat())) {
-			changes.add("VAT changed from: '" + originalCompany.getVat() + "', to: '" + company.getVat() + "'");
+			changes.add("VAT changed from: '" + originalCompany.getVat() + "',  to:  '" + company.getVat() + "'");
+		}
+		if (!originalCompany.getAdditionalInfo().equals(company.getAdditionalInfo())) {
+			changes.add("Additional Info changed from: '" + originalCompany.getAdditionalInfo() + "',  to:  '" + company.getAdditionalInfo() + "'");
 		}
 
-//		if (!originalCompany.getLocations().equals(company.getLocations())) {
-//			changes.add("Locations changed");
-//		}
-
-		List<String> addressChanges = addressForm.getChanges();
-		if (addressChanges.size() > 0) {
-			changes.add("Address changed");
-			changes.addAll(addressChanges);
+		List<String> otherChanges = addressForm.getChanges();
+		if (otherChanges.size() > 0) {
+			changes.add("-- Address changed");
+			changes.addAll(otherChanges);
 		}
 
-		List<String> personChanges = contactPersonForm.getChanges();
-		if (personChanges.size() > 0) {
-			changes.add("Contact Person changed");
-			changes.addAll(personChanges);
+		otherChanges = contactPersonForm.getChanges();
+		if (otherChanges.size() > 0) {
+			changes.add("-- Contact Person changed");
+			changes.addAll(otherChanges);
+		}
+
+		if (pdfTemplateDialog != null) {
+			if (!pdfTemplateDialog.isNew()) {
+				otherChanges = pdfTemplateDialog.getChanges();
+				if (otherChanges != null) {
+					if (otherChanges.size() > 0) {
+						changes.add("-- PDF Template changed");
+						changes.addAll(otherChanges);
+					}
+				}
+			}
 		}
 
 		return changes;
 	}
-
 
 	public boolean isNew() {
 		return isNew;

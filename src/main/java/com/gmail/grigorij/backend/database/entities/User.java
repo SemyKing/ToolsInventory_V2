@@ -10,7 +10,6 @@ import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -39,7 +38,7 @@ import java.util.List;
 
 		@NamedQuery(name = User.QUERY_ALL_BY_COMPANY,
 				query = "SELECT user FROM User user WHERE" +
-						" user.company.id = :" + ProjectConstants.ID_VAR),
+						" user.company.id = :" + ProjectConstants.ID_VAR + " ORDER BY user.username ASC"),
 
 		@NamedQuery(name = User.QUERY_ALL_BY_PERMISSION_LEVEL,
 				query = "SELECT user FROM User user WHERE" +
@@ -59,8 +58,13 @@ public class User extends EntityPojo {
 	@Column(name = "username")
 	private String username;
 
-	@Column(name = "password")
-	private String password;
+	@Column(columnDefinition = "text")
+	private String salt = "";
+
+	@Column(columnDefinition = "text")
+	private String password = "";
+
+	private String dummyPassword = "";
 
 	@Column(name = "theme_variant")
 	private String themeVariant = Lumo.LIGHT;
@@ -80,25 +84,27 @@ public class User extends EntityPojo {
 	@Enumerated(EnumType.STRING)
 	private PermissionLevel permissionLevel = PermissionLevel.USER;
 
-	@ElementCollection
-	@Enumerated(EnumType.STRING)
-	private List<Permission> permissions;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "permissionHolder_id")
+	private PermissionHolder permissionHolder;
 
 
-	public User() {
-		permissions = PermissionFacade.getInstance().getDefaultUserPermissions();
-	}
+	public User() {}
 
 	public User(User other) {
 		this.username = other.username;
+		this.salt = other.salt;
 		this.password = other.password;
+		this.dummyPassword = other.dummyPassword;
 		this.themeVariant = other.themeVariant;
 		this.locale = other.locale;
 		this.company = other.company;
 		this.address = other.address;
 		this.person = other.person;
 		this.permissionLevel = other.permissionLevel;
-		this.permissions = other.permissions;
+		this.permissionHolder = other.permissionHolder;
+		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
 
 
@@ -109,11 +115,25 @@ public class User extends EntityPojo {
 		this.username = username;
 	}
 
+	public String getSalt() {
+		return salt;
+	}
+	public void setSalt(String salt) {
+		this.salt = salt;
+	}
+
 	public String getPassword() {
 		return password;
 	}
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getDummyPassword() {
+		return dummyPassword;
+	}
+	public void setDummyPassword(String dummyPassword) {
+		this.dummyPassword = dummyPassword;
 	}
 
 	public String getThemeVariant() {
@@ -158,12 +178,13 @@ public class User extends EntityPojo {
 		this.permissionLevel = permissionLevel;
 	}
 
-	public List<Permission> getPermissions() {
-		return permissions;
+	public PermissionHolder getPermissionHolder() {
+		return permissionHolder;
 	}
-	public void setPermissions(List<Permission> permissions) {
-		this.permissions = permissions;
+	public void setPermissionHolder(PermissionHolder permissionHolder) {
+		this.permissionHolder = permissionHolder;
 	}
+
 
 
 	public String getFullName() {

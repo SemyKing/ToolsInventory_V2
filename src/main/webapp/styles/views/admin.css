@@ -9,6 +9,7 @@
 }
 
 /********** MAIN **********/
+
 .admin-container {
 	width: 100%;
 	display: flex;
@@ -34,6 +35,7 @@
 
 
 /********** COMPANIES **********/
+
 .admin-companies {
     width: 100%;
     height: 100%;
@@ -59,8 +61,32 @@
     margin: 2px 5px 2px 5px;
 }
 
+.admin-companies__company_admin {
+	display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.admin-companies__form-wrapper {
+	overflow: auto;
+	height: 100%;
+}
+
+.admin-companies__form-wrapper > .form {
+	margin: var(--lumo-space-m);
+}
+
+.admin-companies__company_admin > .footer-content {
+    justify-content: flex-end;
+}
+
+
+
+
+
 
 /********** PERSONNEL **********/
+
 .admin-personnel {
     width: 100%;
     height: 100%;
@@ -88,6 +114,7 @@
 
 
 /********** INVENTORY **********/
+
 .admin-inventory {
     width: 100%;
     height: 100%;
@@ -107,6 +134,10 @@
 }
 .admin-inventory__header vaadin-menu-bar {
     margin-left: var(--lumo-space-s);
+}
+
+.edit-tool-button {
+	min-width: 52px;
 }
 
 .admin-inventory__content {

@@ -1,7 +1,10 @@
 package com.gmail.grigorij.ui.utils;
 
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
-import com.gmail.grigorij.ui.utils.css.*;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.utils.css.FontSize;
+import com.gmail.grigorij.ui.utils.css.LumoStyles;
+import com.gmail.grigorij.ui.utils.css.Overflow;
+import com.gmail.grigorij.ui.utils.css.TextColor;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;

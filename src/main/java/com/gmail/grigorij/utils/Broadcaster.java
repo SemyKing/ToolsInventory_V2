@@ -38,7 +38,7 @@ public class Broadcaster {
 		}
 	}
 
-	static void removeBroadcasterForUser(long userId) {
+	public static void removeBroadcasterForUser(long userId) {
 		userBroadcasterList.remove(userId);
 	}
 }
