@@ -252,8 +252,6 @@ public class UserForm extends FormLayout {
 
 		try {
 			entityStatusDiv.remove(entityStatusCheckbox);
-
-//			editPermissionsButton.setEnabled(false);
 			permissionsLayout.remove(editPermissionsButton);
 		} catch (Exception ignored) {}
 
@@ -264,19 +262,23 @@ public class UserForm extends FormLayout {
 
 
 		permissionLevelComboBox.setEnabled(false);
+		permissionLevelComboBox.setReadOnly(true);
 
-		if (user.getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
 
-			if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.OWN) ||
-					!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
+		if (user.getPermissionLevel().lowerOrEqualsTo(AuthenticationService.getCurrentSessionUser().getPermissionLevel())) {
+			if (!(self && AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN))) {
+				if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.OWN) ||
+						!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
 
-				permissionLevelComboBox.setEnabled(true);
+
+					permissionLevelComboBox.setEnabled(true);
+					permissionLevelComboBox.setReadOnly(false);
+				}
 			}
 
 			if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.OWN) ||
 					!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
 
-//			editPermissionsButton.setEnabled(true);
 				permissionsLayout.add(editPermissionsButton);
 				permissionsLayout.setComponentMargin(editPermissionsButton, Left.S);
 			}

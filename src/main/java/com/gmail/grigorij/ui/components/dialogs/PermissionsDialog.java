@@ -36,7 +36,6 @@ public class PermissionsDialog extends CustomDialog {
 	private PermissionHolder permissionHolder;
 
 	private ListDataProvider<Permission> dataProvider;
-//	private List<Permission> permissions = new ArrayList<>();
 	private List<String> changes = new ArrayList<>();
 	private LinkedHashMap<Integer, PermissionPair> permissionChangesHashMap = new LinkedHashMap<>();
 
@@ -52,6 +51,10 @@ public class PermissionsDialog extends CustomDialog {
 	public PermissionsDialog(User user) {
 		this.user = user;
 		permissionHolder = this.user.getPermissionHolder();
+
+		if (permissionHolder == null) {
+			permissionHolder = new PermissionHolder();
+		}
 
 		setCloseOnEsc(false);
 		setCloseOnOutsideClick(false);
