@@ -20,6 +20,7 @@ import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
@@ -154,6 +155,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 		grid.addColumn(new ComponentRenderer<>(selectedUser -> UIUtils.createActiveGridIcon(selectedUser.isDeleted())))
 				.setHeader("Active")
 				.setFlexGrow(0)
+				.setTextAlign(ColumnTextAlign.CENTER)
 				.setAutoWidth(true);
 
 		return grid;

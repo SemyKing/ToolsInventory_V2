@@ -20,8 +20,8 @@ import com.gmail.grigorij.ui.components.forms.CompanyForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.views.app.AdminView;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
-import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
@@ -158,6 +158,7 @@ public class AdminCompanies extends FlexBoxLayout {
 		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted())))
 				.setHeader("Active")
 				.setFlexGrow(0)
+				.setTextAlign(ColumnTextAlign.CENTER)
 				.setAutoWidth(true);
 
 		return grid;
@@ -225,20 +226,10 @@ public class AdminCompanies extends FlexBoxLayout {
 
 	private void showDetails(Company company) {
 		if (company != null) {
-
-
-			if (!PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
-				UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
-				grid.deselectAll();
-				return;
-			}
-
-//			if (!AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-//				if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
-//					UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
-//					grid.deselectAll();
-//					return;
-//				}
+//			if (!PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
+//				UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
+//				grid.deselectAll();
+//				return;
 //			}
 
 			entityOldStatus = company.isDeleted();
@@ -322,7 +313,7 @@ public class AdminCompanies extends FlexBoxLayout {
 					transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
 					transaction.setOperation(Operation.EDIT);
 					transaction.setOperationTarget1(OperationTarget.USER);
-					transaction.setOperationTarget2(OperationTarget.STATUS);
+					transaction.setOperationTarget2(OperationTarget.STATUS_T);
 					transaction.setTargetDetails(user.getFullName());
 
 					List<String> changes = new ArrayList<>();

@@ -99,8 +99,8 @@ public class ForgotPasswordDialog extends CustomDialog {
 		Transaction transaction = new Transaction();
 		transaction.setUser(user);
 		transaction.setCompany(user.getCompany());
-		transaction.setOperation(Operation.REQUEST);
-		transaction.setOperationTarget1(OperationTarget.PASSWORD_RESET_EMAIL);
+		transaction.setOperation(Operation.REQUEST_T);
+		transaction.setOperationTarget1(OperationTarget.PASSWORD_RESET_EMAIL_T);
 		TransactionFacade.getInstance().insert(transaction);
 
 

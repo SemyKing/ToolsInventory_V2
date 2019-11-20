@@ -9,7 +9,6 @@ import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
@@ -26,7 +25,6 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.Lumo;
 
 /**
  * Page accessible form URL containing .../reset-password/ + unique code

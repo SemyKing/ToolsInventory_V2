@@ -745,7 +745,7 @@ public class InventoryView extends Div {
 						Transaction transaction = new Transaction();
 						transaction.setUser(AuthenticationService.getCurrentSessionUser());
 						transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-						transaction.setOperation(Operation.RETURN);
+						transaction.setOperation(Operation.RETURN_T);
 						transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
 						if (location == null) {
 							transaction.setTargetDetails(tool.getName());
@@ -793,7 +793,7 @@ public class InventoryView extends Div {
 						Transaction transaction = new Transaction();
 						transaction.setUser(AuthenticationService.getCurrentSessionUser());
 						transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-						transaction.setOperation(Operation.CANCEL_RESERVATION);
+						transaction.setOperation(Operation.CANCEL_RESERVATION_T);
 						transaction.setTargetDetails(tool.getName());
 						TransactionFacade.getInstance().insert(transaction);
 					}

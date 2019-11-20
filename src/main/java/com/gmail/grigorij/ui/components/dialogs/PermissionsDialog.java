@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.components.dialogs;
 
+import com.gmail.grigorij.backend.database.entities.PermissionHolder;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
@@ -32,8 +33,10 @@ public class PermissionsDialog extends CustomDialog {
 	private final static String CLASS_NAME = "permissions-dialog";
 	private final User user;
 
+	private PermissionHolder permissionHolder;
+
 	private ListDataProvider<Permission> dataProvider;
-	private List<Permission> permissions = new ArrayList<>();
+//	private List<Permission> permissions = new ArrayList<>();
 	private List<String> changes = new ArrayList<>();
 	private LinkedHashMap<Integer, PermissionPair> permissionChangesHashMap = new LinkedHashMap<>();
 
@@ -48,6 +51,7 @@ public class PermissionsDialog extends CustomDialog {
 
 	public PermissionsDialog(User user) {
 		this.user = user;
+		permissionHolder = this.user.getPermissionHolder();
 
 		setCloseOnEsc(false);
 		setCloseOnOutsideClick(false);
@@ -62,14 +66,6 @@ public class PermissionsDialog extends CustomDialog {
 			editOthersAllowed = PermissionFacade.getInstance().isUserAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY);
 		}
 
-		for (Permission p : user.getPermissions()) {
-
-			Permission pCopy = new Permission(p);
-			permissions.add(pCopy);
-
-			permissionChangesHashMap.put(counter, new PermissionPair(new Permission(p), new Permission(p)));
-			counter++;
-		}
 
 		Div wrapper = new Div();
 		wrapper.addClassName(CLASS_NAME);
@@ -140,7 +136,14 @@ public class PermissionsDialog extends CustomDialog {
 		Grid<Permission> grid = new Grid<>();
 		grid.addClassNames("grid-view", "permissions-grid");
 
-		dataProvider = new ListDataProvider<>(permissions);
+		dataProvider = new ListDataProvider<>(user.getPermissionHolder().getPermissions());
+
+		for (Permission p : dataProvider.getItems()) {
+			p.setCounter(counter);
+			permissionChangesHashMap.put(counter, new PermissionPair(new Permission(p), new Permission(p)));
+			counter++;
+		}
+
 		dataProvider.getItems().removeIf(permission -> (self && !permission.isVisible()));
 
 		grid.setDataProvider(dataProvider);
@@ -317,29 +320,17 @@ public class PermissionsDialog extends CustomDialog {
 
 
 	private boolean validate() {
-		if (!systemAdmin) {
-
-			// EDIT NOT ALLOWED -> RETURN ORIGINAL PERMISSIONS
-			if (!editOwnAllowed || !editOthersAllowed || self) {
-
-				// ADD HIDDEN PERMISSIONS
-				for (Permission permission : user.getPermissions()) {
-					if (!permission.isVisible()) {
-						permissions.add(new Permission(permission));
-					}
-				}
-
-				return true;
-			}
+		for (Permission permission : user.getPermissionHolder().getPermissions()) {
+			permissionChangesHashMap.get(permission.getCounter()).setP2(permission);
 		}
 
 		return true;
 	}
 
 
-	public List<Permission> getPermissions() {
+	public PermissionHolder getPermissionHolder() {
 		if (validate()) {
-			return permissions;
+			return permissionHolder;
 		} else {
 			return null;
 		}
@@ -384,12 +375,102 @@ public class PermissionsDialog extends CustomDialog {
 		if (p != null) {
 			ps = p.getOperation().getName() + " " + p.getOperationTarget().getName() + ", " +
 					PermissionRange.OWN.getName() + ": " + p.getPermissionOwn().getName() + ", " +
-					PermissionRange.COMPANY.getName() + ": " + p.getPermissionCompany().getName();
+					PermissionRange.COMPANY.getName() + ": " + p.getPermissionCompany().getName() + ", " +
+					"visible: " + p.isVisible();
 		}
 
 		return ps;
 	}
 
+
+//	private static class PermissionLayout extends Div {
+//
+//		private ComboBox<Operation> operationComboBox;
+//		private ComboBox<OperationTarget> targetComboBox;
+//		private ComboBox<OperationPermission> permissionOwnComboBox;
+//		private ComboBox<OperationPermission> permissionCompanyComboBox;
+//
+//
+//		PermissionLayout(Permission permission) {
+//			addClassName(CLASS_NAME + "__permission");
+//
+//
+//			// OPERATION
+//			List<Operation> operations = new ArrayList<>(EnumSet.allOf(Operation.class));
+//			operations.removeIf(target -> target.getMinimalPermissionLevel().higherThan(AuthenticationService.getCurrentSessionUser().getPermissionLevel()));
+//
+//			operationComboBox = new ComboBox<>();
+//			operationComboBox.setLabel("Operation");
+//			operationComboBox.setItems(operations);
+//			operationComboBox.setItemLabelGenerator(Operation::getName);
+//			operationComboBox.setErrorMessage(ProjectConstants.VALUE_REQUIRED);
+//			operationComboBox.setRequired(true);
+//			if (permission != null) {
+//				operationComboBox.setValue(permission.getOperation());
+//			}
+//			add(operationComboBox);
+//
+//
+//			// TARGET
+//			List<OperationTarget> targets = new ArrayList<>(EnumSet.allOf(OperationTarget.class));
+//			targets.removeIf(target -> target.getMinimalPermissionLevel().higherThan(AuthenticationService.getCurrentSessionUser().getPermissionLevel()));
+//
+//			targetComboBox = new ComboBox<>();
+//			targetComboBox.setLabel("Target");
+//			targetComboBox.setItems(targets);
+//			targetComboBox.setItemLabelGenerator(OperationTarget::getName);
+//			targetComboBox.setErrorMessage(ProjectConstants.VALUE_REQUIRED);
+//			targetComboBox.setRequired(true);
+//			if (permission != null) {
+//				targetComboBox.setValue(permission.getOperationTarget());
+//			}
+//			add(targetComboBox);
+//
+//
+//			// OWN
+//			permissionOwnComboBox = new ComboBox<>();
+//			permissionOwnComboBox.setLabel(PermissionRange.OWN.getName());
+//			permissionOwnComboBox.setItems(EnumSet.allOf(OperationPermission.class));
+//			permissionOwnComboBox.setItemLabelGenerator(OperationPermission::getName);
+//			permissionOwnComboBox.setErrorMessage(ProjectConstants.VALUE_REQUIRED);
+//			permissionOwnComboBox.setRequired(true);
+//			if (permission != null) {
+//				permissionOwnComboBox.setValue(permission.getPermissionOwn());
+//			} else {
+//				permissionOwnComboBox.setValue(OperationPermission.NO);
+//			}
+//			add(permissionOwnComboBox);
+//
+//
+//			// COMPANY
+//			permissionCompanyComboBox = new ComboBox<>();
+//			permissionCompanyComboBox.setLabel(PermissionRange.COMPANY.getName());
+//			permissionCompanyComboBox.setItems(EnumSet.allOf(OperationPermission.class));
+//			permissionCompanyComboBox.setItemLabelGenerator(OperationPermission::getName);
+//			permissionCompanyComboBox.setErrorMessage(ProjectConstants.VALUE_REQUIRED);
+//			permissionCompanyComboBox.setRequired(true);
+//			if (permission != null) {
+//				permissionCompanyComboBox.setValue(permission.getPermissionCompany());
+//			} else {
+//				permissionCompanyComboBox.setValue(OperationPermission.NO);
+//			}
+//			add(permissionCompanyComboBox);
+//		}
+//
+//
+//		private ComboBox<Operation> getOperationComboBox() {
+//			return operationComboBox;
+//		}
+//		private ComboBox<OperationTarget> getTargetComboBox() {
+//			return targetComboBox;
+//		}
+//		private ComboBox<OperationPermission> getPermissionOwnComboBox() {
+//			return permissionOwnComboBox;
+//		}
+//		private ComboBox<OperationPermission> getPermissionCompanyComboBox() {
+//			return permissionCompanyComboBox;
+//		}
+//	}
 
 	private static class PermissionLayout extends Div {
 
@@ -410,20 +491,37 @@ public class PermissionsDialog extends CustomDialog {
 			operationComboBox = new ComboBox<>();
 			operationComboBox.setLabel("Operation");
 			operationComboBox.setItems(operations);
+			operationComboBox.setItemLabelGenerator(Operation::getName);
+			operationComboBox.setErrorMessage(ProjectConstants.VALUE_REQUIRED);
 			operationComboBox.setRequired(true);
 			if (permission != null) {
 				operationComboBox.setValue(permission.getOperation());
 			}
+			operationComboBox.addValueChangeListener(operationChangeEvent -> {
+				if (operationChangeEvent.getValue() != operationChangeEvent.getOldValue()) {
+
+					List<OperationTarget> targets = new ArrayList<>(EnumSet.allOf(OperationTarget.class));
+					targets.removeIf(target -> target.getMinimalPermissionLevel().higherThan(AuthenticationService.getCurrentSessionUser().getPermissionLevel()));
+					targets.removeIf(target -> {
+						System.out.println("T: " + target.getForOperation());
+						if (target.getForOperation() != null) {
+							for (Operation operation : target.getForOperation()) {
+								if (operation.equals(operationChangeEvent.getValue())) {
+									return false;
+								}
+							}
+						}
+						return true;
+					});
+					targetComboBox.setItems(targets);
+				}
+			});
 			add(operationComboBox);
 
 
-			// TARGET
-			List<OperationTarget> targets = new ArrayList<>(EnumSet.allOf(OperationTarget.class));
-			targets.removeIf(target -> target.getMinimalPermissionLevel().higherThan(AuthenticationService.getCurrentSessionUser().getPermissionLevel()));
-
 			targetComboBox = new ComboBox<>();
 			targetComboBox.setLabel("Target");
-			targetComboBox.setItems(targets);
+			targetComboBox.setItems();
 			targetComboBox.setItemLabelGenerator(OperationTarget::getName);
 			targetComboBox.setErrorMessage(ProjectConstants.VALUE_REQUIRED);
 			targetComboBox.setRequired(true);

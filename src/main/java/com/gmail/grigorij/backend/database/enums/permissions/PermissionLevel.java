@@ -7,7 +7,8 @@ public enum PermissionLevel {
 	FOREMAN("Foreman", 2),
 	COMPANY_ADMIN("Company Admin", 3),
 	SYSTEM_ADMIN("System Admin", 99),
-	FOR_TRANSACTIONS("System Admin", 999);
+
+	FOR_TRANSACTIONS("For Transactions", 999);
 
 
 	private final String name;

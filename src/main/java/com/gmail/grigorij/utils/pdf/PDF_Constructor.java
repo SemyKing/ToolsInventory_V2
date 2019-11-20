@@ -3,6 +3,7 @@ package com.gmail.grigorij.utils.pdf;
 import com.gmail.grigorij.backend.database.entities.PDF_Template;
 import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.User;
+import com.gmail.grigorij.backend.database.entities.embeddable.PDF_Column;
 import com.gmail.grigorij.backend.database.enums.tools.ToolParameter;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
@@ -54,7 +55,7 @@ public class PDF_Constructor {
 
 		long totalWidth = 0;
 
-		for (PDF_Template.PDF_Column column : pdfTemplate.getPdfColumns()) {
+		for (PDF_Column column : pdfTemplate.getPdfColumns()) {
 			totalWidth += column.getUserSetWidth();
 		}
 
@@ -194,7 +195,7 @@ public class PDF_Constructor {
 	}
 
 	private void constructTableHeader(PdfPTable toolsTable) {
-		for (PDF_Template.PDF_Column column : pdfTemplate.getPdfColumns()) {
+		for (PDF_Column column : pdfTemplate.getPdfColumns()) {
 			PdfPCell header = new PdfPCell();
 			header.setBackgroundColor(BaseColor.LIGHT_GRAY);
 			header.setBorderWidth(1f);
@@ -233,7 +234,7 @@ public class PDF_Constructor {
 		for (Tool tool : toolsInUseByUser.get(user)) {
 			parameterCounter = 0;
 
-			for (PDF_Template.PDF_Column column : pdfTemplate.getPdfColumns()) {
+			for (PDF_Column column : pdfTemplate.getPdfColumns()) {
 				// NUMBER OF TOOL
 				if (column.getParameter().equals(ToolParameter.NUMBERS)) {
 					toolsTable.addCell(constructCell(new Phrase(String.valueOf(toolCounter), normalFont)));

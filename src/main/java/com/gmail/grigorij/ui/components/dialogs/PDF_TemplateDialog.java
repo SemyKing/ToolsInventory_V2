@@ -1,6 +1,7 @@
 package com.gmail.grigorij.ui.components.dialogs;
 
 import com.gmail.grigorij.backend.database.entities.PDF_Template;
+import com.gmail.grigorij.backend.database.entities.embeddable.PDF_Column;
 import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.enums.WeekSelector;
 import com.gmail.grigorij.backend.database.enums.tools.ToolParameter;
@@ -181,7 +182,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 		return contentWrapper;
 	}
 
-	private ParameterRowLayout constructParameterRow(PDF_Template.PDF_Column column) {
+	private ParameterRowLayout constructParameterRow(PDF_Column column) {
 		ParameterRowLayout parameterRow = new ParameterRowLayout();
 
 		if (column != null) {
@@ -189,7 +190,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 			parameterRow.getColumnWidthField().setValue((double) column.getUserSetWidth());
 
 			templateChangesHashMap.put(ParameterRowLayout.instanceCounter,
-					new PDF_TemplateDialog.ColumnPair(new PDF_Template.PDF_Column(column), new PDF_Template.PDF_Column(column)));
+					new ColumnPair(new PDF_Column(column), new PDF_Column(column)));
 		} else {
 			templateChangesHashMap.put(ParameterRowLayout.instanceCounter, new PDF_TemplateDialog.ColumnPair(null, null));
 		}
@@ -227,7 +228,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 
 
 	public void constructView() {
-		for (PDF_Template.PDF_Column column : template.getPdfColumns()) {
+		for (PDF_Column column : template.getPdfColumns()) {
 			addRow(constructParameterRow(column));
 		}
 	}
@@ -247,8 +248,8 @@ public class PDF_TemplateDialog extends CustomDialog {
 
 		for (Integer i : templateChangesHashMap.keySet()) {
 
-			PDF_Template.PDF_Column c1 = templateChangesHashMap.get(i).getC1();
-			PDF_Template.PDF_Column c2 = templateChangesHashMap.get(i).getC2();
+			PDF_Column c1 = templateChangesHashMap.get(i).getC1();
+			PDF_Column c2 = templateChangesHashMap.get(i).getC2();
 
 			if (c1 == null) {
 				changes.add("Added Column: " + getColumnString(c2));
@@ -299,7 +300,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 
 
 	private boolean validate() {
-		List<PDF_Template.PDF_Column> columns = new ArrayList<>();
+		List<PDF_Column> columns = new ArrayList<>();
 
 		for (ParameterRowLayout row : parameterRows) {
 
@@ -316,7 +317,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 				}
 			}
 
-			PDF_Template.PDF_Column column = new PDF_Template.PDF_Column();
+			PDF_Column column = new PDF_Column();
 			column.setParameter(row.getParameterComboBox().getValue());
 			column.setUserSetWidth(row.getColumnWidthField().getValue().floatValue());
 
@@ -352,7 +353,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 		return true;
 	}
 
-	private String getColumnString(PDF_Template.PDF_Column c) {
+	private String getColumnString(PDF_Column c) {
 		String cs = "";
 
 		if (c != null) {
@@ -424,25 +425,25 @@ public class PDF_TemplateDialog extends CustomDialog {
 
 	private static class ColumnPair {
 
-		private PDF_Template.PDF_Column c1;
-		private PDF_Template.PDF_Column c2;
+		private PDF_Column c1;
+		private PDF_Column c2;
 
-		ColumnPair(PDF_Template.PDF_Column p1, PDF_Template.PDF_Column p2) {
+		ColumnPair(PDF_Column p1, PDF_Column p2) {
 			this.c1 = p1;
 			this.c2 = p2;
 		}
 
-		private PDF_Template.PDF_Column getC1() {
+		private PDF_Column getC1() {
 			return c1;
 		}
-		private void setC1(PDF_Template.PDF_Column c1) {
+		private void setC1(PDF_Column c1) {
 			this.c1 = c1;
 		}
 
-		private PDF_Template.PDF_Column getC2() {
+		private PDF_Column getC2() {
 			return c2;
 		}
-		private void setC2(PDF_Template.PDF_Column c2) {
+		private void setC2(PDF_Column c2) {
 			this.c2 = c2;
 		}
 

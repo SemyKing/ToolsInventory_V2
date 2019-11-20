@@ -1,5 +1,7 @@
 package com.gmail.grigorij.backend.database.facades;
 
+import com.gmail.grigorij.backend.database.DatabaseManager;
+import com.gmail.grigorij.backend.database.entities.PermissionHolder;
 import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationPermission;
@@ -285,11 +287,11 @@ public class PermissionFacade {
 
 	public boolean isUserAllowedTo(Operation action, OperationTarget target, PermissionRange range) {
 
-		if (action == null || target == null) {
+		if (action == null || target == null || AuthenticationService.getCurrentSessionUser().getPermissionHolder() == null) {
 			return false;
 		}
 
-		for (Permission permission : AuthenticationService.getCurrentSessionUser().getPermissions()) {
+		for (Permission permission : AuthenticationService.getCurrentSessionUser().getPermissionHolder().getPermissions()) {
 			if (action.equals(permission.getOperation())) {
 				if (target.equals(permission.getOperationTarget())) {
 
@@ -307,5 +309,52 @@ public class PermissionFacade {
 		}
 
 		return false;
+	}
+
+
+
+
+
+
+	public boolean insert(PermissionHolder permissionHolder) {
+		if (permissionHolder == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> INSERT NULL PERMISSION HOLDER");
+			return false;
+		}
+
+		try {
+			DatabaseManager.getInstance().insert(permissionHolder);
+		} catch (Exception e) {
+			System.err.println(this.getClass().getSimpleName() + " -> PERMISSION HOLDER INSERT FAIL");
+			e.printStackTrace();
+			return false;
+		}
+
+		return true;
+	}
+
+	public boolean update(PermissionHolder permissionHolder) {
+		if (permissionHolder == null) {
+			System.err.println(this.getClass().getSimpleName() + " -> UPDATE NULL PERMISSION HOLDER");
+			return false;
+		}
+
+		PermissionHolder permissionHolderInDatabase = null;
+
+		if (permissionHolder.getId() != null) {
+			permissionHolderInDatabase = DatabaseManager.getInstance().find(PermissionHolder.class, permissionHolder.getId());
+		}
+		try {
+			if (permissionHolderInDatabase == null) {
+				return insert(permissionHolder);
+			} else {
+				DatabaseManager.getInstance().update(permissionHolder);
+			}
+		} catch (Exception e) {
+			System.err.println(this.getClass().getSimpleName() + " -> PERMISSION HOLDER UPDATE FAIL");
+			e.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 }

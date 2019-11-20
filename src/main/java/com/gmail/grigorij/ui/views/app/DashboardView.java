@@ -362,7 +362,7 @@ public class DashboardView extends Div {
 					transaction.setUser(AuthenticationService.getCurrentSessionUser());
 					transaction.setCompany(currentCompany);
 					transaction.setOperation(Operation.EDIT);
-					transaction.setOperationTarget1(OperationTarget.ANNOUNCEMENT);
+					transaction.setOperationTarget1(OperationTarget.ANNOUNCEMENT_T);
 					TransactionFacade.getInstance().insert(transaction);
 
 					UIUtils.showNotification("Announcement saved", NotificationVariant.LUMO_SUCCESS);

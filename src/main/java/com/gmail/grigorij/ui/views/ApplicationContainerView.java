@@ -134,9 +134,6 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		});
 		menu.addNaviItem(dashboard);
 
-		System.out.println("VIEW TAB: " + PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.INVENTORY_TAB, null));
-
-
 		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.INVENTORY_TAB, null)) {
 			inventory.addClickListener(e-> {
 				naviItemOnClick(inventory, false);

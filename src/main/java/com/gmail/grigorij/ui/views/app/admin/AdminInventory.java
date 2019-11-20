@@ -29,6 +29,7 @@ import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
@@ -192,6 +193,7 @@ public class AdminInventory extends FlexBoxLayout {
 		grid.addColumn(new ComponentRenderer<>(tool -> UIUtils.createActiveGridIcon(tool.isDeleted())))
 				.setHeader("Active")
 				.setFlexGrow(0)
+				.setTextAlign(ColumnTextAlign.CENTER)
 				.setAutoWidth(true);
 
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);

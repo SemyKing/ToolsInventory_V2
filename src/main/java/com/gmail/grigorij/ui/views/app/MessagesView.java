@@ -198,7 +198,8 @@ public class MessagesView extends Div {
 					}
 					return icon;
 				})
-				.setAutoWidth(true)
+//				.setAutoWidth(true)
+				.setWidth("50px")
 				.setFlexGrow(0);
 
 		grid.addColumn(msg -> {

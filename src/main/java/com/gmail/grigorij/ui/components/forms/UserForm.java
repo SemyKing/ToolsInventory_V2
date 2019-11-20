@@ -1,6 +1,7 @@
 package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.PermissionHolder;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
@@ -60,6 +61,7 @@ public class UserForm extends FormLayout {
 	private final LocationForm addressForm = new LocationForm();
 
 	private PermissionsDialog permissionsDialog;
+	private PermissionHolder tempPermissionHolder;
 
 	private Binder<User> binder;
 
@@ -133,65 +135,8 @@ public class UserForm extends FormLayout {
 		permissionLevelComboBox.addValueChangeListener(e -> {
 			if (dataLoaded) {
 				if (!e.getValue().equalsTo(e.getOldValue())) {
-					if (e.getValue().equalsTo(PermissionLevel.VIEWER)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog();
-						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.VIEWER.getName());
-						confirmDialog.closeOnCancel();
-						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
-							confirmDialog.close();
-							tempPermissions = PermissionFacade.getInstance().getDefaultViewerPermissions();
-							user.setPermissions(tempPermissions);
-						});
-						confirmDialog.open();
-					}
-
-					if (e.getValue().equalsTo(PermissionLevel.USER)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog();
-						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.USER.getName());
-						confirmDialog.closeOnCancel();
-						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
-							confirmDialog.close();
-							tempPermissions = PermissionFacade.getInstance().getDefaultUserPermissions();
-							user.setPermissions(tempPermissions);
-						});
-						confirmDialog.open();
-					}
-
-					if (e.getValue().equalsTo(PermissionLevel.FOREMAN)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog();
-						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.FOREMAN.getName());
-						confirmDialog.closeOnCancel();
-						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
-							confirmDialog.close();
-							tempPermissions = PermissionFacade.getInstance().getDefaultForemanPermissions();
-							user.setPermissions(tempPermissions);
-						});
-						confirmDialog.open();
-					}
-
-					if (e.getValue().equalsTo(PermissionLevel.COMPANY_ADMIN)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog();
-						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.COMPANY_ADMIN.getName());
-						confirmDialog.closeOnCancel();
-						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
-							confirmDialog.close();
-							tempPermissions = PermissionFacade.getInstance().getDefaultCompanyAdminPermissions();
-							user.setPermissions(tempPermissions);
-						});
-						confirmDialog.open();
-					}
-
-					if (e.getValue().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-						ConfirmDialog confirmDialog = new ConfirmDialog();
-						confirmDialog.setMessage("Would you like to set default permissions for: " + PermissionLevel.SYSTEM_ADMIN.getName());
-						confirmDialog.closeOnCancel();
-						confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
-							confirmDialog.close();
-							tempPermissions = new ArrayList<>();
-							user.setPermissions(tempPermissions);
-
-						});
-						confirmDialog.open();
+					if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.CHANGE, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
+						handlePermissionLevelChange(e.getValue());
 					}
 				}
 			}
@@ -304,16 +249,11 @@ public class UserForm extends FormLayout {
 		passwordField.setReadOnly(!isNew);
 		passwordField.setRevealButtonVisible(isNew);
 
-//		if (isNew) {
-//			usernameField.setReadOnly(false);
-//			passwordField.setReadOnly(false);
-//			passwordField.setRevealButtonVisible(true);
-//		}
 
 		try {
 			entityStatusDiv.remove(entityStatusCheckbox);
 
-			editPermissionsButton.setEnabled(false);
+//			editPermissionsButton.setEnabled(false);
 			permissionsLayout.remove(editPermissionsButton);
 		} catch (Exception ignored) {}
 
@@ -325,27 +265,56 @@ public class UserForm extends FormLayout {
 
 		permissionLevelComboBox.setEnabled(false);
 
-		if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.OWN) ||
-				!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
+		if (user.getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
 
-			permissionLevelComboBox.setEnabled(true);
-		}
+			if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.OWN) ||
+					!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
 
-		if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.OWN) ||
-				!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
+				permissionLevelComboBox.setEnabled(true);
+			}
 
-			editPermissionsButton.setEnabled(true);
-			permissionsLayout.add(editPermissionsButton);
-			permissionsLayout.setComponentMargin(editPermissionsButton, Left.S);
+			if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.OWN) ||
+					!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
+
+//			editPermissionsButton.setEnabled(true);
+				permissionsLayout.add(editPermissionsButton);
+				permissionsLayout.setComponentMargin(editPermissionsButton, Left.S);
+			}
 		}
 	}
 
-	private void constructAccessRightsDialog() {
-		if (AuthenticationService.getCurrentSessionUser().getId().equals(user.getId())) {
-			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-				UIUtils.showNotification("As System Administrator, you have all permissions", NotificationVariant.LUMO_PRIMARY);
-				return;
+	private void handlePermissionLevelChange(PermissionLevel level) {
+		ConfirmDialog confirmDialog = new ConfirmDialog();
+		confirmDialog.setMessage("Would you like to set default permissions for: " + level.getName());
+		confirmDialog.closeOnCancel();
+		confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
+			confirmDialog.close();
+
+			switch (level) {
+				case VIEWER:
+					user.getPermissionHolder().setPermissions(PermissionFacade.getInstance().getDefaultViewerPermissions());
+					break;
+				case USER:
+					user.getPermissionHolder().setPermissions(PermissionFacade.getInstance().getDefaultUserPermissions());
+					break;
+				case FOREMAN:
+					user.getPermissionHolder().setPermissions(PermissionFacade.getInstance().getDefaultForemanPermissions());
+					break;
+				case COMPANY_ADMIN:
+					user.getPermissionHolder().setPermissions(PermissionFacade.getInstance().getDefaultCompanyAdminPermissions());
+					break;
+				case SYSTEM_ADMIN:
+					user.getPermissionHolder().setPermissions(null);
+					break;
 			}
+		});
+		confirmDialog.open();
+	}
+
+	private void constructAccessRightsDialog() {
+		if (self && AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			UIUtils.showNotification("As System Administrator, you have all permissions", NotificationVariant.LUMO_PRIMARY);
+			return;
 		}
 
 		permissionsDialog = new PermissionsDialog(user);
@@ -359,9 +328,9 @@ public class UserForm extends FormLayout {
 		}
 
 		permissionsDialog.getConfirmButton().addClickListener(saveOnClick -> {
-			List<Permission> permissions = permissionsDialog.getPermissions();
-			if (permissions != null) {
-				tempPermissions = permissions;
+			PermissionHolder permissionHolder = permissionsDialog.getPermissionHolder();
+			if (permissionHolder != null) {
+				tempPermissionHolder = permissionHolder;
 				permissionsDialog.close();
 			}
 		});
@@ -390,10 +359,6 @@ public class UserForm extends FormLayout {
 
 		binder.readBean(this.user);
 		dataLoaded = true;
-
-		if (isNew) {
-			companyComboBox.setValue(AuthenticationService.getCurrentSessionUser().getCompany());
-		}
 	}
 
 	public User getUser() {
@@ -420,13 +385,12 @@ public class UserForm extends FormLayout {
 					String salt = PasswordUtils.getSalt(30);
 					user.setSalt(salt);
 					user.setPassword(PasswordUtils.generateSecurePassword(passwordField.getValue(), salt));
-
-					String dummyPassword = PasswordUtils.generateDummyPassword(passwordField.getValue());
-					user.setDummyPassword(dummyPassword);
-					passwordField.setValue(dummyPassword);
+					passwordField.setValue(PasswordUtils.generateDummyPassword(passwordField.getValue()));
 				}
 
-				user.setPermissions(tempPermissions);
+				if (tempPermissionHolder != null) {
+					user.setPermissionHolder(tempPermissionHolder);
+				}
 
 				binder.writeBean(user);
 				return user;

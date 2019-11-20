@@ -142,7 +142,7 @@ public class AuthenticationService {
 		if (password == null || password.isEmpty())
 			return false;
 
-		username = username.replaceAll("[^a-zA-Z0-9]", "");
+		username = username.replaceAll("[^a-zA-Z0-9.]", "");
 
 		User user = UserFacade.getInstance().getUserByUsername(username);
 
@@ -175,7 +175,7 @@ public class AuthenticationService {
 		Transaction transaction = new Transaction();
 		transaction.setUser(AuthenticationService.getCurrentSessionUser());
 		transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-		transaction.setOperation(Operation.LOG_OUT);
+		transaction.setOperation(Operation.LOG_OUT_T);
 		TransactionFacade.getInstance().insert(transaction);
 
 		getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);

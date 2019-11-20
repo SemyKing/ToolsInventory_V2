@@ -109,7 +109,7 @@ public class MainLayout extends Div {
 		Transaction transaction = new Transaction();
 		transaction.setUser(AuthenticationService.getCurrentSessionUser());
 		transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-		transaction.setOperation(Operation.LOG_IN);
+		transaction.setOperation(Operation.LOG_IN_T);
 		TransactionFacade.getInstance().insert(transaction);
 
 		this.removeAll();

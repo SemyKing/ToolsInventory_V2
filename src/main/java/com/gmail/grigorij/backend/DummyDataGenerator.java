@@ -141,6 +141,9 @@ public class DummyDataGenerator {
 		admin.setCompany(companies.get(0));
 		admin.setThemeVariant(LumoStyles.LIGHT);
 		admin.setAdditionalInfo("System Administrator");
+//		admin.setPermissionLevel(PermissionLevel.SYSTEM_ADMIN);
+
+//		admin.setPermissionHolder(holder);
 		admin.setPermissionLevel(PermissionLevel.SYSTEM_ADMIN);
 
 		Person adminP = new Person();
@@ -185,11 +188,12 @@ public class DummyDataGenerator {
 				user.setCompany(company);
 
 				if (!companyAdminSet) {
+					PermissionHolder holder = new PermissionHolder();
+					holder.setPermissions(PermissionFacade.getInstance().getDefaultCompanyAdminPermissions());
+					user.setPermissionHolder(holder);
 					user.setPermissionLevel(PermissionLevel.COMPANY_ADMIN);
-					user.setPermissions(PermissionFacade.getInstance().getDefaultCompanyAdminPermissions());
 				} else {
-					user.setPermissionLevel(PermissionLevel.USER);
-					user.setPermissions(PermissionFacade.getInstance().getDefaultUserPermissions());
+					user.setPermissionHolder(new PermissionHolder());
 				}
 				companyAdminSet = true;
 

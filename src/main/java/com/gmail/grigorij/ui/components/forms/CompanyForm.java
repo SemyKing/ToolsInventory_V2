@@ -132,13 +132,10 @@ public class CompanyForm extends FormLayout {
 		setColspan(locationsLayout, 2);
 
 		editPDF_TemplateButton = UIUtils.createButton("EDIT PDF TEMPLATE", VaadinIcon.CLIPBOARD_TEXT, ButtonVariant.LUMO_PRIMARY);
-		editPDF_TemplateButton.addClickListener(e -> {
-			constructPDF_TemplateDialog();
-		});
+		editPDF_TemplateButton.addClickListener(e -> constructPDF_TemplateDialog());
 
 		PDF_TemplateButtonDiv = new Div();
 		PDF_TemplateButtonDiv.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
-		PDF_TemplateButtonDiv.add(editPDF_TemplateButton);
 
 		setColspan(PDF_TemplateButtonDiv, 2);
 
@@ -214,13 +211,11 @@ public class CompanyForm extends FormLayout {
 		companyLocationsComboBox.setItems(tempLocations);
 
 		try {
-			editPDF_TemplateButton.setEnabled(false);
-			PDF_TemplateButtonDiv.getElement().setAttribute("hidden", true);
+			PDF_TemplateButtonDiv.remove(editPDF_TemplateButton);
 		} catch (Exception ignored) {}
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			editPDF_TemplateButton.setEnabled(true);
-			PDF_TemplateButtonDiv.getElement().setAttribute("hidden", false);
+			PDF_TemplateButtonDiv.add(editPDF_TemplateButton);
 		}
 	}
 
@@ -321,7 +316,9 @@ public class CompanyForm extends FormLayout {
 
 				company.setLocations(tempLocations);
 
-				company.setPdf_template(tempPDF_Template);
+				if (tempPDF_Template != null) {
+					company.setPdf_template(tempPDF_Template);
+				}
 
 				binder.writeBean(company);
 				return company;

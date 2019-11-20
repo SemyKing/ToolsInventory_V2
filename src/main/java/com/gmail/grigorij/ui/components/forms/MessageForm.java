@@ -168,7 +168,7 @@ public class MessageForm extends FormLayout {
 			Transaction transaction = new Transaction();
 			transaction.setUser(AuthenticationService.getCurrentSessionUser());
 			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-			transaction.setOperation(Operation.CANCEL_RESERVATION);
+			transaction.setOperation(Operation.CANCEL_RESERVATION_T);
 			transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
 			transaction.setTargetDetails(tool.getName());
 			TransactionFacade.getInstance().insert(transaction);

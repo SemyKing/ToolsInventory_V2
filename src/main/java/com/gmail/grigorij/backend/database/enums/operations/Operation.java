@@ -11,6 +11,7 @@ public enum Operation {
 
 	VIEW("View", PermissionLevel.USER),
 	SEND("Send", PermissionLevel.USER),
+	CHANGE("Change", PermissionLevel.USER),
 
 	ADD("Add", PermissionLevel.COMPANY_ADMIN),
 	EDIT("Edit", PermissionLevel.COMPANY_ADMIN),
@@ -23,12 +24,11 @@ public enum Operation {
 
 	DELETE("Delete", PermissionLevel.SYSTEM_ADMIN),
 
-	LOG_IN("Log In", PermissionLevel.FOR_TRANSACTIONS),
-	LOG_OUT("Log Out", PermissionLevel.FOR_TRANSACTIONS),
-	RETURN("Return", PermissionLevel.FOR_TRANSACTIONS),
-	CANCEL_RESERVATION("Cancel Reservation", PermissionLevel.FOR_TRANSACTIONS),
-	REQUEST("Request", PermissionLevel.FOR_TRANSACTIONS),
-	CHANGE("Change", PermissionLevel.FOR_TRANSACTIONS);
+	LOG_IN_T("Log In", PermissionLevel.FOR_TRANSACTIONS),
+	LOG_OUT_T("Log Out", PermissionLevel.FOR_TRANSACTIONS),
+	RETURN_T("Return", PermissionLevel.FOR_TRANSACTIONS),
+	CANCEL_RESERVATION_T("Cancel Reservation", PermissionLevel.FOR_TRANSACTIONS),
+	REQUEST_T("Request", PermissionLevel.FOR_TRANSACTIONS);
 
 	private final String name;
 	private final PermissionLevel minimalPermissionLevel;

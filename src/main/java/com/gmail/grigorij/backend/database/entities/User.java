@@ -84,14 +84,13 @@ public class User extends EntityPojo {
 	@Enumerated(EnumType.STRING)
 	private PermissionLevel permissionLevel = PermissionLevel.USER;
 
-	@ElementCollection
-	@Enumerated(EnumType.STRING)
-	private List<Permission> permissions;
+
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "permissionHolder_id")
+	private PermissionHolder permissionHolder;
 
 
-	public User() {
-		permissions = PermissionFacade.getInstance().getDefaultUserPermissions();
-	}
+	public User() {}
 
 	public User(User other) {
 		this.username = other.username;
@@ -104,7 +103,7 @@ public class User extends EntityPojo {
 		this.address = other.address;
 		this.person = other.person;
 		this.permissionLevel = other.permissionLevel;
-		this.permissions = other.permissions;
+		this.permissionHolder = other.permissionHolder;
 		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
 
@@ -179,12 +178,13 @@ public class User extends EntityPojo {
 		this.permissionLevel = permissionLevel;
 	}
 
-	public List<Permission> getPermissions() {
-		return permissions;
+	public PermissionHolder getPermissionHolder() {
+		return permissionHolder;
 	}
-	public void setPermissions(List<Permission> permissions) {
-		this.permissions = permissions;
+	public void setPermissionHolder(PermissionHolder permissionHolder) {
+		this.permissionHolder = permissionHolder;
 	}
+
 
 
 	public String getFullName() {
