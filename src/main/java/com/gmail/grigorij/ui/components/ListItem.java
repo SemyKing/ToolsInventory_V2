@@ -10,11 +10,26 @@ import com.vaadin.flow.component.html.Span;
 @CssImport("./styles/components/list-item.css")
 public class ListItem extends Div implements HasStyle {
 
+    public enum Direction {
+        ROW("row"),
+        COLUMN("column");
+
+        private String direction;
+
+        Direction(String direction) {
+            this.direction = direction;
+        }
+
+        public String getDirection() {
+            return direction;
+        }
+    }
+
     private final String CLASS_NAME = "list-item";
 
     private Div content;
 
-    public ListItem(String primary, String secondary) {
+    public ListItem(String primary, String secondary, Direction direction) {
         setClassName(CLASS_NAME);
 
         Span primary1 = new Span(primary);
@@ -24,12 +39,12 @@ public class ListItem extends Div implements HasStyle {
         secondary1.addClassName(CLASS_NAME + "__secondary");
 
         content = new Div(primary1, secondary1);
-        content.addClassName(CLASS_NAME + "__content");
+        content.addClassName(CLASS_NAME + "__" + direction.getDirection() + "__content");
 
         add(content);
     }
 
-    public ListItem(Component prefix, Component suffix) {
+    public ListItem(Component prefix, Component suffix, Direction direction) {
         setClassName(CLASS_NAME);
 
         Div prefix1 = new Div(prefix);
@@ -39,7 +54,7 @@ public class ListItem extends Div implements HasStyle {
         suffix1.addClassName(CLASS_NAME + "__suffix");
 
         content = new Div(prefix1, suffix1);
-        content.addClassName(CLASS_NAME + "__content");
+        content.addClassName(CLASS_NAME + "__" + direction.getDirection() + "__content");
 
         add(content);
     }

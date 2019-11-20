@@ -2,32 +2,32 @@ package com.gmail.grigorij.backend.database.entities;
 
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.entities.embeddable.ToolReport;
-import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
 @Table(name = "tool")
 @NamedQueries({
 		@NamedQuery(name = Tool.QUERY_ALL,
-				query = "SELECT tool FROM Tool tool"),
+				query = "SELECT tool FROM Tool tool ORDER BY tool.name ASC"),
 
 		@NamedQuery(name = Tool.QUERY_ALL_BY_COMPANY_ID,
 				query = "SELECT tool FROM Tool tool WHERE" +
-						" tool.company.id = :" + ProjectConstants.ID_VAR),
+						" tool.company.id = :" + ProjectConstants.ID_VAR + " ORDER BY tool.name ASC"),
 
 		@NamedQuery(name = Tool.QUERY_ALL_BY_CURRENT_USER,
 				query = "SELECT tool FROM Tool tool WHERE" +
-						" tool.currentUser.id = :" + ProjectConstants.ID_VAR),
+						" tool.currentUser.id = :" + ProjectConstants.ID_VAR + " ORDER BY tool.name ASC"),
 
 		@NamedQuery(name = Tool.QUERY_ALL_BY_RESERVED_USER,
 				query = "SELECT tool FROM Tool tool WHERE" +
-						" tool.reservedUser.id = :" + ProjectConstants.ID_VAR),
+						" tool.reservedUser.id = :" + ProjectConstants.ID_VAR + " ORDER BY tool.name ASC"),
 
 		@NamedQuery(name = Tool.QUERY_BY_ID,
 				query = "SELECT tool FROM Tool tool WHERE" +
@@ -74,8 +74,8 @@ public class Tool extends EntityPojo {
 	private LocalDate dateBought;
 	private LocalDate dateNextMaintenance;
 
-	private Double price;
-	private Integer guarantee_months;
+	private Double price = 0.00;
+	private Integer guarantee_months = 0;
 
 	@Embedded
 	private Location currentLocation;
@@ -107,6 +107,7 @@ public class Tool extends EntityPojo {
 		this.currentLocation = other.currentLocation;
 		this.reports = other.reports;
 		this.category = other.category;
+		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
 
 
@@ -276,5 +277,25 @@ public class Tool extends EntityPojo {
 		}
 
 		return company;
+	}
+
+	public String getCurrentUserString() {
+		String currentUser = "";
+
+		if (this.currentUser != null) {
+			currentUser = this.currentUser.getFullName();
+		}
+
+		return currentUser;
+	}
+
+	public String getReservedUserString() {
+		String reservedUser = "";
+
+		if (this.reservedUser != null) {
+			reservedUser = this.reservedUser.getFullName();
+		}
+
+		return reservedUser;
 	}
 }

@@ -1,20 +1,19 @@
 package com.gmail.grigorij;
 
 import com.gmail.grigorij.backend.DummyDataGenerator;
-import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
+import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.ui.application.ApplicationContainerView;
-import com.gmail.grigorij.ui.application.authentication.login.LoginView;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.ui.views.ApplicationContainerView;
+import com.gmail.grigorij.ui.views.LoginView;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
@@ -110,7 +109,7 @@ public class MainLayout extends Div {
 		Transaction transaction = new Transaction();
 		transaction.setUser(AuthenticationService.getCurrentSessionUser());
 		transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-		transaction.setOperation(Operation.LOG_IN);
+		transaction.setOperation(Operation.LOG_IN_T);
 		TransactionFacade.getInstance().insert(transaction);
 
 		this.removeAll();

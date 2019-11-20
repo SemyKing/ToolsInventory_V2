@@ -1,9 +1,11 @@
 package com.gmail.grigorij.backend.database.entities;
 
-import com.gmail.grigorij.backend.database.enums.MessageType;
 import com.gmail.grigorij.utils.ProjectConstants;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 import java.util.Date;
 
 
@@ -20,8 +22,8 @@ public class Message extends EntityPojo {
 	public static final String QUERY_ALL_BY_USER = "get_all_messages_by_user";
 
 
-	@Enumerated(EnumType.STRING)
-	private MessageType messageType;
+//	@Enumerated(EnumType.STRING)
+//	private MessageType messageType;
 
 	private String subject = "";
 	private String text = "";
@@ -38,12 +40,12 @@ public class Message extends EntityPojo {
 	}
 
 
-	public MessageType getMessageType() {
-		return messageType;
-	}
-	public void setMessageType(MessageType messageType) {
-		this.messageType = messageType;
-	}
+//	public MessageType getMessageType() {
+//		return messageType;
+//	}
+//	public void setMessageType(MessageType messageType) {
+//		this.messageType = messageType;
+//	}
 
 	public String getSubject() {
 		return subject;

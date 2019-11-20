@@ -6,9 +6,16 @@
 <!-- ============================================================= -->
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
     <New id="sslContextFactory" class="org.eclipse.jetty.util.ssl.SslContextFactory">
-        <Set name="KeyStorePath"><Property name="jetty.home" default="." />/src/main/resources/jetty-conf/keystore</Set>
+        <Set name="KeyStorePath">
+            <Property name="jetty.home" default="." />/src/main/resources/jetty-conf/keystore
+        </Set>
+
         <Set name="KeyStorePassword">localsslpass</Set>
-        <Set name="TrustStorePath"><Property name="jetty.home" default="." />/src/main/resources/jetty-conf/keystore</Set>
+
+        <Set name="TrustStorePath">
+            <Property name="jetty.home" default="." />/src/main/resources/jetty-conf/keystore
+        </Set>
+
         <Set name="TrustStorePassword">localsslpass</Set>
 
         <Set name="IncludeCipherSuites">

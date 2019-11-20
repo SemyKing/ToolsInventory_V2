@@ -7,9 +7,15 @@ import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Transient;
+
 
 @Embeddable
 public class Permission {
+
+	// Helper for tracking changes
+	@Transient
+	private int counter;
 
 	@Enumerated( EnumType.STRING )
 	private Operation operation;
@@ -23,20 +29,17 @@ public class Permission {
 	@Enumerated( EnumType.STRING )
 	private OperationPermission permissionCompany;
 
-//	@Enumerated( EnumType.STRING )
-//	private OperationPermission permissionSystem;
-
 	private boolean visible = false;
 
 
 	public Permission() {}
 
 	public Permission(Permission other) {
+		this.counter = other.counter;
 		this.operation = other.operation;
 		this.operationTarget = other.operationTarget;
 		this.permissionOwn = other.permissionOwn;
 		this.permissionCompany = other.permissionCompany;
-//		this.permissionSystem = other.permissionSystem;
 		this.visible = other.visible;
 	}
 
@@ -69,17 +72,59 @@ public class Permission {
 		this.permissionCompany = permissionCompany;
 	}
 
-//	public OperationPermission getPermissionSystem() {
-//		return permissionSystem;
-//	}
-//	public void setPermissionSystem(OperationPermission permissionSystem) {
-//		this.permissionSystem = permissionSystem;
-//	}
-
 	public boolean isVisible() {
 		return visible;
 	}
 	public void setVisible(boolean visible) {
 		this.visible = visible;
+	}
+
+	public int getCounter() {
+		return counter;
+	}
+	public void setCounter(int counter) {
+		this.counter = counter;
+	}
+
+
+
+	public String getOperationString() {
+		String s = "";
+
+		if (operation != null) {
+			s = operation.getName();
+		}
+
+		return s;
+	}
+
+	public String getTargetString() {
+		String s = "";
+
+		if (operationTarget != null) {
+			s = operationTarget.getName();
+		}
+
+		return s;
+	}
+
+	public String getPermissionOwnString() {
+		String s = "";
+
+		if (permissionOwn != null) {
+			s = permissionOwn.getName();
+		}
+
+		return s;
+	}
+
+	public String getPermissionCompanyString() {
+		String s = "";
+
+		if (permissionCompany != null) {
+			s = permissionCompany.getName();
+		}
+
+		return s;
 	}
 }

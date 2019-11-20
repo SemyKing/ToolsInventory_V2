@@ -1,0 +1,16 @@
+/*
+@media (max-width: 1024px) {
+	:host(.dynamic-label-button) [part="label"] {
+		display: none !important;
+	}
+}
+*/
+
+:host(.no-padding-top) [part="text-field"] {
+	padding-top: 0 !important;
+}
+
+:host(.width_75px) {
+	max-width: 75px;
+}
+

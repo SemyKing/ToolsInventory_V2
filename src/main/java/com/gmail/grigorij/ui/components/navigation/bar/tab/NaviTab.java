@@ -1,9 +1,9 @@
 package com.gmail.grigorij.ui.components.navigation.bar.tab;
 
-import java.util.Objects;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.tabs.Tab;
+
+import java.util.Objects;
 
 public class NaviTab extends Tab {
 

@@ -45,6 +45,9 @@
 	transition: all var(--transition-duration-s);
 	z-index: 4;
 }
+.details-drawer[deleted] {
+	background: var(--lumo-error-color-10pct);
+}
 
 .details-drawer[open] {
     box-shadow: var(--lumo-box-shadow-m);
@@ -89,9 +92,10 @@
 
 .footer-content {
 	display: flex;
-	width: 100%;
+    width: 100%;
 	padding-left: var(--lumo-space-m);
 	padding-right: var(--lumo-space-m);
 	justify-content: space-between;
+	box-sizing: border-box;
     background-color: var(--lumo-contrast-5pct);
 }

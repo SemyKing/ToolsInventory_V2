@@ -1,22 +1,25 @@
 package com.gmail.grigorij.ui.components.forms;
 
 import com.gmail.grigorij.backend.database.entities.Category;
-import com.gmail.grigorij.backend.database.entities.embeddable.Location;
-import com.gmail.grigorij.backend.database.facades.*;
 import com.gmail.grigorij.backend.database.entities.Company;
 import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.User;
-import com.gmail.grigorij.backend.database.enums.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.entities.embeddable.Location;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
-import com.gmail.grigorij.ui.application.views.admin.AdminInventory;
+import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
+import com.gmail.grigorij.backend.database.facades.CompanyFacade;
+import com.gmail.grigorij.backend.database.facades.InventoryFacade;
+import com.gmail.grigorij.backend.database.facades.PermissionFacade;
+import com.gmail.grigorij.backend.database.facades.UserFacade;
+import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.CameraDialog;
-import com.gmail.grigorij.ui.components.layouts.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Right;
-import com.gmail.grigorij.utils.AuthenticationService;
+import com.gmail.grigorij.ui.views.app.admin.AdminInventory;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.DateConverter;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
@@ -101,16 +104,15 @@ public class ToolForm extends FormLayout {
 
 		entityStatusDiv = new Div();
 		entityStatusDiv.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
-		entityStatusDiv.add(entityStatusCheckbox);
 
 		setColspan(entityStatusDiv, 2);
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
-			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
-				entityStatusCheckbox.setReadOnly(true);
-				entityStatusDiv.getElement().setAttribute("hidden", true);
-			}
-		}
+//		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
+//			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
+//				entityStatusCheckbox.setReadOnly(true);
+//				entityStatusDiv.getElement().setAttribute("hidden", true);
+//			}
+//		}
 
 		nameField = new TextField("Name");
 		nameField.setRequired(true);
@@ -136,7 +138,7 @@ public class ToolForm extends FormLayout {
 
 
 		companyComboBox = new ComboBox<>();
-		companyComboBox.setItems(CompanyFacade.getInstance().getAllCompanies());
+		companyComboBox.setItems(CompanyFacade.getInstance().getAllActiveCompanies());
 		companyComboBox.setItemLabelGenerator(Company::getName);
 		companyComboBox.setLabel("Company");
 		companyComboBox.setRequired(true);
@@ -270,7 +272,9 @@ public class ToolForm extends FormLayout {
 		setColspan(hr, 2);
 		add(hr);
 
-		add(companyComboBox);
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			add(companyComboBox);
+		}
 		add(categoryLayout);
 
 		add(locationAndUsageDiv);
@@ -354,10 +358,12 @@ public class ToolForm extends FormLayout {
 
 
 	private void initDynamicFormItems() {
-		companyComboBox.setReadOnly(true);
+		try {
+			entityStatusDiv.remove(entityStatusCheckbox);
+		} catch (Exception ignored) {}
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			companyComboBox.setReadOnly(false);
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.INVENTORY_TOOL, PermissionRange.COMPANY)) {
+			entityStatusDiv.add(entityStatusCheckbox);
 		}
 
 		updateComboBoxes(tool.getCompany());
@@ -370,9 +376,9 @@ public class ToolForm extends FormLayout {
 			toolCurrentUserComboBox.setValue(null);
 			toolReservedByUserComboBox.setValue(null);
 
-			categoryComboBox.setItems(InventoryFacade.getInstance().getAllCategoriesInCompany(company.getId()));
-			toolCurrentUserComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
-			toolReservedByUserComboBox.setItems(UserFacade.getInstance().getUsersInCompany(company.getId()));
+			categoryComboBox.setItems(InventoryFacade.getInstance().getAllActiveCategoriesInCompany(company.getId()));
+			toolCurrentUserComboBox.setItems(UserFacade.getInstance().getAllActiveUsersInCompany(company.getId()));
+			toolReservedByUserComboBox.setItems(UserFacade.getInstance().getAllActiveUsersInCompany(company.getId()));
 			locationComboBox.setItems(company.getLocations());
 		}
 	}
@@ -382,49 +388,55 @@ public class ToolForm extends FormLayout {
 		cameraDialog.getCameraView().onFinished(new OperationStatus() {
 			@Override
 			public void onSuccess(String code) {
-				if (UI.getCurrent() != null) {
-					UI.getCurrent().access(() -> {
-						try {
-							UIUtils.showNotification("Code scanned", NotificationVariant.LUMO_SUCCESS, 2000);
+				final UI ui = UI.getCurrent();
 
-							codeField.setValue(code);
-							cameraDialog.stopCamera();
+				if (ui != null) {
+					ui.access(() -> {
+						try {
+//							cameraDialog.getCameraView().stop();
+							cameraDialog.stop();
 							cameraDialog.close();
 
-							UI.getCurrent().push();
+							UIUtils.showNotification("Code scanned", NotificationVariant.LUMO_SUCCESS, 1000);
+
+							codeField.setValue(code);
 						} catch (Exception e) {
-							cameraDialog.getCameraView().stop();
+//							cameraDialog.getCameraView().stop();
+							cameraDialog.stop();
 							cameraDialog.close();
 
 							UIUtils.showNotification("We are sorry, but an internal error occurred", NotificationVariant.LUMO_ERROR);
 							e.printStackTrace();
 						}
+						ui.push();
 					});
 				}
 			}
 
 			@Override
 			public void onFail() {
-				if (UI.getCurrent() != null) {
-					UI.getCurrent().access(() -> {
+				final UI ui = UI.getCurrent();
+
+				if (ui != null) {
+					ui.access(() -> {
 						try {
-							UIUtils.showNotification("Code not found in image", NotificationVariant.LUMO_PRIMARY, 2000);
-							UI.getCurrent().push();
+							cameraDialog.getCameraView().takePicture();
 						} catch (Exception e) {
-							cameraDialog.getCameraView().stop();
+//							cameraDialog.getCameraView().stop();
+							cameraDialog.stop();
 							cameraDialog.close();
 
 							UIUtils.showNotification("We are sorry, but an internal error occurred", NotificationVariant.LUMO_ERROR);
 							e.printStackTrace();
 						}
+						ui.push();
 					});
 				}
 			}
 		});
 
-
 		cameraDialog.open();
-		cameraDialog.getCameraView().showPreview();
+		cameraDialog.initCamera();
 	}
 
 
@@ -536,7 +548,7 @@ public class ToolForm extends FormLayout {
 			changes.add("Model changed from: '" + originalTool.getModel() + "', to: '" + tool.getModel() + "'");
 		}
 		if (!originalTool.getCompanyString().equals(tool.getCompanyString())) {
-			changes.add("Tool company changed from: '" + originalTool.getCompany().getName() + "', to: '" + tool.getCompany().getName() + "'");
+			changes.add("Tool company changed from: '" + originalTool.getCompanyString() + "', to: '" + tool.getCompanyString() + "'");
 		}
 		if (!originalTool.getCategoryString().equals(tool.getCategoryString())) {
 			changes.add("Tool category changed from: '" +
@@ -544,19 +556,19 @@ public class ToolForm extends FormLayout {
 					tool.getCategoryString() + "'");
 		}
 		if (!originalTool.getUsageStatusString().equals(tool.getUsageStatusString())) {
-			changes.add("Usage status changed from: '" + originalTool.getUsageStatus().getName() + "', to: '" + tool.getUsageStatus().getName() + "'");
+			changes.add("Usage status changed from: '" +
+					originalTool.getUsageStatusString() + "', to: '" +
+					tool.getUsageStatusString() + "'");
 		}
-		if (originalTool.getCurrentUser() != null || tool.getCurrentUser() != null) {
+		if (!originalTool.getCurrentUserString().equals(tool.getCurrentUserString())) {
 			changes.add("Tool current user changed from: '" +
-					(originalTool.getCurrentUser()==null ? "" : originalTool.getCurrentUser().getFullName()) +
-					"', to: '" +
-					(tool.getCurrentUser()==null ? "" : tool.getCurrentUser().getFullName()) + "'");
+					originalTool.getCurrentUserString() + "', to: '" +
+					tool.getCurrentUserString() + "'");
 		}
-		if (originalTool.getReservedUser() != null || tool.getReservedUser() != null) {
+		if (!originalTool.getReservedUserString().equals(tool.getReservedUserString())) {
 			changes.add("Tool reserved user changed from: '" +
-					(originalTool.getReservedUser()==null ? "" : originalTool.getReservedUser().getFullName()) +
-					"', to: '" +
-					(tool.getReservedUser()==null ? "" : tool.getReservedUser().getFullName()) + "'");
+					originalTool.getReservedUserString() + "', to: '" +
+					tool.getReservedUserString() + "'");
 		}
 		if (!originalTool.getPrice().equals(tool.getPrice())) {
 			changes.add("Price changed from: '" + originalTool.getPrice() + "', to: '" + tool.getPrice() + "'");
@@ -564,7 +576,6 @@ public class ToolForm extends FormLayout {
 		if (!originalTool.getGuarantee_months().equals(tool.getGuarantee_months())) {
 			changes.add("Guarantee changed from: '" + originalTool.getGuarantee_months() + "', to: '" + tool.getGuarantee_months() + "'");
 		}
-
 		if (originalTool.getDateBought() != null || tool.getDateBought() != null) {
 			changes.add("Date bought changed from: '" +
 					(originalTool.getDateBought()==null ? "" : DateConverter.localDateToString(originalTool.getDateBought())) +
@@ -576,6 +587,9 @@ public class ToolForm extends FormLayout {
 					(originalTool.getDateNextMaintenance()==null ? "" : DateConverter.localDateToString(originalTool.getDateNextMaintenance())) +
 					"', to: '" +
 					(tool.getDateNextMaintenance()==null ? "" : DateConverter.localDateToString(tool.getDateNextMaintenance())) + "'");
+		}
+		if (!originalTool.getAdditionalInfo().equals(tool.getAdditionalInfo())) {
+			changes.add("Additional Info changed from: '" + originalTool.getAdditionalInfo() + "',  to:  '" + tool.getAdditionalInfo() + "'");
 		}
 
 		return changes;

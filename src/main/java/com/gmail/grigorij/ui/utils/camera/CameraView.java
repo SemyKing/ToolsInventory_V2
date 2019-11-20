@@ -1,10 +1,11 @@
 package com.gmail.grigorij.ui.utils.camera;
 
+import com.gmail.grigorij.ui.components.camera.AbstractCameraView;
 import com.gmail.grigorij.utils.OperationStatus;
-import com.gmail.grigorij.utils.camera.AbstractCameraView;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
+import com.vaadin.flow.component.AttachEvent;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,6 +24,10 @@ public class CameraView extends AbstractCameraView {
 		getCamera().takePicture();
 	}
 
+	public void stop() {
+		getCamera().stopCamera();
+	}
+
 	public void onFinished(OperationStatus status) {
 		getCamera().addFinishedListener(e -> {
 			if (e != null) {
@@ -36,9 +41,19 @@ public class CameraView extends AbstractCameraView {
 							String response = decodeCodeInImage(file);
 
 							if (response == null) {
+								try {
+									Thread.sleep(500);
+								} catch (InterruptedException ex) {
+									ex.printStackTrace();
+								}
 								status.onFail();
 							} else {
 								if (response.length() <= 0) {
+									try {
+										Thread.sleep(500);
+									} catch (InterruptedException ex) {
+										ex.printStackTrace();
+									}
 									status.onFail();
 								} else {
 									status.onSuccess(response);
@@ -64,9 +79,5 @@ public class CameraView extends AbstractCameraView {
 		} catch (NotFoundException e) {
 			return null;
 		}
-	}
-
-	public void stop() {
-		getCamera().stopCamera();
 	}
 }
