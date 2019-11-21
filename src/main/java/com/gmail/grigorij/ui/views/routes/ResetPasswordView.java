@@ -10,6 +10,7 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.ProjectConstants;
+import com.gmail.grigorij.utils.authentication.PasswordUtils;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -168,10 +169,14 @@ public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 		User user = link.getUser();
 
 		if (user == null) {
-			System.err.println("USER IS NULL IN RECOVERYLINK -> PASSWORD RECOVERY");
+			System.err.println("USER IS NULL IN RECOVERY LINK -> PASSWORD RECOVERY");
 			UIUtils.showNotification("Error occurred, please contact System Administrator", NotificationVariant.LUMO_ERROR);
 		} else {
-			user.setPassword(newPassword);
+
+			String salt = PasswordUtils.getSalt(30);
+			user.setSalt(salt);
+			user.setPassword(PasswordUtils.generateSecurePassword(newPassword, salt));
+			user.setDummyPassword(PasswordUtils.generateDummyPassword(newPassword));
 
 			if (UserFacade.getInstance().update(user)) {
 				UIUtils.showNotification("Password reset", NotificationVariant.LUMO_SUCCESS);

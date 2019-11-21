@@ -9,6 +9,7 @@ import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.FlexDirection;
 import com.gmail.grigorij.utils.ProjectConstants;
+import com.gmail.grigorij.utils.changes.Pair;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -26,7 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 
-public class PDF_TemplateDialog extends CustomDialog {
+public class PDF_TemplateDialog extends Pair<PDF_Column> {
 
 	private final static String CLASS_NAME = "pdf_template-dialog";
 
@@ -57,7 +58,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 	private PDF_Template template;
 
 	private List<String> changes = new ArrayList<>();
-	private LinkedHashMap<Integer, ColumnPair> templateChangesHashMap = new LinkedHashMap<>();
+//	private LinkedHashMap<Integer, ColumnPair> templateChangesHashMap = new LinkedHashMap<>();
 
 	private boolean isNew;
 
@@ -73,6 +74,8 @@ public class PDF_TemplateDialog extends CustomDialog {
 		}
 
 		ParameterRowLayout.instanceCounter = 0;
+		setChangesHashMap(new LinkedHashMap<>());
+
 
 		signatureTextAreaOldValue = this.template.getSignatureText();
 		contrastTextAreaOldValue = this.template.getContrastText();
@@ -189,10 +192,13 @@ public class PDF_TemplateDialog extends CustomDialog {
 			parameterRow.getParameterComboBox().setValue(column.getParameter());
 			parameterRow.getColumnWidthField().setValue((double) column.getUserSetWidth());
 
-			templateChangesHashMap.put(ParameterRowLayout.instanceCounter,
-					new ColumnPair(new PDF_Column(column), new PDF_Column(column)));
+//			templateChangesHashMap.put(ParameterRowLayout.instanceCounter,
+//					new ColumnPair(new PDF_Column(column), new PDF_Column(column)));
+
+			getChangesHashMap().put(ParameterRowLayout.instanceCounter, new Pair<>(new PDF_Column(column), new PDF_Column(column)));
 		} else {
-			templateChangesHashMap.put(ParameterRowLayout.instanceCounter, new PDF_TemplateDialog.ColumnPair(null, null));
+//			templateChangesHashMap.put(ParameterRowLayout.instanceCounter, new PDF_TemplateDialog.ColumnPair(null, null));
+			getChangesHashMap().put(ParameterRowLayout.instanceCounter, new Pair<>(null, null));
 		}
 		ParameterRowLayout.instanceCounter++;
 
@@ -207,7 +213,8 @@ public class PDF_TemplateDialog extends CustomDialog {
 		});
 
 		parameterRow.getDeleteButton().addClickListener(e -> {
-			templateChangesHashMap.get(parameterRow.getCounter()).setC2(null);
+//			templateChangesHashMap.get(parameterRow.getCounter()).setC2(null);
+			getChangesHashMap().get(parameterRow.getCounter()).setObj2(null);
 
 			parameterRows.remove(parameterRow);
 			content.remove(parameterRow);
@@ -246,10 +253,10 @@ public class PDF_TemplateDialog extends CustomDialog {
 			return null;
 		}
 
-		for (Integer i : templateChangesHashMap.keySet()) {
+		for (Integer i : getChangesHashMap().keySet()) {
 
-			PDF_Column c1 = templateChangesHashMap.get(i).getC1();
-			PDF_Column c2 = templateChangesHashMap.get(i).getC2();
+			PDF_Column c1 = getChangesHashMap().get(i).getObj1();
+			PDF_Column c2 = getChangesHashMap().get(i).getObj2();
 
 			if (c1 == null) {
 				changes.add("Added Column: " + getColumnString(c2));
@@ -323,7 +330,7 @@ public class PDF_TemplateDialog extends CustomDialog {
 
 			columns.add(column);
 
-			templateChangesHashMap.get(row.getCounter()).setC2(column);
+			getChangesHashMap().get(row.getCounter()).setObj2(column);
 		}
 
 		if (normalFontSizeField.getValue() == null || normalFontSizeField.isInvalid()) {
@@ -420,35 +427,6 @@ public class PDF_TemplateDialog extends CustomDialog {
 
 		public int getCounter() {
 			return counter;
-		}
-	}
-
-	private static class ColumnPair {
-
-		private PDF_Column c1;
-		private PDF_Column c2;
-
-		ColumnPair(PDF_Column p1, PDF_Column p2) {
-			this.c1 = p1;
-			this.c2 = p2;
-		}
-
-		private PDF_Column getC1() {
-			return c1;
-		}
-		private void setC1(PDF_Column c1) {
-			this.c1 = c1;
-		}
-
-		private PDF_Column getC2() {
-			return c2;
-		}
-		private void setC2(PDF_Column c2) {
-			this.c2 = c2;
-		}
-
-		private boolean isNull() {
-			return this.c1 == null && this.c2 == null;
 		}
 	}
 }

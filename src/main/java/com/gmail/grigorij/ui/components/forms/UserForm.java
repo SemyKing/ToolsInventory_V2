@@ -270,7 +270,6 @@ public class UserForm extends FormLayout {
 				if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.OWN) ||
 						!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
 
-
 					permissionLevelComboBox.setEnabled(true);
 					permissionLevelComboBox.setReadOnly(false);
 				}
@@ -318,6 +317,8 @@ public class UserForm extends FormLayout {
 			UIUtils.showNotification("As System Administrator, you have all permissions", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
+
+
 
 		permissionsDialog = new PermissionsDialog(user);
 		permissionsDialog.getHeader().add(UIUtils.createH3Label("User Permissions"));
