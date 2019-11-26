@@ -180,7 +180,8 @@ public class AuthenticationService {
 
 		UI ui = UI.getCurrent();
 		if (ui != null) {
-			ui.getPage().reload();
+//			ui.getPage().reload();
+			ui.getPage().executeJs("window.location.href=''");
 
 			ui.getSession().close();
 		}
