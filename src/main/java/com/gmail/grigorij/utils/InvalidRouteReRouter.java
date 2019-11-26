@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.views.routes;
+package com.gmail.grigorij.utils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;

@@ -6,19 +6,19 @@ import java.io.File;
 
 public class AbstractCameraView extends Div implements HasDataReceiver {
 
-	private Camera camera;
+	private CameraComponent camera;
 	private File latest;
 
 	protected AbstractCameraView() {
 		setSizeFull();
 
-		camera = new Camera();
+		camera = new CameraComponent();
 		camera.setReceiver(this);
 
 		add(camera);
 	}
 
-	protected Camera getCamera() {
+	protected CameraComponent getCamera() {
 		return camera;
 	}
 

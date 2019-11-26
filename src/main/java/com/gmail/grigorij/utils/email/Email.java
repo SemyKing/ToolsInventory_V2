@@ -30,13 +30,16 @@ public class Email {
 		prop.put("mail.smtp.host", "smtp.gmail.com");
 		prop.put("mail.smtp.port", "587");
 		prop.put("mail.smtp.auth", "true");
+		prop.put("mail.sender.address", "captain.gr3g@gmail.com");
+		prop.put("mail.sender.password", "Th1s1sMyP@ssw0rd");
 	}
 
 	private void constructSession() {
 		session = Session.getInstance(prop, new Authenticator() {
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication("captain.gr3g@gmail.com", "Th1s1sMyP@ssw0rd");
+//				return new PasswordAuthentication("captain.gr3g@gmail.com", "Th1s1sMyP@ssw0rd");
+				return new PasswordAuthentication(prop.getProperty("mail.sender.address"), prop.getProperty("mail.sender.password"));
 			}
 		});
 	}
@@ -44,7 +47,7 @@ public class Email {
 	public boolean constructAndSendMessage(String receiver, String recoveryLink) {
 		try {
 			message = new MimeMessage(session);
-			message.setFrom(new InternetAddress("captain.gr3g@gmail.com"));
+			message.setFrom(new InternetAddress(prop.getProperty("mail.sender.address")));
 			message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(receiver));
 			message.setSubject("Password reset for" + ProjectConstants.PROJECT_NAME_FULL);
 
@@ -69,25 +72,33 @@ public class Email {
 
 	private String getMessage(String recoveryLink) {
 		String msg =
-				"<ul>"+
-					"<li>"+
-					"You have requested to reset your password in " + ProjectConstants.PROJECT_NAME_FULL + " application.\n" +
-					"</li>"+
 
-					"<li>"+
-					"You can reset your password from the following link:\n" +
-					"</li>"+
+				"<div style='text-align: center; font-size: medium;'>" +
+						"<p>You have requested to reset your password for your <strong>" + ProjectConstants.PROJECT_NAME_FULL + "</strong> account. Please click the button below to reset it.</p>" +
+						"<p>&nbsp;</p>" +
+						"<a class='button' href='" + recoveryLink + "' target='_blank' rel='noopener' style='" + getButtonStyle() + "'>RESET PASSWORD</a>" +
+						"<p>&nbsp;</p>" +
+						"<strong>If you did not request to reset your password, please ignore this message.</strong>" +
+						"<p>THIS IS AN AUTOMATED MESSAGE, PLEASE DO NOT REPLY.</p>" +
+						"</div>";
 
-					"<li>"+
-					"<a>" + recoveryLink + "</a>" +
-					"</li>"+
 
-					"<li>"+
-					"</li>"+
-					"If you have not requested to reset your password, please ignore this message."+
-				"</ul>";
 		return msg;
 	}
 
-
+	private String getButtonStyle() {
+		String style = "background-color: #3869D4;" +
+				"border-top: 10px solid #3869D4;" +
+				"border-right: 18px solid #3869D4;" +
+				"border-bottom: 10px solid #3869D4;" +
+				"border-left: 18px solid #3869D4;" +
+				"display: inline-block;" +
+				"color: #FFF;" +
+				"text-decoration: none;" +
+				"border-radius: 3px;" +
+				"box-shadow: 0 2px 3px rgba(0, 0, 0, 0.16);" +
+				"-webkit-text-size-adjust: none;" +
+				"box-sizing: border-box;";
+		return style;
+	}
 }

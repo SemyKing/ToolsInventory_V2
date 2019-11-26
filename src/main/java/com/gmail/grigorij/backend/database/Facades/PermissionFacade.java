@@ -173,6 +173,12 @@ public class PermissionFacade {
 				true));
 
 
+		userPermissions.add(constructPermission(Operation.CHANGE, OperationTarget.PASSWORD,
+				OperationPermission.YES,    // OWN
+				OperationPermission.YES,    // COMPANY
+				true));
+
+
 		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.COMPANY,
 				OperationPermission.YES,    // OWN
 				OperationPermission.NO,     // COMPANY

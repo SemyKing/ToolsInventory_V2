@@ -1,12 +1,14 @@
 package com.gmail.grigorij.ui.views.app.admin;
 
 import com.gmail.grigorij.backend.database.entities.Category;
+import com.gmail.grigorij.backend.database.entities.Company;
 import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
+import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
@@ -28,6 +30,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
@@ -59,6 +63,16 @@ public class AdminInventory extends FlexBoxLayout {
 	private final ToolCopyForm toolCopyForm = new ToolCopyForm();
 	private final AdminView admin;
 
+	private Div headerTopDiv;
+
+	private boolean filtersVisible = false;
+
+	private Company allCompanies;
+	private Div filtersDiv;
+	private ComboBox<Company> companyComboBox;
+	private Checkbox multiSelectionModeCheckbox;
+
+
 	private Grid<Tool> grid;
 	private ListDataProvider<Tool> dataProvider;
 	private List<Tool> selectedTools = null;
@@ -82,13 +96,23 @@ public class AdminInventory extends FlexBoxLayout {
 		Div header = new Div();
 		header.setClassName(CLASS_NAME + "__header");
 
-		editToolButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
-		editToolButton.addClassName("edit-tool-button");
-		editToolButton.addClickListener(e -> editSelectedTools());
-		editToolButton.setEnabled(false);
-		UIUtils.setTooltip("Edit selected tool(s)", editToolButton);
+		headerTopDiv = new Div();
+		headerTopDiv.addClassName(CLASS_NAME + "__header-top");
+		header.add(headerTopDiv);
 
-		header.add(editToolButton);
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			editToolButton = UIUtils.createButton("Edit", VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
+			editToolButton.addClassNames("edit-tool-button", "dynamic-label-button");
+			editToolButton.addClickListener(e -> editSelectedTools(new ArrayList<>(grid.getSelectedItems())));
+			UIUtils.setTooltip("Edit selected tool(s)", editToolButton);
+			headerTopDiv.add(editToolButton);
+
+			Button toggleFiltersButton = UIUtils.createButton("Filters", VaadinIcon.FILTER, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+			toggleFiltersButton.addClassNames("filters-button", "dynamic-label-button");
+			toggleFiltersButton.addClickListener(e -> toggleFilters());
+			headerTopDiv.add(toggleFiltersButton);
+		}
+
 
 		TextField searchField = new TextField();
 		searchField.setClearButtonVisible(true);
@@ -96,14 +120,12 @@ public class AdminInventory extends FlexBoxLayout {
 		searchField.setPlaceholder("Search Tools");
 		searchField.setValueChangeMode(ValueChangeMode.LAZY);
 		searchField.addValueChangeListener(event -> filterGrid(searchField.getValue()));
+		headerTopDiv.add(searchField);
 
-		header.add(searchField);
 
 		MenuBar actionsMenuBar = new MenuBar();
 		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_PRIMARY, MenuBarVariant.LUMO_ICON);
-
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
-
 		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.ADD, OperationTarget.INVENTORY_TOOL, null)) {
 
 			menuItem.getSubMenu().addItem("New Tool", e -> {
@@ -112,7 +134,6 @@ public class AdminInventory extends FlexBoxLayout {
 			});
 			menuItem.getSubMenu().add(new Hr());
 		}
-
 		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.ADD, OperationTarget.INVENTORY_CATEGORY, null)) {
 
 			menuItem.getSubMenu().addItem("New Category", e -> {
@@ -121,7 +142,6 @@ public class AdminInventory extends FlexBoxLayout {
 			});
 			menuItem.getSubMenu().add(new Hr());
 		}
-
 		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.IMPORT, OperationTarget.INVENTORY_TOOL, null)) {
 
 			menuItem.getSubMenu().addItem("Import Inventory", e -> {
@@ -129,17 +149,58 @@ public class AdminInventory extends FlexBoxLayout {
 			});
 			menuItem.getSubMenu().add(new Hr());
 		}
-
 		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EXPORT, OperationTarget.INVENTORY_TOOL, null)) {
 
 			menuItem.getSubMenu().addItem("Export Inventory", e -> {
 				exportInventory();
 			});
 		}
+		headerTopDiv.add(actionsMenuBar);
 
-		header.add(actionsMenuBar);
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			Div headerBottomDiv = new Div();
+			headerBottomDiv.addClassName(CLASS_NAME + "__header-bottom");
+			headerBottomDiv.add(constructFilterLayout());
+			header.add(headerBottomDiv);
+		}
 
 		return header;
+	}
+
+	private Div constructFilterLayout() {
+		filtersDiv = new Div();
+		filtersDiv.addClassName(CLASS_NAME + "__filters");
+
+		multiSelectionModeCheckbox = new Checkbox("Multi Selection");
+		multiSelectionModeCheckbox.addValueChangeListener(e -> {
+			if (multiSelectionModeCheckbox.getValue()) {
+				grid.setSelectionMode(Grid.SelectionMode.MULTI);
+				headerTopDiv.addComponentAtIndex(0, editToolButton);
+			} else {
+				grid.setSelectionMode(Grid.SelectionMode.SINGLE);
+				headerTopDiv.remove(editToolButton);
+			}
+		});
+
+		filtersDiv.add(multiSelectionModeCheckbox);
+
+
+		allCompanies = new Company();
+		allCompanies.setName("All Companies");
+
+		List<Company> companies = new ArrayList<>(CompanyFacade.getInstance().getAllCompanies());
+		companies.add(0, allCompanies);
+
+		companyComboBox = new ComboBox<>();
+		companyComboBox.addClassName(ProjectConstants.NO_PADDING_TOP);
+		companyComboBox.setLabel("Show Tools For");
+		companyComboBox.setClearButtonVisible(true);
+		companyComboBox.setItems(companies);
+		companyComboBox.setItemLabelGenerator(Company::getName);
+		companyComboBox.addValueChangeListener(e -> showToolsInCompany(companyComboBox.getValue()));
+		filtersDiv.add(companyComboBox);
+
+		return filtersDiv;
 	}
 
 	private Div constructContent() {
@@ -157,17 +218,13 @@ public class AdminInventory extends FlexBoxLayout {
 		grid.setClassName("grid-view");
 		grid.setSizeFull();
 
-		List<Tool> toolsFromDatabase;
+		List<Tool> tools = new ArrayList<>();
 
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			toolsFromDatabase = InventoryFacade.getInstance().getAllTools();
-			toolsFromDatabase.sort(Comparator.comparing(Tool::getCompanyString).thenComparing(Tool::getName));
-		} else {
-			toolsFromDatabase = InventoryFacade.getInstance().getAllToolsInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId());
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
+			tools = InventoryFacade.getInstance().getAllToolsInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId());
 		}
 
-
-		dataProvider = DataProvider.ofCollection(toolsFromDatabase);
+		dataProvider = DataProvider.ofCollection(tools);
 
 		grid.setDataProvider(dataProvider);
 
@@ -186,24 +243,22 @@ public class AdminInventory extends FlexBoxLayout {
 					.setAutoWidth(true);
 		}
 
-//		grid.addColumn(Tool::getUsageStatusString)
-//				.setHeader("Status")
-//				.setAutoWidth(true);
-
 		grid.addColumn(new ComponentRenderer<>(tool -> UIUtils.createActiveGridIcon(tool.isDeleted())))
 				.setHeader("Active")
 				.setFlexGrow(0)
 				.setTextAlign(ColumnTextAlign.CENTER)
 				.setAutoWidth(true);
 
-		grid.setSelectionMode(Grid.SelectionMode.MULTI);
+//		grid.setSelectionMode(Grid.SelectionMode.MULTI);
 
 		grid.addSelectionListener(event -> {
-			selectedTools = new ArrayList<>(event.getAllSelectedItems());
-			editToolButton.setEnabled((selectedTools.size() > 0));
+			Tool tool = grid.asSingleSelect().getValue();
 
-			if ((selectedTools.size() <= 0)) {
-				closeDetails();
+			if (tool != null) {
+				showDetails(tool);
+			} else {
+				detailsDrawer.hide();
+				grid.deselectAll();
 			}
 		});
 
@@ -241,6 +296,30 @@ public class AdminInventory extends FlexBoxLayout {
 
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
+	}
+
+
+	private void toggleFilters() {
+		filtersDiv.getElement().setAttribute("hidden", !filtersVisible);
+		filtersVisible = !filtersVisible;
+	}
+
+	private void showToolsInCompany(Company company) {
+		closeDetails();
+
+		List<Tool> toolsFromDatabase;
+
+		if (company == allCompanies) {
+			toolsFromDatabase = InventoryFacade.getInstance().getAllTools();
+			toolsFromDatabase.sort(Comparator.comparing(Tool::getCompanyString).thenComparing(Tool::getName));
+		} else {
+			toolsFromDatabase = InventoryFacade.getInstance().getAllToolsInCompany(company.getId());
+			toolsFromDatabase.sort(Comparator.comparing(Tool::getName));
+		}
+
+		dataProvider.getItems().clear();
+		dataProvider.getItems().addAll(toolsFromDatabase);
+		dataProvider.refreshAll();
 	}
 
 
@@ -306,17 +385,17 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 
-	private void editSelectedTools() {
-		if (selectedTools != null) {
-			if (selectedTools.size() > 0) {
+	private void editSelectedTools(List<Tool> tools) {
+		if (tools != null) {
+			if (tools.size() > 0) {
 
 				//IF ONLY ONE TOOL IS SELECTED
-				if (selectedTools.size() == 1) {
-					showDetails(selectedTools.get(0));
+				if (tools.size() == 1) {
+					showDetails(tools.get(0));
 
-				//IF MORE THAN ONE TOOL IS SELECTED
+					//IF MORE THAN ONE TOOL IS SELECTED
 				} else {
-					constructMultipleToolEditDialog(null, -1, selectedTools);
+					constructMultipleToolEditDialog(null, -1, tools);
 
 					final UI ui = UI.getCurrent();
 					if (ui != null) {
@@ -327,6 +406,8 @@ public class AdminInventory extends FlexBoxLayout {
 						}
 					}
 				}
+			} else {
+				UIUtils.showNotification("No Tools Selected", NotificationVariant.LUMO_PRIMARY);
 			}
 		}
 	}

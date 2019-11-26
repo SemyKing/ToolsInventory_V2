@@ -1,11 +1,9 @@
-package com.gmail.grigorij.ui.utils.camera;
+package com.gmail.grigorij.ui.components.camera;
 
-import com.gmail.grigorij.ui.components.camera.AbstractCameraView;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
-import com.vaadin.flow.component.AttachEvent;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
