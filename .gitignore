@@ -1,5 +1,6 @@
 .idea
-target/
+/node_modules/
+/target/
 /package.json
 /package-lock.json
 /webpack.generated.js
