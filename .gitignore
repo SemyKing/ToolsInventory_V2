@@ -3,3 +3,4 @@ target/
 /package.json
 /package-lock.json
 /webpack.generated.js
+/node_modules/
