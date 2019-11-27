@@ -13,9 +13,9 @@ import java.io.OutputStream;
 
 @Tag("camera-element")
 @JsModule("./src/camera-element.js")
-public class Camera extends Component {
+public class CameraComponent extends Component {
 
-	Camera() {}
+	CameraComponent() {}
 
 	void setReceiver(DataReceiver receiver) {
 		getElement().setAttribute("target", new StreamReceiver(

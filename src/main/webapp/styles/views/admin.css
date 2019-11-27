@@ -49,6 +49,7 @@
     margin: 5px 5px 0 5px;
     align-items: baseline;
 }
+
 .admin-companies__header vaadin-text-field {
     width: 100%;
 }
@@ -123,22 +124,44 @@
 }
 
 .admin-inventory__header {
-	display: flex;
-    flex-direction: row;
+    display: flex;
+    flex-direction: column;
     margin: 5px 5px 0 5px;
     align-items: baseline;
 }
-.admin-inventory__header vaadin-text-field {
-    width: 100%;
-    margin-left: var(--lumo-space-m);
-}
-.admin-inventory__header vaadin-menu-bar {
-    margin-left: var(--lumo-space-s);
+
+.admin-inventory__header-top {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	align-items: baseline;
 }
 
-.edit-tool-button {
-	min-width: 52px;
+.admin-inventory__header-top > vaadin-text-field {
+	flex-grow: 1;
+	margin-right: var(--lumo-space-s);
 }
+
+.admin-inventory__header-top > vaadin-button {
+	margin-right: var(--lumo-space-s);
+}
+
+
+.admin-inventory__header-bottom {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+}
+
+.admin-inventory__filters {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+    align-items: baseline;
+    justify-content: space-evenly;
+}
+
+
 
 .admin-inventory__content {
     height: 100%;

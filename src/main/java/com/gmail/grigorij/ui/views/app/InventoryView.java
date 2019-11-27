@@ -187,15 +187,6 @@ public class InventoryView extends Div {
 				.setHeader("Current Location")
 				.setAutoWidth(true);
 
-
-//		Menu Button for quick tool actions
-
-//		grid.addComponentColumn(this::getMenuBar)
-//				.setHeader("Actions")
-//				.setAutoWidth(true)
-//				.setTextAlign(ColumnTextAlign.END)
-//				.setFlexGrow(0);
-
 		grid.asSingleSelect().addValueChangeListener(e -> {
 			Tool tool = grid.asSingleSelect().getValue();
 

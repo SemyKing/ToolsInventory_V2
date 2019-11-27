@@ -1,6 +1,6 @@
 package com.gmail.grigorij.utils;
 
-import com.gmail.grigorij.ui.utils.camera.CameraView;
+import com.gmail.grigorij.ui.components.camera.CameraView;
 import com.vaadin.flow.component.UI;
 
 public class CameraUtility extends Thread {
@@ -17,7 +17,7 @@ public class CameraUtility extends Thread {
 	@Override
 	public void run() {
 		try {
-			Thread.sleep(1500);
+			Thread.sleep(2000);
 
 			ui.access(() -> {
 				cameraView.takePicture();

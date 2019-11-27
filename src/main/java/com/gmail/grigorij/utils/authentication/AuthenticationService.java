@@ -82,8 +82,6 @@ public class AuthenticationService {
 	}
 
 	private static boolean loginRememberedUser() {
-		System.out.println("--loginRememberedUser()");
-
 		Optional<Cookie> rememberMeCookie = getRememberMeCookie();
 
 		if (rememberMeCookie.isPresent()) {
@@ -179,7 +177,13 @@ public class AuthenticationService {
 		TransactionFacade.getInstance().insert(transaction);
 
 		getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
-		UI.getCurrent().getSession().close();
-		UI.getCurrent().getPage().reload();
+
+		UI ui = UI.getCurrent();
+		if (ui != null) {
+//			ui.getPage().reload();
+			ui.getPage().executeJs("window.location.href=''");
+
+			ui.getSession().close();
+		}
 	}
 }

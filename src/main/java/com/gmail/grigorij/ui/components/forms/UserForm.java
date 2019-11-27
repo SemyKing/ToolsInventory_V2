@@ -15,7 +15,9 @@ import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.dialogs.PermissionsDialog;
+import com.gmail.grigorij.ui.components.dialogs.password.ChangePasswordView;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
@@ -72,13 +74,16 @@ public class UserForm extends FormLayout {
 
 	private boolean dataLoaded = false;
 	private boolean self = false;
+	private boolean passwordChanged = false;
 
 
 	// FORM ITEMS
 	private Div entityStatusDiv;
 	private Checkbox entityStatusCheckbox;
 	private TextField usernameField;
+	private FlexBoxLayout passwordLayout;
 	private PasswordField passwordField;
+	private Button changePasswordButton;
 	private Button editPermissionsButton;
 	private ComboBox<PermissionLevel> permissionLevelComboBox;
 	private FlexBoxLayout permissionsLayout;
@@ -109,9 +114,18 @@ public class UserForm extends FormLayout {
 		usernameField.setRequired(true);
 		usernameField.setPrefixComponent(VaadinIcon.USER.create());
 
+
 		passwordField = new PasswordField("Password");
 		passwordField.setRequired(true);
 		passwordField.setPrefixComponent(VaadinIcon.PASSWORD.create());
+
+		changePasswordButton = UIUtils.createButton("Change", ButtonVariant.LUMO_PRIMARY);
+		changePasswordButton.addClickListener(e -> constructChangePasswordDialog());
+
+		passwordLayout = new FlexBoxLayout();
+		passwordLayout.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
+		passwordLayout.add(passwordField);
+		passwordLayout.setFlexGrow("1", passwordField);
 
 
 		companyComboBox = new ComboBox<>();
@@ -166,11 +180,9 @@ public class UserForm extends FormLayout {
 				new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
 				new FormLayout.ResponsiveStep(ProjectConstants.COL_2_MIN_WIDTH, 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
 
-//		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
-			add(entityStatusDiv);
-//		}
+		add(entityStatusDiv);
 		add(usernameField);
-		add(passwordField);
+		add(passwordLayout);
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			add(companyComboBox);
 		}
@@ -244,6 +256,7 @@ public class UserForm extends FormLayout {
 	private void initDynamicFormItems() {
 		self = AuthenticationService.getCurrentSessionUser().getId().equals(user.getId());
 		initialUsername = user.getUsername();
+		passwordChanged = false;
 
 		usernameField.setReadOnly(!isNew);
 		passwordField.setReadOnly(!isNew);
@@ -252,11 +265,15 @@ public class UserForm extends FormLayout {
 
 		try {
 			entityStatusDiv.remove(entityStatusCheckbox);
-
-//			editPermissionsButton.setEnabled(false);
+			passwordLayout.remove(changePasswordButton);
 			permissionsLayout.remove(editPermissionsButton);
 		} catch (Exception ignored) {}
 
+
+		if (self || PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.CHANGE, OperationTarget.PASSWORD, PermissionRange.COMPANY)) {
+			passwordLayout.add(changePasswordButton);
+			passwordLayout.setComponentMargin(changePasswordButton, Left.S);
+		}
 
 		if (!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
 			entityStatusDiv.add(entityStatusCheckbox);
@@ -264,19 +281,22 @@ public class UserForm extends FormLayout {
 
 
 		permissionLevelComboBox.setEnabled(false);
+		permissionLevelComboBox.setReadOnly(true);
 
-		if (user.getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
 
-			if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.OWN) ||
-					!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
+		if (user.getPermissionLevel().lowerOrEqualsTo(AuthenticationService.getCurrentSessionUser().getPermissionLevel())) {
+			if (!(self && AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN))) {
+				if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.OWN) ||
+						!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
 
-				permissionLevelComboBox.setEnabled(true);
+					permissionLevelComboBox.setEnabled(true);
+					permissionLevelComboBox.setReadOnly(false);
+				}
 			}
 
 			if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.OWN) ||
 					!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
 
-//			editPermissionsButton.setEnabled(true);
 				permissionsLayout.add(editPermissionsButton);
 				permissionsLayout.setComponentMargin(editPermissionsButton, Left.S);
 			}
@@ -309,6 +329,38 @@ public class UserForm extends FormLayout {
 			}
 		});
 		confirmDialog.open();
+	}
+
+	private void constructChangePasswordDialog() {
+		CustomDialog dialog = new CustomDialog();
+		dialog.setHeader(UIUtils.createH3Label("Change Password"));
+
+		ChangePasswordView view = new ChangePasswordView(user);
+
+		if (self || AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.COMPANY_ADMIN)) {
+			view.addCurrentPasswordView();
+		}
+
+		dialog.setContent(view);
+
+		dialog.closeOnCancel();
+
+		dialog.getConfirmButton().setText("Change");
+		dialog.getConfirmButton().addClickListener(e -> {
+			if (view.isValid()) {
+
+				String salt = PasswordUtils.getSalt(30);
+				user.setSalt(salt);
+				user.setPassword(PasswordUtils.generateSecurePassword(view.getNewPassword(), salt));
+				passwordField.setValue(PasswordUtils.generateDummyPassword(view.getNewPassword()));
+
+				passwordChanged = true;
+
+				dialog.close();
+			}
+		});
+
+		dialog.open();
 	}
 
 	private void constructAccessRightsDialog() {
@@ -382,10 +434,12 @@ public class UserForm extends FormLayout {
 				}
 
 				if (isNew) {
-					String salt = PasswordUtils.getSalt(30);
-					user.setSalt(salt);
-					user.setPassword(PasswordUtils.generateSecurePassword(passwordField.getValue(), salt));
-					passwordField.setValue(PasswordUtils.generateDummyPassword(passwordField.getValue()));
+					if (!passwordChanged) {
+						String salt = PasswordUtils.getSalt(30);
+						user.setSalt(salt);
+						user.setPassword(PasswordUtils.generateSecurePassword(passwordField.getValue(), salt));
+						passwordField.setValue(PasswordUtils.generateDummyPassword(passwordField.getValue()));
+					}
 				}
 
 				if (tempPermissionHolder != null) {
