@@ -24,23 +24,6 @@ public class UIUtils {
 
 	private static final String CUSTOM_SMALL_BUTTON = "custom-vaadin-small-button";
 
-	/* ==== FORMS ==== */
-
-	/**
-	 * Apply correct column span to FormLayout
-	 *
-	 * If element is hidden before custom column span is set, automatic column span is 1.
-	 */
-	public static void updateFormSize(FormLayout formLayout) {
-		if (formLayout != null) {
-			if (formLayout.getElement() != null) {
-				if (UI.getCurrent() != null) {
-					UI.getCurrent().getPage().executeJs("$0.notifyResize()", formLayout.getElement());
-				}
-			}
-		}
-	}
-
 
 	public static String entityStatusToString(boolean status) {
 		if (status) {
@@ -124,7 +107,7 @@ public class UIUtils {
 	}
 
 	/*
-	All 'create*Button' methods use this method
+	All 'create Button' methods use this method
 	 */
 	private static Button createCustomButton(String text, VaadinIcon icon, ButtonVariant... variants) {
 		Button button = new Button();
@@ -161,6 +144,7 @@ public class UIUtils {
 
 		return button;
 	}
+
 
 
 	/* ==== GRID ==== */
@@ -212,14 +196,6 @@ public class UIUtils {
 
 	/* === MISC === */
 
-
-	public static Span createText(FontSize size, TextColor color, String text) {
-		Span span = new Span(text);
-		span.addClassName("text-component");
-		setFontSize(size, span);
-		setTextColor(color, span);
-		return span;
-	}
 
 	public static Component createInitials(String initials) {
 		FlexBoxLayout layout = new FlexBoxLayout(new Text(initials.toUpperCase()));
@@ -277,12 +253,6 @@ public class UIUtils {
 
 
 	/* === CSS UTILITIES === */
-	private static void setFontSize(FontSize fontSize, Component... components) {
-		for (Component component : components) {
-			component.getElement().getStyle().set("font-size", fontSize.getValue());
-		}
-	}
-
 	public static void setOverflow(Overflow overflow, Component... components) {
 		for (Component component : components) {
 			component.getElement().getStyle().set("overflow", overflow.getValue());

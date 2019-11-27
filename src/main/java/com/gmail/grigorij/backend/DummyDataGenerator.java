@@ -130,7 +130,7 @@ public class DummyDataGenerator {
 		companies = CompanyFacade.getInstance().getAllCompanies();
 
 		User admin = new User();
-		admin.setUsername("sysadmin");
+		admin.setUsername("system.admin");
 
 
 		String salt = PasswordUtils.getSalt(30);

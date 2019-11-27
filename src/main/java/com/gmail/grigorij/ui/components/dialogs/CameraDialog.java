@@ -1,11 +1,9 @@
 package com.gmail.grigorij.ui.components.dialogs;
 
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.camera.CameraView;
+import com.gmail.grigorij.ui.components.camera.CameraView;
 import com.gmail.grigorij.utils.CameraUtility;
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.Span;
 
 
 public class CameraDialog extends CustomDialog {

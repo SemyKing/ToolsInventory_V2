@@ -335,5 +335,18 @@
 
 .multiple-tool-edit-dialog__header-buttons > .move-left-button {
 	margin-left: var(--lumo-space-m);
-
 }
+
+
+/*      CHANGE PASSWORD      */
+
+.change-password-view__content {
+	display: flex;
+	flex-direction: column;
+}
+
+.change-password-view__content vaadin-password-field {
+	width: 100%;
+}
+
+

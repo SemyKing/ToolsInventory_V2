@@ -13,7 +13,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
-        <vaadin.version>14.0.7</vaadin.version>
+<!--        <vaadin.version>14.0.7</vaadin.version>-->
+        <vaadin.version>14.0.14</vaadin.version>
         <jetty.version>9.4.19.v20190610</jetty.version>
     </properties>
 
@@ -85,6 +86,8 @@
             <version>3.1.0</version>
             <scope>provided</scope>
         </dependency>
+
+
 
         <!-- https://mvnrepository.com/artifact/org.eclipse.persistence/org.eclipse.persistence.jpa -->
         <dependency>
