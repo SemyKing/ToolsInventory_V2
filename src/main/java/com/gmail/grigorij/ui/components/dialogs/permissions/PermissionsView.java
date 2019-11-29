@@ -285,7 +285,6 @@ public class PermissionsView extends Div {
 	}
 
 	public List<String> getChanges() {
-
 		if (changes == null) {
 			return null;
 		}
@@ -313,7 +312,7 @@ public class PermissionsView extends Div {
 			String p2s = p2.toString();
 
 			if (!p1s.equals(p2s)) {
-				changes.add("Permission changed from:  '" + p1s + "', to:  '" + p2s + "'");
+				changes.add("Permission changed from:  '" + p1s + "'  to:  '" + p2s + "'");
 			}
 		}
 

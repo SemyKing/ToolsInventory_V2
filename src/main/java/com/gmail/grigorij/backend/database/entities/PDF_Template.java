@@ -33,7 +33,7 @@ public class PDF_Template extends EntityPojo {
 	private List<PDF_Column> pdfColumns;
 
 	@Column(columnDefinition = "text")
-	private String signatureText = "Sample Normal Text";
+	private String normalText = "Sample Normal Text";
 
 	private boolean showDate = false;
 
@@ -60,7 +60,7 @@ public class PDF_Template extends EntityPojo {
 	public PDF_Template(PDF_Template other) {
 		this.company = other.company;
 		this.pdfColumns = other.pdfColumns;
-		this.signatureText = other.signatureText;
+		this.normalText = other.normalText;
 		this.contrastText = other.contrastText;
 		this.normalTextFontSize = other.normalTextFontSize;
 		this.contrastTextFontSize = other.contrastTextFontSize;
@@ -84,11 +84,11 @@ public class PDF_Template extends EntityPojo {
 		this.pdfColumns = pdfColumns;
 	}
 
-	public String getSignatureText() {
-		return signatureText;
+	public String getNormalText() {
+		return normalText;
 	}
-	public void setSignatureText(String signatureText) {
-		this.signatureText = signatureText;
+	public void setNormalText(String normalText) {
+		this.normalText = normalText;
 	}
 
 	public String getContrastText() {

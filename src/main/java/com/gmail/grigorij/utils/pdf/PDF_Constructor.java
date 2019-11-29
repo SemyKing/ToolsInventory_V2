@@ -56,7 +56,7 @@ public class PDF_Constructor {
 		long totalWidth = 0;
 
 		for (PDF_Column column : pdfTemplate.getPdfColumns()) {
-			totalWidth += column.getUserSetWidth();
+			totalWidth += column.getColumnWidth();
 		}
 
 		document = new Document(totalWidth > 10 ? PageSize.A4.rotate() : PageSize.A4,
@@ -212,8 +212,8 @@ public class PDF_Constructor {
 
 			float width;
 
-			if (pdfTemplate.getPdfColumns().get(i).getUserSetWidth() > 0) {
-				width = pdfTemplate.getPdfColumns().get(i).getUserSetWidth();
+			if (pdfTemplate.getPdfColumns().get(i).getColumnWidth() > 0) {
+				width = pdfTemplate.getPdfColumns().get(i).getColumnWidth();
 			} else {
 				width = pdfTemplate.getPdfColumns().get(i).getParameter().getPrefWidth();
 			}
@@ -343,7 +343,7 @@ public class PDF_Constructor {
 	//TODO: TRANSLATE
 	private void constructSignatureBox(PdfPTable signatureTable) {
 		Phrase phrase = new Phrase();
-		phrase.add(new Paragraph(pdfTemplate.getSignatureText(), normalFont));
+		phrase.add(new Paragraph(pdfTemplate.getNormalText(), normalFont));
 		signatureTable.addCell(constructCell(phrase));
 
 		phrase = new Phrase();

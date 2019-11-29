@@ -4,7 +4,6 @@ import com.gmail.grigorij.backend.database.entities.Company;
 import com.gmail.grigorij.backend.database.entities.PermissionHolder;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
-import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.entities.embeddable.Person;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;

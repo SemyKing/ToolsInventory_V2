@@ -2,7 +2,6 @@ package com.gmail.grigorij.ui.components.dialogs;
 
 import com.gmail.grigorij.backend.database.entities.PDF_Template;
 import com.gmail.grigorij.backend.database.entities.embeddable.PDF_Column;
-import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.enums.WeekSelector;
 import com.gmail.grigorij.backend.database.enums.tools.ToolParameter;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
@@ -77,7 +76,7 @@ public class PDF_TemplateDialog extends Pair<PDF_Column> {
 		setChangesHashMap(new LinkedHashMap<>());
 
 
-		signatureTextAreaOldValue = this.template.getSignatureText();
+		signatureTextAreaOldValue = this.template.getNormalText();
 		contrastTextAreaOldValue = this.template.getContrastText();
 		normalFontSizeFieldOldValue = this.template.getNormalTextFontSize();
 		contrastFontSizeFieldOldValue = this.template.getContrastTextFontSize();
@@ -123,7 +122,7 @@ public class PDF_TemplateDialog extends Pair<PDF_Column> {
 		contentWrapper.add(newColumnButton);
 
 		signatureTextArea = new TextArea("Signature Text");
-		signatureTextArea.setValue(template.getSignatureText());
+		signatureTextArea.setValue(template.getNormalText());
 		contentWrapper.add(signatureTextArea);
 
 		contrastTextArea = new TextArea("Contrast Text");
@@ -190,7 +189,7 @@ public class PDF_TemplateDialog extends Pair<PDF_Column> {
 
 		if (column != null) {
 			parameterRow.getParameterComboBox().setValue(column.getParameter());
-			parameterRow.getColumnWidthField().setValue((double) column.getUserSetWidth());
+			parameterRow.getColumnWidthField().setValue((double) column.getColumnWidth());
 
 //			templateChangesHashMap.put(ParameterRowLayout.instanceCounter,
 //					new ColumnPair(new PDF_Column(column), new PDF_Column(column)));
@@ -276,8 +275,8 @@ public class PDF_TemplateDialog extends Pair<PDF_Column> {
 			}
 		}
 
-		if (!signatureTextAreaOldValue.equals(template.getSignatureText())) {
-			changes.add("Signature Text changed from:  '" + signatureTextAreaOldValue + "'  to:  '" + template.getSignatureText() + "'");
+		if (!signatureTextAreaOldValue.equals(template.getNormalText())) {
+			changes.add("Signature Text changed from:  '" + signatureTextAreaOldValue + "'  to:  '" + template.getNormalText() + "'");
 		}
 		if (!contrastTextAreaOldValue.equals(template.getContrastText())) {
 			changes.add("Contrast Text changed from:  '" + contrastTextAreaOldValue + "'  to:  '" + template.getContrastText() + "'");
@@ -326,7 +325,7 @@ public class PDF_TemplateDialog extends Pair<PDF_Column> {
 
 			PDF_Column column = new PDF_Column();
 			column.setParameter(row.getParameterComboBox().getValue());
-			column.setUserSetWidth(row.getColumnWidthField().getValue().floatValue());
+			column.setColumnWidth(row.getColumnWidthField().getValue().floatValue());
 
 			columns.add(column);
 
@@ -350,7 +349,7 @@ public class PDF_TemplateDialog extends Pair<PDF_Column> {
 		template.getPdfColumns().clear();
 		template.getPdfColumns().addAll(columns);
 
-		template.setSignatureText(signatureTextArea.getValue());
+		template.setNormalText(signatureTextArea.getValue());
 		template.setContrastText(contrastTextArea.getValue());
 		template.setNormalTextFontSize(normalFontSizeField.getValue().floatValue());
 		template.setContrastTextFontSize(contrastFontSizeField.getValue().floatValue());
@@ -364,7 +363,7 @@ public class PDF_TemplateDialog extends Pair<PDF_Column> {
 		String cs = "";
 
 		if (c != null) {
-			cs = c.getParameter().getName() + ", " + c.getUserSetWidth();
+			cs = c.getParameter().getName() + ", " + c.getColumnWidth();
 		}
 
 		return cs;
