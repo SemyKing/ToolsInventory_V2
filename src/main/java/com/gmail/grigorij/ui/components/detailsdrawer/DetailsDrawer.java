@@ -62,16 +62,6 @@ public class DetailsDrawer extends Composite<FlexLayout> implements HasStyle, Ha
     }
 
 
-//    public void setContentPadding(Size...sizes) {
-//        if (this.content != null) {
-//            for (Size size : sizes) {
-//                for (String attribute : size.getPaddingAttributes()) {
-//                    content.getElement().getStyle().set(attribute, size.getVariable());
-//                }
-//            }
-//        }
-//    }
-
     public void setPosition(Position position) {
         getElement().setAttribute("position", position.name().toLowerCase());
     }

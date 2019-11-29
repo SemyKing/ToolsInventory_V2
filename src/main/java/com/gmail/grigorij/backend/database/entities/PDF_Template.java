@@ -22,8 +22,8 @@ import java.util.List;
 })
 public class PDF_Template extends EntityPojo {
 
-	public static final String QUERY_ALL = "get_all_pdf_report_templates";
-	public static final String QUERY_BY_COMPANY_ID = "get_pdf_report_template_by_id";
+	public static final String QUERY_ALL = "get_all_pdf_templates";
+	public static final String QUERY_BY_COMPANY_ID = "get_pdf_template_by_id";
 
 	@OneToOne(mappedBy = "pdf_template")
 	private Company company;

@@ -4,6 +4,9 @@ public final class ProjectConstants {
 
 	public static final String PROJECT_NAME_FULL = "Tools Inventory";
 
+	public static final String PROJECT_URL = "https://localhost:8443";
+	public static final String RESET_PASSWORD_URL = "reset-password";
+
 	// Images & Logos
 	public static final String IMAGES_PATH = "images/";
 	public static final String LOGO_IMG_ONLY_PNG = "uisko_logo_img_only.png";

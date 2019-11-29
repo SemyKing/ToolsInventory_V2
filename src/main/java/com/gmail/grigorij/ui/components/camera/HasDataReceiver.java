@@ -1,9 +1,6 @@
 package com.gmail.grigorij.ui.components.camera;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 public interface HasDataReceiver extends DataReceiver {
 
@@ -20,9 +17,9 @@ public interface HasDataReceiver extends DataReceiver {
 			}
 
 			File latest = getLatest();
-			if (latest != null) {
-				latest.delete();
-			}
+//			if (latest != null) {
+//				latest.delete();
+//			}
 			try {
 				latest = File.createTempFile("camera", suffix);
 				setLatest(latest);

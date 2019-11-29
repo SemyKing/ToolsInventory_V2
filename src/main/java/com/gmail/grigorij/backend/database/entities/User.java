@@ -205,4 +205,12 @@ public class User extends EntityPojo {
 			return person.getInitials();
 		}
 	}
+
+	public String getCompanyNameString() {
+		String companyName = "";
+		if (company != null) {
+			companyName = company.getName();
+		}
+		return companyName;
+	}
 }

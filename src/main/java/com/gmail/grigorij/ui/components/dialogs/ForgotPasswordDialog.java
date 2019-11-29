@@ -11,6 +11,7 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.email.Email;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.EmailField;
@@ -49,7 +50,7 @@ public class ForgotPasswordDialog extends CustomDialog {
 		emailField = new EmailField("E-mail");
 		emailField.setMinWidth("400px");
 		emailField.setClearButtonVisible(true);
-		emailField.setErrorMessage("Please enter a valid email address");
+		emailField.setErrorMessage("Invalid email address");
 		emailField.focus();
 
 		content.add(emailField);
@@ -60,7 +61,7 @@ public class ForgotPasswordDialog extends CustomDialog {
 		binder = new Binder<>();
 		binder.forField(emailField)
 				.asRequired()
-				.withValidator(new EmailValidator("This doesn't look like a valid email address"))
+				.withValidator(new EmailValidator("Invalid email address"))
 				.bind(Person::getEmail, Person::setEmail);
 	}
 
@@ -77,13 +78,11 @@ public class ForgotPasswordDialog extends CustomDialog {
 
 
 
-
 	private void generateRecoveryLink(String emailAddress) {
 		User user = UserFacade.getInstance().getUserByEmail(emailAddress);
 
-		// TODO: WHAT TODO?
 		if (user == null) {
-			System.err.println("USER NOT FOUND WITH EMAIL: " + emailAddress);
+			UIUtils.showNotification("User with given email not found", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
@@ -104,12 +103,13 @@ public class ForgotPasswordDialog extends CustomDialog {
 		TransactionFacade.getInstance().insert(transaction);
 
 
-
 		Email email = new Email();
-		if (email.constructAndSendMessage(emailAddress, "https://localhost:8443/reset-password/" + link.getToken())) {
-			UIUtils.showNotification("Recovery link has been sent to your email", NotificationVariant.LUMO_SUCCESS);
+		if (email.constructAndSendMessage(emailAddress,
+				ProjectConstants.PROJECT_URL + "/" + ProjectConstants.RESET_PASSWORD_URL + "/" + link.getToken())) {
+
+			UIUtils.showNotification("Password reset link has been sent to email you provided", NotificationVariant.LUMO_SUCCESS, 10000);
 		} else {
-			UIUtils.showNotification("Recovery link sending error", NotificationVariant.LUMO_ERROR);
+			UIUtils.showNotification("Password reset link sending error", NotificationVariant.LUMO_ERROR);
 		}
 	}
 }

@@ -16,8 +16,8 @@ import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
-import com.gmail.grigorij.ui.components.dialogs.PermissionsDialog;
 import com.gmail.grigorij.ui.components.dialogs.password.ChangePasswordView;
+import com.gmail.grigorij.ui.components.dialogs.permissions.PermissionsView;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
@@ -62,13 +62,12 @@ public class UserForm extends FormLayout {
 	private final PersonForm personForm = new PersonForm();
 	private final LocationForm addressForm = new LocationForm();
 
-	private PermissionsDialog permissionsDialog;
-	private PermissionHolder tempPermissionHolder;
+	private PermissionsView permissionsView;
+	private PermissionHolder permissionHolder;
 
 	private Binder<User> binder;
 
 	private User user, originalUser;
-	private List<Permission> tempPermissions = new ArrayList<>();
 	private String initialUsername;
 	private boolean isNew;
 
@@ -164,7 +163,7 @@ public class UserForm extends FormLayout {
 		permissionsLayout.setFlexGrow("1", permissionLevelComboBox);
 
 		editPermissionsButton = UIUtils.createButton("Permissions", VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
-		editPermissionsButton.addClickListener(e -> constructAccessRightsDialog());
+		editPermissionsButton.addClickListener(e -> constructPermissionsDialog());
 
 		additionalInfo = new TextArea("Additional Info");
 		additionalInfo.setMaxHeight("200px");
@@ -262,6 +261,7 @@ public class UserForm extends FormLayout {
 		passwordField.setReadOnly(!isNew);
 		passwordField.setRevealButtonVisible(isNew);
 
+		permissionHolder = null;
 
 		try {
 			entityStatusDiv.remove(entityStatusCheckbox);
@@ -363,31 +363,51 @@ public class UserForm extends FormLayout {
 		dialog.open();
 	}
 
-	private void constructAccessRightsDialog() {
+	private void constructPermissionsDialog() {
 		if (self && AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			UIUtils.showNotification("As System Administrator, you have all permissions", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
-		permissionsDialog = new PermissionsDialog(user);
-		permissionsDialog.getHeader().add(UIUtils.createH3Label("User Permissions"));
-		permissionsDialog.getConfirmButton().setEnabled(false);
+		permissionsView = new PermissionsView(user);
 
+		CustomDialog dialog = new CustomDialog();
+
+		dialog.setCloseOnOutsideClick(false);
+		dialog.setCloseOnEsc(false);
+
+		dialog.setHeader(UIUtils.createH3Label("User Permissions"));
+		dialog.setContent(permissionsView);
+
+		dialog.getConfirmButton().setEnabled(false);
 
 		if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.OWN) ||
 				!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
-			permissionsDialog.getConfirmButton().setEnabled(true);
+			dialog.getConfirmButton().setEnabled(true);
 		}
 
-		permissionsDialog.getConfirmButton().addClickListener(saveOnClick -> {
-			PermissionHolder permissionHolder = permissionsDialog.getPermissionHolder();
+		dialog.getConfirmButton().setText("Save");
+		dialog.getConfirmButton().addClickListener(saveOnClick -> {
+			PermissionHolder permissionHolder = permissionsView.getPermissionHolder();
 			if (permissionHolder != null) {
-				tempPermissionHolder = permissionHolder;
-				permissionsDialog.close();
+				this.permissionHolder = permissionHolder;
+				dialog.close();
 			}
 		});
 
-		permissionsDialog.open();
+		dialog.getCancelButton().addClickListener(cancelEditOnClick -> {
+			ConfirmDialog confirmDialog = new ConfirmDialog();
+			confirmDialog.setMessage("Are you sure you want to cancel?" + ProjectConstants.NEW_LINE + "All changes will be lost");
+			confirmDialog.closeOnCancel();
+			confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
+				permissionsView.setChanges(null);
+				confirmDialog.close();
+				dialog.close();
+			});
+			confirmDialog.open();
+		});
+
+		dialog.open();
 	}
 
 
@@ -442,8 +462,8 @@ public class UserForm extends FormLayout {
 					}
 				}
 
-				if (tempPermissionHolder != null) {
-					user.setPermissionHolder(tempPermissionHolder);
+				if (permissionHolder != null) {
+					user.setPermissionHolder(permissionHolder);
 				}
 
 				binder.writeBean(user);
@@ -469,6 +489,9 @@ public class UserForm extends FormLayout {
 		if (!originalUser.getUsername().equals(user.getUsername())) {
 			changes.add("Username changed from: '" + originalUser.getUsername() + "', to: '" + user.getUsername() + "'");
 		}
+		if (!originalUser.getPassword().equals(user.getPassword())) {
+			changes.add("Password changed");
+		}
 		if (!originalUser.getPermissionLevel().equals(user.getPermissionLevel())) {
 			changes.add("Permission level changed from: '" + originalUser.getPermissionLevel().getName() + "', to: '" + user.getPermissionLevel().getName() + "'");
 		}
@@ -491,8 +514,8 @@ public class UserForm extends FormLayout {
 			changes.addAll(otherChanges);
 		}
 
-		if (permissionsDialog != null) {
-			otherChanges = permissionsDialog.getChanges();
+		if (permissionHolder != null) {
+			otherChanges = permissionsView.getChanges();
 			if (otherChanges != null) {
 				if (otherChanges.size() > 0) {
 					changes.add("-- Permissions changed");

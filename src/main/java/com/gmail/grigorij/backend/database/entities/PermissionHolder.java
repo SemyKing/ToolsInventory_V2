@@ -20,8 +20,8 @@ import java.util.List;
 })
 public class PermissionHolder extends EntityPojo {
 
-	public static final String QUERY_ALL = "get_all_permissionHolders";
-	public static final String QUERY_BY_USER_ID = "get_permissionHolder_by_id";
+	public static final String QUERY_ALL = "get_all_permission_holders";
+	public static final String QUERY_BY_USER_ID = "get_permission_holder_by_id";
 
 
 	@OneToOne(mappedBy = "permissionHolder")

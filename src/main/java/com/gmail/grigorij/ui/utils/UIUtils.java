@@ -33,6 +33,14 @@ public class UIUtils {
 		}
 	}
 
+	public static String visibleBooleanToString(boolean visible) {
+		if (visible) {
+			return "visible";
+		} else {
+			return "invisible";
+		}
+	}
+
 
 
 	/* ==== BUTTONS ==== */
