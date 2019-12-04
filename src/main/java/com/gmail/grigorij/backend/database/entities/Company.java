@@ -39,7 +39,7 @@ public class Company extends EntityPojo {
 	private List<Location> locations = new ArrayList<>();
 
 	@Column(columnDefinition = "text")
-	private String announcements = "";
+	private String announcement = "";
 
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "pdf_template_id")
@@ -53,9 +53,13 @@ public class Company extends EntityPojo {
 		this.vat = other.vat;
 		this.address = other.address;
 		this.contactPerson = other.contactPerson;
-		this.locations = other.locations;
-		this.announcements = other.announcements;
-		this.pdf_template = other.pdf_template;
+
+		for (Location location : other.locations) {
+			this.locations.add(new Location(location));
+		}
+		this.announcement = other.announcement;
+		this.pdf_template =  other.pdf_template;
+
 		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
 
@@ -98,11 +102,11 @@ public class Company extends EntityPojo {
 		this.contactPerson = contactPerson;
 	}
 
-	public String getAnnouncements() {
-		return announcements;
+	public String getAnnouncement() {
+		return announcement;
 	}
-	public void setAnnouncements(String announcements) {
-		this.announcements = announcements;
+	public void setAnnouncement(String announcement) {
+		this.announcement = announcement;
 	}
 
 	public PDF_Template getPdf_template() {
@@ -110,5 +114,22 @@ public class Company extends EntityPojo {
 	}
 	public void setPdf_template(PDF_Template pdf_template) {
 		this.pdf_template = pdf_template;
+	}
+
+
+	public String getContactPersonString() {
+		String cp = "";
+		if (contactPerson != null) {
+			cp = contactPerson.getFullName();
+		}
+		return cp;
+	}
+
+	public String getAddressString() {
+		String a = "";
+		if (address != null) {
+			a = address.toString();
+		}
+		return a;
 	}
 }

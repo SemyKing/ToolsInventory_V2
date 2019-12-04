@@ -146,10 +146,8 @@ public class UserForm extends FormLayout {
 		permissionLevelComboBox.setLabel("Permission Level");
 		permissionLevelComboBox.addValueChangeListener(e -> {
 			if (dataLoaded) {
-				if (!e.getValue().equalsTo(e.getOldValue())) {
-					if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.CHANGE, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
-						handlePermissionLevelChange(e.getValue());
-					}
+				if (!e.getValue().equals(e.getOldValue())) {
+					handlePermissionLevelChange(e.getValue());
 				}
 			}
 		});
@@ -157,11 +155,12 @@ public class UserForm extends FormLayout {
 
 		//PERMISSIONS & BUTTON
 		permissionsLayout = new FlexBoxLayout();
-		permissionsLayout.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
+		permissionsLayout.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
 		permissionsLayout.add(permissionLevelComboBox);
 		permissionsLayout.setFlexGrow("1", permissionLevelComboBox);
 
 		editPermissionsButton = UIUtils.createButton("Permissions", VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
+		editPermissionsButton.addClassName("dynamic-label-button");
 		editPermissionsButton.addClickListener(e -> constructPermissionsDialog());
 
 		additionalInfo = new TextArea("Additional Info");
@@ -241,9 +240,11 @@ public class UserForm extends FormLayout {
 				.bind(User::getDummyPassword, User::setDummyPassword);
 
 		binder.forField(companyComboBox)
+				.asRequired("Company is required")
 				.bind(User::getCompany, User::setCompany);
 
 		binder.forField(permissionLevelComboBox)
+				.asRequired("Permission Level is required")
 				.bind(User::getPermissionLevel, User::setPermissionLevel);
 
 		binder.forField(additionalInfo)
@@ -260,7 +261,7 @@ public class UserForm extends FormLayout {
 		passwordField.setReadOnly(!isNew);
 		passwordField.setRevealButtonVisible(isNew);
 
-		permissionHolder = null;
+		permissionHolder = user.getPermissionHolder();
 
 		try {
 			entityStatusDiv.remove(entityStatusCheckbox);
@@ -274,9 +275,12 @@ public class UserForm extends FormLayout {
 			passwordLayout.setComponentMargin(changePasswordButton, Left.S);
 		}
 
-		if (!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
-			entityStatusDiv.add(entityStatusCheckbox);
+		if (user.getPermissionLevel().lowerOrEqualsTo(AuthenticationService.getCurrentSessionUser().getPermissionLevel())) {
+			if (!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
+				entityStatusDiv.add(entityStatusCheckbox);
+			}
 		}
+
 
 
 		permissionLevelComboBox.setEnabled(false);
@@ -368,7 +372,7 @@ public class UserForm extends FormLayout {
 			return;
 		}
 
-		permissionsView = new PermissionsView(user);
+		permissionsView = new PermissionsView(user, permissionHolder);
 
 		CustomDialog dialog = new CustomDialog();
 
@@ -416,6 +420,7 @@ public class UserForm extends FormLayout {
 
 		if (user == null) {
 			this.user = new User();
+			this.user.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
 			isNew = true;
 		} else {
 			this.user = user;
@@ -438,18 +443,18 @@ public class UserForm extends FormLayout {
 
 			if (binder.isValid()) {
 
-				Location address = addressForm.getLocation();
-				if (address == null) {
-					return null;
-				} else {
-					user.setAddress(address);
-				}
-
 				Person person = personForm.getPerson();
 				if (person == null) {
 					return null;
 				} else {
 					user.setPerson(person);
+				}
+
+				Location address = addressForm.getLocation();
+				if (address == null) {
+					return null;
+				} else {
+					user.setAddress(address);
 				}
 
 				if (isNew) {
@@ -494,8 +499,8 @@ public class UserForm extends FormLayout {
 		if (!originalUser.getPermissionLevel().equals(user.getPermissionLevel())) {
 			changes.add("Permission level changed from: '" + originalUser.getPermissionLevel().getName() + "', to: '" + user.getPermissionLevel().getName() + "'");
 		}
-		if (!originalUser.getCompany().equals(user.getCompany())) {
-			changes.add("User company changed from: '" + originalUser.getCompany().getName() + "', to: '" + user.getCompany().getName() + "'");
+		if (!originalUser.getCompanyNameString().equals(user.getCompanyNameString())) {
+			changes.add("User company changed from: '" + originalUser.getCompanyNameString() + "', to: '" + user.getCompanyNameString() + "'");
 		}
 		if (!originalUser.getAdditionalInfo().equals(user.getAdditionalInfo())) {
 			changes.add("Additional Info changed from: '" + originalUser.getAdditionalInfo() + "', to: '" + user.getAdditionalInfo() + "'");
@@ -513,7 +518,7 @@ public class UserForm extends FormLayout {
 			changes.addAll(otherChanges);
 		}
 
-		if (permissionHolder != null) {
+		if (permissionsView != null) {
 			otherChanges = permissionsView.getChanges();
 			if (otherChanges != null) {
 				if (otherChanges.size() > 0) {

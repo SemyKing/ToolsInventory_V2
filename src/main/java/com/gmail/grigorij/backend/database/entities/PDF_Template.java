@@ -30,18 +30,18 @@ public class PDF_Template extends EntityPojo {
 
 	@Embedded
 	@ElementCollection
-	private List<PDF_Column> pdfColumns;
+	private List<PDF_Column> pdfColumns = new ArrayList<>();
 
 	@Column(columnDefinition = "text")
 	private String normalText = "Sample Normal Text";
-
-	private boolean showDate = false;
 
 	@Column(columnDefinition = "text")
 	private String contrastText = "Sample Contrast Text";
 
 	private Float normalTextFontSize = 15f;
 	private Float contrastTextFontSize = 14f;
+
+	private boolean showDate = false;
 
 	@Enumerated(EnumType.STRING)
 	private WeekSelector weekSelector = WeekSelector.NEXT_WEEK;
@@ -51,7 +51,6 @@ public class PDF_Template extends EntityPojo {
 
 
 	public PDF_Template() {
-		pdfColumns = new ArrayList<>();
 		pdfColumns.add(new PDF_Column(ToolParameter.NUMBERS));
 		pdfColumns.add(new PDF_Column(ToolParameter.NAME));
 		pdfColumns.add(new PDF_Column(ToolParameter.BARCODE));
@@ -59,7 +58,11 @@ public class PDF_Template extends EntityPojo {
 
 	public PDF_Template(PDF_Template other) {
 		this.company = other.company;
-		this.pdfColumns = other.pdfColumns;
+
+		for (PDF_Column column : other.pdfColumns) {
+			this.pdfColumns.add(new PDF_Column(column));
+		}
+
 		this.normalText = other.normalText;
 		this.contrastText = other.contrastText;
 		this.normalTextFontSize = other.normalTextFontSize;

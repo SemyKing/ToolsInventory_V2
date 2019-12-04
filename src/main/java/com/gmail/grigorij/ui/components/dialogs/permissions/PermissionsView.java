@@ -53,15 +53,17 @@ public class PermissionsView extends Div {
 	private boolean self = false;
 
 
-	public PermissionsView(User user) {
+	public PermissionsView(User user, PermissionHolder permissionHolder) {
 		addClassName(CLASS_NAME);
 
 		this.user = user;
-		permissionHolder = this.user.getPermissionHolder();
 
 		if (permissionHolder == null) {
-			permissionHolder = new PermissionHolder();
+			this.permissionHolder = new PermissionHolder();
+		} else {
+			this.permissionHolder = new PermissionHolder(permissionHolder);
 		}
+
 
 		systemAdmin = AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN);
 		self = user.getId().equals(AuthenticationService.getCurrentSessionUser().getId());
@@ -123,7 +125,7 @@ public class PermissionsView extends Div {
 
 	private Grid constructGrid() {
 		Grid<Permission> grid = new Grid<>();
-		grid.addClassNames("grid-view", "permissions-grid");
+		grid.addClassNames("grid-view", "small-padding-cell");
 
 		dataProvider = new ListDataProvider<>(user.getPermissionHolder().getPermissions());
 
@@ -153,10 +155,12 @@ public class PermissionsView extends Div {
 
 		grid.addColumn(Permission::getPermissionOwnString)
 				.setHeader("Own")
+				.setWidth("60px")
 				.setFlexGrow(0);
 
 		grid.addColumn(Permission::getPermissionCompanyString)
 				.setHeader("Company")
+				.setWidth("60px")
 				.setFlexGrow(0);
 
 		if (systemAdmin || (!self && editOthersAllowed)) {
@@ -171,9 +175,9 @@ public class PermissionsView extends Div {
 
 				return toggleVisibilityButton;
 			})
-					.setTextAlign(ColumnTextAlign.CENTER)
-					.setWidth("50px")
-					.setFlexGrow(0);
+			.setTextAlign(ColumnTextAlign.CENTER)
+			.setWidth("50px")
+			.setFlexGrow(0);
 		}
 
 		if (systemAdmin || (!self && editOthersAllowed) || (self && editOwnAllowed)) {
@@ -185,9 +189,9 @@ public class PermissionsView extends Div {
 
 				return editPermissionButton;
 			})
-					.setTextAlign(ColumnTextAlign.CENTER)
-					.setWidth("50px")
-					.setFlexGrow(0);
+			.setTextAlign(ColumnTextAlign.CENTER)
+			.setWidth("50px")
+			.setFlexGrow(0);
 		}
 
 		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
@@ -199,9 +203,9 @@ public class PermissionsView extends Div {
 
 				return removePermissionButton;
 			})
-					.setTextAlign(ColumnTextAlign.CENTER)
-					.setWidth("50px")
-					.setFlexGrow(0);
+			.setTextAlign(ColumnTextAlign.CENTER)
+			.setWidth("50px")
+			.setFlexGrow(0);
 		}
 
 		return grid;

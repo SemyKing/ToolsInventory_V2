@@ -1,5 +1,6 @@
 package com.gmail.grigorij.backend.database.entities;
 
+import com.gmail.grigorij.utils.DateConverter;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.Entity;
@@ -22,9 +23,6 @@ public class Message extends EntityPojo {
 	public static final String QUERY_ALL_BY_USER = "get_all_messages_by_user";
 
 
-//	@Enumerated(EnumType.STRING)
-//	private MessageType messageType;
-
 	private String subject = "";
 	private String text = "";
 	private String senderString = "";
@@ -39,13 +37,6 @@ public class Message extends EntityPojo {
 		this.date = new Date();
 	}
 
-
-//	public MessageType getMessageType() {
-//		return messageType;
-//	}
-//	public void setMessageType(MessageType messageType) {
-//		this.messageType = messageType;
-//	}
 
 	public String getSubject() {
 		return subject;
@@ -68,12 +59,12 @@ public class Message extends EntityPojo {
 		this.senderString = senderString;
 	}
 
-//	public Long getSenderId() {
-//		return senderId;
-//	}
-//	public void setSenderId(Long senderId) {
-//		this.senderId = senderId;
-//	}
+	public User getSenderUser() {
+		return senderUser;
+	}
+	public void setSenderUser(User senderUser) {
+		this.senderUser = senderUser;
+	}
 
 	public Long getRecipientId() {
 		return recipientId;
@@ -100,11 +91,29 @@ public class Message extends EntityPojo {
 		this.messageRead = messageRead;
 	}
 
-	public User getSenderUser() {
-		return senderUser;
+
+	public String getSender() {
+		String s = "";
+
+		if (senderUser != null) {
+			s = senderUser.getFullName();
+		} else {
+			s = senderString;
+		}
+
+		return s;
 	}
 
-	public void setSenderUser(User senderUser) {
-		this.senderUser = senderUser;
+	public String getDateWithTimeString() {
+		try {
+			if (date == null) {
+				return "";
+			} else {
+				return DateConverter.dateToStringWithTime(date);
+			}
+		} catch (Exception e) {
+			return "";
+		}
 	}
+
 }

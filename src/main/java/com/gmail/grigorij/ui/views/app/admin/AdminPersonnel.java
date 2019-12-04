@@ -1,5 +1,6 @@
 package com.gmail.grigorij.ui.views.app.admin;
 
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
@@ -22,6 +23,7 @@ import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
@@ -123,16 +125,10 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 	private Grid constructGrid() {
 		grid = new Grid<>();
-		grid.setId("personnel-grid");
-		grid.setClassName("grid-view");
+
+		grid.addClassName("grid-view");
 		grid.setSizeFull();
-		grid.asSingleSelect().addValueChangeListener(e -> {
-			if (grid.asSingleSelect().getValue() != null) {
-				showDetails(grid.asSingleSelect().getValue());
-			} else {
-				detailsDrawer.hide();
-			}
-		});
+
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			dataProvider = DataProvider.ofCollection(UserFacade.getInstance().getAllUsers());
@@ -142,21 +138,33 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 		grid.setDataProvider(dataProvider);
 
-		grid.addColumn(user -> (user.getPerson() == null) ? "" : user.getPerson().getFullName())
+		grid.addColumn(User::getFullName)
 				.setHeader("Employee")
 				.setFlexGrow(1)
 				.setAutoWidth(true);
 
-		grid.addColumn(user -> (user.getCompany() == null) ? "" : user.getCompany().getName())
-				.setHeader("Company")
-				.setFlexGrow(1)
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			grid.addColumn(User::getCompanyNameString)
+					.setHeader("Company")
+					.setFlexGrow(1)
+					.setAutoWidth(true);
+		}
+
+		grid.addColumn(user -> UIUtils.entityStatusToString(user.isDeleted()))
+				.setHeader("Status")
+				.setFlexGrow(0)
+				.setTextAlign(ColumnTextAlign.END)
 				.setAutoWidth(true);
 
-		grid.addColumn(new ComponentRenderer<>(selectedUser -> UIUtils.createActiveGridIcon(selectedUser.isDeleted())))
-				.setHeader("Active")
-				.setFlexGrow(0)
-				.setTextAlign(ColumnTextAlign.CENTER)
-				.setAutoWidth(true);
+		grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
+		grid.asSingleSelect().addValueChangeListener(e -> {
+			if (grid.asSingleSelect().getValue() != null) {
+				showDetails(grid.asSingleSelect().getValue());
+			} else {
+				detailsDrawer.hide();
+			}
+		});
 
 		return grid;
 	}
@@ -185,23 +193,16 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 	private void filterGrid(String searchString) {
 		dataProvider.clearFilters();
-		final String searchParam = searchString.trim();
+		final String mainSearchString = searchString.trim();
 
-		if (searchParam.contains(" ")) {
-			String[] searchParams = searchParam.split(" ");
+		if (mainSearchString.contains("+")) {
+			String[] searchParams = mainSearchString.split("\\+");
 
 			dataProvider.addFilter(
 					user -> {
 						boolean res = true;
 						for (String sParam : searchParams) {
-							res =  StringUtils.containsIgnoreCase(user.getUsername(), sParam) ||
-									StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getFirstName(), sParam) ||
-									StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getLastName(), sParam) ||
-									StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getEmail(), sParam) ||
-									StringUtils.containsIgnoreCase((user.getCompany() == null) ? "" : user.getCompany().getName(), sParam);
-
-							//(res) -> shows All items based on searchParams
-							//(!res) -> shows ONE item based on searchParams
+							res =  matchesFilter(user, sParam);
 							if (!res)
 								break;
 						}
@@ -210,14 +211,17 @@ public class AdminPersonnel extends FlexBoxLayout {
 			);
 		} else {
 			dataProvider.addFilter(
-					user -> StringUtils.containsIgnoreCase(user.getUsername(), searchParam)  ||
-							StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getFirstName(), searchParam) ||
-							StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getLastName(), searchParam)  ||
-							StringUtils.containsIgnoreCase((user.getPerson() == null) ? "" : user.getPerson().getEmail(), searchParam) ||
-							StringUtils.containsIgnoreCase((user.getCompany() == null) ? "" : user.getCompany().getName(), searchParam)
+					user -> matchesFilter(user, mainSearchString)
 			);
 		}
+	}
 
+	private boolean matchesFilter(User item, String filter) {
+		return StringUtils.containsIgnoreCase(item.getUsername(), filter) ||
+				StringUtils.containsIgnoreCase(item.getFullName(), filter) ||
+				StringUtils.containsIgnoreCase((item.getCompanyNameString()), filter) ||
+				StringUtils.containsIgnoreCase(item.getAddressString(), filter) ||
+				StringUtils.containsIgnoreCase(UIUtils.entityStatusToString(item.isDeleted()), filter);
 	}
 
 	private void showDetails(User user)  {

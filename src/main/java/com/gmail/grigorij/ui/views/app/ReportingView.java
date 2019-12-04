@@ -13,6 +13,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -81,7 +82,10 @@ public class ReportingView extends Div {
 				.setHeader("Tools In Use")
 				.setFlexGrow(1);
 
+		grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
+
 
 		grid.addSelectionListener(event -> selectedUsers = new ArrayList<>(event.getAllSelectedItems()));
 

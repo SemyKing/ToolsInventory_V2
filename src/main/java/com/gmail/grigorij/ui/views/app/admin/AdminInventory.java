@@ -35,6 +35,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
@@ -126,6 +127,7 @@ public class AdminInventory extends FlexBoxLayout {
 		MenuBar actionsMenuBar = new MenuBar();
 		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_PRIMARY, MenuBarVariant.LUMO_ICON);
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
+
 		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.ADD, OperationTarget.INVENTORY_TOOL, null)) {
 
 			menuItem.getSubMenu().addItem("New Tool", e -> {
@@ -243,13 +245,14 @@ public class AdminInventory extends FlexBoxLayout {
 					.setAutoWidth(true);
 		}
 
-		grid.addColumn(new ComponentRenderer<>(tool -> UIUtils.createActiveGridIcon(tool.isDeleted())))
-				.setHeader("Active")
+//		grid.addColumn(new ComponentRenderer<>(tool -> UIUtils.createActiveGridIcon(tool.isDeleted())))
+		grid.addColumn(tool -> UIUtils.entityStatusToString(tool.isDeleted()))
+				.setHeader("Status")
 				.setFlexGrow(0)
-				.setTextAlign(ColumnTextAlign.CENTER)
+				.setTextAlign(ColumnTextAlign.END)
 				.setAutoWidth(true);
 
-//		grid.setSelectionMode(Grid.SelectionMode.MULTI);
+		grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
 		grid.addSelectionListener(event -> {
 			Tool tool = grid.asSingleSelect().getValue();
@@ -322,7 +325,6 @@ public class AdminInventory extends FlexBoxLayout {
 		dataProvider.refreshAll();
 	}
 
-
 	private void filterGrid(String searchString) {
 		dataProvider.clearFilters();
 		final String mainSearchString = searchString.trim();
@@ -356,7 +358,8 @@ public class AdminInventory extends FlexBoxLayout {
 				StringUtils.containsIgnoreCase((item.getReservedUserString()), filter) ||
 				StringUtils.containsIgnoreCase(item.getCategoryString(), filter) ||
 				StringUtils.containsIgnoreCase(item.getCompanyString(), filter) ||
-				StringUtils.containsIgnoreCase(item.getUsageStatusString(), filter);
+				StringUtils.containsIgnoreCase(item.getUsageStatusString(), filter) ||
+				StringUtils.containsIgnoreCase(UIUtils.entityStatusToString(item.isDeleted()), filter);
 	}
 
 
@@ -506,8 +509,6 @@ public class AdminInventory extends FlexBoxLayout {
 			Tool toolToCopy = toolCopyForm.getToolCopy();
 			if (toolToCopy != null) {
 				dialog.close();
-
-//				constructBulkEditDialog(false, toolToCopy, toolCopyForm.getNumberOfCopies());
 
 				constructMultipleToolEditDialog(toolToCopy, toolCopyForm.getNumberOfCopies(), null);
 

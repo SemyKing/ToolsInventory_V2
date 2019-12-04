@@ -189,6 +189,7 @@ public class CompanyForm extends FormLayout {
 				.bind(Company::getName, Company::setName);
 
 		binder.forField(vatField)
+				.asRequired("VAT is required")
 				.bind(Company::getVat, Company::setVat);
 
 		binder.forField(additionalInfo)
@@ -197,9 +198,9 @@ public class CompanyForm extends FormLayout {
 
 
 	private void initDynamicFormItems() {
-		pdf_template = null;
-
 		try {
+			pdf_template = company.getPdf_template();
+
 			entityStatusDiv.remove(entityStatusCheckbox);
 			PDF_TemplateButtonDiv.remove(editPDF_TemplateButton);
 		} catch (Exception ignored) {}
@@ -211,7 +212,6 @@ public class CompanyForm extends FormLayout {
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			PDF_TemplateButtonDiv.add(editPDF_TemplateButton);
 		}
-
 
 		tempLocations = new ArrayList<>();
 		for (Location location : company.getLocations()) {
@@ -234,10 +234,9 @@ public class CompanyForm extends FormLayout {
 		dialog.getConfirmButton().setText("Save");
 		dialog.getConfirmButton().setEnabled(false);
 
-		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.LOCATIONS, PermissionRange.OWN)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.LOCATIONS, PermissionRange.COMPANY)) {
 			dialog.getConfirmButton().setEnabled(true);
 			dialog.getConfirmButton().addClickListener(e -> {
-
 				Location editedLocation = locationForm.getLocation();
 
 				if (editedLocation != null) {
@@ -255,13 +254,11 @@ public class CompanyForm extends FormLayout {
 	}
 
 	private void constructPDF_TemplateDialog() {
-
-		pdf_templateView = new PDF_TemplateView(company.getPdf_template());
+		pdf_templateView = new PDF_TemplateView(pdf_template);
 
 		CustomDialog dialog = new CustomDialog();
 
 		dialog.setCloseOnOutsideClick(false);
-		dialog.setCloseOnEsc(false);
 
 		dialog.setHeader(UIUtils.createH3Label("PDF Template"));
 		dialog.setContent(pdf_templateView);
@@ -269,6 +266,7 @@ public class CompanyForm extends FormLayout {
 		dialog.getConfirmButton().setText("Save");
 		dialog.getConfirmButton().addClickListener(saveOnClick -> {
 			PDF_Template pdf_template = pdf_templateView.getTemplate();
+
 			if (pdf_template != null) {
 				this.pdf_template = pdf_template;
 				dialog.close();
@@ -378,7 +376,7 @@ public class CompanyForm extends FormLayout {
 			changes.addAll(otherChanges);
 		}
 
-		if (pdf_template != null) {
+		if (pdf_templateView != null) {
 			otherChanges = pdf_templateView.getChanges();
 			if (otherChanges != null) {
 				if (otherChanges.size() > 0) {

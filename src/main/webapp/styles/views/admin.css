@@ -1,11 +1,19 @@
 @media (max-width: 1024px)  {
+
 	.admin-transactions__header {
 		flex-direction: column !important;
 		align-items: center !important;
 	}
+
 	.admin-transactions__dates {
 		margin-left: 0 !important;
 	}
+
+    .admin-companies__form-wrapper {
+    	overflow: auto;
+    	height: 100%;
+    	width: 100% !important;
+    }
 }
 
 /********** MAIN **********/
@@ -66,11 +74,14 @@
 	display: flex;
     flex-direction: column;
     height: 100%;
+	width: 100%;
+    align-items: center;
 }
 
 .admin-companies__form-wrapper {
 	overflow: auto;
 	height: 100%;
+	width: 50vw;
 }
 
 .admin-companies__form-wrapper > .form {

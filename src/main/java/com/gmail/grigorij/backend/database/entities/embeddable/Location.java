@@ -71,4 +71,12 @@ public class Location {
 	public void setCountry(String country) {
 		this.country = country;
 	}
+
+	@Override
+	public String toString() {
+		return name +
+				"\n" + addressLine1 +
+				"\n" + addressLine2 +
+				"\n" + postcode + " " + city + " " + country;
+	}
 }

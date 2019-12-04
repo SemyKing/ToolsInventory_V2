@@ -29,17 +29,18 @@ public class PermissionHolder extends EntityPojo {
 
 	@Embedded
 	@ElementCollection
-	private List<Permission> permissions;
+	private List<Permission> permissions = new ArrayList<>();
 
 
 	public PermissionHolder() {
-		permissions = new ArrayList<>();
 		permissions.addAll(PermissionFacade.getInstance().getDefaultUserPermissions());
 	}
 
 	public PermissionHolder(PermissionHolder other) {
 		this.user = other.user;
-		this.permissions = other.permissions;
+		for (Permission permission : other.permissions) {
+			this.permissions.add(new Permission(permission));
+		}
 	}
 
 

@@ -27,6 +27,11 @@ public class PermissionFacade {
 	public List<Permission> getDefaultViewerPermissions() {
 		List<Permission> userPermissions = new ArrayList<>();
 
+		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.INVENTORY_TAB,
+				OperationPermission.YES,    // OWN
+				OperationPermission.YES,     // COMPANY
+				false));
+
 		userPermissions.add(constructPermission(Operation.VIEW, OperationTarget.USER,
 				OperationPermission.YES,    // OWN
 				OperationPermission.NO,     // COMPANY
@@ -169,6 +174,10 @@ public class PermissionFacade {
 				true));
 		userPermissions.add(constructPermission(Operation.ADD, OperationTarget.USER,
 				OperationPermission.YES,    // OWN
+				OperationPermission.YES,    // COMPANY
+				true));
+		userPermissions.add(constructPermission(Operation.DELETE, OperationTarget.USER,
+				OperationPermission.NO,    // OWN
 				OperationPermission.YES,    // COMPANY
 				true));
 

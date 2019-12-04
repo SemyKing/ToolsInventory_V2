@@ -155,15 +155,13 @@ public class ToolForm extends FormLayout {
 		categoryComboBox.setItemLabelGenerator(Category::getName);
 		categoryComboBox.setRequired(true);
 
-		Button editCategoryButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
+		Button editCategoryButton = UIUtils.createButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
 		editCategoryButton.addClickListener(e -> {
 			Category selectedCategory = categoryComboBox.getValue();
 			if (selectedCategory != null) {
 				adminInventory.constructCategoryDialog(selectedCategory);
 			}
 		});
-		UIUtils.setTooltip("Edit category", editCategoryButton);
-
 
 		categoryLayout = new FlexBoxLayout();
 		categoryLayout.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
@@ -393,7 +391,6 @@ public class ToolForm extends FormLayout {
 				if (ui != null) {
 					ui.access(() -> {
 						try {
-//							cameraDialog.getCameraView().stop();
 							cameraDialog.stop();
 							cameraDialog.close();
 
@@ -401,7 +398,6 @@ public class ToolForm extends FormLayout {
 
 							codeField.setValue(code);
 						} catch (Exception e) {
-//							cameraDialog.getCameraView().stop();
 							cameraDialog.stop();
 							cameraDialog.close();
 
@@ -422,7 +418,6 @@ public class ToolForm extends FormLayout {
 						try {
 							cameraDialog.getCameraView().takePicture();
 						} catch (Exception e) {
-//							cameraDialog.getCameraView().stop();
 							cameraDialog.stop();
 							cameraDialog.close();
 
@@ -445,6 +440,7 @@ public class ToolForm extends FormLayout {
 
 		if (tool == null) {
 			this.tool = new Tool();
+			this.tool.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
 			isNew = true;
 		} else {
 			this.tool = tool;
@@ -456,9 +452,9 @@ public class ToolForm extends FormLayout {
 
 		binder.readBean(this.tool);
 
-		if (isNew) {
-			companyComboBox.setValue(AuthenticationService.getCurrentSessionUser().getCompany());
-		}
+//		if (isNew) {
+//			companyComboBox.setValue(AuthenticationService.getCurrentSessionUser().getCompany());
+//		}
 	}
 
 	public Tool getTool() {

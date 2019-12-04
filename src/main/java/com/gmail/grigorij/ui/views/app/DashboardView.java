@@ -82,7 +82,7 @@ public class DashboardView extends Div {
 		announcementsDiv.addClassName(CLASS_NAME + ANNOUNCEMENTS_ROW);
 
 		Div systemAnnouncementsDiv = getAnnouncementDiv("System Announcement",
-				currentCompany.getAnnouncements(), true);
+				currentCompany.getAnnouncement(), true);
 
 		announcementsDiv.add(systemAnnouncementsDiv);
 
@@ -177,7 +177,7 @@ public class DashboardView extends Div {
 		if (CompanyFacade.getInstance().getAdministrationCompany() == null) {
 			System.err.println("NULL ADMINISTRATION COMPANY");
 		} else {
-			String systemAnnouncement = CompanyFacade.getInstance().getAdministrationCompany().getAnnouncements();
+			String systemAnnouncement = CompanyFacade.getInstance().getAdministrationCompany().getAnnouncement();
 
 			if (systemAnnouncement.length() > 0) {
 				announcementsDiv.add(getAnnouncementDiv("System Announcement", systemAnnouncement, false));
@@ -185,7 +185,7 @@ public class DashboardView extends Div {
 		}
 
 		announcementsDiv.add(getAnnouncementDiv("Company Announcement",
-				currentCompany.getAnnouncements(), true));
+				currentCompany.getAnnouncement(), true));
 
 
 
@@ -298,14 +298,14 @@ public class DashboardView extends Div {
 		if (CompanyFacade.getInstance().getAdministrationCompany() == null) {
 			System.err.println("NULL ADMINISTRATION COMPANY");
 		} else {
-			String systemAnnouncement = CompanyFacade.getInstance().getAdministrationCompany().getAnnouncements();
+			String systemAnnouncement = CompanyFacade.getInstance().getAdministrationCompany().getAnnouncement();
 
 			if (systemAnnouncement.length() > 0) {
 				announcementsDiv.add(getAnnouncementDiv("System Announcement", systemAnnouncement, false));
 			}
 		}
 
-		String companyAnnouncement = AuthenticationService.getCurrentSessionUser().getCompany().getAnnouncements();
+		String companyAnnouncement = AuthenticationService.getCurrentSessionUser().getCompany().getAnnouncement();
 
 		if (companyAnnouncement.length() > 0) {
 			announcementsDiv.add(getAnnouncementDiv("Company Announcement", companyAnnouncement, false));
@@ -354,7 +354,7 @@ public class DashboardView extends Div {
 		if (editable) {
 			Button saveButton = UIUtils.createButton("Save", ButtonVariant.LUMO_PRIMARY);
 			saveButton.addClickListener(e -> {
-				currentCompany.setAnnouncements(textArea.getValue());
+				currentCompany.setAnnouncement(textArea.getValue());
 
 				if (CompanyFacade.getInstance().update(currentCompany)) {
 

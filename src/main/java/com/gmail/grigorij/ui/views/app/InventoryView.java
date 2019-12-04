@@ -16,6 +16,7 @@ import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.dialogs.CameraDialog;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
+import com.gmail.grigorij.ui.components.dialogs.my_tools.MyToolsView;
 import com.gmail.grigorij.ui.components.forms.ReadOnlyToolForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Horizontal;
@@ -27,6 +28,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -187,6 +189,8 @@ public class InventoryView extends Div {
 				.setHeader("Current Location")
 				.setAutoWidth(true);
 
+		grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
 		grid.asSingleSelect().addValueChangeListener(e -> {
 			Tool tool = grid.asSingleSelect().getValue();
 
@@ -281,10 +285,7 @@ public class InventoryView extends Div {
 	}
 
 	private void filterGrid(String searchString) {
-
-		if (searchString.length() <= 0) {
-			return;
-		}
+		dataProvider.clearFilters();
 
 		final String mainSearchString = searchString.trim();
 
@@ -318,9 +319,9 @@ public class InventoryView extends Div {
 				StringUtils.containsIgnoreCase(item.getToolInfo(), filter) ||
 				StringUtils.containsIgnoreCase(item.getManufacturer(), filter) ||
 				StringUtils.containsIgnoreCase(item.getModel(), filter) ||
-				StringUtils.containsIgnoreCase((item.getUsageStatus() == null) ? "" : item.getUsageStatus().getName(), filter) ||
-				StringUtils.containsIgnoreCase((item.getCurrentUser() == null) ? "" : item.getCurrentUser().getFullName(), filter) ||
-				StringUtils.containsIgnoreCase((item.getReservedUser() == null) ? "" : item.getReservedUser().getFullName(), filter) ||
+				StringUtils.containsIgnoreCase(item.getUsageStatusString(), filter) ||
+				StringUtils.containsIgnoreCase(item.getCurrentUserString(), filter) ||
+				StringUtils.containsIgnoreCase(item.getReservedUserString(), filter) ||
 				StringUtils.containsIgnoreCase((item.getDateBought() == null) ? "" : DateConverter.localDateToString(item.getDateBought()), filter) ||
 				StringUtils.containsIgnoreCase((item.getDateNextMaintenance() == null) ? "" : DateConverter.localDateToString(item.getDateNextMaintenance()), filter) ||
 				StringUtils.containsIgnoreCase(String.valueOf(item.getPrice()), filter) ||
@@ -342,144 +343,21 @@ public class InventoryView extends Div {
 
 
 	/**
-	 * Dialog with Grid containing all Tools user has in use / reserved with ability to return / cancel reservation
+	 * Dialog with Grid containing all Tools user has in use / reserved with controls to return tools and cancel reservation
 	 */
 	private void constructMyToolsDialog() {
-		List<Tool> allMyTools = new ArrayList<>();
-		List<Tool> selectedTools = new ArrayList<>();
-
-		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByCurrentUserId(AuthenticationService.getCurrentSessionUser().getId()));
-		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByReservedUserId(AuthenticationService.getCurrentSessionUser().getId()));
-
-		if (allMyTools.size() <= 0) {
-			UIUtils.showNotification("You don't have any tools", NotificationVariant.LUMO_PRIMARY);
-			return;
-		}
-
-		ListDataProvider<Tool> myToolsDataProvider = DataProvider.ofCollection(allMyTools);
-
-
 		CustomDialog dialog = new CustomDialog();
-		dialog.setCloseOnEsc(false);
 		dialog.setCloseOnOutsideClick(false);
+		dialog.closeOnCancel();
+
 		dialog.setHeader(UIUtils.createH3Label("My Tools"));
 
-		Grid<Tool> myToolsGrid = new Grid<>();
-		myToolsGrid.addClassName("grid-view");
-		myToolsGrid.addClassName("my-tools-grid");
+		MyToolsView myToolsView = new MyToolsView(this);
+		dialog.setContent(myToolsView);
 
-		myToolsGrid.setDataProvider(myToolsDataProvider);
-
-		myToolsGrid.addColumn(Tool::getName)
-				.setHeader("Tool")
-				.setFlexGrow(3)
-				.setAutoWidth(true);
-
-		myToolsGrid.addColumn(tool -> {
-					if (tool.getCurrentUser() != null) {
-						if (tool.getCurrentUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-							return ToolUsageStatus.IN_USE.getName();
-						}
-					}
-					if (tool.getReservedUser() != null) {
-						if (tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-							return ToolUsageStatus.RESERVED.getName();
-						}
-					}
-
-					return "";
-				})
-				.setHeader("Status")
-				.setFlexGrow(2)
-				.setAutoWidth(true);
-
-		myToolsGrid.addComponentColumn(tool -> {
-					if (tool.getReservedUser() != null) {
-						if (tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
-							Button toolActionButton = new Button();
-							toolActionButton.setText("Cancel");
-							toolActionButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_SMALL);
-							toolActionButton.addClickListener(e -> {
-								selectedTools.clear();
-								selectedTools.add(tool);
-
-								returnToolOnClick(selectedTools, null);
-
-								if (myToolsDataProvider.getItems().size() > 1) {
-									myToolsDataProvider.getItems().removeIf(item -> item.getId().equals(tool.getId()));
-									myToolsDataProvider.refreshAll();
-								} else {
-									dialog.close();
-								}
-
-
-							});
-
-							return toolActionButton;
-						}
-					}
-
-					return new Span("");
-				})
-				.setHeader("Reservation")
-				.setFlexGrow(1)
-				.setAutoWidth(true);
-
-		myToolsGrid.setSelectionMode(Grid.SelectionMode.MULTI);
-
-		myToolsGrid.addSelectionListener(event -> {
-			selectedTools.clear();
-			selectedTools.addAll(event.getAllSelectedItems());
-		});
-
-
-		ComboBox<Location> locationComboBox = new ComboBox<>();
-		locationComboBox.setLabel("Return Location");
-		locationComboBox.setItems(AuthenticationService.getCurrentSessionUser().getCompany().getLocations());
-		locationComboBox.setItemLabelGenerator(Location::getName);
-
-		Button returnButton = UIUtils.createButton("Return", ButtonVariant.LUMO_PRIMARY);
-		returnButton.addClickListener(e -> {
-			if (locationComboBox.getValue() == null) {
-				UIUtils.showNotification("Select Location where to return", NotificationVariant.LUMO_PRIMARY);
-			} else {
-
-				if (selectedTools.size() <= 0) {
-					UIUtils.showNotification("Select Tools to return", NotificationVariant.LUMO_PRIMARY);
-				} else {
-
-					// IF TOOL IS RESERVED
-					selectedTools.removeIf(tool -> tool.getReservedUser() != null && tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId()));
-
-					returnToolOnClick(selectedTools, locationComboBox.getValue());
-
-					if (selectedTools.size() < myToolsDataProvider.getItems().size()) {
-						for (Tool tool : selectedTools) {
-							myToolsDataProvider.getItems().removeIf(item -> item.getId().equals(tool.getId()));
-						}
-						myToolsDataProvider.refreshAll();
-					} else {
-						dialog.close();
-					}
-				}
-			}
-		});
-
-		Div locationDiv = new Div();
-		locationDiv.addClassName("location-selection-layout");
-		locationDiv.add(locationComboBox, returnButton);
-
-		dialog.getContent().removePadding();
-		dialog.getContent().setPadding(Horizontal.XS);
-
-		dialog.getContent().add(myToolsGrid);
-		dialog.getContent().add(locationDiv);
-
-		dialog.closeOnCancel();
 		dialog.getCancelButton().setText("Close");
 
 		dialog.setConfirmButton(null);
-
 		dialog.open();
 	}
 
@@ -497,7 +375,6 @@ public class InventoryView extends Div {
 				if (ui != null) {
 					ui.access(() -> {
 						try {
-//							cameraDialog.getCameraView().stop();
 							cameraDialog.stop();
 							cameraDialog.close();
 
@@ -509,7 +386,6 @@ public class InventoryView extends Div {
 								showDetails(tool);
 							}
 						} catch (Exception e) {
-//							cameraDialog.getCameraView().stop();
 							cameraDialog.stop();
 							cameraDialog.close();
 
@@ -530,7 +406,6 @@ public class InventoryView extends Div {
 						try {
 							cameraDialog.getCameraView().takePicture();
 						} catch (Exception e) {
-//							cameraDialog.getCameraView().stop();
 							cameraDialog.stop();
 							cameraDialog.close();
 
@@ -685,25 +560,23 @@ public class InventoryView extends Div {
 	/**
 	 * RETURN TOOL
 	 */
-	private void returnToolOnClick(List<Tool> userSelectedTools, Location location) {
+	public void returnToolOnClick(List<Tool> userSelectedTools, Location location) {
 
 		if (userSelectedTools == null) {
-			System.out.println("userSelectedTools == null");
+			System.err.println("returning tools list == null");
 			return;
 		}
 
 		if (userSelectedTools.size() <= 0) {
-			System.out.println("userSelectedTools.size() <= 0");
+			System.err.println("returning tools list size = 0");
 			return;
 		}
 
 		List<Tool> tools = new ArrayList<>();
 
-		// RECURSIVELY FIND TOOL FROM DATA PROVIDER
-		for (Tool userSelectedItem : userSelectedTools) {
-
+		for (Tool selectedTool : userSelectedTools) {
 			for (Tool tool : dataProvider.getItems()) {
-				if (tool.getId().equals(userSelectedItem.getId())) {
+				if (tool.getId().equals(selectedTool.getId())) {
 					tools.add(tool);
 					break;
 				}
@@ -748,12 +621,11 @@ public class InventoryView extends Div {
 						// TOOL IS RESERVED BY OTHER USER
 						if (tool.getReservedUser() != null) {
 							Message message = new Message();
-//							message.setMessageType(MessageType.TOOL_FREE);
 							message.setSubject("Tool is available");
 							if (location == null) {
-								message.setText("Tool you have reserved is now available");
+								message.setText(tool.getName() + " is now available");
 							} else {
-								message.setText("Tool you have reserved is now available \nat " + location.getName());
+								message.setText(tool.getName() + " is now available. Location: " + location.getName());
 							}
 							message.setToolId(tool.getId());
 							message.setRecipientId(tool.getReservedUser().getId());

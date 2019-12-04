@@ -1,6 +1,7 @@
 package com.gmail.grigorij.ui.views.app.admin;
 
 import com.gmail.grigorij.backend.database.entities.Company;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
@@ -23,6 +24,7 @@ import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
@@ -127,15 +129,7 @@ public class AdminCompanies extends FlexBoxLayout {
 		grid.setId("companies-grid");
 		grid.setClassName("grid-view");
 		grid.setSizeFull();
-		grid.asSingleSelect().addValueChangeListener(e -> {
-			Company company = grid.asSingleSelect().getValue();
 
-			if (company != null) {
-				showDetails(company);
-			} else {
-				detailsDrawer.hide();
-			}
-		});
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			dataProvider = DataProvider.ofCollection(CompanyFacade.getInstance().getAllCompanies());
@@ -155,11 +149,24 @@ public class AdminCompanies extends FlexBoxLayout {
 				.setFlexGrow(1)
 				.setAutoWidth(true);
 
-		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted())))
-				.setHeader("Active")
+//		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted())))
+		grid.addColumn(company -> UIUtils.entityStatusToString(company.isDeleted()))
+				.setHeader("Status")
 				.setFlexGrow(0)
-				.setTextAlign(ColumnTextAlign.CENTER)
+				.setTextAlign(ColumnTextAlign.END)
 				.setAutoWidth(true);
+
+		grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
+		grid.asSingleSelect().addValueChangeListener(e -> {
+			Company company = grid.asSingleSelect().getValue();
+
+			if (company != null) {
+				showDetails(company);
+			} else {
+				detailsDrawer.hide();
+			}
+		});
 
 		return grid;
 	}
@@ -190,6 +197,7 @@ public class AdminCompanies extends FlexBoxLayout {
 
 	private void filterGrid(String searchString) {
 		dataProvider.clearFilters();
+
 		final String mainSearchString = searchString.trim();
 
 		if (mainSearchString.contains("+")) {
@@ -199,14 +207,7 @@ public class AdminCompanies extends FlexBoxLayout {
 					company -> {
 						boolean res = true;
 						for (String sParam : searchParams) {
-							res =  StringUtils.containsIgnoreCase(company.getName(), sParam) ||
-									StringUtils.containsIgnoreCase(company.getVat(), sParam) ||
-									StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getFirstName(), sParam) ||
-									StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getLastName(), sParam) ||
-									StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getEmail(), sParam);
-
-							//(res) -> shows All items based on searchParams
-							//(!res) -> shows ONE item based on searchParams
+							res =  matchesFilter(company, sParam);
 							if (!res)
 								break;
 						}
@@ -215,23 +216,21 @@ public class AdminCompanies extends FlexBoxLayout {
 			);
 		} else {
 			dataProvider.addFilter(
-					company -> StringUtils.containsIgnoreCase(company.getName(), mainSearchString)  ||
-							StringUtils.containsIgnoreCase(company.getVat(), mainSearchString) ||
-							StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getFirstName(), mainSearchString) ||
-							StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getLastName(), mainSearchString) ||
-							StringUtils.containsIgnoreCase((company.getContactPerson() == null) ? "" : company.getContactPerson().getEmail(), mainSearchString)
+					company -> matchesFilter(company, mainSearchString)
 			);
 		}
 	}
 
+	private boolean matchesFilter(Company item, String filter) {
+		return StringUtils.containsIgnoreCase(item.getName(), filter) ||
+				StringUtils.containsIgnoreCase(item.getVat(), filter) ||
+				StringUtils.containsIgnoreCase((item.getContactPersonString()), filter) ||
+				StringUtils.containsIgnoreCase(item.getAddressString(), filter) ||
+				StringUtils.containsIgnoreCase(UIUtils.entityStatusToString(item.isDeleted()), filter);
+	}
+
 	private void showDetails(Company company) {
 		if (company != null) {
-//			if (!PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.VIEW, OperationTarget.COMPANY, PermissionRange.OWN)) {
-//				UIUtils.showNotification(ProjectConstants.ACTION_NOT_ALLOWED, NotificationVariant.LUMO_PRIMARY);
-//				grid.deselectAll();
-//				return;
-//			}
-
 			entityOldStatus = company.isDeleted();
 			detailsDrawer.setDeletedAttribute(company.isDeleted());
 		} else {
@@ -349,7 +348,6 @@ public class AdminCompanies extends FlexBoxLayout {
 
 
 	// COMPANY ADMIN VIEW
-
 	private Div constructCompanyAdminView() {
 		Div companyAdminDiv = new Div();
 		companyAdminDiv.addClassName(CLASS_NAME + "__company_admin");
@@ -367,7 +365,7 @@ public class AdminCompanies extends FlexBoxLayout {
 
 		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.COMPANY, PermissionRange.OWN)) {
 			detailsDrawerFooter.getSave().addClickListener(e -> {
-				saveCompanyInDatabase(companyForm.getCompany(), companyForm.isNew(), companyForm.getChanges());
+				saveAdminCompanyInDatabase(companyForm.getCompany(), companyForm.getChanges());
 			});
 			detailsDrawerFooter.getSave().setEnabled(true);
 		}
@@ -377,5 +375,23 @@ public class AdminCompanies extends FlexBoxLayout {
 		companyAdminDiv.add(detailsDrawerFooter);
 
 		return companyAdminDiv;
+	}
+
+	private void saveAdminCompanyInDatabase(Company company, List<String> changes) {
+		if (CompanyFacade.getInstance().update(company)) {
+			UIUtils.showNotification("Company updated", NotificationVariant.LUMO_SUCCESS);
+
+			Transaction transaction = new Transaction();
+			transaction.setUser(AuthenticationService.getCurrentSessionUser());
+			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+			transaction.setOperation(Operation.EDIT);
+			transaction.setOperationTarget1(OperationTarget.COMPANY);
+			transaction.setTargetDetails(company.getName());
+			transaction.setChanges(changes);
+			TransactionFacade.getInstance().insert(transaction);
+
+		} else {
+			UIUtils.showNotification("Company update failed", NotificationVariant.LUMO_ERROR);
+		}
 	}
 }

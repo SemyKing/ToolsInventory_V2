@@ -1,0 +1,34 @@
+@media (max-width: 1024px) {
+
+}
+
+.my-tools {
+	display: flex;
+    flex-direction: column;
+}
+
+.my-tools__header > vaadin-text-field {
+	width: 100%;
+}
+
+.my-tools__content {
+	display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.my-tools__footer {
+	display: flex;
+    flex-direction: row;
+    align-items: baseline;
+}
+
+.my-tools__footer > vaadin-combo-box {
+	width: 100%;
+}
+
+.no-tools-span {
+    font-size: larger;
+    font-weight: bold;
+    padding: var(--lumo-space-m);
+}

@@ -90,7 +90,7 @@ public class Tool extends EntityPojo {
 
 	public Tool(Tool other) {
 		this.name = other.name;
-		this.company = other.company;
+		this.company =  other.company;
 		this.serialNumber = other.serialNumber;
 		this.RF_Code = other.RF_Code;
 		this.barcode = other.barcode;
@@ -107,6 +107,7 @@ public class Tool extends EntityPojo {
 		this.currentLocation = other.currentLocation;
 		this.reports = other.reports;
 		this.category = other.category;
+
 		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
 

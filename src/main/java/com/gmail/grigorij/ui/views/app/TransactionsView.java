@@ -18,6 +18,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -160,17 +161,8 @@ public class TransactionsView extends Div {
 		}
 
 		grid.setDataProvider(dataProvider);
-		grid.addColumn(transaction -> {
-					try {
-						if (transaction.getDate() == null) {
-							return "";
-						} else {
-							return DateConverter.dateToStringWithTime(transaction.getDate());
-						}
-					} catch (Exception e) {
-						return "";
-					}
-				})
+
+		grid.addColumn(Transaction::getDateWithTimeString)
 				.setHeader("Date")
 				.setAutoWidth(true)
 				.setFlexGrow(0);
@@ -180,10 +172,12 @@ public class TransactionsView extends Div {
 				.setAutoWidth(true)
 				.setFlexGrow(0);
 
-		grid.addColumn(transaction -> (transaction.getUser() == null) ? "" : transaction.getUser().getFullName())
+		grid.addColumn(transaction -> transaction.getUser().getFullName())
 				.setHeader("Who Did")
 				.setAutoWidth(true)
 				.setFlexGrow(1);
+
+		grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
 		return grid;
 	}

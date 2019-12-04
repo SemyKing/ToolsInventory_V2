@@ -87,7 +87,7 @@ public class User extends EntityPojo {
 
 	@OneToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "permissionHolder_id")
-	private PermissionHolder permissionHolder;
+	private PermissionHolder permissionHolder = new PermissionHolder();
 
 
 	public User() {}
@@ -104,6 +104,7 @@ public class User extends EntityPojo {
 		this.person = other.person;
 		this.permissionLevel = other.permissionLevel;
 		this.permissionHolder = other.permissionHolder;
+
 		this.setAdditionalInfo(other.getAdditionalInfo());
 	}
 
@@ -189,9 +190,9 @@ public class User extends EntityPojo {
 
 	public String getFullName() {
 		if (person == null) {
-			return "";
+			return username;
 		} else {
-			if (person.getFullName().length() <= 0) {
+			if (person.getFullName().replaceAll(" ", "").length() <= 0) {
 				return username;
 			}
 			return person.getFullName();
@@ -213,4 +214,13 @@ public class User extends EntityPojo {
 		}
 		return companyName;
 	}
+
+	public String getAddressString() {
+		String a = "";
+		if (person != null) {
+			a = person.toString();
+		}
+		return a;
+	}
+
 }

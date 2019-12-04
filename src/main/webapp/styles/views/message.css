@@ -1,0 +1,8 @@
+@media (max-width: 1024px) {
+
+}
+
+.message-view__content {
+	display: flex;
+    flex-direction: column;
+}

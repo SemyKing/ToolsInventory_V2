@@ -30,18 +30,23 @@ public class PDF_ParameterLayout extends Div {
 		}
 		parameterComboBox.addValueChangeListener(e -> {
 			parameterComboBox.setInvalid(false);
+
+			if (e.getValue() != null) {
+				columnWidthField.setValue((double)e.getValue().getPrefWidth());
+			}
 		});
+
+		add(parameterComboBox);
 
 		columnWidthField = new NumberField("Column Width");
 		columnWidthField.setStep(1.0);
-		columnWidthField.setMin(-1);
+		columnWidthField.setMin(0);
 		columnWidthField.setMax(10);
 		columnWidthField.setHasControls(true);
 		if (column != null) {
 			columnWidthField.setValue(column.getColumnWidth().doubleValue());
 		}
 
-		add(parameterComboBox);
 		add(columnWidthField);
 	}
 

@@ -67,10 +67,10 @@ public class PDF_TemplateView extends Div {
 	public PDF_TemplateView(PDF_Template template) {
 		addClassName(CLASS_NAME);
 
-		this.template = template;
-
-		if (this.template == null) {
+		if (template == null) {
 			this.template = new PDF_Template();
+		} else {
+			this.template = new PDF_Template(template);
 		}
 
 		normalTextAreaOldValue = this.template.getNormalText();
@@ -81,7 +81,6 @@ public class PDF_TemplateView extends Div {
 		weekSelectorComboBoxOldValue = this.template.getWeekSelector();
 		dayOfWeekComboBoxOldValue = this.template.getDayOfWeek();
 
-
 		add(constructContent());
 	}
 
@@ -91,14 +90,11 @@ public class PDF_TemplateView extends Div {
 		content.addClassName(CLASS_NAME + "__content");
 
 		Button newColumnButton = UIUtils.createButton("Add Column", ButtonVariant.LUMO_PRIMARY);
-		newColumnButton.addClickListener(e -> {
-			addColumnOnClick();
-		});
+		newColumnButton.addClickListener(e -> addColumnOnClick());
 
 		content.add(newColumnButton);
 
 		content.add(constructGrid());
-
 
 		Div contentFooter = new Div();
 		contentFooter.addClassName(CLASS_NAME + "__content-footer");
@@ -168,7 +164,7 @@ public class PDF_TemplateView extends Div {
 
 	private Grid constructGrid() {
 		Grid<PDF_Column> grid = new Grid<>();
-		grid.addClassNames("grid-view", "pdf-columns-grid");
+		grid.addClassNames("grid-view", "small-padding-cell");
 
 		dataProvider = new ListDataProvider<>(template.getPdfColumns());
 
@@ -187,7 +183,7 @@ public class PDF_TemplateView extends Div {
 		grid.addColumn(PDF_Column::getParameterString)
 				.setHeader("Parameter")
 				.setAutoWidth(true)
-				.setFlexGrow(1);
+				.setFlexGrow(2);
 
 		grid.addColumn(PDF_Column::getColumnWidthString)
 				.setHeader("Column Width")
@@ -195,22 +191,18 @@ public class PDF_TemplateView extends Div {
 				.setFlexGrow(1);
 
 		grid.addComponentColumn(column -> {
-			Button editColumnButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
-			editColumnButton.addClickListener(editEvent -> {
-				editColumnOnClick(column);
-			});
+					Button editColumnButton = UIUtils.createIconButton(VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+					editColumnButton.addClickListener(editEvent -> editColumnOnClick(column));
 
-			return editColumnButton;
-		})
+					return editColumnButton;
+				})
 				.setTextAlign(ColumnTextAlign.CENTER)
 				.setWidth("50px")
 				.setFlexGrow(0);
 
 		grid.addComponentColumn(column -> {
 					Button removeColumnButton = UIUtils.createIconButton(VaadinIcon.TRASH, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
-					removeColumnButton.addClickListener(removeEvent -> {
-						removeColumnOnClick(column);
-					});
+					removeColumnButton.addClickListener(removeEvent -> removeColumnOnClick(column));
 
 					return removeColumnButton;
 				})
