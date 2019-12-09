@@ -1,9 +1,13 @@
 package com.gmail.grigorij.backend.database.facades;
 
 import com.gmail.grigorij.backend.database.DatabaseManager;
+import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
+import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
+import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.ProjectConstants;
+import com.vaadin.flow.component.notification.NotificationVariant;
 
 import javax.persistence.NoResultException;
 import java.util.List;
@@ -92,19 +96,6 @@ public class UserFacade {
 		return user;
 	}
 
-	public User getUserByUsernameAndPassword(String username, String password) {
-		User user;
-		try {
-			user = DatabaseManager.getInstance().createEntityManager().createNamedQuery(User.QUERY_BY_USERNAME_AND_PASSWORD, User.class)
-					.setParameter(ProjectConstants.VAR1, username)
-					.setParameter(ProjectConstants.VAR2, password)
-					.getSingleResult();
-		} catch (NoResultException nre) {
-			user = null;
-		}
-		return user;
-	}
-
 	public User getUserByEmail(String email) {
 		User user;
 		try {
@@ -161,6 +152,50 @@ public class UserFacade {
 				return false;
 			}
 		}
+		return true;
+	}
+
+	public boolean handleUserStatusChange(long userId, boolean newStatus) {
+		User user = UserFacade.getInstance().getUserById(userId);
+
+		user.setDeleted(newStatus);
+
+		// REMOVE USER FROM TOOLS
+		if (newStatus) {
+			List<Tool> toolsInUse = InventoryFacade.getInstance().getAllToolsByCurrentUserId(userId);
+
+			for (Tool tool : toolsInUse) {
+				tool.setCurrentUser(null);
+
+				if (tool.getReservedUser() == null) {
+					tool.setUsageStatus(ToolUsageStatus.FREE);
+				} else {
+					tool.setUsageStatus(ToolUsageStatus.RESERVED);
+				}
+
+				InventoryFacade.getInstance().update(tool);
+			}
+
+			List<Tool> toolsReserved = InventoryFacade.getInstance().getAllToolsByReservedUserId(userId);
+
+			for (Tool tool : toolsReserved) {
+				tool.setReservedUser(null);
+
+				if (tool.getCurrentUser() == null) {
+					tool.setUsageStatus(ToolUsageStatus.FREE);
+				} else {
+					tool.setUsageStatus(ToolUsageStatus.IN_USE);
+				}
+
+				InventoryFacade.getInstance().update(tool);
+			}
+		}
+
+		if (!UserFacade.getInstance().update(user)) {
+			UIUtils.showNotification("User status change failed for: " + user.getUsername(), NotificationVariant.LUMO_ERROR);
+			return false;
+		}
+
 		return true;
 	}
 

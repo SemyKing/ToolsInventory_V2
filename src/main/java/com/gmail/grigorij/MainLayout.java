@@ -44,10 +44,8 @@ public class MainLayout extends Div {
 
 	/* MAIN T0D0 LIST */
 
-	//TODO: DON'T SHOW DELETED ENTITIES
 	//TODO: ADD LOGGER FUNCTIONALITY IF NEEDED
 	//TODO: ADD USER TOOL REPORT FUNCTIONALITY: LOST, STOLEN...
-	//TODO: ADD DYNAMIC REPORTING LAYOUTS FOR DIFFERENT COMPANIES
 	//TODO: ADD TOOL GEOLOCATION
 	//TODO: ADD IMPORT / EXPORT FUNCTIONALITY
 	//
@@ -79,14 +77,15 @@ public class MainLayout extends Div {
 		System.out.println("\nAuthentication...");
 
 		if (AuthenticationService.isAuthenticated()) {
-			System.out.println("User authenticated -> construct main menu view");
+			if (AuthenticationService.isActive()) {
+				System.out.println("User authenticated -> construct main menu view");
 
-			constructApplication();
-		} else {
-			System.out.println("User not authenticated -> construct login view");
-
-			showLoginView();
+				constructApplication();
+				return;
+			}
 		}
+
+		showLoginView();
 	}
 
 

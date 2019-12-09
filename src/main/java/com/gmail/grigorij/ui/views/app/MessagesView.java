@@ -177,7 +177,11 @@ public class MessagesView extends Div {
 		grid.addClassNames("grid-view", "small-padding-cell");
 		grid.setSizeFull();
 
-		dataProvider = DataProvider.ofCollection(MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId()));
+//		dataProvider = DataProvider.ofCollection(MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId()));
+		dataProvider = DataProvider.ofCollection(new ArrayList<>());
+
+		getMessagesBetweenDates();
+
 		grid.setDataProvider(dataProvider);
 
 		// READ
@@ -382,8 +386,12 @@ public class MessagesView extends Div {
 
 
 	private void getMessagesBetweenDates() {
-		List<Message> messages = MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId());
-		messages.sort(Comparator.comparing(Message::getDate));
+		List<Message> messages = MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(
+				dateStartField.getValue(),
+				dateEndField.getValue(),
+				AuthenticationService.getCurrentSessionUser().getId());
+		
+		messages.sort(Comparator.comparing(Message::getDate).reversed());
 
 		dataProvider.getItems().clear();
 		dataProvider.getItems().addAll(messages);

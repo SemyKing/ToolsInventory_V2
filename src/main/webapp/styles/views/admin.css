@@ -1,18 +1,7 @@
 @media (max-width: 1024px)  {
 
-	.admin-transactions__header {
-		flex-direction: column !important;
-		align-items: center !important;
-	}
-
-	.admin-transactions__dates {
-		margin-left: 0 !important;
-	}
-
-    .admin-companies__form-wrapper {
-    	overflow: auto;
-    	height: 100%;
-    	width: 100% !important;
+    .admin-inventory__filters > vaadin-combo-box {
+    	min-width: 50%;
     }
 }
 
@@ -24,21 +13,9 @@
 	flex-direction: row;
 }
 
-.admin-container__content_wrapper {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.admin-container__header {
-	width: 100%;
-	justify-content: center;
-
-	box-shadow: inset 0 -1px 0 0 var(--lumo-contrast-10pct);
-}
-
 .admin-container__content {
     height: 100%;
+    width: 100%;
 }
 
 
@@ -48,26 +25,34 @@
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: row;
+}
+
+.admin-companies__wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
     flex-direction: column;
 }
 
 .admin-companies__header {
 	display: flex;
     flex-direction: row;
-    margin: 5px 5px 0 5px;
-    align-items: baseline;
+    margin: var(--lumo-space-xs) var(--lumo-space-xs) 0;
+    align-items: center;
 }
 
 .admin-companies__header vaadin-text-field {
     width: 100%;
 }
+
 .admin-companies__header vaadin-menu-bar {
     margin-left: var(--lumo-space-s);
 }
 
 .admin-companies__content {
     height: 100%;
-    margin: 2px 5px 2px 5px;
+    margin: var(--lumo-space-xs);
 }
 
 .admin-companies__company_admin {
@@ -103,13 +88,20 @@
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: row;
+}
+
+.admin-personnel__wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
     flex-direction: column;
 }
 
 .admin-personnel__header {
 	display: flex;
     flex-direction: row;
-    margin: 5px 5px 0 5px;
+    margin: var(--lumo-space-xs) var(--lumo-space-xs) 0;
     align-items: baseline;
 }
 .admin-personnel__header vaadin-text-field {
@@ -121,7 +113,7 @@
 
 .admin-personnel__content {
     height: 100%;
-    margin: 2px 5px 2px 5px;
+    margin: var(--lumo-space-xs);
 }
 
 
@@ -131,13 +123,20 @@
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: row;
+}
+
+.admin-inventory__wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
     flex-direction: column;
 }
 
 .admin-inventory__header {
     display: flex;
     flex-direction: column;
-    margin: 5px 5px 0 5px;
+    margin: var(--lumo-space-xs) var(--lumo-space-xs) 0;
     align-items: baseline;
 }
 
@@ -172,41 +171,11 @@
     justify-content: space-evenly;
 }
 
-
+.admin-inventory__filters > vaadin-combo-box {
+	min-width: 30%;
+}
 
 .admin-inventory__content {
     height: 100%;
-    margin: 2px 5px 2px 5px;
-}
-
-
-/********** TRANSACTIONS **********/
-.admin-transactions {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.admin-transactions__header {
-	display: flex;
-    flex-direction: row;
-    margin: 5px 5px 0 5px;
-    align-items: baseline;
-}
-.admin-transactions__header vaadin-text-field {
-    width: 100%;
-    padding-top: 0 !important;
-}
-.admin-transactions__header vaadin-menu-bar {
-    margin-left: var(--lumo-space-s);
-}
-
-.admin-transactions__dates > vaadin-date-picker {
-	max-width: var(--date-picker-width);
-}
-
-.admin-transactions__content {
-    height: 100%;
-    margin: 2px 5px 2px 5px;
+    margin: var(--lumo-space-xs);
 }

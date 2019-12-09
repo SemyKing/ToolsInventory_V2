@@ -24,10 +24,10 @@ public final class ProjectConstants {
 	public static final String ADMIN = "Admin";
 
 	// Tab names
-	public static final String COMPANY = "Company";
-	public static final String COMPANIES = "Companies";
-	public static final String PERSONNEL = "Personnel";
-	public static final String ADMIN_INVENTORY = "Inventory "; //defined
+	public static final String ADMIN_COMPANY = "Company";
+	public static final String ADMIN_COMPANIES = "Companies";
+	public static final String ADMIN_PERSONNEL = "Personnel";
+	public static final String ADMIN_INVENTORY = "Inventory ";
 
 
 	public static final String COL_2_MIN_WIDTH = "520px";
@@ -39,7 +39,6 @@ public final class ProjectConstants {
 
 	// Containers
 	public static final String CONTAINER_SPACE_BETWEEN = "container-space-between";
-	public static final String CONTAINER_ALIGN_RIGHT = "container-align-right";
 	public static final String CONTAINER_ALIGN_CENTER = "container-align-center";
 
 	// Database

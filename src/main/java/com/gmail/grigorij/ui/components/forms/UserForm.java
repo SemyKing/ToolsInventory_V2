@@ -117,7 +117,8 @@ public class UserForm extends FormLayout {
 		passwordField.setRequired(true);
 		passwordField.setPrefixComponent(VaadinIcon.PASSWORD.create());
 
-		changePasswordButton = UIUtils.createButton("Change", ButtonVariant.LUMO_PRIMARY);
+		changePasswordButton = UIUtils.createButton("Change", VaadinIcon.REFRESH, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+		changePasswordButton.addClassName("dynamic-label-button");
 		changePasswordButton.addClickListener(e -> constructChangePasswordDialog());
 
 		passwordLayout = new FlexBoxLayout();
@@ -159,7 +160,7 @@ public class UserForm extends FormLayout {
 		permissionsLayout.add(permissionLevelComboBox);
 		permissionsLayout.setFlexGrow("1", permissionLevelComboBox);
 
-		editPermissionsButton = UIUtils.createButton("Permissions", VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
+		editPermissionsButton = UIUtils.createButton("Permissions", VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
 		editPermissionsButton.addClassName("dynamic-label-button");
 		editPermissionsButton.addClickListener(e -> constructPermissionsDialog());
 
@@ -471,6 +472,13 @@ public class UserForm extends FormLayout {
 				}
 
 				binder.writeBean(user);
+
+				if (Boolean.compare(originalUser.isDeleted(), user.isDeleted()) != 0) {
+					if (user.isDeleted()) {
+						AuthenticationService.signOutUser(user.getId());
+					}
+				}
+
 				return user;
 			}
 		} catch (ValidationException e) {

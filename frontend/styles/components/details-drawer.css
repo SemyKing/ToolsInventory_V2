@@ -46,7 +46,7 @@
 	z-index: 4;
 }
 .details-drawer[deleted] {
-	background: var(--lumo-error-color-10pct);
+	background: hsl(0, 100%, 90%);
 }
 
 .details-drawer[open] {

@@ -2,7 +2,7 @@ package com.gmail.grigorij.ui.views;
 
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
-import com.gmail.grigorij.ui.components.dialogs.ForgotPasswordDialog;
+import com.gmail.grigorij.ui.components.dialogs.password.ForgotPasswordDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.OperationStatus;

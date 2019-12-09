@@ -1,7 +1,6 @@
 package com.gmail.grigorij.ui.views.app.admin;
 
 import com.gmail.grigorij.backend.database.entities.Company;
-import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
@@ -19,7 +18,7 @@ import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.forms.CompanyForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.views.app.AdminView;
+import com.gmail.grigorij.ui.views.app.AdminWrapperView;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -35,7 +34,6 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,11 +41,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class AdminCompanies extends FlexBoxLayout {
+public class AdminCompanies extends Div {
 
 	private static final String CLASS_NAME = "admin-companies";
 	private final CompanyForm companyForm = new CompanyForm();
-	private final AdminView adminView;
+	private final AdminWrapperView adminView;
 
 	private Grid<Company> grid;
 	private ListDataProvider<Company> dataProvider;
@@ -56,15 +54,20 @@ public class AdminCompanies extends FlexBoxLayout {
 	private boolean entityOldStatus;
 
 
-	public AdminCompanies(AdminView adminView) {
+	public AdminCompanies(AdminWrapperView adminView) {
 		this.adminView = adminView;
 		setClassName(CLASS_NAME);
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			add(constructHeader());
-			add(constructContent());
 
-			constructDetails();
+			Div wrapper = new Div();
+			wrapper.addClassName(CLASS_NAME + "__wrapper");
+
+			wrapper.add(constructHeader());
+			wrapper.add(constructContent());
+
+			add(wrapper);
+			add(constructDetails());
 		} else {
 			add(constructCompanyAdminView());
 		}
@@ -149,7 +152,6 @@ public class AdminCompanies extends FlexBoxLayout {
 				.setFlexGrow(1)
 				.setAutoWidth(true);
 
-//		grid.addColumn(new ComponentRenderer<>(selectedCompany -> UIUtils.createActiveGridIcon(selectedCompany.isDeleted())))
 		grid.addColumn(company -> UIUtils.entityStatusToString(company.isDeleted()))
 				.setHeader("Status")
 				.setFlexGrow(0)
@@ -171,8 +173,8 @@ public class AdminCompanies extends FlexBoxLayout {
 		return grid;
 	}
 
-	private void constructDetails() {
-		detailsDrawer = adminView.getDetailsDrawer();
+	private DetailsDrawer constructDetails() {
+		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Company Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
@@ -192,6 +194,8 @@ public class AdminCompanies extends FlexBoxLayout {
 
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
+
+		return detailsDrawer;
 	}
 
 
@@ -305,7 +309,7 @@ public class AdminCompanies extends FlexBoxLayout {
 			boolean error = false;
 
 			for (User user : employeesInSelectedCompany) {
-				if (adminView.handleUserStatusChange(user.getId(), company.isDeleted())) {
+				if (UserFacade.getInstance().handleUserStatusChange(user.getId(), company.isDeleted())) {
 
 					Transaction transaction = new Transaction();
 					transaction.setUser(AuthenticationService.getCurrentSessionUser());

@@ -1,6 +1,5 @@
 package com.gmail.grigorij.ui.views.app.admin;
 
-import com.gmail.grigorij.backend.database.entities.Tool;
 import com.gmail.grigorij.backend.database.entities.Transaction;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
@@ -16,7 +15,7 @@ import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerFooter;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.forms.UserForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.views.app.AdminView;
+import com.gmail.grigorij.ui.views.app.AdminWrapperView;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.contextmenu.MenuItem;
@@ -36,7 +35,6 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,7 +45,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 	private static final String CLASS_NAME = "admin-personnel";
 	private final UserForm userForm = new UserForm();
-	private final AdminView adminView;
+	private final AdminWrapperView adminView;
 
 	private Grid<User> grid;
 	private ListDataProvider<User> dataProvider;
@@ -57,14 +55,18 @@ public class AdminPersonnel extends FlexBoxLayout {
 	private boolean entityOldStatus;
 
 
-	public AdminPersonnel(AdminView adminView) {
+	public AdminPersonnel(AdminWrapperView adminView) {
 		this.adminView = adminView;
 		setClassName(CLASS_NAME);
 
-		add(constructHeader());
-		add(constructContent());
+		Div wrapper = new Div();
+		wrapper.addClassName(CLASS_NAME + "__wrapper");
 
-		constructDetails();
+		wrapper.add(constructHeader());
+		wrapper.add(constructContent());
+
+		add(wrapper);
+		add(constructDetails());
 	}
 
 
@@ -169,8 +171,8 @@ public class AdminPersonnel extends FlexBoxLayout {
 		return grid;
 	}
 
-	private void constructDetails() {
-		detailsDrawer = adminView.getDetailsDrawer();
+	private DetailsDrawer constructDetails() {
+		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("User Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
@@ -188,6 +190,8 @@ public class AdminPersonnel extends FlexBoxLayout {
 
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
+
+		return detailsDrawer;
 	}
 
 
@@ -274,7 +278,7 @@ public class AdminPersonnel extends FlexBoxLayout {
 				UIUtils.showNotification("User updated", NotificationVariant.LUMO_SUCCESS);
 
 				if (Boolean.compare(entityOldStatus, user.isDeleted()) != 0) {
-					if (adminView.handleUserStatusChange(user.getId(), user.isDeleted())) {
+					if (UserFacade.getInstance().handleUserStatusChange(user.getId(), user.isDeleted())) {
 						UIUtils.showNotification("User status changed", NotificationVariant.LUMO_SUCCESS);
 					}
 				}

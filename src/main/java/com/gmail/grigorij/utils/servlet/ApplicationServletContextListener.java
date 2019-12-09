@@ -1,10 +1,13 @@
 package com.gmail.grigorij.utils.servlet;
 
+import com.vaadin.flow.component.UI;
+
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+import java.util.HashMap;
 
 
 @WebListener
@@ -37,5 +40,11 @@ public class ApplicationServletContextListener implements ServletContextListener
 		}
 
 		System.out.println("----------THE SERVER IS STOPPED----------");
+	}
+
+	private static HashMap<Long, UI> userUIs = new HashMap<>();
+
+	public static HashMap<Long, UI> getUserUIs() {
+		return userUIs;
 	}
 }

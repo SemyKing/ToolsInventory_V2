@@ -32,7 +32,7 @@
 	/* Fixed positioning on narrow viewports. */
 	.navi-drawer__content {
 		bottom: 0;
-		position: absolute;
+		position: absolute !important;
 		top: 0;
 	}
 

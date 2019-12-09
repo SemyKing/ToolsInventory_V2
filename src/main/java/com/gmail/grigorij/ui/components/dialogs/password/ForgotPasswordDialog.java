@@ -1,4 +1,4 @@
-package com.gmail.grigorij.ui.components.dialogs;
+package com.gmail.grigorij.ui.components.dialogs.password;
 
 import com.gmail.grigorij.backend.database.entities.RecoveryLink;
 import com.gmail.grigorij.backend.database.entities.Transaction;
@@ -10,6 +10,7 @@ import com.gmail.grigorij.backend.database.facades.RecoveryLinkFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.gmail.grigorij.utils.email.Email;

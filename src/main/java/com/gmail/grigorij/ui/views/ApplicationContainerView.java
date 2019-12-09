@@ -186,9 +186,9 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 			NaviItem admin_companies;
 
 			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-				admin_companies = new NaviItem(ProjectConstants.COMPANIES);
+				admin_companies = new NaviItem(ProjectConstants.ADMIN_COMPANIES);
 			} else {
-				admin_companies = new NaviItem(ProjectConstants.COMPANY);
+				admin_companies = new NaviItem(ProjectConstants.ADMIN_COMPANY);
 			}
 
 			menu.addNaviItem(adminItem, admin_companies);
@@ -197,7 +197,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 				naviItemOnClick(admin_companies, true);
 			});
 
-			NaviItem admin_personnel = new NaviItem(ProjectConstants.PERSONNEL);
+			NaviItem admin_personnel = new NaviItem(ProjectConstants.ADMIN_PERSONNEL);
 			menu.addNaviItem(adminItem, admin_personnel);
 
 			admin_personnel.addClickListener(e-> {
@@ -223,7 +223,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		appBar.reset();
 
 		if (adminNaviItem) {
-			viewContainer.add(new AdminView(this));
+			viewContainer.add(new AdminWrapperView(this));
 
 			selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
 
