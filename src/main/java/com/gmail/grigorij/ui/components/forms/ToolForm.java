@@ -87,6 +87,7 @@ public class ToolForm extends FormLayout {
 
 
 	public ToolForm(AdminInventory adminInventory) {
+
 		this.adminInventory = adminInventory;
 
 		addClassName(CLASS_NAME);

@@ -249,7 +249,7 @@ public class InventoryView extends Div {
 		takeToolButton.addClickListener(e -> {
 			Tool tool = grid.asSingleSelect().getValue();
 			if (tool != null) {
-				takeToolOnClick(tool);
+				takeToolOnClick(tool, false);
 			}
 		});
 		footer.add(takeToolButton);
@@ -348,13 +348,10 @@ public class InventoryView extends Div {
 
 		dialog.setHeader(UIUtils.createH3Label("My Tools"));
 
-		MyToolsView myToolsView = new MyToolsView(this, new DataChangeListener() {
-			@Override
-			public void onChange(Object obj) {
-				if (obj instanceof Integer) {
-					if ((int) obj <= 0) {
-						dialog.close();
-					}
+		MyToolsView myToolsView = new MyToolsView(this, obj -> {
+			if (obj instanceof Integer) {
+				if ((int) obj <= 0) {
+					dialog.close();
 				}
 			}
 		});
@@ -431,7 +428,7 @@ public class InventoryView extends Div {
 	/**
 	 * TAKE TOOL
 	 */
-	private void takeToolOnClick(Tool tool) {
+	public void takeToolOnClick(Tool tool, boolean searchForTool) {
 		if (tool == null) {
 			return;
 		}
@@ -441,6 +438,15 @@ public class InventoryView extends Div {
 		if (toolFromDB == null) {
 			UIUtils.showNotification("Error retrieving tool from database", NotificationVariant.LUMO_ERROR);
 			return;
+		}
+
+		if (searchForTool) {
+			for (Tool toolInDataProvider : dataProvider.getItems()) {
+				if (tool.getId().equals(toolInDataProvider.getId())) {
+					tool = toolInDataProvider;
+					break;
+				}
+			}
 		}
 
 		copyToolParameters(tool, toolFromDB);
@@ -628,11 +634,11 @@ public class InventoryView extends Div {
 							Message message = new Message();
 							message.setSubject("Tool is available");
 							if (location == null) {
-								message.setText(tool.getName() + " is now available");
+								message.setText(tool.getName() + " is available and reserved for you");
 							} else {
-								message.setText(tool.getName() + " is now available. Location: " + location.getName());
+								message.setText("This tool is available and reserved for you.\n"+tool.getName() + "\nLocation: " + location.getName());
 							}
-							message.setToolId(tool.getId());
+//							message.setToolId(tool.getId());
 							message.setRecipientId(tool.getReservedUser().getId());
 							message.setSenderString("SYSTEM");
 							MessageFacade.getInstance().insert(message);
@@ -676,7 +682,7 @@ public class InventoryView extends Div {
 	/**
 	 * UPDATE TOOL PARAMETERS FROM DATABASE TO LOCAL TOOLS IN DATA PROVIDER
 	 */
-	private void copyToolParameters(Tool destinationTool, Tool sourceTool) {
+	public void copyToolParameters(Tool destinationTool, Tool sourceTool) {
 		destinationTool.setName(sourceTool.getName());
 		destinationTool.setSerialNumber(sourceTool.getSerialNumber());
 		destinationTool.setSerialNumber(sourceTool.getSerialNumber());

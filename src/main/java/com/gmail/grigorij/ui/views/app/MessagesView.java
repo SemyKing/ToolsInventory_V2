@@ -170,7 +170,6 @@ public class MessagesView extends Div {
 		grid.addClassNames("grid-view", "small-padding-cell");
 		grid.setSizeFull();
 
-//		dataProvider = DataProvider.ofCollection(MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId()));
 		dataProvider = DataProvider.ofCollection(new ArrayList<>());
 
 		getMessagesBetweenDates();

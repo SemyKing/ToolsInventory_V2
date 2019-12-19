@@ -19,6 +19,7 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
@@ -134,22 +135,23 @@ public class MyToolsView extends Div {
 						if (tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
 							Button cancelReservationButton = UIUtils.createButton(VaadinIcon.CLOSE_CIRCLE, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_SMALL);
 							cancelReservationButton.addClickListener(e -> cancelReservationOnClick(tool));
-
-		//					cancelReservationButton.addClickListener(e -> {
-		//						selectedTools.clear();
-		//						selectedTools.add(tool);
-		//
-		//						returnToolOnClick(selectedTools, null);
-		//
-		//						if (myToolsDataProvider.getItems().size() > 1) {
-		//							myToolsDataProvider.getItems().removeIf(item -> item.getId().equals(tool.getId()));
-		//							myToolsDataProvider.refreshAll();
-		//						} else {
-		//							dialog.close();
-		//						}
-		//					});
-
+							UIUtils.setTooltip("Cancel reservation for this tool", cancelReservationButton);
 							return cancelReservationButton;
+						}
+					}
+
+					return new Span("");
+				})
+				.setFlexGrow(0)
+				.setWidth("50px");
+
+		grid.addComponentColumn(tool -> {
+					if (tool.getReservedUser() != null && tool.getCurrentUser() == null) {
+						if (tool.getReservedUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+							Button takeToolButton = UIUtils.createButton(VaadinIcon.HAND, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_SMALL);
+							takeToolButton.addClickListener(e -> takeToolOnClick(tool));
+							UIUtils.setTooltip("Take this tool", takeToolButton);
+							return takeToolButton;
 						}
 					}
 
@@ -234,12 +236,22 @@ public class MyToolsView extends Div {
 		dataProvider.getItems().remove(tool);
 		dataProvider.refreshAll();
 
-//		if (dataProvider.getItems().size() <= 0) {
-//			this.removeAll();
-//			constructNoToolsMessage();
-//		}
-
 		dataChangeListener.onChange(dataProvider.getItems().size());
+	}
+
+	private void takeToolOnClick(Tool tool) {
+		inventoryView.takeToolOnClick(tool, true);
+
+		Tool toolFromDB = InventoryFacade.getInstance().getToolById(tool.getId());
+
+		if (toolFromDB == null) {
+			System.err.println("Error retrieving Tool from database");
+			return;
+		}
+
+		inventoryView.copyToolParameters(tool, toolFromDB);
+		tool.setUsageStatus(ToolUsageStatus.IN_USE);
+		dataProvider.refreshItem(tool);
 	}
 
 	private void returnToolOnClick() {
@@ -261,11 +273,6 @@ public class MyToolsView extends Div {
 		dataProvider.refreshAll();
 
 		dataChangeListener.onChange(dataProvider.getItems().size());
-
-//		if (dataProvider.getItems().size() <= 0) {
-//			this.removeAll();
-//			constructNoToolsMessage();
-//		}
 	}
 
 	private void constructNoToolsMessage() {
