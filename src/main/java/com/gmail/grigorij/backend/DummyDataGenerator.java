@@ -31,7 +31,9 @@ public class DummyDataGenerator {
 	private List<Tool> tools = new ArrayList<>();
 
 
-	public DummyDataGenerator() {
+	public DummyDataGenerator() {}
+
+	public void generateDummyData() {
 		if (!entitiesGenerated) {
 
 			generateCompanies();

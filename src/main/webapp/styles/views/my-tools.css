@@ -28,6 +28,7 @@
 }
 
 .no-tools-span {
+	text-align: center;
     font-size: larger;
     font-weight: bold;
     padding: var(--lumo-space-m);

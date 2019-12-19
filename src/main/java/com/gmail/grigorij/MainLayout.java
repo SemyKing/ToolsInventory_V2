@@ -8,9 +8,8 @@ import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.ui.views.ApplicationContainerView;
 import com.gmail.grigorij.ui.views.LoginView;
-import com.gmail.grigorij.utils.authentication.AuthenticationService;
-import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
@@ -22,9 +21,6 @@ import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.theme.lumo.Lumo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -39,7 +35,7 @@ import org.slf4j.LoggerFactory;
 @CssImport(value = "./styles/components/vaadin-components/vaadin-notification-style.css", themeFor = "vaadin-notification-card")
 public class MainLayout extends Div {
 
-	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
+//	private static final Logger log = LoggerFactory.getLogger(MainLayout.class);
 
 
 	/* MAIN T0D0 LIST */
@@ -48,29 +44,21 @@ public class MainLayout extends Div {
 	//TODO: ADD USER TOOL REPORT FUNCTIONALITY: LOST, STOLEN...
 	//TODO: ADD TOOL GEOLOCATION
 	//TODO: ADD IMPORT / EXPORT FUNCTIONALITY
-	//
-	//NOTE: TEXT-AREA ELEMENTS HAVE 255 CHARACTER LIMIT
-
 
 
 	public MainLayout() {
 		setSizeFull();
 		addClassName("root");
 
-		//TODO:REMOVE AT PRODUCTION
+		//TODO: REMOVE AT PRODUCTION
 		DummyDataGenerator dummyDataGenerator = new DummyDataGenerator();
-
-
-		if (UI.getCurrent() != null) {
-			UI.getCurrent().getElement().setAttribute(LumoStyles.THEME, Lumo.DARK);
-		} else {
-			getElement().setAttribute(LumoStyles.THEME, Lumo.DARK);
-		}
+		dummyDataGenerator.generateDummyData();
 
 		VaadinSession.getCurrent().setErrorHandler((ErrorHandler) errorEvent -> {
 //			log.error("Uncaught UI exception", errorEvent.getThrowable());
 			System.out.println("-------------CRITICAL UI ERROR-------------");
 			errorEvent.getThrowable().printStackTrace();
+
 			UIUtils.showNotification("We are sorry, but an internal error occurred", NotificationVariant.LUMO_ERROR);
 		});
 
@@ -85,26 +73,45 @@ public class MainLayout extends Div {
 			}
 		}
 
-		showLoginView();
+//		showLoginView();
+		constructLoginView();
 	}
 
+//	private void constructLoginView() {
+//		LoginOverlay loginOverlay = new LoginOverlay();
+//
+//		loginOverlay.addLoginListener(e -> {
+//			if (AuthenticationService.signIn(e.getUsername(), e.getPassword())) {
+//				loginOverlay.close();
+//				constructApplication();
+//			} else {
+//				loginOverlay.setError(true);
+//				loginOverlay.setEnabled(true);
+//			}
+//		});
+//
+//		loginOverlay.addForgotPasswordListener(e -> {
+//			ForgotPasswordDialog dialog = new ForgotPasswordDialog();
+//			dialog.open();
+//		});
+//
+//		loginOverlay.setTitle(ProjectConstants.PROJECT_NAME_FULL);
+//		loginOverlay.setDescription("");
+//
+//		LoginI18n i18n = LoginI18n.createDefault();
+//		loginOverlay.setI18n(i18n);
+//
+//		loginOverlay.setOpened(true);
+//	}
 
-	private void showLoginView() {
+
+	private void constructLoginView() {
 		this.removeAll();
 
-		add(new LoginView(new OperationStatus() {
-			@Override
-			public void onSuccess(String msg) {
-				constructApplication();
-			}
-
-			@Override
-			public void onFail() {
-			}
-		}));
+		add(new LoginView(this));
 	}
 
-	private void constructApplication() {
+	public void constructApplication() {
 		Transaction transaction = new Transaction();
 		transaction.setUser(AuthenticationService.getCurrentSessionUser());
 		transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());

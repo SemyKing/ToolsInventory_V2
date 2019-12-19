@@ -160,7 +160,8 @@ public class AuthenticationService {
 
 
 
-	public static boolean signIn(String username, String password, boolean rememberMe) {
+//	public static boolean signIn(String username, String password, boolean rememberMe) {
+	public static boolean signIn(String username, String password) {
 		if (username == null || username.isEmpty())
 			return false;
 
@@ -175,13 +176,10 @@ public class AuthenticationService {
 			if (!PasswordUtils.verifyUserPassword(password, user.getPassword(), user.getSalt())) {
 				return false;
 			}
-			if (!constructSessionData(user, null)) {
-				return false;
-			}
-			if (rememberMe) {
-				rememberUser(username);
-			}
-			return true;
+			return constructSessionData(user, null);
+//			if (rememberMe) {
+//				rememberUser(username);
+//			}
 		} else {
 			return false;
 		}

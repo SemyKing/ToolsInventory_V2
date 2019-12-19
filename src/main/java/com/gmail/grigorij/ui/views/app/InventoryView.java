@@ -19,9 +19,9 @@ import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.dialogs.my_tools.MyToolsView;
 import com.gmail.grigorij.ui.components.forms.ReadOnlyToolForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.size.Horizontal;
 import com.gmail.grigorij.utils.*;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -30,11 +30,9 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
@@ -93,7 +91,6 @@ public class InventoryView extends Div {
 		toggleFiltersButton.addClassName("dynamic-label-button");
 		toggleFiltersButton.addClickListener(e -> toggleFilters());
 		headerTopDiv.add(toggleFiltersButton);
-
 
 		searchField = new TextField();
 		searchField.setClearButtonVisible(true);
@@ -167,7 +164,7 @@ public class InventoryView extends Div {
 		return content;
 	}
 
-	private Grid constructGrid() {
+	private Component constructGrid() {
 		grid = new Grid<>();
 		grid.addClassName("grid-view");
 		grid.setSizeFull();
@@ -285,8 +282,6 @@ public class InventoryView extends Div {
 	}
 
 	private void filterGrid(String searchString) {
-		dataProvider.clearFilters();
-
 		final String mainSearchString = searchString.trim();
 
 		if (mainSearchString.contains("+")) {
@@ -347,12 +342,22 @@ public class InventoryView extends Div {
 	 */
 	private void constructMyToolsDialog() {
 		CustomDialog dialog = new CustomDialog();
+		dialog.setMinWidth("50vw");
 		dialog.setCloseOnOutsideClick(false);
 		dialog.closeOnCancel();
 
 		dialog.setHeader(UIUtils.createH3Label("My Tools"));
 
-		MyToolsView myToolsView = new MyToolsView(this);
+		MyToolsView myToolsView = new MyToolsView(this, new DataChangeListener() {
+			@Override
+			public void onChange(Object obj) {
+				if (obj instanceof Integer) {
+					if ((int) obj <= 0) {
+						dialog.close();
+					}
+				}
+			}
+		});
 		dialog.setContent(myToolsView);
 
 		dialog.getCancelButton().setText("Close");

@@ -107,6 +107,9 @@ public class ReportingView extends Div {
 			streamResource.setContentType("application/pdf");
 			streamResource.setCacheTime(0);
 
+
+
+
 			PDF_Dialog dialog = new PDF_Dialog();
 			dialog.setContent(new PDF_Component(streamResource));
 			dialog.open();

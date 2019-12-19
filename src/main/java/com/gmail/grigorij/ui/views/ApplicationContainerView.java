@@ -179,9 +179,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 			NaviItem adminItem = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN);
 			menu.addNaviItem(adminItem);
 
-			adminItem.addClickListener(e-> {
-				adminItem.expandCollapse.click();
-			});
+			adminItem.addClickListener(e-> adminItem.expandCollapse.click());
 
 			NaviItem admin_companies;
 
@@ -193,23 +191,17 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 
 			menu.addNaviItem(adminItem, admin_companies);
 
-			admin_companies.addClickListener(e-> {
-				naviItemOnClick(admin_companies, true);
-			});
+			admin_companies.addClickListener(e-> naviItemOnClick(admin_companies, true));
 
 			NaviItem admin_personnel = new NaviItem(ProjectConstants.ADMIN_PERSONNEL);
 			menu.addNaviItem(adminItem, admin_personnel);
 
-			admin_personnel.addClickListener(e-> {
-				naviItemOnClick(admin_personnel, true);
-			});
+			admin_personnel.addClickListener(e-> naviItemOnClick(admin_personnel, true));
 
 			NaviItem admin_inventory = new NaviItem(ProjectConstants.ADMIN_INVENTORY);
 			menu.addNaviItem(adminItem, admin_inventory);
 
-			admin_inventory.addClickListener(e-> {
-				naviItemOnClick(admin_inventory, true);
-			});
+			admin_inventory.addClickListener(e-> naviItemOnClick(admin_inventory, true));
 		}
 
 		//Open Dashboard view

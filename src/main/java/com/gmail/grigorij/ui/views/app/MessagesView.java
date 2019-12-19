@@ -1,13 +1,9 @@
 package com.gmail.grigorij.ui.views.app;
 
-import com.gmail.grigorij.backend.database.entities.Company;
 import com.gmail.grigorij.backend.database.entities.Message;
-import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
@@ -18,14 +14,13 @@ import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.components.dialogs.message.MessageView;
 import com.gmail.grigorij.ui.components.forms.MessageForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.DateConverter;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -34,12 +29,10 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.theme.lumo.Lumo;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
@@ -172,7 +165,7 @@ public class MessagesView extends Div {
 		return content;
 	}
 
-	private Grid constructGrid() {
+	private Component constructGrid() {
 		grid = new Grid<>();
 		grid.addClassNames("grid-view", "small-padding-cell");
 		grid.setSizeFull();
@@ -390,7 +383,7 @@ public class MessagesView extends Div {
 				dateStartField.getValue(),
 				dateEndField.getValue(),
 				AuthenticationService.getCurrentSessionUser().getId());
-		
+
 		messages.sort(Comparator.comparing(Message::getDate).reversed());
 
 		dataProvider.getItems().clear();

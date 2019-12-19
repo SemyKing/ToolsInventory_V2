@@ -6,6 +6,8 @@ import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.views.app.InventoryView;
+import com.gmail.grigorij.utils.DataChangeListener;
+import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
@@ -34,18 +36,33 @@ public class MyToolsView extends Div {
 	private final InventoryView inventoryView;
 
 	private TextField searchField;
+	private Div content;
 
+	private List<Tool> allMyTools;
 	private Grid<Tool> grid;
 	private ListDataProvider<Tool> dataProvider;
 
 	private ComboBox<Location> locationComboBox;
 	private Button returnToolButton;
 
+	private final DataChangeListener dataChangeListener;
 
-	public MyToolsView(InventoryView inventoryView) {
+	public MyToolsView(InventoryView inventoryView, DataChangeListener dataChangeListener) {
 		this.inventoryView = inventoryView;
+		this.dataChangeListener = dataChangeListener;
+		this.setMinWidth("45vw");
 
 		addClassName(CLASS_NAME);
+
+		allMyTools = new ArrayList<>();
+
+		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByCurrentUserId(AuthenticationService.getCurrentSessionUser().getId()));
+		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByReservedUserId(AuthenticationService.getCurrentSessionUser().getId()));
+
+		if (allMyTools.size() <= 0) {
+			constructNoToolsMessage();
+			return;
+		}
 
 		add(constructHeader());
 
@@ -72,7 +89,7 @@ public class MyToolsView extends Div {
 	}
 
 	private Div constructContent() {
-		Div content = new Div();
+		content = new Div();
 		content.addClassName(CLASS_NAME+"__content");
 
 		// GRID
@@ -85,15 +102,6 @@ public class MyToolsView extends Div {
 		grid = new Grid<>();
 		grid.addClassNames("grid-view", "small-padding-cell");
 
-		List<Tool> allMyTools = new ArrayList<>();
-
-		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByCurrentUserId(AuthenticationService.getCurrentSessionUser().getId()));
-		allMyTools.addAll(InventoryFacade.getInstance().getAllToolsByReservedUserId(AuthenticationService.getCurrentSessionUser().getId()));
-
-		if (allMyTools.size() <= 0) {
-			showNoTools();
-		}
-
 		dataProvider = new ListDataProvider<>(allMyTools);
 
 		grid.setDataProvider(dataProvider);
@@ -101,7 +109,7 @@ public class MyToolsView extends Div {
 		grid.addColumn(Tool::getName)
 				.setHeader("Tool")
 				.setAutoWidth(true)
-				.setFlexGrow(1);
+				.setFlexGrow(2);
 
 		grid.addColumn(tool -> {
 					if (tool.getCurrentUser() != null) {
@@ -147,8 +155,8 @@ public class MyToolsView extends Div {
 
 					return new Span("");
 				})
-				.setFlexGrow(1)
-				.setAutoWidth(true);
+				.setFlexGrow(0)
+				.setWidth("50px");
 
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
 
@@ -226,9 +234,12 @@ public class MyToolsView extends Div {
 		dataProvider.getItems().remove(tool);
 		dataProvider.refreshAll();
 
-		if (dataProvider.getItems().size() <= 0) {
-			showNoTools();
-		}
+//		if (dataProvider.getItems().size() <= 0) {
+//			this.removeAll();
+//			constructNoToolsMessage();
+//		}
+
+		dataChangeListener.onChange(dataProvider.getItems().size());
 	}
 
 	private void returnToolOnClick() {
@@ -249,20 +260,24 @@ public class MyToolsView extends Div {
 
 		dataProvider.refreshAll();
 
-		if (dataProvider.getItems().size() <= 0) {
-			showNoTools();
-		}
+		dataChangeListener.onChange(dataProvider.getItems().size());
+
+//		if (dataProvider.getItems().size() <= 0) {
+//			this.removeAll();
+//			constructNoToolsMessage();
+//		}
 	}
 
+	private void constructNoToolsMessage() {
+		content = new Div();
+		content.addClassName(CLASS_NAME+"__content");
 
-	private Span getNoToolsSpan() {
 		Span span = new Span("No Tools");
 		span.addClassName("no-tools-span");
-		return span;
-	}
 
-	private void showNoTools() {
-		this.remove(grid);
-		this.add(getNoToolsSpan());
+		content.add(span);
+
+		this.setMinWidth("25vw");
+		this.add(content);
 	}
 }

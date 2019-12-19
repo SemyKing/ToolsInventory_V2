@@ -1,15 +1,18 @@
 package com.gmail.grigorij.ui.views;
 
+import com.gmail.grigorij.MainLayout;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.password.ForgotPasswordDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
+import com.gmail.grigorij.ui.utils.css.LumoStyles;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.OperationStatus;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -19,6 +22,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.theme.lumo.Lumo;
 
 /**
  * Log In UI.
@@ -27,7 +31,7 @@ import com.vaadin.flow.data.binder.Binder;
 public class LoginView extends Div {
 
 	private static final String CLASS_NAME = "login-view";
-	private final OperationStatus operationStatus;
+	private final MainLayout mainLayout;
 
 	private TextField usernameField;
 	private PasswordField passwordField;
@@ -40,8 +44,14 @@ public class LoginView extends Div {
 	private Binder<User> binder;
 
 
-	public LoginView(OperationStatus operationStatus) {
-		this.operationStatus = operationStatus;
+	public LoginView(MainLayout mainLayout) {
+		this.mainLayout = mainLayout;
+
+		if (UI.getCurrent() != null) {
+			UI.getCurrent().getElement().setAttribute(LumoStyles.THEME, Lumo.DARK);
+		} else {
+			getElement().setAttribute(LumoStyles.THEME, Lumo.DARK);
+		}
 
 		setClassName(CLASS_NAME);
 
@@ -176,12 +186,11 @@ public class LoginView extends Div {
 	private void validateAndLogIn(String username, String password, boolean rememberMe) {
 		loginErrorLayout.getElement().setAttribute("visible", false);
 
-		if (AuthenticationService.signIn(username, password, rememberMe)) {
+		if (AuthenticationService.signIn(username, password)) {
 
-			operationStatus.onSuccess("");
+			mainLayout.constructApplication();
 		} else {
 			loginErrorLayout.getElement().setAttribute("visible", true);
-			operationStatus.onFail();
 		}
 	}
 }
