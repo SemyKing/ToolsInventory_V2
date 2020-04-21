@@ -67,7 +67,7 @@ public class LoginView extends Div {
 
 		usernameField.focus();
 
-		//TODO:REMOVE AT PRODUCTION
+		//TODO: REMOVE AT PRODUCTION
 		usernameField.setValue("system.admin");
 		passwordField.setValue("password");
 	}
