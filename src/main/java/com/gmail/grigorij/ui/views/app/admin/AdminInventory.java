@@ -23,7 +23,7 @@ import com.gmail.grigorij.ui.components.forms.ToolCopyForm;
 import com.gmail.grigorij.ui.components.forms.ToolForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Left;
-import com.gmail.grigorij.ui.views.app.AdminView;
+import com.gmail.grigorij.ui.views.app.AdminWrapperView;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.ProjectConstants;
 import com.vaadin.flow.component.UI;
@@ -35,6 +35,7 @@ import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.icon.Icon;
@@ -45,7 +46,6 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,7 +61,7 @@ public class AdminInventory extends FlexBoxLayout {
 	private final ToolForm toolForm = new ToolForm(this);
 	private final CategoryForm categoryForm = new CategoryForm();
 	private final ToolCopyForm toolCopyForm = new ToolCopyForm();
-	private final AdminView admin;
+	private final AdminWrapperView admin;
 
 	private Div headerTopDiv;
 
@@ -81,14 +81,18 @@ public class AdminInventory extends FlexBoxLayout {
 	private Button editToolButton;
 
 
-	public AdminInventory(AdminView admin) {
+	public AdminInventory(AdminWrapperView admin) {
 		this.admin = admin;
 		setClassName(CLASS_NAME);
 
-		add(constructHeader());
-		add(constructContent());
+		Div wrapper = new Div();
+		wrapper.addClassName(CLASS_NAME + "__wrapper");
 
-		constructDetails();
+		wrapper.add(constructHeader());
+		wrapper.add(constructContent());
+
+		add(wrapper);
+		add(constructDetails());
 	}
 
 
@@ -101,15 +105,14 @@ public class AdminInventory extends FlexBoxLayout {
 		header.add(headerTopDiv);
 
 		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			editToolButton = UIUtils.createButton("Edit", VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
+			editToolButton = UIUtils.createButton("Edit", VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
 			editToolButton.addClassNames("edit-tool-button", "dynamic-label-button");
 			editToolButton.addClickListener(e -> editSelectedTools(new ArrayList<>(grid.getSelectedItems())));
-			UIUtils.setTooltip("Edit selected tool(s)", editToolButton);
-			headerTopDiv.add(editToolButton);
 
 			Button toggleFiltersButton = UIUtils.createButton("Filters", VaadinIcon.FILTER, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
 			toggleFiltersButton.addClassNames("filters-button", "dynamic-label-button");
 			toggleFiltersButton.addClickListener(e -> toggleFilters());
+
 			headerTopDiv.add(toggleFiltersButton);
 		}
 
@@ -126,6 +129,7 @@ public class AdminInventory extends FlexBoxLayout {
 		MenuBar actionsMenuBar = new MenuBar();
 		actionsMenuBar.addThemeVariants(MenuBarVariant.LUMO_PRIMARY, MenuBarVariant.LUMO_ICON);
 		MenuItem menuItem = actionsMenuBar.addItem(new Icon(VaadinIcon.MENU));
+
 		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.ADD, OperationTarget.INVENTORY_TOOL, null)) {
 
 			menuItem.getSubMenu().addItem("New Tool", e -> {
@@ -243,13 +247,14 @@ public class AdminInventory extends FlexBoxLayout {
 					.setAutoWidth(true);
 		}
 
-		grid.addColumn(new ComponentRenderer<>(tool -> UIUtils.createActiveGridIcon(tool.isDeleted())))
-				.setHeader("Active")
+//		grid.addColumn(new ComponentRenderer<>(tool -> UIUtils.createActiveGridIcon(tool.isDeleted())))
+		grid.addColumn(tool -> UIUtils.entityStatusToString(tool.isDeleted()))
+				.setHeader("Status")
 				.setFlexGrow(0)
-				.setTextAlign(ColumnTextAlign.CENTER)
+				.setTextAlign(ColumnTextAlign.END)
 				.setAutoWidth(true);
 
-//		grid.setSelectionMode(Grid.SelectionMode.MULTI);
+		grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
 
 		grid.addSelectionListener(event -> {
 			Tool tool = grid.asSingleSelect().getValue();
@@ -265,8 +270,8 @@ public class AdminInventory extends FlexBoxLayout {
 		return grid;
 	}
 
-	private void constructDetails() {
-		detailsDrawer = admin.getDetailsDrawer();
+	private DetailsDrawer constructDetails() {
+		detailsDrawer = new DetailsDrawer(DetailsDrawer.Position.RIGHT);
 
 		DetailsDrawerHeader detailsDrawerHeader = new DetailsDrawerHeader("Tool Details");
 		detailsDrawerHeader.getClose().addClickListener(e -> closeDetails());
@@ -296,6 +301,8 @@ public class AdminInventory extends FlexBoxLayout {
 
 		detailsDrawerFooter.getClose().addClickListener(e -> closeDetails());
 		detailsDrawer.setFooter(detailsDrawerFooter);
+
+		return detailsDrawer;
 	}
 
 
@@ -305,23 +312,24 @@ public class AdminInventory extends FlexBoxLayout {
 	}
 
 	private void showToolsInCompany(Company company) {
-		closeDetails();
+		if (company != null) {
+			closeDetails();
 
-		List<Tool> toolsFromDatabase;
+			List<Tool> toolsFromDatabase;
 
-		if (company == allCompanies) {
-			toolsFromDatabase = InventoryFacade.getInstance().getAllTools();
-			toolsFromDatabase.sort(Comparator.comparing(Tool::getCompanyString).thenComparing(Tool::getName));
-		} else {
-			toolsFromDatabase = InventoryFacade.getInstance().getAllToolsInCompany(company.getId());
-			toolsFromDatabase.sort(Comparator.comparing(Tool::getName));
+			if (company == allCompanies) {
+				toolsFromDatabase = InventoryFacade.getInstance().getAllTools();
+				toolsFromDatabase.sort(Comparator.comparing(Tool::getCompanyString).thenComparing(Tool::getName));
+			} else {
+				toolsFromDatabase = InventoryFacade.getInstance().getAllToolsInCompany(company.getId());
+				toolsFromDatabase.sort(Comparator.comparing(Tool::getName));
+			}
+
+			dataProvider.getItems().clear();
+			dataProvider.getItems().addAll(toolsFromDatabase);
+			dataProvider.refreshAll();
 		}
-
-		dataProvider.getItems().clear();
-		dataProvider.getItems().addAll(toolsFromDatabase);
-		dataProvider.refreshAll();
 	}
-
 
 	private void filterGrid(String searchString) {
 		dataProvider.clearFilters();
@@ -356,7 +364,8 @@ public class AdminInventory extends FlexBoxLayout {
 				StringUtils.containsIgnoreCase((item.getReservedUserString()), filter) ||
 				StringUtils.containsIgnoreCase(item.getCategoryString(), filter) ||
 				StringUtils.containsIgnoreCase(item.getCompanyString(), filter) ||
-				StringUtils.containsIgnoreCase(item.getUsageStatusString(), filter);
+				StringUtils.containsIgnoreCase(item.getUsageStatusString(), filter) ||
+				StringUtils.containsIgnoreCase(UIUtils.entityStatusToString(item.isDeleted()), filter);
 	}
 
 
@@ -506,8 +515,6 @@ public class AdminInventory extends FlexBoxLayout {
 			Tool toolToCopy = toolCopyForm.getToolCopy();
 			if (toolToCopy != null) {
 				dialog.close();
-
-//				constructBulkEditDialog(false, toolToCopy, toolCopyForm.getNumberOfCopies());
 
 				constructMultipleToolEditDialog(toolToCopy, toolCopyForm.getNumberOfCopies(), null);
 

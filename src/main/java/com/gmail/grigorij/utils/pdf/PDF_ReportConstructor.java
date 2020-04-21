@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class PDF_Constructor {
+public class PDF_ReportConstructor {
 
 	private Document document;
 	private ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -33,59 +33,12 @@ public class PDF_Constructor {
 
 
 	private PDF_Template pdfTemplate;
-	private List<User> users;
+	private final List<User> users;
 	private HashMap<User, List<Tool>> toolsInUseByUser;
 
-	private boolean error;
 
-
-	public PDF_Constructor(PDF_Template pdfTemplate, List<User> users) {
-		this.pdfTemplate = pdfTemplate;
+	public PDF_ReportConstructor(List<User> users) {
 		this.users = users;
-
-		error = false;
-
-
-		if (pdfTemplate.getPdfColumns().size() <= 0) {
-			System.err.println("REPORTING COLUMNS NOT SET");
-			UIUtils.showNotification("Columns for Reporting are not configured", NotificationVariant.LUMO_PRIMARY);
-			error = true;
-			return;
-		}
-
-		long totalWidth = 0;
-
-		for (PDF_Column column : pdfTemplate.getPdfColumns()) {
-			totalWidth += column.getUserSetWidth();
-		}
-
-		document = new Document(totalWidth > 10 ? PageSize.A4.rotate() : PageSize.A4,
-				15f, 15f, 15f, 15f);
-
-		try {
-			normalFont = FontFactory.getFont(FontFactory.COURIER, pdfTemplate.getNormalTextFontSize(), BaseColor.BLACK);
-		} catch (Exception e) {
-			normalFont = FontFactory.getFont(FontFactory.COURIER, 14, BaseColor.BLACK);
-		}
-
-		try {
-			boldFont = FontFactory.getFont(FontFactory.COURIER_BOLD, pdfTemplate.getContrastTextFontSize(), BaseColor.BLACK);
-		} catch (Exception e) {
-			boldFont = FontFactory.getFont(FontFactory.COURIER_BOLD, 13, BaseColor.BLACK);
-		}
-
-
-
-		try {
-			PdfWriter.getInstance(document, out);
-		} catch (DocumentException e) {
-			System.err.println("PdfWriter.getInstance error");
-			e.printStackTrace();
-		}
-
-		constructUserList();
-
-		constructReportLayout();
 	}
 
 
@@ -101,7 +54,7 @@ public class PDF_Constructor {
 		}
 	}
 
-	private void constructReportLayout() {
+	private boolean constructReportLayout() {
 		document.open();
 
 		boolean newPage = false;
@@ -114,6 +67,7 @@ public class PDF_Constructor {
 				} catch (DocumentException e) {
 					System.err.println("PDF new page add error");
 					e.printStackTrace();
+					return false;
 				}
 			}
 
@@ -129,6 +83,7 @@ public class PDF_Constructor {
 			} catch (DocumentException e) {
 				System.err.println("PDF add document header table error");
 				e.printStackTrace();
+				return false;
 			}
 
 
@@ -144,6 +99,7 @@ public class PDF_Constructor {
 			} catch (DocumentException e) {
 				System.err.println("toolsTable set columns widths error");
 				e.printStackTrace();
+				return false;
 			}
 
 			constructTableData(toolsTable, user);
@@ -153,6 +109,7 @@ public class PDF_Constructor {
 			} catch (DocumentException e) {
 				System.err.println("PDF add tools table error");
 				e.printStackTrace();
+				return false;
 			}
 
 
@@ -168,6 +125,7 @@ public class PDF_Constructor {
 			} catch (DocumentException e) {
 				System.err.println("pdf add signature table error");
 				e.printStackTrace();
+				return false;
 			}
 
 			newPage = true;
@@ -177,8 +135,10 @@ public class PDF_Constructor {
 			document.close();
 		} catch (Exception e) {
 			System.err.println("user has no tools, document close exception");
-			error = true;
+			return false;
 		}
+
+		return true;
 	}
 
 	private void constructDocumentHeader(PdfPTable documentHeaderTable, String userFullName) {
@@ -212,8 +172,8 @@ public class PDF_Constructor {
 
 			float width;
 
-			if (pdfTemplate.getPdfColumns().get(i).getUserSetWidth() > 0) {
-				width = pdfTemplate.getPdfColumns().get(i).getUserSetWidth();
+			if (pdfTemplate.getPdfColumns().get(i).getColumnWidth() > 0) {
+				width = pdfTemplate.getPdfColumns().get(i).getColumnWidth();
 			} else {
 				width = pdfTemplate.getPdfColumns().get(i).getParameter().getPrefWidth();
 			}
@@ -335,6 +295,8 @@ public class PDF_Constructor {
 			align = alignment[0];
 		}
 
+		cell.setPadding(3);
+		cell.setUseAscender(true);
 		cell.setVerticalAlignment(align);
 		return cell;
 	}
@@ -342,29 +304,19 @@ public class PDF_Constructor {
 
 	//TODO: TRANSLATE
 	private void constructSignatureBox(PdfPTable signatureTable) {
-		Phrase phrase = new Phrase();
-		phrase.add(new Paragraph(pdfTemplate.getSignatureText(), normalFont));
-		signatureTable.addCell(constructCell(phrase));
+		signatureTable.addCell(constructCell(new Phrase(pdfTemplate.getNormalText(), normalFont)));
 
-		phrase = new Phrase();
-		phrase.add(Chunk.NEWLINE);
-		phrase.add(new Paragraph("Place & Date:", normalFont));
-		phrase.add(Chunk.NEWLINE);
-		phrase.add(Chunk.NEWLINE);
-		signatureTable.addCell(constructCell(phrase));
+		signatureTable.addCell(constructCell(new Phrase(constructReturnText(), boldFont)));
 
-		phrase = new Phrase();
-		phrase.add(Chunk.NEWLINE);
-		phrase.add(new Paragraph("Signature:", normalFont));
-		phrase.add(Chunk.NEWLINE);
-		phrase.add(Chunk.NEWLINE);
-		signatureTable.addCell(constructCell(phrase));
+		PdfPCell placeAndDateCell = constructCell(new Phrase("Place & Date:", normalFont));
+		placeAndDateCell.setPaddingTop(10);
+		placeAndDateCell.setPaddingBottom(10);
+		signatureTable.addCell(placeAndDateCell);
 
-		phrase = new Phrase();
-//		phrase.add(Chunk.NEWLINE);
-		phrase.add(new Paragraph(constructReturnText(), boldFont));
-//		phrase.add(Chunk.NEWLINE);
-		signatureTable.addCell(constructCell(phrase));
+		PdfPCell signatureCell = constructCell(new Phrase("Signature:", normalFont));
+		signatureCell.setPaddingTop(10);
+		signatureCell.setPaddingBottom(10);
+		signatureTable.addCell(signatureCell);
 	}
 
 	private String constructReturnText() {
@@ -405,11 +357,50 @@ public class PDF_Constructor {
 	}
 
 
-	public byte[] getPDF_ByteArray() {
-		return out.toByteArray();
+	public boolean generateReport(PDF_Template template) {
+		pdfTemplate = template;
+
+		if (pdfTemplate.getPdfColumns().size() <= 0) {
+			System.err.println("REPORTING COLUMNS NOT SET");
+			UIUtils.showNotification("Columns for Reporting are not configured", NotificationVariant.LUMO_PRIMARY);
+			return false;
+		}
+
+		long totalWidth = 0;
+
+		for (PDF_Column column : pdfTemplate.getPdfColumns()) {
+			totalWidth += column.getColumnWidth();
+		}
+
+		document = new Document(totalWidth > 10 ? PageSize.A4.rotate() : PageSize.A4,
+				15f, 15f, 15f, 15f);
+
+		try {
+			normalFont = FontFactory.getFont(FontFactory.COURIER, pdfTemplate.getNormalTextFontSize(), BaseColor.BLACK);
+		} catch (Exception e) {
+			normalFont = FontFactory.getFont(FontFactory.COURIER, 14, BaseColor.BLACK);
+		}
+
+		try {
+			boldFont = FontFactory.getFont(FontFactory.COURIER_BOLD, pdfTemplate.getContrastTextFontSize(), BaseColor.BLACK);
+		} catch (Exception e) {
+			boldFont = FontFactory.getFont(FontFactory.COURIER_BOLD, 13, BaseColor.BLACK);
+		}
+
+
+		try {
+			PdfWriter.getInstance(document, out);
+		} catch (DocumentException e) {
+			System.err.println("PdfWriter.getInstance error");
+			e.printStackTrace();
+		}
+
+		constructUserList();
+
+		return constructReportLayout();
 	}
 
-	public boolean hasErrors() {
-		return error;
+	public byte[] getPDF_ByteArray() {
+		return out.toByteArray();
 	}
 }

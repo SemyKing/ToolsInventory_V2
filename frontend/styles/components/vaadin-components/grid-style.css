@@ -8,7 +8,7 @@
 
 }
 
-:host(.permissions-grid) [part~="cell"] ::slotted(vaadin-grid-cell-content) {
+:host(.small-padding-cell) [part~="cell"] ::slotted(vaadin-grid-cell-content) {
 	padding: 0 var(--lumo-space-xs) !important;
 }
 

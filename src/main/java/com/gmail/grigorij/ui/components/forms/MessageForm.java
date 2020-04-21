@@ -9,6 +9,7 @@ import com.gmail.grigorij.backend.database.enums.tools.ToolUsageStatus;
 import com.gmail.grigorij.backend.database.facades.InventoryFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.TransactionFacade;
+import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.views.app.MessagesView;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
@@ -38,10 +39,11 @@ public class MessageForm extends FormLayout {
 	private TextField subjectField;
 	private TextArea messageField;
 
-	private TextField toolNameField;
+//	private TextField toolNameField;
 	private Div actionsDiv;
-	private Button takeToolButton;
-	private Button cancelToolButton;
+	private Button showToolDetailsButton;
+//	private Button cancelToolButton;
+//	private Button cancelToolButton;
 
 
 	// BINDER ITEMS
@@ -79,26 +81,17 @@ public class MessageForm extends FormLayout {
 		text = new ReadOnlyHasValue<>(msg -> messageField.setValue(msg.getText()));
 
 
-		toolNameField = new TextField("Tool");
-		toolNameField.setReadOnly(true);
+//		toolNameField = new TextField("Tool");
+//		toolNameField.setReadOnly(true);
 
-		cancelToolButton = UIUtils.createButton("Cancel", VaadinIcon.CLOSE_CIRCLE, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
-		cancelToolButton.addClickListener(e -> {
-			cancelTool();
+//		showToolDetailsButton = UIUtils.createButton("Show Tool Details", VaadinIcon.INFO, ButtonVariant.LUMO_PRIMARY);
+//		showToolDetailsButton.addClickListener(e -> {
+//			constructToolDetailsDialog();
+//		});
 
-			messages.closeDetails();
-		});
-
-		takeToolButton = UIUtils.createButton("Take", VaadinIcon.HAND, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
-		takeToolButton.addClickListener(e -> {
-			takeTool();
-
-			messages.closeDetails();
-		});
-
-		actionsDiv = new Div();
-		actionsDiv.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
-		actionsDiv.add(cancelToolButton, takeToolButton);
+//		actionsDiv = new Div();
+//		actionsDiv.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
+//		actionsDiv.add(showToolDetailsButton);
 	}
 
 	private void constructForm() {
@@ -107,6 +100,7 @@ public class MessageForm extends FormLayout {
 		add(senderField);
 		add(subjectField);
 		add(messageField);
+//		add(actionsDiv);
 	}
 
 	private void constructBinder() {
@@ -121,22 +115,68 @@ public class MessageForm extends FormLayout {
 
 
 	private void initDynamicFormItems() {
-		try {
-			remove(toolNameField);
-			remove(actionsDiv);
-		} catch (Exception ignored) {
-
-		}
-
-		if (message.getToolId() != null) {
-			Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
-
-			toolNameField.setValue(tool.getName());
-
-			add(toolNameField);
-			add(actionsDiv);
-		}
+//		if (message.getToolId() == null) {
+//			try {
+//				actionsDiv.remove(showToolDetailsButton);
+//			} catch (Exception ignored) {}
+//		} else {
+//			Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
+//
+//			if (tool.getCurrentUser() != null) {
+//				if (tool.getCurrentUser().getId().equals(AuthenticationService.getCurrentSessionUser().getId())) {
+//					try {
+//						actionsDiv.remove(showToolDetailsButton);
+//					} catch (Exception ignored) {
+//					}
+//
+//					message.setToolId(null);
+//
+//					MessageFacade.getInstance().update(message);
+//				}
+//			}
+//		}
 	}
+
+//	private void constructToolDetailsDialog() {
+//		Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
+//
+//		ReadOnlyToolForm toolForm = new ReadOnlyToolForm();
+//		toolForm.setTool(tool);
+//
+//		Div toolActionsDiv = new Div();
+//		toolActionsDiv.addClassName(CLASS_NAME + "__tool-actions");
+//
+//		Button reportToolButton = UIUtils.createButton("Report", VaadinIcon.EXCLAMATION, ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_PRIMARY);
+//		reportToolButton.addClickListener(e -> {
+//			//TODO IMPLEMENTATION
+//		});
+//		toolActionsDiv.add(reportToolButton);
+//
+//		Button cancelToolButton = UIUtils.createButton("Cancel", VaadinIcon.CLOSE_CIRCLE, ButtonVariant.LUMO_CONTRAST, ButtonVariant.LUMO_PRIMARY);
+//		cancelToolButton.addClickListener(e -> {
+//			cancelTool(tool);
+//		});
+//		toolActionsDiv.add(cancelToolButton);
+//
+//		Button takeToolButton = UIUtils.createButton("Take", VaadinIcon.HAND, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SUCCESS);
+//		takeToolButton.addClickListener(e -> {
+//			takeTool(tool);
+//		});
+//		toolActionsDiv.add(takeToolButton);
+//
+//
+//		CustomDialog dialog = new CustomDialog();
+//		dialog.setCloseOnOutsideClick(false);
+//
+//		dialog.setHeader(UIUtils.createH3Label("Tool Details"));
+//		dialog.getContent().add(toolForm);
+//		dialog.getContent().add(toolActionsDiv);
+//		dialog.setConfirmButton(null);
+//		dialog.getCancelButton().setText("Close");
+//		dialog.closeOnCancel();
+//
+//		dialog.open();
+//	}
 
 
 	public void setMessage(Message message) {
@@ -152,64 +192,64 @@ public class MessageForm extends FormLayout {
 	}
 
 
-	private void cancelTool() {
-		if (message == null || message.getToolId() == null) {
-			UIUtils.showNotification("No tool in message", NotificationVariant.LUMO_PRIMARY);
-			return;
-		}
+//	private void cancelTool(Tool tool) {
+////		if (message == null || message.getToolId() == null) {
+////			UIUtils.showNotification("No tool in message", NotificationVariant.LUMO_PRIMARY);
+////			return;
+////		}
+//
+////		Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
+//
+//		tool.setReservedUser(null);
+//		tool.setUsageStatus(ToolUsageStatus.FREE);
+//
+//		if (InventoryFacade.getInstance().update(tool)) {
+//
+//			Transaction transaction = new Transaction();
+//			transaction.setUser(AuthenticationService.getCurrentSessionUser());
+//			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+//			transaction.setOperation(Operation.CANCEL_RESERVATION_T);
+//			transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
+//			transaction.setTargetDetails(tool.getName());
+//			TransactionFacade.getInstance().insert(transaction);
+//
+//			UIUtils.showNotification("Tool reservation cancelled", NotificationVariant.LUMO_SUCCESS);
+//
+//			message.setToolId(null);
+//			MessageFacade.getInstance().update(message);
+//		} else {
+//			UIUtils.showNotification("Tool reservation cancel failed", NotificationVariant.LUMO_ERROR);
+//		}
+//	}
 
-		Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
-
-		tool.setReservedUser(null);
-		tool.setUsageStatus(ToolUsageStatus.FREE);
-
-		if (InventoryFacade.getInstance().update(tool)) {
-
-			Transaction transaction = new Transaction();
-			transaction.setUser(AuthenticationService.getCurrentSessionUser());
-			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-			transaction.setOperation(Operation.CANCEL_RESERVATION_T);
-			transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
-			transaction.setTargetDetails(tool.getName());
-			TransactionFacade.getInstance().insert(transaction);
-
-			UIUtils.showNotification("Tool reservation cancelled", NotificationVariant.LUMO_SUCCESS);
-
-			message.setToolId(null);
-			MessageFacade.getInstance().update(message);
-		} else {
-			UIUtils.showNotification("Tool reservation cancel failed", NotificationVariant.LUMO_ERROR);
-		}
-	}
-
-	private void takeTool() {
-		if (message == null || message.getToolId() == null) {
-			UIUtils.showNotification("No Tool in message", NotificationVariant.LUMO_PRIMARY);
-			return;
-		}
-
-		Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
-
-		tool.setCurrentUser(AuthenticationService.getCurrentSessionUser());
-		tool.setReservedUser(null);
-		tool.setUsageStatus(ToolUsageStatus.IN_USE);
-
-		if (InventoryFacade.getInstance().update(tool)) {
-
-			Transaction transaction = new Transaction();
-			transaction.setUser(AuthenticationService.getCurrentSessionUser());
-			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-			transaction.setOperation(Operation.TAKE);
-			transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
-			transaction.setTargetDetails(tool.getName());
-			TransactionFacade.getInstance().insert(transaction);
-
-			UIUtils.showNotification("Tool taken", NotificationVariant.LUMO_SUCCESS);
-
-			message.setToolId(null);
-			MessageFacade.getInstance().update(message);
-		} else {
-			UIUtils.showNotification("Tool take failed", NotificationVariant.LUMO_ERROR);
-		}
-	}
+//	private void takeTool(Tool tool) {
+////		if (message == null || message.getToolId() == null) {
+////			UIUtils.showNotification("No Tool in message", NotificationVariant.LUMO_PRIMARY);
+////			return;
+////		}
+//
+////		Tool tool = InventoryFacade.getInstance().getToolById(message.getToolId());
+//
+//		tool.setCurrentUser(AuthenticationService.getCurrentSessionUser());
+//		tool.setReservedUser(null);
+//		tool.setUsageStatus(ToolUsageStatus.IN_USE);
+//
+//		if (InventoryFacade.getInstance().update(tool)) {
+//
+//			Transaction transaction = new Transaction();
+//			transaction.setUser(AuthenticationService.getCurrentSessionUser());
+//			transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
+//			transaction.setOperation(Operation.TAKE);
+//			transaction.setOperationTarget1(OperationTarget.INVENTORY_TOOL);
+//			transaction.setTargetDetails(tool.getName());
+//			TransactionFacade.getInstance().insert(transaction);
+//
+//			UIUtils.showNotification("Tool taken", NotificationVariant.LUMO_SUCCESS);
+//
+//			message.setToolId(null);
+//			MessageFacade.getInstance().update(message);
+//		} else {
+//			UIUtils.showNotification("Tool take failed", NotificationVariant.LUMO_ERROR);
+//		}
+//	}
 }

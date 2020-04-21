@@ -10,8 +10,9 @@ import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
+import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
-import com.gmail.grigorij.ui.components.dialogs.PDF_TemplateDialog;
+import com.gmail.grigorij.ui.components.dialogs.pdf.PDF_TemplateView;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Right;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
@@ -40,14 +41,14 @@ public class CompanyForm extends FormLayout {
 	private final LocationForm addressForm = new LocationForm();
 	private final PersonForm contactPersonForm = new PersonForm();
 
-	private PDF_TemplateDialog pdfTemplateDialog;
+	private PDF_TemplateView pdf_templateView;
+	private PDF_Template pdf_template;
 
 	private Binder<Company> binder;
 	private Company company, originalCompany;
 	private boolean isNew;
 
 	private List<Location> tempLocations;
-	private PDF_Template tempPDF_Template;
 
 	// FORM ITEMS
 	private Div entityStatusDiv;
@@ -78,16 +79,8 @@ public class CompanyForm extends FormLayout {
 
 		entityStatusDiv = new Div();
 		entityStatusDiv.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
-		entityStatusDiv.add(entityStatusCheckbox);
 
 		setColspan(entityStatusDiv, 2);
-
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().lowerThan(PermissionLevel.SYSTEM_ADMIN)) {
-//			if (!PermissionFacade.getInstance().isUserAllowedTo(Operation.DELETE, OperationTarget.COMPANY, PermissionRange.COMPANY)) {
-				entityStatusCheckbox.setReadOnly(true);
-				entityStatusDiv.getElement().setAttribute("hidden", true);
-//			}
-		}
 
 		nameField = new TextField("Name");
 		nameField.setRequired(true);
@@ -196,6 +189,7 @@ public class CompanyForm extends FormLayout {
 				.bind(Company::getName, Company::setName);
 
 		binder.forField(vatField)
+				.asRequired("VAT is required")
 				.bind(Company::getVat, Company::setVat);
 
 		binder.forField(additionalInfo)
@@ -204,19 +198,26 @@ public class CompanyForm extends FormLayout {
 
 
 	private void initDynamicFormItems() {
+		try {
+			pdf_template = company.getPdf_template();
+
+			entityStatusDiv.remove(entityStatusCheckbox);
+			PDF_TemplateButtonDiv.remove(editPDF_TemplateButton);
+		} catch (Exception ignored) {}
+
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.COMPANY, PermissionRange.COMPANY)) {
+			entityStatusDiv.add(entityStatusCheckbox);
+		}
+
+		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
+			PDF_TemplateButtonDiv.add(editPDF_TemplateButton);
+		}
+
 		tempLocations = new ArrayList<>();
 		for (Location location : company.getLocations()) {
 			tempLocations.add(new Location(location));
 		}
 		companyLocationsComboBox.setItems(tempLocations);
-
-		try {
-			PDF_TemplateButtonDiv.remove(editPDF_TemplateButton);
-		} catch (Exception ignored) {}
-
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			PDF_TemplateButtonDiv.add(editPDF_TemplateButton);
-		}
 	}
 
 	private void constructLocationDialog(Location location) {
@@ -233,10 +234,9 @@ public class CompanyForm extends FormLayout {
 		dialog.getConfirmButton().setText("Save");
 		dialog.getConfirmButton().setEnabled(false);
 
-		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.LOCATIONS, PermissionRange.OWN)) {
+		if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.LOCATIONS, PermissionRange.COMPANY)) {
 			dialog.getConfirmButton().setEnabled(true);
 			dialog.getConfirmButton().addClickListener(e -> {
-
 				Location editedLocation = locationForm.getLocation();
 
 				if (editedLocation != null) {
@@ -254,21 +254,38 @@ public class CompanyForm extends FormLayout {
 	}
 
 	private void constructPDF_TemplateDialog() {
-		pdfTemplateDialog = new PDF_TemplateDialog(company.getPdf_template());
-		pdfTemplateDialog.setHeader(UIUtils.createH3Label("PDF Template for Reporting"));
-		pdfTemplateDialog.constructView();
+		pdf_templateView = new PDF_TemplateView(pdf_template);
 
-		pdfTemplateDialog.getConfirmButton().addClickListener(e -> {
-			PDF_Template pdfTemplate = pdfTemplateDialog.getTemplate();
+		CustomDialog dialog = new CustomDialog();
 
-			if (pdfTemplate != null) {
-				tempPDF_Template = pdfTemplate;
+		dialog.setCloseOnOutsideClick(false);
 
-				pdfTemplateDialog.close();
+		dialog.setHeader(UIUtils.createH3Label("PDF Template"));
+		dialog.setContent(pdf_templateView);
+
+		dialog.getConfirmButton().setText("Save");
+		dialog.getConfirmButton().addClickListener(saveOnClick -> {
+			PDF_Template pdf_template = pdf_templateView.getTemplate();
+
+			if (pdf_template != null) {
+				this.pdf_template = pdf_template;
+				dialog.close();
 			}
 		});
 
-		pdfTemplateDialog.open();
+		dialog.getCancelButton().addClickListener(cancelEditOnClick -> {
+			ConfirmDialog confirmDialog = new ConfirmDialog();
+			confirmDialog.setMessage("Are you sure you want to cancel?" + ProjectConstants.NEW_LINE + "All changes will be lost");
+			confirmDialog.closeOnCancel();
+			confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
+				pdf_templateView.setChanges(null);
+				confirmDialog.close();
+				dialog.close();
+			});
+			confirmDialog.open();
+		});
+
+		dialog.open();
 	}
 
 
@@ -316,8 +333,8 @@ public class CompanyForm extends FormLayout {
 
 				company.setLocations(tempLocations);
 
-				if (tempPDF_Template != null) {
-					company.setPdf_template(tempPDF_Template);
+				if (pdf_template != null) {
+					company.setPdf_template(pdf_template);
 				}
 
 				binder.writeBean(company);
@@ -359,14 +376,12 @@ public class CompanyForm extends FormLayout {
 			changes.addAll(otherChanges);
 		}
 
-		if (pdfTemplateDialog != null) {
-			if (!pdfTemplateDialog.isNew()) {
-				otherChanges = pdfTemplateDialog.getChanges();
-				if (otherChanges != null) {
-					if (otherChanges.size() > 0) {
-						changes.add("-- PDF Template changed");
-						changes.addAll(otherChanges);
-					}
+		if (pdf_templateView != null) {
+			otherChanges = pdf_templateView.getChanges();
+			if (otherChanges != null) {
+				if (otherChanges.size() > 0) {
+					changes.add("-- PDF Template changed");
+					changes.addAll(otherChanges);
 				}
 			}
 		}

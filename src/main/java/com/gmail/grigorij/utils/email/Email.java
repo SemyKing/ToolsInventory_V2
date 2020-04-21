@@ -30,15 +30,14 @@ public class Email {
 		prop.put("mail.smtp.host", "smtp.gmail.com");
 		prop.put("mail.smtp.port", "587");
 		prop.put("mail.smtp.auth", "true");
-		prop.put("mail.sender.address", "captain.gr3g@gmail.com");
-		prop.put("mail.sender.password", "Th1s1sMyP@ssw0rd");
+		prop.put("mail.sender.address", ""); //TODO: INSERT EMAIL
+		prop.put("mail.sender.password", ""); //TODO: INSERT EMAIL PASSWORD
 	}
 
 	private void constructSession() {
 		session = Session.getInstance(prop, new Authenticator() {
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
-//				return new PasswordAuthentication("captain.gr3g@gmail.com", "Th1s1sMyP@ssw0rd");
 				return new PasswordAuthentication(prop.getProperty("mail.sender.address"), prop.getProperty("mail.sender.password"));
 			}
 		});

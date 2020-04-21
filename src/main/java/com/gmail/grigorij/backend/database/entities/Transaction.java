@@ -2,6 +2,7 @@ package com.gmail.grigorij.backend.database.entities;
 
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.utils.DateConverter;
 import com.gmail.grigorij.utils.ProjectConstants;
 
 import javax.persistence.*;
@@ -132,5 +133,17 @@ public class Transaction extends EntityPojo {
 
 
 		return stringBuilder.toString();
+	}
+
+	public String getDateWithTimeString() {
+		try {
+			if (date == null) {
+				return "";
+			} else {
+				return DateConverter.dateToStringWithTime(date);
+			}
+		} catch (Exception e) {
+			return "";
+		}
 	}
 }

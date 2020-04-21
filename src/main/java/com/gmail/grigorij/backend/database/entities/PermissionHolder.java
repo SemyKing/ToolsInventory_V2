@@ -20,8 +20,8 @@ import java.util.List;
 })
 public class PermissionHolder extends EntityPojo {
 
-	public static final String QUERY_ALL = "get_all_permissionHolders";
-	public static final String QUERY_BY_USER_ID = "get_permissionHolder_by_id";
+	public static final String QUERY_ALL = "get_all_permission_holders";
+	public static final String QUERY_BY_USER_ID = "get_permission_holder_by_id";
 
 
 	@OneToOne(mappedBy = "permissionHolder")
@@ -29,17 +29,18 @@ public class PermissionHolder extends EntityPojo {
 
 	@Embedded
 	@ElementCollection
-	private List<Permission> permissions;
+	private List<Permission> permissions = new ArrayList<>();
 
 
 	public PermissionHolder() {
-		permissions = new ArrayList<>();
 		permissions.addAll(PermissionFacade.getInstance().getDefaultUserPermissions());
 	}
 
 	public PermissionHolder(PermissionHolder other) {
 		this.user = other.user;
-		this.permissions = other.permissions;
+		for (Permission permission : other.permissions) {
+			this.permissions.add(new Permission(permission));
+		}
 	}
 
 

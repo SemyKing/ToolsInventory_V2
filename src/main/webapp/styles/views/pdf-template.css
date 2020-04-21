@@ -1,0 +1,48 @@
+@media (max-width: 1024px)  {
+
+}
+
+
+.pdf-template-view {
+	display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 40vw;
+}
+
+.pdf-template-view__content-footer {
+	display: flex;
+    flex-direction: column;
+}
+.pdf-template-view__content-footer > vaadin-checkbox {
+	align-self: center;
+}
+
+.pdf-template-view__font-selectors {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+}
+.pdf-template-view__font-selectors > vaadin-number-field {
+    width: 30%;
+}
+
+.pdf-template-view__date-selectors {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+}
+.pdf-template-view__date-selectors > vaadin-combo-box {
+    width: 40%;
+}
+
+
+
+.pdf-template-parameter-layout {
+	display: flex;
+	flex-direction: row;
+}
+
+.pdf-template-parameter-layout > vaadin-combo-box {
+    width: 100%;
+}

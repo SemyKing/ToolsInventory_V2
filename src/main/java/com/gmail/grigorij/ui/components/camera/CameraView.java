@@ -40,7 +40,7 @@ public class CameraView extends AbstractCameraView {
 
 							if (response == null) {
 								try {
-									Thread.sleep(500);
+									Thread.sleep(1000);
 								} catch (InterruptedException ex) {
 									ex.printStackTrace();
 								}
@@ -48,7 +48,7 @@ public class CameraView extends AbstractCameraView {
 							} else {
 								if (response.length() <= 0) {
 									try {
-										Thread.sleep(500);
+										Thread.sleep(1000);
 									} catch (InterruptedException ex) {
 										ex.printStackTrace();
 									}
@@ -57,6 +57,9 @@ public class CameraView extends AbstractCameraView {
 									status.onSuccess(response);
 								}
 							}
+
+							file.delete();
+
 						} catch (IOException ex) {
 							ex.printStackTrace();
 						}

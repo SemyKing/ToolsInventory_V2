@@ -81,10 +81,16 @@
 	box-shadow: none;
 }
 
+
+
 .app-bar__tab vaadin-button {
 	margin: 0;
 }
 
 .app-bar__add-tab {
 	flex-shrink: 0;
+}
+
+.app-bar__tab[aria-selected="true"] {
+	font-weight: bold;
 }

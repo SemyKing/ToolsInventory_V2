@@ -80,7 +80,7 @@ public class LocationForm extends FormLayout {
 		binder = new Binder<>(Location.class);
 
 		binder.forField(nameField)
-				.asRequired("Name is required")
+				.asRequired("Location Name is required")
 				.bind(Location::getName, Location::setName);
 		binder.forField(addressLine1Field)
 				.bind(Location::getAddressLine1, Location::setAddressLine1);

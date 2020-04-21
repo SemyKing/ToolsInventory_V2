@@ -8,6 +8,7 @@ import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.validator.EmailValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,7 @@ public class PersonForm extends FormLayout {
 
 		binder.forField(emailField)
 				.asRequired("Email is required")
+				.withValidator(new EmailValidator("Email invalid"))
 				.withValidator(em -> {
 					if (isNew) {
 						return UserFacade.getInstance().isEmailAvailable(em);

@@ -33,6 +33,14 @@ public class UIUtils {
 		}
 	}
 
+	public static String visibleBooleanToString(boolean visible) {
+		if (visible) {
+			return "visible";
+		} else {
+			return "invisible";
+		}
+	}
+
 
 
 	/* ==== BUTTONS ==== */
@@ -71,18 +79,17 @@ public class UIUtils {
 			button.addThemeVariants(variants);
 		}
 
-
-		boolean setBackground = true;
-		for (ButtonVariant bv : variants) {
-			if (bv.equals(ButtonVariant.LUMO_PRIMARY) || bv.equals(ButtonVariant.LUMO_TERTIARY)) {
-				setBackground = false;
-				break;
-			}
-		}
-
-		if (setBackground) {
-			button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
-		}
+//		boolean setBackground = true;
+//		for (ButtonVariant bv : variants) {
+//			if (bv.equals(ButtonVariant.LUMO_PRIMARY) || bv.equals(ButtonVariant.LUMO_TERTIARY)) {
+//				setBackground = false;
+//				break;
+//			}
+//		}
+//
+//		if (setBackground) {
+//			button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
+//		}
 		return button;
 	}
 
@@ -106,9 +113,6 @@ public class UIUtils {
 		return createCustomButton(text, icon, variants);
 	}
 
-	/*
-	All 'create Button' methods use this method
-	 */
 	private static Button createCustomButton(String text, VaadinIcon icon, ButtonVariant... variants) {
 		Button button = new Button();
 
@@ -128,20 +132,18 @@ public class UIUtils {
 
 		button.getStyle().set("cursor", "pointer");
 
-		boolean setBackground = true;
-
-		for (ButtonVariant bv : variants) {
-			if (bv.equals(ButtonVariant.LUMO_PRIMARY) || bv.equals(ButtonVariant.LUMO_TERTIARY)) {
-				setBackground = false;
-				break;
-			}
-		}
-
-		if (setBackground) {
-			button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
-		}
-
-
+//		boolean setBackground = true;
+//
+//		for (ButtonVariant bv : variants) {
+//			if (bv.equals(ButtonVariant.LUMO_PRIMARY) || bv.equals(ButtonVariant.LUMO_TERTIARY)) {
+//				setBackground = false;
+//				break;
+//			}
+//		}
+//
+//		if (setBackground) {
+//			button.getStyle().set("background-color", "var(--lumo-contrast-10pct)");
+//		}
 		return button;
 	}
 

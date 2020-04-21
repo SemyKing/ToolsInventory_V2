@@ -30,10 +30,10 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
 
 /**
- * Page accessible form URL containing .../reset-password/ + unique code
+ * Page accessible form URL containing unique code
  */
 
-@Route(value = "reset-password")
+@Route(value = ProjectConstants.RESET_PASSWORD_URL)
 @StyleSheet("context://styles/views/password-reset.css")
 public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 
@@ -62,8 +62,9 @@ public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 	public void setParameter(BeforeEvent event, String tokenParameter) {
 		tokenParameter = tokenParameter.replaceAll("[^a-zA-Z]", "");
 
-		if (tokenParameter.length() < ProjectConstants.RECOVERY_TOKEN_LENGTH || tokenParameter.length() > ProjectConstants.RECOVERY_TOKEN_LENGTH) {
-			System.err.println("Token length is Invalid");
+		if (tokenParameter.length() != ProjectConstants.RECOVERY_TOKEN_LENGTH) {
+			System.err.println("Token length invalid");
+
 			showTokenInvalid();
 			return;
 		}
@@ -140,7 +141,7 @@ public class ResetPasswordView extends Div implements HasUrlParameter<String> {
 						UI.getCurrent().navigate("");
 					}
 				} else {
-					UIUtils.showNotification("Password reset Error", NotificationVariant.LUMO_ERROR);
+					UIUtils.showNotification("Password reset error", NotificationVariant.LUMO_ERROR);
 				}
 			}
 		});

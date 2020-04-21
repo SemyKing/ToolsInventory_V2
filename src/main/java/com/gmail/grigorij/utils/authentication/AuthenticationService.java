@@ -7,6 +7,7 @@ import com.gmail.grigorij.backend.database.facades.TransactionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.Broadcaster;
+import com.gmail.grigorij.utils.servlet.ApplicationServletContextListener;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.server.VaadinRequest;
@@ -39,6 +40,16 @@ public class AuthenticationService {
 		}
 
 		return loginRememberedUser();
+	}
+
+	public static boolean isActive() {
+		User currentUser = getCurrentSessionUser();
+		if (currentUser.isDeleted()) {
+			UIUtils.showNotification("Your credentials have expired", NotificationVariant.LUMO_PRIMARY, 0);
+			System.out.println(currentUser.getFullName() + "' is 'deleted'");
+			return false;
+		}
+		return true;
 	}
 
 	public static User getCurrentSessionUser() {
@@ -77,6 +88,22 @@ public class AuthenticationService {
 		}
 
 		setCurrentSessionUser(user.getId());
+
+		boolean newUser = true;
+
+		for (Long userID : ApplicationServletContextListener.getUserUIs().keySet()) {
+			if (userID.equals(user.getId())) {
+
+				ApplicationServletContextListener.getUserUIs().replace(userID, UI.getCurrent());
+
+				newUser = false;
+				break;
+			}
+		}
+
+		if (newUser) {
+			ApplicationServletContextListener.getUserUIs().put(user.getId(), UI.getCurrent());
+		}
 
 		return true;
 	}
@@ -133,7 +160,8 @@ public class AuthenticationService {
 
 
 
-	public static boolean signIn(String username, String password, boolean rememberMe) {
+//	public static boolean signIn(String username, String password, boolean rememberMe) {
+	public static boolean signIn(String username, String password) {
 		if (username == null || username.isEmpty())
 			return false;
 
@@ -148,13 +176,10 @@ public class AuthenticationService {
 			if (!PasswordUtils.verifyUserPassword(password, user.getPassword(), user.getSalt())) {
 				return false;
 			}
-			if (!constructSessionData(user, null)) {
-				return false;
-			}
-			if (rememberMe) {
-				rememberUser(username);
-			}
-			return true;
+			return constructSessionData(user, null);
+//			if (rememberMe) {
+//				rememberUser(username);
+//			}
 		} else {
 			return false;
 		}
@@ -168,22 +193,52 @@ public class AuthenticationService {
 			deleteRememberMeCookie();
 		}
 
-		Broadcaster.removeBroadcasterForUser(getCurrentSessionUser().getId());
+		createLogoutTransaction(getCurrentSessionUser());
 
-		Transaction transaction = new Transaction();
-		transaction.setUser(AuthenticationService.getCurrentSessionUser());
-		transaction.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
-		transaction.setOperation(Operation.LOG_OUT_T);
-		TransactionFacade.getInstance().insert(transaction);
+		ApplicationServletContextListener.getUserUIs().remove(getCurrentSessionUser().getId());
 
 		getCurrentRequest().getWrappedSession().removeAttribute(SESSION_DATA);
 
-		UI ui = UI.getCurrent();
+		final UI ui = UI.getCurrent();
 		if (ui != null) {
-//			ui.getPage().reload();
 			ui.getPage().executeJs("window.location.href=''");
 
 			ui.getSession().close();
 		}
+	}
+
+	public static void signOutUser(Long userId) {
+
+		final UI ui = UI.getCurrent();
+
+		ui.access(() -> {
+			for (Long id : ApplicationServletContextListener.getUserUIs().keySet()) {
+				if (id.equals(userId)) {
+					final UI thatUserUI = ApplicationServletContextListener.getUserUIs().get(id);
+
+					thatUserUI.access(() -> {
+						createLogoutTransaction(UserFacade.getInstance().getUserById(id));
+
+						thatUserUI.getPage().executeJs("window.location.href=''");
+
+						thatUserUI.getSession().close();
+
+						thatUserUI.push();
+					});
+
+					break;
+				}
+			}
+		});
+	}
+
+	private static void createLogoutTransaction(User user) {
+		Broadcaster.removeBroadcasterForUser(user.getId());
+
+		Transaction transaction = new Transaction();
+		transaction.setUser(user);
+		transaction.setCompany(user.getCompany());
+		transaction.setOperation(Operation.LOG_OUT_T);
+		TransactionFacade.getInstance().insert(transaction);
 	}
 }

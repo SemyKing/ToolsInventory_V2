@@ -4,7 +4,6 @@ import com.gmail.grigorij.backend.database.entities.Company;
 import com.gmail.grigorij.backend.database.entities.PermissionHolder;
 import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.entities.embeddable.Location;
-import com.gmail.grigorij.backend.database.entities.embeddable.Permission;
 import com.gmail.grigorij.backend.database.entities.embeddable.Person;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
@@ -16,8 +15,8 @@ import com.gmail.grigorij.backend.database.facades.UserFacade;
 import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.dialogs.ConfirmDialog;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
-import com.gmail.grigorij.ui.components.dialogs.PermissionsDialog;
 import com.gmail.grigorij.ui.components.dialogs.password.ChangePasswordView;
+import com.gmail.grigorij.ui.components.dialogs.permissions.PermissionsView;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.ui.utils.css.size.Left;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
@@ -62,13 +61,12 @@ public class UserForm extends FormLayout {
 	private final PersonForm personForm = new PersonForm();
 	private final LocationForm addressForm = new LocationForm();
 
-	private PermissionsDialog permissionsDialog;
-	private PermissionHolder tempPermissionHolder;
+	private PermissionsView permissionsView;
+	private PermissionHolder permissionHolder;
 
 	private Binder<User> binder;
 
 	private User user, originalUser;
-	private List<Permission> tempPermissions = new ArrayList<>();
 	private String initialUsername;
 	private boolean isNew;
 
@@ -119,7 +117,8 @@ public class UserForm extends FormLayout {
 		passwordField.setRequired(true);
 		passwordField.setPrefixComponent(VaadinIcon.PASSWORD.create());
 
-		changePasswordButton = UIUtils.createButton("Change", ButtonVariant.LUMO_PRIMARY);
+		changePasswordButton = UIUtils.createButton("Change", VaadinIcon.REFRESH, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+		changePasswordButton.addClassName("dynamic-label-button");
 		changePasswordButton.addClickListener(e -> constructChangePasswordDialog());
 
 		passwordLayout = new FlexBoxLayout();
@@ -148,10 +147,8 @@ public class UserForm extends FormLayout {
 		permissionLevelComboBox.setLabel("Permission Level");
 		permissionLevelComboBox.addValueChangeListener(e -> {
 			if (dataLoaded) {
-				if (!e.getValue().equalsTo(e.getOldValue())) {
-					if (PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.CHANGE, OperationTarget.PERMISSION_LEVEL, PermissionRange.COMPANY)) {
-						handlePermissionLevelChange(e.getValue());
-					}
+				if (!e.getValue().equals(e.getOldValue())) {
+					handlePermissionLevelChange(e.getValue());
 				}
 			}
 		});
@@ -159,12 +156,13 @@ public class UserForm extends FormLayout {
 
 		//PERMISSIONS & BUTTON
 		permissionsLayout = new FlexBoxLayout();
-		permissionsLayout.addClassName(ProjectConstants.CONTAINER_SPACE_BETWEEN);
+		permissionsLayout.addClassName(ProjectConstants.CONTAINER_ALIGN_CENTER);
 		permissionsLayout.add(permissionLevelComboBox);
 		permissionsLayout.setFlexGrow("1", permissionLevelComboBox);
 
-		editPermissionsButton = UIUtils.createButton("Permissions", VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY);
-		editPermissionsButton.addClickListener(e -> constructAccessRightsDialog());
+		editPermissionsButton = UIUtils.createButton("Permissions", VaadinIcon.EDIT, ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
+		editPermissionsButton.addClassName("dynamic-label-button");
+		editPermissionsButton.addClickListener(e -> constructPermissionsDialog());
 
 		additionalInfo = new TextArea("Additional Info");
 		additionalInfo.setMaxHeight("200px");
@@ -243,9 +241,11 @@ public class UserForm extends FormLayout {
 				.bind(User::getDummyPassword, User::setDummyPassword);
 
 		binder.forField(companyComboBox)
+				.asRequired("Company is required")
 				.bind(User::getCompany, User::setCompany);
 
 		binder.forField(permissionLevelComboBox)
+				.asRequired("Permission Level is required")
 				.bind(User::getPermissionLevel, User::setPermissionLevel);
 
 		binder.forField(additionalInfo)
@@ -262,6 +262,7 @@ public class UserForm extends FormLayout {
 		passwordField.setReadOnly(!isNew);
 		passwordField.setRevealButtonVisible(isNew);
 
+		permissionHolder = user.getPermissionHolder();
 
 		try {
 			entityStatusDiv.remove(entityStatusCheckbox);
@@ -275,9 +276,12 @@ public class UserForm extends FormLayout {
 			passwordLayout.setComponentMargin(changePasswordButton, Left.S);
 		}
 
-		if (!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
-			entityStatusDiv.add(entityStatusCheckbox);
+		if (user.getPermissionLevel().lowerOrEqualsTo(AuthenticationService.getCurrentSessionUser().getPermissionLevel())) {
+			if (!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.DELETE, OperationTarget.USER, PermissionRange.COMPANY)) {
+				entityStatusDiv.add(entityStatusCheckbox);
+			}
 		}
+
 
 
 		permissionLevelComboBox.setEnabled(false);
@@ -363,31 +367,51 @@ public class UserForm extends FormLayout {
 		dialog.open();
 	}
 
-	private void constructAccessRightsDialog() {
+	private void constructPermissionsDialog() {
 		if (self && AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
 			UIUtils.showNotification("As System Administrator, you have all permissions", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
-		permissionsDialog = new PermissionsDialog(user);
-		permissionsDialog.getHeader().add(UIUtils.createH3Label("User Permissions"));
-		permissionsDialog.getConfirmButton().setEnabled(false);
+		permissionsView = new PermissionsView(user, permissionHolder);
 
+		CustomDialog dialog = new CustomDialog();
+
+		dialog.setCloseOnOutsideClick(false);
+		dialog.setCloseOnEsc(false);
+
+		dialog.setHeader(UIUtils.createH3Label("User Permissions"));
+		dialog.setContent(permissionsView);
+
+		dialog.getConfirmButton().setEnabled(false);
 
 		if (self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.OWN) ||
 				!self && PermissionFacade.getInstance().isSystemAdminOrAllowedTo(Operation.EDIT, OperationTarget.PERMISSIONS, PermissionRange.COMPANY)) {
-			permissionsDialog.getConfirmButton().setEnabled(true);
+			dialog.getConfirmButton().setEnabled(true);
 		}
 
-		permissionsDialog.getConfirmButton().addClickListener(saveOnClick -> {
-			PermissionHolder permissionHolder = permissionsDialog.getPermissionHolder();
+		dialog.getConfirmButton().setText("Save");
+		dialog.getConfirmButton().addClickListener(saveOnClick -> {
+			PermissionHolder permissionHolder = permissionsView.getPermissionHolder();
 			if (permissionHolder != null) {
-				tempPermissionHolder = permissionHolder;
-				permissionsDialog.close();
+				this.permissionHolder = permissionHolder;
+				dialog.close();
 			}
 		});
 
-		permissionsDialog.open();
+		dialog.getCancelButton().addClickListener(cancelEditOnClick -> {
+			ConfirmDialog confirmDialog = new ConfirmDialog();
+			confirmDialog.setMessage("Are you sure you want to cancel?" + ProjectConstants.NEW_LINE + "All changes will be lost");
+			confirmDialog.closeOnCancel();
+			confirmDialog.getConfirmButton().addClickListener(confirmOnClick -> {
+				permissionsView.setChanges(null);
+				confirmDialog.close();
+				dialog.close();
+			});
+			confirmDialog.open();
+		});
+
+		dialog.open();
 	}
 
 
@@ -397,6 +421,7 @@ public class UserForm extends FormLayout {
 
 		if (user == null) {
 			this.user = new User();
+			this.user.setCompany(AuthenticationService.getCurrentSessionUser().getCompany());
 			isNew = true;
 		} else {
 			this.user = user;
@@ -419,18 +444,18 @@ public class UserForm extends FormLayout {
 
 			if (binder.isValid()) {
 
-				Location address = addressForm.getLocation();
-				if (address == null) {
-					return null;
-				} else {
-					user.setAddress(address);
-				}
-
 				Person person = personForm.getPerson();
 				if (person == null) {
 					return null;
 				} else {
 					user.setPerson(person);
+				}
+
+				Location address = addressForm.getLocation();
+				if (address == null) {
+					return null;
+				} else {
+					user.setAddress(address);
 				}
 
 				if (isNew) {
@@ -442,11 +467,18 @@ public class UserForm extends FormLayout {
 					}
 				}
 
-				if (tempPermissionHolder != null) {
-					user.setPermissionHolder(tempPermissionHolder);
+				if (permissionHolder != null) {
+					user.setPermissionHolder(permissionHolder);
 				}
 
 				binder.writeBean(user);
+
+				if (Boolean.compare(originalUser.isDeleted(), user.isDeleted()) != 0) {
+					if (user.isDeleted()) {
+						AuthenticationService.signOutUser(user.getId());
+					}
+				}
+
 				return user;
 			}
 		} catch (ValidationException e) {
@@ -469,11 +501,14 @@ public class UserForm extends FormLayout {
 		if (!originalUser.getUsername().equals(user.getUsername())) {
 			changes.add("Username changed from: '" + originalUser.getUsername() + "', to: '" + user.getUsername() + "'");
 		}
+		if (!originalUser.getPassword().equals(user.getPassword())) {
+			changes.add("Password changed");
+		}
 		if (!originalUser.getPermissionLevel().equals(user.getPermissionLevel())) {
 			changes.add("Permission level changed from: '" + originalUser.getPermissionLevel().getName() + "', to: '" + user.getPermissionLevel().getName() + "'");
 		}
-		if (!originalUser.getCompany().equals(user.getCompany())) {
-			changes.add("User company changed from: '" + originalUser.getCompany().getName() + "', to: '" + user.getCompany().getName() + "'");
+		if (!originalUser.getCompanyNameString().equals(user.getCompanyNameString())) {
+			changes.add("User company changed from: '" + originalUser.getCompanyNameString() + "', to: '" + user.getCompanyNameString() + "'");
 		}
 		if (!originalUser.getAdditionalInfo().equals(user.getAdditionalInfo())) {
 			changes.add("Additional Info changed from: '" + originalUser.getAdditionalInfo() + "', to: '" + user.getAdditionalInfo() + "'");
@@ -491,8 +526,8 @@ public class UserForm extends FormLayout {
 			changes.addAll(otherChanges);
 		}
 
-		if (permissionsDialog != null) {
-			otherChanges = permissionsDialog.getChanges();
+		if (permissionsView != null) {
+			otherChanges = permissionsView.getChanges();
 			if (otherChanges != null) {
 				if (otherChanges.size() > 0) {
 					changes.add("-- Permissions changed");

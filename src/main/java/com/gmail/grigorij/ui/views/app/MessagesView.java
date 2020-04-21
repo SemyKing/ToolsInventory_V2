@@ -1,13 +1,9 @@
 package com.gmail.grigorij.ui.views.app;
 
-import com.gmail.grigorij.backend.database.entities.Company;
 import com.gmail.grigorij.backend.database.entities.Message;
-import com.gmail.grigorij.backend.database.entities.User;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
-import com.gmail.grigorij.backend.database.enums.permissions.PermissionLevel;
 import com.gmail.grigorij.backend.database.enums.permissions.PermissionRange;
-import com.gmail.grigorij.backend.database.facades.CompanyFacade;
 import com.gmail.grigorij.backend.database.facades.MessageFacade;
 import com.gmail.grigorij.backend.database.facades.PermissionFacade;
 import com.gmail.grigorij.backend.database.facades.UserFacade;
@@ -15,16 +11,16 @@ import com.gmail.grigorij.ui.components.FlexBoxLayout;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawer;
 import com.gmail.grigorij.ui.components.detailsdrawer.DetailsDrawerHeader;
 import com.gmail.grigorij.ui.components.dialogs.CustomDialog;
+import com.gmail.grigorij.ui.components.dialogs.message.MessageView;
 import com.gmail.grigorij.ui.components.forms.MessageForm;
 import com.gmail.grigorij.ui.utils.UIUtils;
-import com.gmail.grigorij.ui.utils.css.LumoStyles;
-import com.gmail.grigorij.utils.authentication.AuthenticationService;
 import com.gmail.grigorij.utils.Broadcaster;
 import com.gmail.grigorij.utils.DateConverter;
+import com.gmail.grigorij.utils.authentication.AuthenticationService;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
@@ -33,7 +29,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -41,6 +36,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -105,7 +101,7 @@ public class MessagesView extends Div {
 
 		Button composeMessageButton = UIUtils.createButton("Compose", VaadinIcon.ENVELOPE , ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ICON);
 		composeMessageButton.addClassName("dynamic-label-button");
-		composeMessageButton.addClickListener(e -> constructMessageDialog(null, ""));
+		composeMessageButton.addClickListener(e -> constructMessageDialog(null));
 		composeMessageButton.setEnabled(false);
 		headerTopDiv.add(composeMessageButton);
 
@@ -169,20 +165,15 @@ public class MessagesView extends Div {
 		return content;
 	}
 
-	private Grid constructGrid() {
+	private Component constructGrid() {
 		grid = new Grid<>();
-		grid.setClassName("grid-view");
+		grid.addClassNames("grid-view", "small-padding-cell");
 		grid.setSizeFull();
 
-		grid.asSingleSelect().addValueChangeListener(e -> {
-			if (grid.asSingleSelect().getValue() != null) {
-				showDetails(grid.asSingleSelect().getValue());
-			} else {
-				detailsDrawer.hide();
-			}
-		});
+		dataProvider = DataProvider.ofCollection(new ArrayList<>());
 
-		dataProvider = DataProvider.ofCollection(MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId()));
+		getMessagesBetweenDates();
+
 		grid.setDataProvider(dataProvider);
 
 		// READ
@@ -194,49 +185,42 @@ public class MessagesView extends Div {
 						icon.setColor("var(--lumo-header-text-color)");
 					} else {
 						icon = new Icon(VaadinIcon.ENVELOPE);
-						icon.setColor(LumoStyles.Color.Primary._100);
+						icon.setColor("var(--lumo-primary-color)");
 					}
 					return icon;
 				})
-//				.setAutoWidth(true)
+				.setTextAlign(ColumnTextAlign.CENTER)
 				.setWidth("50px")
 				.setFlexGrow(0);
 
-		grid.addColumn(msg -> {
-					if (msg.getSenderUser() == null) {
-						return msg.getSenderString();
-					} else {
-						return UserFacade.getInstance().getUserById(msg.getSenderUser().getId()).getFullName();
-					}
-				})
+		grid.addColumn(Message::getSender)
 				.setHeader("Sender")
 				.setAutoWidth(true)
 				.setFlexGrow(0);
 
 		grid.addColumn(Message::getSubject)
 				.setHeader("Subject")
-				.setWidth("200px")
+//				.setWidth("200px")
+				.setAutoWidth(true)
 				.setFlexGrow(0);
 
 		grid.addColumn(Message::getText)
 				.setHeader("Message")
 				.setFlexGrow(1);
 
-		grid.addColumn(msg -> {
-					try {
-						if (msg.getDate() == null) {
-							return "";
-						} else {
-							return DateConverter.dateToStringWithTime(msg.getDate());
-						}
-					} catch (Exception e) {
-						return "";
-					}
-				})
+		grid.addColumn(Message::getDateWithTimeString)
 				.setHeader("Received")
 				.setAutoWidth(true)
 				.setTextAlign(ColumnTextAlign.END)
 				.setFlexGrow(0);
+
+		grid.asSingleSelect().addValueChangeListener(e -> {
+			if (grid.asSingleSelect().getValue() != null) {
+				showDetails(grid.asSingleSelect().getValue());
+			} else {
+				detailsDrawer.hide();
+			}
+		});
 
 		return grid;
 	}
@@ -273,7 +257,7 @@ public class MessagesView extends Div {
 				if (message.getSenderUser() == null) {
 					UIUtils.showNotification("Cannot reply to: " + message.getSenderString(), NotificationVariant.LUMO_PRIMARY);
 				} else {
-					constructMessageDialog(message.getSenderUser(), message.getSubject());
+					constructMessageDialog(message);
 				}
 			}
 		});
@@ -394,7 +378,11 @@ public class MessagesView extends Div {
 
 
 	private void getMessagesBetweenDates() {
-		List<Message> messages = MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(dateStartField.getValue(), dateEndField.getValue(), AuthenticationService.getCurrentSessionUser().getId());
+		List<Message> messages = MessageFacade.getInstance().getAllMessagesBetweenDatesByUser(
+				dateStartField.getValue(),
+				dateEndField.getValue(),
+				AuthenticationService.getCurrentSessionUser().getId());
+
 		messages.sort(Comparator.comparing(Message::getDate).reversed());
 
 		dataProvider.getItems().clear();
@@ -403,119 +391,35 @@ public class MessagesView extends Div {
 		dataProvider.refreshAll();
 	}
 
-	private void constructMessageDialog(User recipient, String RE_subject) {
-		ComboBox<User> recipientComboBox = new ComboBox<>();
-		recipientComboBox.setLabel("Recipient");
-		recipientComboBox.setItems();
-		recipientComboBox.setItemLabelGenerator(User::getFullName);
-
-		if (recipient != null) {
-			recipientComboBox.setValue(recipient);
-			recipientComboBox.setReadOnly(true);
-		} else {
-			List<User> recipients;
-			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-				recipients = UserFacade.getInstance().getAllActiveUsers();
-			} else {
-				recipients = UserFacade.getInstance().getAllActiveUsersInCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId());
-
-				// ADD SYSTEM ADMINS FOR CONTACTING
-				List<User> systemAdmins = UserFacade.getInstance().getSystemAdmins();
-
-				for (User sysAdmin : systemAdmins) {
-					recipients.add(0, sysAdmin);
-				}
-			}
-
-			recipientComboBox.setItems(recipients);
-			recipientComboBox.setRequired(true);
-		}
-
-
-		Div messageAllUsersDiv = new Div();
-		messageAllUsersDiv.addClassName(CLASS_NAME + "__message_a_u_i_c");
-
-		Checkbox useCompanyRecipients = new Checkbox("Use This");
-
-		ComboBox<Company> allUsersInCompany = new ComboBox<>();
-
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			allUsersInCompany.setLabel("All Recipients In");
-			allUsersInCompany.setItems(CompanyFacade.getInstance().getAllActiveCompanies());
-			allUsersInCompany.setItemLabelGenerator(Company::getName);
-			allUsersInCompany.setReadOnly(true);
-
-			useCompanyRecipients.addValueChangeListener(cb -> {
-				allUsersInCompany.setReadOnly(!cb.getValue());
-				recipientComboBox.setReadOnly(cb.getValue());
-			});
-
-			messageAllUsersDiv.add(allUsersInCompany);
-			messageAllUsersDiv.add(useCompanyRecipients);
-		}
-
-		TextArea subjectField = new TextArea("Subject");
-		subjectField.setRequired(true);
-		if (RE_subject.length() > 0) {
-			subjectField.setValue("RE: " + RE_subject);
-		}
-
-		TextArea messageArea = new TextArea("Message");
-		messageArea.setRequired(true);
-
-
-		// DIALOG
+	private void constructMessageDialog(Message replyMessage) {
 		CustomDialog dialog = new CustomDialog();
-		dialog.setHeader(UIUtils.createH3Label("Compose Message"));
 		dialog.setCloseOnOutsideClick(false);
-		dialog.setCloseOnEsc(false);
-
-		dialog.getContent().add(recipientComboBox);
-		if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-			dialog.getContent().add(messageAllUsersDiv);
-		}
-		dialog.getContent().add(subjectField);
-		dialog.getContent().add(messageArea);
-
 		dialog.closeOnCancel();
+
+		dialog.setHeader(UIUtils.createH3Label("Compose Message"));
+
+		MessageView messageView = new MessageView(replyMessage);
+		dialog.setContent(messageView);
+
 		dialog.getConfirmButton().setText("Send");
+		dialog.getConfirmButton().addClickListener(e -> {
 
+			boolean error = false;
+			List<Message> messages = messageView.getMessageList();
+			if (messages != null) {
 
-		dialog.getConfirmButton().addClickListener(send -> {
-
-			if (subjectField.getValue().length() > 255) {
-				UIUtils.showNotification("Maximum amount of characters for Subject is 255", NotificationVariant.LUMO_PRIMARY);
-				return;
-			}
-			if (messageArea.getValue().length() > 255) {
-				UIUtils.showNotification("Maximum amount of characters for Message is 255", NotificationVariant.LUMO_PRIMARY);
-				return;
-			}
-
-			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-				if (useCompanyRecipients.getValue()) {
-					List<User> recipients = UserFacade.getInstance().getAllActiveUsersInCompany(allUsersInCompany.getValue().getId());
-
-					for (User user : recipients) {
-						sendMessage(user.getId(), subjectField.getValue(), messageArea.getValue());
-						dialog.close();
+				for (Message message : messages) {
+					if (!sendMessage(message)) {
+						UIUtils.showNotification("Message send failed for: " + UserFacade.getInstance().getUserById(message.getRecipientId()).getFullName(), NotificationVariant.LUMO_ERROR);
+						error = true;
 					}
-				} else {
-					if (recipientComboBox.getValue() == null) {
-						UIUtils.showNotification("Select Recipient", NotificationVariant.LUMO_PRIMARY);
-						return;
-					}
-
-					sendMessage(recipientComboBox.getValue().getId(), subjectField.getValue(), messageArea.getValue());
-					dialog.close();
-				}
-			} else {
-				if (recipientComboBox.getValue() == null) {
-					UIUtils.showNotification("Select Recipient", NotificationVariant.LUMO_PRIMARY);
-					return;
 				}
 
-				sendMessage(recipientComboBox.getValue().getId(), subjectField.getValue(), messageArea.getValue());
+				if (!error) {
+					String text = (messages.size() > 1) ? "Messages sent" : "Message sent";
+					UIUtils.showNotification(text, NotificationVariant.LUMO_SUCCESS);
+				}
+
 				dialog.close();
 			}
 		});
@@ -523,19 +427,12 @@ public class MessagesView extends Div {
 		dialog.open();
 	}
 
-	private void sendMessage(long recipientId, String subject, String text) {
-		Message message = new Message();
-		message.setRecipientId(recipientId);
-		message.setSenderUser(AuthenticationService.getCurrentSessionUser());
-		message.setSubject(subject);
-		message.setText(text);
-
+	private boolean sendMessage(Message message) {
 		if (MessageFacade.getInstance().insert(message)) {
-			UIUtils.showNotification("Message sent", NotificationVariant.LUMO_SUCCESS);
-
-			Broadcaster.broadcastToUser(recipientId, "You have new message");
+			Broadcaster.broadcastToUser(message.getRecipientId(), "You have new message");
+			return true;
 		} else {
-			UIUtils.showNotification("Message sending failed", NotificationVariant.LUMO_ERROR);
+			return false;
 		}
 	}
 }

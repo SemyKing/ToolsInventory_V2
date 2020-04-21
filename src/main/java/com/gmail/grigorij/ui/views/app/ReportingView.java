@@ -8,11 +8,12 @@ import com.gmail.grigorij.ui.components.PDF_Component;
 import com.gmail.grigorij.ui.components.dialogs.PDF_Dialog;
 import com.gmail.grigorij.ui.utils.UIUtils;
 import com.gmail.grigorij.utils.authentication.AuthenticationService;
-import com.gmail.grigorij.utils.pdf.PDF_Constructor;
+import com.gmail.grigorij.utils.pdf.PDF_ReportConstructor;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -20,7 +21,6 @@ import com.vaadin.flow.server.StreamResource;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 
 @CssImport("./styles/views/reporting.css")
@@ -29,7 +29,7 @@ public class ReportingView extends Div {
 	private static final String CLASS_NAME = "reporting";
 
 	private Grid<User> grid;
-	private List<User> selectedUsers = new ArrayList<>();
+//	private List<User> selectedUsers = new ArrayList<>();
 
 
 	public ReportingView() {
@@ -81,28 +81,38 @@ public class ReportingView extends Div {
 				.setHeader("Tools In Use")
 				.setFlexGrow(1);
 
+		grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES);
+
 		grid.setSelectionMode(Grid.SelectionMode.MULTI);
 
-		grid.addSelectionListener(event -> selectedUsers = new ArrayList<>(event.getAllSelectedItems()));
+
+//		grid.addSelectionListener(event -> selectedUsers = new ArrayList<>(event.getAllSelectedItems()));
 
 		return grid;
 	}
 
 
 	private void constructReport() {
-		if (selectedUsers.size() <= 0) {
+		if (grid.getSelectedItems().size() <= 0) {
 			UIUtils.showNotification("Select users for report", NotificationVariant.LUMO_PRIMARY);
 			return;
 		}
 
-		PDF_Constructor pdfConstructor =
-				new PDF_Constructor(
-						PDF_Facade.getInstance().getPDF_TemplateByCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()),
-						selectedUsers);
+		PDF_ReportConstructor reportConstructor = new PDF_ReportConstructor(new ArrayList<>(grid.getSelectedItems()));
 
-		if (pdfConstructor.hasErrors()) {
-			System.err.println("PDF report generation error");
-			return;
+		if (reportConstructor.generateReport(
+				PDF_Facade.getInstance().getPDF_TemplateByCompany(AuthenticationService.getCurrentSessionUser().getCompany().getId()))) {
+
+			StreamResource streamResource = new StreamResource("Report", () -> new ByteArrayInputStream(reportConstructor.getPDF_ByteArray()));
+			streamResource.setContentType("application/pdf");
+			streamResource.setCacheTime(0);
+
+
+
+
+			PDF_Dialog dialog = new PDF_Dialog();
+			dialog.setContent(new PDF_Component(streamResource));
+			dialog.open();
 		}
 
 //		PDF_Report pdf_report = new PDF_Report();
@@ -111,13 +121,5 @@ public class ReportingView extends Div {
 
 //		String stringURL = "report/" + pdf_report.getName();
 //		UI.getCurrent().getPage().executeJs("window.open('"+ stringURL +"', '_blank')");
-
-		StreamResource streamResource = new StreamResource("Report", () -> new ByteArrayInputStream(pdfConstructor.getPDF_ByteArray()));
-		streamResource.setContentType("application/pdf");
-		streamResource.setCacheTime(0);
-
-		PDF_Dialog dialog = new PDF_Dialog();
-		dialog.setContent(new PDF_Component(streamResource));
-		dialog.open();
 	}
 }

@@ -179,37 +179,29 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 			NaviItem adminItem = new NaviItem(VaadinIcon.DOCTOR, ProjectConstants.ADMIN);
 			menu.addNaviItem(adminItem);
 
-			adminItem.addClickListener(e-> {
-				adminItem.expandCollapse.click();
-			});
+			adminItem.addClickListener(e-> adminItem.expandCollapse.click());
 
 			NaviItem admin_companies;
 
 			if (AuthenticationService.getCurrentSessionUser().getPermissionLevel().equalsTo(PermissionLevel.SYSTEM_ADMIN)) {
-				admin_companies = new NaviItem(ProjectConstants.COMPANIES);
+				admin_companies = new NaviItem(ProjectConstants.ADMIN_COMPANIES);
 			} else {
-				admin_companies = new NaviItem(ProjectConstants.COMPANY);
+				admin_companies = new NaviItem(ProjectConstants.ADMIN_COMPANY);
 			}
 
 			menu.addNaviItem(adminItem, admin_companies);
 
-			admin_companies.addClickListener(e-> {
-				naviItemOnClick(admin_companies, true);
-			});
+			admin_companies.addClickListener(e-> naviItemOnClick(admin_companies, true));
 
-			NaviItem admin_personnel = new NaviItem(ProjectConstants.PERSONNEL);
+			NaviItem admin_personnel = new NaviItem(ProjectConstants.ADMIN_PERSONNEL);
 			menu.addNaviItem(adminItem, admin_personnel);
 
-			admin_personnel.addClickListener(e-> {
-				naviItemOnClick(admin_personnel, true);
-			});
+			admin_personnel.addClickListener(e-> naviItemOnClick(admin_personnel, true));
 
 			NaviItem admin_inventory = new NaviItem(ProjectConstants.ADMIN_INVENTORY);
 			menu.addNaviItem(adminItem, admin_inventory);
 
-			admin_inventory.addClickListener(e-> {
-				naviItemOnClick(admin_inventory, true);
-			});
+			admin_inventory.addClickListener(e-> naviItemOnClick(admin_inventory, true));
 		}
 
 		//Open Dashboard view
@@ -223,7 +215,7 @@ public class ApplicationContainerView extends FlexBoxLayout implements PageConfi
 		appBar.reset();
 
 		if (adminNaviItem) {
-			viewContainer.add(new AdminView(this));
+			viewContainer.add(new AdminWrapperView(this));
 
 			selectCorrectNaviItem(ProjectConstants.ADMIN, naviItem.getText());
 

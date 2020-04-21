@@ -77,7 +77,7 @@ class CameraElement extends PolymerElement {
 
         fetch(this.target, {
             method: "post",
-            body: formData }).then(response => console.log(response));
+            body: formData });
     }
 
     takePicture() {

@@ -21,7 +21,7 @@
     display: flex;
     flex-direction: column;
 
-    min-width: 400px;
+    /*min-width: 400px;*/
 	max-width: 95vw;
     max-height: 90vh;
 }
@@ -118,121 +118,6 @@
 
 
 
-
-/*      PERMISSIONS      */
-
-.permissions-dialog {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    width: 40vw;
-}
-
-.permissions-dialog vaadin-button {
-    flex-shrink: 0;
-
-}
-
-.permissions-dialog > hr {
-    flex-shrink: 0;
-
-}
-
-.permissions-dialog__content_header {
-	display: flex;
-	flex-direction: row;
-    justify-content: center;
-    margin-bottom: var(--lumo-space-s);
-    flex-shrink: 0;
-}
-
-.permissions-dialog__content_header > .left {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin-right: var(--lumo-space-m);
-}
-
-.permissions-dialog__content_header > .right {
-    display: flex;
-    flex-direction: column;
-}
-
-.permissions-dialog__content_header > .h4 {
-            margin-top: var(--lumo-space-xs);
-
-        }
-
-.permissions-dialog__headings {
-	display: flex;
-    flex-direction: row;
-}
-
-.permissions-dialog__headings > .h4 {
-	width: 100%;
-}
-.permissions-dialog__headings > .company-label {
-	padding-right: var(--lumo-space-s);
-}
-
-.permissions-dialog__content {
-	flex-direction: column;
-}
-.permissions-dialog__content > vaadin-grid {
-}
-
-
-
-
-
-
-
-
-
-
-
-
-.permission-row {
-	display: flex;
-	flex-direction: column;
-    align-items: baseline;
-}
-
-.permission-row__content {
-	display: flex;
-	flex-direction: row;
-	width: 100%;
-	align-items: baseline;
-    margin-top: var(--lumo-space-xs);
-    margin-bottom: var(--lumo-space-xs);
-}
-
-.permission-row__operation-target-own-company {
-	display: flex;
-	flex-direction: row;
-}
-
-.permission-row__operation-target-own-company span {
-    width: 100%;
-}
-.permission-row__operation-target {
-	display: flex;
-	flex-direction: row;
-}
-
-.permission-row__own-company {
-	display: flex;
-	flex-direction: row;
-}
-
-.permission-row__buttons {
-	display: flex;
-	flex-direction: row;
-}
-
-
-
-
 /*      MESSAGES      */
 
 .messages__message_a_u_i_c {
@@ -263,14 +148,13 @@
     flex-direction: column;
 
     width: 95vw;
-    height: 90vh;
 }
 
 .pdf-dialog__content {
     flex-direction: column;
 
     width: 100%;
-    height: 90vh;
+    height: 80vh;
 }
 
 .pdf-dialog__footer {

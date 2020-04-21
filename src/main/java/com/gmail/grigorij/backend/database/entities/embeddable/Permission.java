@@ -3,6 +3,7 @@ package com.gmail.grigorij.backend.database.entities.embeddable;
 import com.gmail.grigorij.backend.database.enums.operations.Operation;
 import com.gmail.grigorij.backend.database.enums.operations.OperationPermission;
 import com.gmail.grigorij.backend.database.enums.operations.OperationTarget;
+import com.gmail.grigorij.ui.utils.UIUtils;
 
 import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
@@ -126,5 +127,14 @@ public class Permission {
 		}
 
 		return s;
+	}
+
+	@Override
+	public String toString() {
+		return getOperationString() +
+				", " + getTargetString() +
+				", " + getPermissionOwnString() +
+				", " + getPermissionCompanyString() +
+				", " + UIUtils.visibleBooleanToString(isVisible());
 	}
 }

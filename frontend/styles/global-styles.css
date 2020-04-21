@@ -31,6 +31,11 @@ html, body {
     overflow: hidden;
 }
 
+.root {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
 
 .app-header-outer, .app-footer-outer {
     z-index: 3;

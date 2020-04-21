@@ -2,6 +2,7 @@ package com.gmail.grigorij.ui.components.camera;
 
 import com.vaadin.flow.component.html.Div;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 
 public class AbstractCameraView extends Div implements HasDataReceiver {

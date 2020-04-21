@@ -31,7 +31,9 @@ public class DummyDataGenerator {
 	private List<Tool> tools = new ArrayList<>();
 
 
-	public DummyDataGenerator() {
+	public DummyDataGenerator() {}
+
+	public void generateDummyData() {
 		if (!entitiesGenerated) {
 
 			generateCompanies();
@@ -77,7 +79,7 @@ public class DummyDataGenerator {
 
 		administrationCompany.setAddress(companyAddress);
 		administrationCompany.setContactPerson(contactPerson);
-		administrationCompany.setAdditionalInfo("ADMINISTRATION COMPANY FOR ADMINS ONLY");
+		administrationCompany.setAdditionalInfo("ADMINISTRATION COMPANY FOR SYSTEM ADMINS ONLY");
 
 		administrationCompany.setPdf_template(new PDF_Template());
 
