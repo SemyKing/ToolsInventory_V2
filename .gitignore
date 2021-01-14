@@ -1,4 +1,5 @@
 .idea
+/src/main/resources/META-INF/persistence.xml
 /node_modules/
 /target/
 /package.json
